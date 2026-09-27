@@ -3,76 +3,73 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { SignUpSchema, type SignUpFormValues } from "../../../validation-schemas/auth";
-import { useSignup } from "@/features/auth/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { useSignup } from "@/features/auth/hooks/use-auth";
+import { SignUpSchema, type SignUpFormValues } from "../../../validation-schemas/auth";
 
 export function SignUpForm() {
   const { mutate, isPending } = useSignup();
-
-  const form = useForm<SignUpFormValues>({
-    resolver: zodResolver(SignUpSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      confirm_password: "",
-    },
-  });
-
-  function onSubmit(data: SignUpFormValues) {
-    mutate({ email: data.email, password: data.password });
-  }
+  const form = useForm<SignUpFormValues>({ resolver: zodResolver(SignUpSchema), defaultValues: { full_name: "", email: "", password: "", confirm_password: "" } });
 
   return (
-    <div className="grid gap-6">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid gap-2">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem className="space-y-1">
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem className="space-y-1">
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <PasswordInput placeholder="********" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirm_password"
-              render={({ field }) => (
-                <FormItem className="space-y-1">
-                  <FormLabel>Confirm Password</FormLabel>
-                  <FormControl>
-                    <Input placeholder="********" {...field} type="password" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button className="mt-2" disabled={isPending} loading={isPending}>
-              Create Account
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(({ full_name, email, password }) => mutate({ full_name, email, password }))} className="grid gap-3">
+        <FormField
+          control={form.control}
+          name="full_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input autoComplete="name" placeholder="Jane Developer" autoFocus {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" autoComplete="email" placeholder="you@agency.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <PasswordInput autoComplete="new-password" placeholder="At least 8 characters" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="confirm_password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Confirm password</FormLabel>
+              <FormControl>
+                <PasswordInput autoComplete="new-password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" className="mt-2" loading={isPending}>
+          Create account
+        </Button>
+      </form>
+    </Form>
   );
 }

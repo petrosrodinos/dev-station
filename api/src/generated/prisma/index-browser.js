@@ -125,6 +125,8 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   phone: 'phone',
   password: 'password',
+  full_name: 'full_name',
+  avatar_url: 'avatar_url',
   role: 'role',
   created_at: 'created_at',
   updated_at: 'updated_at'
@@ -151,9 +153,204 @@ exports.Prisma.DocumentScalarFieldEnum = {
   created_at: 'created_at'
 };
 
+exports.Prisma.UserPreferenceScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  active_organization_id: 'active_organization_id',
+  git_name: 'git_name',
+  git_email: 'git_email',
+  preferred_agent: 'preferred_agent',
+  default_branch: 'default_branch',
+  idle_threshold_seconds: 'idle_threshold_seconds',
+  confirm_destructive: 'confirm_destructive',
+  theme: 'theme',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.OrganizationScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  created_by: 'created_by',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.RoleScalarFieldEnum = {
+  id: 'id',
+  organization_id: 'organization_id',
+  name: 'name',
+  key: 'key',
+  description: 'description',
+  is_system: 'is_system',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.RolePermissionScalarFieldEnum = {
+  id: 'id',
+  role_id: 'role_id',
+  permission: 'permission'
+};
+
+exports.Prisma.OrganizationMemberScalarFieldEnum = {
+  id: 'id',
+  organization_id: 'organization_id',
+  user_id: 'user_id',
+  role_id: 'role_id',
+  status: 'status',
+  joined_at: 'joined_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.OrganizationInvitationScalarFieldEnum = {
+  id: 'id',
+  organization_id: 'organization_id',
+  email: 'email',
+  role_id: 'role_id',
+  token_hash: 'token_hash',
+  invited_by: 'invited_by',
+  expires_at: 'expires_at',
+  accepted_at: 'accepted_at',
+  revoked_at: 'revoked_at',
+  created_at: 'created_at'
+};
+
+exports.Prisma.ClientScalarFieldEnum = {
+  id: 'id',
+  organization_id: 'organization_id',
+  name: 'name',
+  color: 'color',
+  sort_order: 'sort_order',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.RepositoryScalarFieldEnum = {
+  id: 'id',
+  organization_id: 'organization_id',
+  provider: 'provider',
+  clone_url: 'clone_url',
+  full_name: 'full_name',
+  default_branch: 'default_branch',
+  external_id: 'external_id',
+  connection_id: 'connection_id',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ProjectScalarFieldEnum = {
+  id: 'id',
+  organization_id: 'organization_id',
+  client_id: 'client_id',
+  repository_id: 'repository_id',
+  name: 'name',
+  description: 'description',
+  color: 'color',
+  sort_order: 'sort_order',
+  sub_path: 'sub_path',
+  preferred_agent: 'preferred_agent',
+  github_connection_id: 'github_connection_id',
+  linear_connection_id: 'linear_connection_id',
+  linear_team_id: 'linear_team_id',
+  linear_project_id: 'linear_project_id',
+  notion_connection_id: 'notion_connection_id',
+  notion_root_page_id: 'notion_root_page_id',
+  last_activity_at: 'last_activity_at',
+  created_by: 'created_by',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ProjectServiceScalarFieldEnum = {
+  id: 'id',
+  project_id: 'project_id',
+  name: 'name',
+  kind: 'kind',
+  cwd: 'cwd',
+  package_manager: 'package_manager',
+  script: 'script',
+  command: 'command',
+  port: 'port',
+  url: 'url',
+  env: 'env',
+  auto_detected: 'auto_detected',
+  sort_order: 'sort_order',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ProjectIssueScalarFieldEnum = {
+  id: 'id',
+  project_id: 'project_id',
+  provider: 'provider',
+  external_id: 'external_id',
+  key: 'key',
+  title: 'title',
+  created_at: 'created_at'
+};
+
+exports.Prisma.IntegrationConnectionScalarFieldEnum = {
+  id: 'id',
+  organization_id: 'organization_id',
+  user_id: 'user_id',
+  provider: 'provider',
+  composio_account_id: 'composio_account_id',
+  composio_auth_config: 'composio_auth_config',
+  label: 'label',
+  external_account: 'external_account',
+  status: 'status',
+  is_default: 'is_default',
+  last_error: 'last_error',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.AgentSessionScalarFieldEnum = {
+  id: 'id',
+  organization_id: 'organization_id',
+  project_id: 'project_id',
+  user_id: 'user_id',
+  agent_type: 'agent_type',
+  name: 'name',
+  status: 'status',
+  initial_prompt: 'initial_prompt',
+  device_id: 'device_id',
+  issue_provider: 'issue_provider',
+  issue_external_id: 'issue_external_id',
+  issue_key: 'issue_key',
+  issue_title: 'issue_title',
+  files_changed: 'files_changed',
+  additions: 'additions',
+  deletions: 'deletions',
+  commit_sha: 'commit_sha',
+  exit_code: 'exit_code',
+  started_at: 'started_at',
+  ended_at: 'ended_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ActivityScalarFieldEnum = {
+  id: 'id',
+  organization_id: 'organization_id',
+  project_id: 'project_id',
+  user_id: 'user_id',
+  agent_session_id: 'agent_session_id',
+  type: 'type',
+  message: 'message',
+  metadata: 'metadata',
+  created_at: 'created_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -164,6 +361,12 @@ exports.Prisma.QueryMode = {
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 exports.AuthRole = exports.$Enums.AuthRole = {
   USER: 'USER',
@@ -183,10 +386,128 @@ exports.DocumentType = exports.$Enums.DocumentType = {
   OTHER: 'OTHER'
 };
 
+exports.AgentType = exports.$Enums.AgentType = {
+  CLAUDE_CODE: 'CLAUDE_CODE',
+  CURSOR_CLI: 'CURSOR_CLI'
+};
+
+exports.SystemRoleKey = exports.$Enums.SystemRoleKey = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
+  DEVELOPER: 'DEVELOPER',
+  VIEWER: 'VIEWER',
+  CUSTOM: 'CUSTOM'
+};
+
+exports.PermissionKey = exports.$Enums.PermissionKey = {
+  PROJECTS_VIEW: 'PROJECTS_VIEW',
+  PROJECTS_CREATE: 'PROJECTS_CREATE',
+  PROJECTS_EDIT: 'PROJECTS_EDIT',
+  PROJECTS_DELETE: 'PROJECTS_DELETE',
+  GIT_VIEW_CHANGES: 'GIT_VIEW_CHANGES',
+  GIT_COMMIT: 'GIT_COMMIT',
+  GIT_PUSH: 'GIT_PUSH',
+  GIT_MANAGE_BRANCHES: 'GIT_MANAGE_BRANCHES',
+  AI_START_AGENTS: 'AI_START_AGENTS',
+  AI_USE_AGENTS: 'AI_USE_AGENTS',
+  INTEGRATIONS_VIEW: 'INTEGRATIONS_VIEW',
+  INTEGRATIONS_CONNECT: 'INTEGRATIONS_CONNECT',
+  INTEGRATIONS_DISCONNECT: 'INTEGRATIONS_DISCONNECT',
+  INTEGRATIONS_MANAGE: 'INTEGRATIONS_MANAGE',
+  ORG_MANAGE_MEMBERS: 'ORG_MANAGE_MEMBERS',
+  ORG_MANAGE_ROLES: 'ORG_MANAGE_ROLES',
+  ORG_MANAGE_SETTINGS: 'ORG_MANAGE_SETTINGS'
+};
+
+exports.MemberStatus = exports.$Enums.MemberStatus = {
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED'
+};
+
+exports.RepositoryProvider = exports.$Enums.RepositoryProvider = {
+  GITHUB: 'GITHUB',
+  GITLAB: 'GITLAB',
+  BITBUCKET: 'BITBUCKET',
+  OTHER: 'OTHER'
+};
+
+exports.ServiceKind = exports.$Enums.ServiceKind = {
+  FRONTEND: 'FRONTEND',
+  API: 'API',
+  WORKER: 'WORKER',
+  DATABASE: 'DATABASE',
+  STORYBOOK: 'STORYBOOK',
+  OTHER: 'OTHER'
+};
+
+exports.IntegrationProvider = exports.$Enums.IntegrationProvider = {
+  GITHUB: 'GITHUB',
+  LINEAR: 'LINEAR',
+  NOTION: 'NOTION',
+  SLACK: 'SLACK'
+};
+
+exports.ConnectionStatus = exports.$Enums.ConnectionStatus = {
+  INITIATED: 'INITIATED',
+  ACTIVE: 'ACTIVE',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED',
+  DISCONNECTED: 'DISCONNECTED'
+};
+
+exports.AgentSessionStatus = exports.$Enums.AgentSessionStatus = {
+  RUNNING: 'RUNNING',
+  AWAITING_INPUT: 'AWAITING_INPUT',
+  FINISHED: 'FINISHED',
+  STOPPED: 'STOPPED',
+  CRASHED: 'CRASHED'
+};
+
+exports.ActivityType = exports.$Enums.ActivityType = {
+  PROJECT_CREATED: 'PROJECT_CREATED',
+  PROJECT_UPDATED: 'PROJECT_UPDATED',
+  REPOSITORY_CLONED: 'REPOSITORY_CLONED',
+  SERVICE_STARTED: 'SERVICE_STARTED',
+  SERVICE_STOPPED: 'SERVICE_STOPPED',
+  SERVICE_CRASHED: 'SERVICE_CRASHED',
+  GIT_COMMIT: 'GIT_COMMIT',
+  GIT_PUSH: 'GIT_PUSH',
+  GIT_PULL: 'GIT_PULL',
+  GIT_BRANCH: 'GIT_BRANCH',
+  GIT_STASH: 'GIT_STASH',
+  GIT_DISCARD: 'GIT_DISCARD',
+  AGENT_STARTED: 'AGENT_STARTED',
+  AGENT_AWAITING_INPUT: 'AGENT_AWAITING_INPUT',
+  AGENT_FINISHED: 'AGENT_FINISHED',
+  AGENT_CRASHED: 'AGENT_CRASHED',
+  AGENT_STOPPED: 'AGENT_STOPPED',
+  CHANGES_REVIEWED: 'CHANGES_REVIEWED',
+  ISSUE_LINKED: 'ISSUE_LINKED',
+  INTEGRATION_CONNECTED: 'INTEGRATION_CONNECTED',
+  INTEGRATION_DISCONNECTED: 'INTEGRATION_DISCONNECTED',
+  MEMBER_JOINED: 'MEMBER_JOINED',
+  OTHER: 'OTHER'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   PasswordResetToken: 'PasswordResetToken',
-  Document: 'Document'
+  Document: 'Document',
+  UserPreference: 'UserPreference',
+  Organization: 'Organization',
+  Role: 'Role',
+  RolePermission: 'RolePermission',
+  OrganizationMember: 'OrganizationMember',
+  OrganizationInvitation: 'OrganizationInvitation',
+  Client: 'Client',
+  Repository: 'Repository',
+  Project: 'Project',
+  ProjectService: 'ProjectService',
+  ProjectIssue: 'ProjectIssue',
+  IntegrationConnection: 'IntegrationConnection',
+  AgentSession: 'AgentSession',
+  Activity: 'Activity'
 };
 
 /**

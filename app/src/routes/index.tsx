@@ -1,44 +1,82 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { Routes as RoutePaths } from "@/routes/routes";
+import { lazy, Suspense } from "react";
+import { Navigate, Route, Routes as RouterRoutes } from "react-router-dom";
+import { Routes, RoutePatterns } from "@/routes/routes";
 import ProtectedRoute from "@/routes/protected-route";
+import AuthLayout from "@/pages/auth/layout";
 import SignIn from "@/pages/auth/pages/sign-in";
 import SignUp from "@/pages/auth/pages/sign-up";
-import AuthLayout from "@/pages/auth/layout";
-import AdminLayout from "@/pages/admin/layout";
-import AdminHealthPage from "@/pages/admin/pages/health";
-import { RoleTypes } from "@/features/user/interfaces/user.interface";
+import WorkspaceLayout from "@/pages/workspace/layout";
+import WorkspaceHomePage from "@/pages/workspace/pages/home";
+import ProjectLayout from "@/pages/workspace/pages/project/layout";
+import ProjectTabPage from "@/pages/workspace/pages/project";
+import ProjectSetupPage from "@/pages/workspace/pages/project/pages/setup";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Secondary screens are split out of the main bundle.
+const IntegrationsPage = lazy(() => import("@/pages/workspace/pages/integrations"));
+const SettingsPage = lazy(() => import("@/pages/workspace/pages/settings"));
+const OrganizationPage = lazy(() => import("@/pages/workspace/pages/organization"));
+const ImportedProjectsPage = lazy(() => import("@/pages/workspace/pages/imported"));
+const AcceptInvitationPage = lazy(() => import("@/pages/invite"));
+
+const PageFallback = () => (
+    <div className="flex flex-col gap-3 p-6">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-4 w-80" />
+        <Skeleton className="mt-4 h-40 w-full" />
+    </div>
+);
 
 export default function AppRoutes() {
-  return (
-    <Routes>
-      <Route
-        path="/auth"
-        element={
-          <ProtectedRoute loggedIn={false}>
-            <AuthLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="sign-up" element={<SignUp />} />
-        <Route path="sign-in" element={<SignIn />} />
-        <Route index element={<Navigate to="/auth/sign-in" replace />} />
-      </Route>
+    return (
+        <Suspense fallback={<PageFallback />}>
+            <RouterRoutes>
+                <Route
+                    path={RoutePatterns.auth}
+                    element={
+                        <ProtectedRoute loggedIn={false}>
+                            <AuthLayout />
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route path={RoutePatterns.sign_in} element={<SignIn />} />
+                    <Route path={RoutePatterns.sign_up} element={<SignUp />} />
+                    <Route index element={<Navigate to={Routes.auth.sign_in} replace />} />
+                </Route>
 
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute loggedIn={true} requiredRoles={[RoleTypes.ADMIN, RoleTypes.SUPER_ADMIN]}>
-            <AdminLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="health" element={<AdminHealthPage />} />
-        <Route index element={<Navigate to={RoutePaths.admin.health} replace />} />
-      </Route>
+                <Route
+                    path={RoutePatterns.invite}
+                    element={
+                        <ProtectedRoute loggedIn>
+                            <AcceptInvitationPage />
+                        </ProtectedRoute>
+                    }
+                />
 
-      <Route path="/" element={<Navigate to="/auth/sign-in" replace />} />
+                <Route
+                    path={RoutePatterns.workspace}
+                    element={
+                        <ProtectedRoute loggedIn>
+                            <WorkspaceLayout />
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route index element={<WorkspaceHomePage />} />
+                    <Route path={RoutePatterns.project} element={<ProjectLayout />}>
+                        <Route path={RoutePatterns.project_setup} element={<ProjectSetupPage />} />
+                        <Route path={RoutePatterns.project_tab} element={<ProjectTabPage />} />
+                        <Route index element={<ProjectTabPage />} />
+                    </Route>
+                    <Route path={RoutePatterns.imported} element={<ImportedProjectsPage />} />
+                    <Route path={RoutePatterns.integrations} element={<IntegrationsPage />} />
+                    <Route path={RoutePatterns.settings} element={<SettingsPage />} />
+                    <Route path={RoutePatterns.settings_section} element={<SettingsPage />} />
+                    <Route path={RoutePatterns.organization} element={<OrganizationPage />} />
+                </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
+                <Route path={Routes.root} element={<Navigate to={Routes.workspace.root} replace />} />
+                <Route path="*" element={<Navigate to={Routes.root} replace />} />
+            </RouterRoutes>
+        </Suspense>
+    );
 }

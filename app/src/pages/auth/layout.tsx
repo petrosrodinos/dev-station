@@ -1,18 +1,18 @@
-import Navbar from "@/components/layout/navbar";
-import { environments } from "@/config/environments";
 import { Outlet } from "react-router-dom";
+import { environments } from "@/config/environments";
 
 export default function AuthLayout() {
   return (
-    <div className="h-full flex flex-col">
-      <Navbar />
-      <main className="flex-1 flex justify-center p-4 pt-8 sm:pt-12 overflow-y-auto">
-        <div className="w-full max-w-md space-y-6">
-          <div className="flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-6 w-6">
-              <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
-            </svg>
-            <h2 className="text-xl font-medium">{environments.APP_NAME}</h2>
+    <div className="flex h-full flex-col bg-canvas">
+      <div className="app-drag h-10 shrink-0" />
+      <main className="flex flex-1 items-center justify-center overflow-y-auto p-4">
+        <div className="w-full max-w-sm space-y-6">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <span className="size-10 rounded-[10px] bg-gradient-to-br from-[#ff5757] to-[#a1131a]" aria-hidden />
+            <div>
+              <h1 className="text-xl font-semibold">{environments.APP_NAME}</h1>
+              <p className="text-[13px] text-muted-foreground">Projects, processes, AI agents and Git — one workspace.</p>
+            </div>
           </div>
           <Outlet />
         </div>

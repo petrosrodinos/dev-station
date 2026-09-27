@@ -1,8 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Dev Station — server-side data model.
+// Only organization/project/client/repository metadata lives here (shared across devices).
+// Local-only state (local paths, running processes, terminal scrollback) stays on each device.
 
 generator client {
   provider = "prisma-client-js"
@@ -31,21 +29,130 @@ enum DocumentType {
   OTHER
 }
 
-model User {
-  id       String  @id @default(uuid())
-  email    String  @unique
-  phone    String? @unique
-  password String
+enum SystemRoleKey {
+  OWNER
+  ADMIN
+  MANAGER
+  DEVELOPER
+  VIEWER
+  CUSTOM
+}
 
+enum PermissionKey {
+  PROJECTS_VIEW
+  PROJECTS_CREATE
+  PROJECTS_EDIT
+  PROJECTS_DELETE
+  GIT_VIEW_CHANGES
+  GIT_COMMIT
+  GIT_PUSH
+  GIT_MANAGE_BRANCHES
+  AI_START_AGENTS
+  AI_USE_AGENTS
+  INTEGRATIONS_VIEW
+  INTEGRATIONS_CONNECT
+  INTEGRATIONS_DISCONNECT
+  INTEGRATIONS_MANAGE
+  ORG_MANAGE_MEMBERS
+  ORG_MANAGE_ROLES
+  ORG_MANAGE_SETTINGS
+}
+
+enum MemberStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum IntegrationProvider {
+  GITHUB
+  LINEAR
+  NOTION
+  SLACK
+}
+
+enum ConnectionStatus {
+  INITIATED
+  ACTIVE
+  FAILED
+  EXPIRED
+  DISCONNECTED
+}
+
+enum RepositoryProvider {
+  GITHUB
+  GITLAB
+  BITBUCKET
+  OTHER
+}
+
+enum ServiceKind {
+  FRONTEND
+  API
+  WORKER
+  DATABASE
+  STORYBOOK
+  OTHER
+}
+
+enum AgentType {
+  CLAUDE_CODE
+  CURSOR_CLI
+}
+
+enum AgentSessionStatus {
+  RUNNING
+  AWAITING_INPUT
+  FINISHED
+  STOPPED
+  CRASHED
+}
+
+enum ActivityType {
+  PROJECT_CREATED
+  PROJECT_UPDATED
+  REPOSITORY_CLONED
+  SERVICE_STARTED
+  SERVICE_STOPPED
+  SERVICE_CRASHED
+  GIT_COMMIT
+  GIT_PUSH
+  GIT_PULL
+  GIT_BRANCH
+  GIT_STASH
+  GIT_DISCARD
+  AGENT_STARTED
+  AGENT_AWAITING_INPUT
+  AGENT_FINISHED
+  AGENT_CRASHED
+  AGENT_STOPPED
+  CHANGES_REVIEWED
+  ISSUE_LINKED
+  INTEGRATION_CONNECTED
+  INTEGRATION_DISCONNECTED
+  MEMBER_JOINED
+  OTHER
+}
+
+model User {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  phone      String?  @unique
+  password   String
+  full_name  String?
+  avatar_url String?
   role       AuthRole
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   password_reset_tokens PasswordResetToken[]
+  memberships           OrganizationMember[]
+  preference            UserPreference?
+  connections           IntegrationConnection[]
+  agent_sessions        AgentSession[]
+  activities            Activity[]
 
   @@index([email])
   @@index([phone])
-  @@index([id])
   @@map("users")
 }
 
@@ -76,6 +183,315 @@ model Document {
   created_at DateTime     @default(now())
 
   @@index([user_uuid])
-  @@index([id])
   @@map("documents")
+}
+
+/// Cross-device user preferences (Git identity, preferred agent...). Device-only settings live in Electron.
+model UserPreference {
+  id                     String    @id @default(uuid())
+  user_id                String    @unique
+  active_organization_id String?
+  git_name               String?
+  git_email              String?
+  preferred_agent        AgentType @default(CLAUDE_CODE)
+  default_branch         String    @default("main")
+  idle_threshold_seconds Int       @default(45)
+  confirm_destructive    Boolean   @default(true)
+  theme                  String    @default("dark")
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model Organization {
+  id         String   @id @default(uuid())
+  name       String
+  slug       String   @unique
+  created_by String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  members      OrganizationMember[]
+  roles        Role[]
+  invitations  OrganizationInvitation[]
+  clients      Client[]
+  projects     Project[]
+  repositories Repository[]
+  connections  IntegrationConnection[]
+  sessions     AgentSession[]
+  activities   Activity[]
+
+  @@map("organizations")
+}
+
+model Role {
+  id              String        @id @default(uuid())
+  organization_id String
+  name            String
+  key             SystemRoleKey @default(CUSTOM)
+  description     String?
+  is_system       Boolean       @default(false)
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+
+  organization Organization             @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  permissions  RolePermission[]
+  members      OrganizationMember[]
+  invitations  OrganizationInvitation[]
+
+  @@unique([organization_id, name])
+  @@index([organization_id])
+  @@map("roles")
+}
+
+model RolePermission {
+  id         String        @id @default(uuid())
+  role_id    String
+  permission PermissionKey
+
+  role Role @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([role_id, permission])
+  @@map("role_permissions")
+}
+
+model OrganizationMember {
+  id              String       @id @default(uuid())
+  organization_id String
+  user_id         String
+  role_id         String
+  status          MemberStatus @default(ACTIVE)
+  joined_at       DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role         Role         @relation(fields: [role_id], references: [id], onDelete: Restrict)
+
+  @@unique([organization_id, user_id])
+  @@index([user_id])
+  @@map("organization_members")
+}
+
+model OrganizationInvitation {
+  id              String    @id @default(uuid())
+  organization_id String
+  email           String
+  role_id         String
+  token_hash      String    @unique
+  invited_by      String
+  expires_at      DateTime
+  accepted_at     DateTime?
+  revoked_at      DateTime?
+  created_at      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  role         Role         @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@index([organization_id])
+  @@index([email])
+  @@map("organization_invitations")
+}
+
+model Client {
+  id              String   @id @default(uuid())
+  organization_id String
+  name            String
+  color           String?
+  sort_order      Int      @default(0)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  projects     Project[]
+
+  @@unique([organization_id, name])
+  @@index([organization_id])
+  @@map("clients")
+}
+
+/// A Git repository. One repository can back several projects (monorepos) via Project.sub_path.
+model Repository {
+  id              String             @id @default(uuid())
+  organization_id String
+  provider        RepositoryProvider @default(OTHER)
+  clone_url       String
+  full_name       String?
+  default_branch  String?
+  external_id     String?
+  connection_id   String?
+  created_at      DateTime           @default(now())
+  updated_at      DateTime           @updatedAt
+
+  organization Organization           @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  connection   IntegrationConnection? @relation(fields: [connection_id], references: [id], onDelete: SetNull)
+  projects     Project[]
+
+  @@unique([organization_id, clone_url])
+  @@index([organization_id])
+  @@map("repositories")
+}
+
+model Project {
+  id                   String     @id @default(uuid())
+  organization_id      String
+  client_id            String?
+  repository_id        String?
+  name                 String
+  description          String?
+  color                String
+  sort_order           Int        @default(0)
+  sub_path             String?
+  preferred_agent      AgentType?
+  github_connection_id String?
+  linear_connection_id String?
+  linear_team_id       String?
+  linear_project_id    String?
+  notion_connection_id String?
+  notion_root_page_id  String?
+  last_activity_at     DateTime?
+  created_by           String
+  created_at           DateTime   @default(now())
+  updated_at           DateTime   @updatedAt
+
+  organization      Organization           @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  client            Client?                @relation(fields: [client_id], references: [id], onDelete: SetNull)
+  repository        Repository?            @relation(fields: [repository_id], references: [id], onDelete: SetNull)
+  github_connection IntegrationConnection? @relation("ProjectGithubConnection", fields: [github_connection_id], references: [id], onDelete: SetNull)
+  linear_connection IntegrationConnection? @relation("ProjectLinearConnection", fields: [linear_connection_id], references: [id], onDelete: SetNull)
+  notion_connection IntegrationConnection? @relation("ProjectNotionConnection", fields: [notion_connection_id], references: [id], onDelete: SetNull)
+  services          ProjectService[]
+  issues            ProjectIssue[]
+  sessions          AgentSession[]
+  activities        Activity[]
+
+  @@index([organization_id])
+  @@index([client_id])
+  @@map("projects")
+}
+
+/// A runnable process definition (dev server, API, worker...). Commands are detected from package.json
+/// or entered by the user; they are only ever executed by the Electron main process after validation.
+model ProjectService {
+  id              String      @id @default(uuid())
+  project_id      String
+  name            String
+  kind            ServiceKind @default(OTHER)
+  cwd             String      @default(".")
+  package_manager String?
+  script          String?
+  command         String?
+  port            Int?
+  url             String?
+  env             Json?
+  auto_detected   Boolean     @default(false)
+  sort_order      Int         @default(0)
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id])
+  @@map("project_services")
+}
+
+/// External issue reference linked to a project (we store the external id, never a copy of the issue).
+model ProjectIssue {
+  id          String              @id @default(uuid())
+  project_id  String
+  provider    IntegrationProvider
+  external_id String
+  key         String?
+  title       String?
+  created_at  DateTime            @default(now())
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@unique([project_id, provider, external_id])
+  @@map("project_issues")
+}
+
+/// A third-party account connected through Composio. Tokens stay in Composio; only its ids are stored here.
+model IntegrationConnection {
+  id                   String              @id @default(uuid())
+  organization_id      String
+  user_id              String
+  provider             IntegrationProvider
+  composio_account_id  String              @unique
+  composio_auth_config String?
+  label                String
+  external_account     String?
+  status               ConnectionStatus    @default(INITIATED)
+  is_default           Boolean             @default(false)
+  last_error           String?
+  created_at           DateTime            @default(now())
+  updated_at           DateTime            @updatedAt
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  repositories    Repository[]
+  github_projects Project[]    @relation("ProjectGithubConnection")
+  linear_projects Project[]    @relation("ProjectLinearConnection")
+  notion_projects Project[]    @relation("ProjectNotionConnection")
+
+  @@index([organization_id, provider])
+  @@map("integration_connections")
+}
+
+/// Metadata for an AI agent CLI session. The process + scrollback live on the device that runs it.
+model AgentSession {
+  id                String               @id @default(uuid())
+  organization_id   String
+  project_id        String
+  user_id           String
+  agent_type        AgentType
+  name              String
+  status            AgentSessionStatus   @default(RUNNING)
+  initial_prompt    String?
+  device_id         String?
+  issue_provider    IntegrationProvider?
+  issue_external_id String?
+  issue_key         String?
+  issue_title       String?
+  files_changed     Int                  @default(0)
+  additions         Int                  @default(0)
+  deletions         Int                  @default(0)
+  commit_sha        String?
+  exit_code         Int?
+  started_at        DateTime             @default(now())
+  ended_at          DateTime?
+  updated_at        DateTime             @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  activities   Activity[]
+
+  @@index([organization_id])
+  @@index([project_id, started_at])
+  @@map("agent_sessions")
+}
+
+model Activity {
+  id               String       @id @default(uuid())
+  organization_id  String
+  project_id       String?
+  user_id          String?
+  agent_session_id String?
+  type             ActivityType
+  message          String
+  metadata         Json?
+  created_at       DateTime     @default(now())
+
+  organization  Organization  @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  project       Project?      @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  user          User?         @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  agent_session AgentSession? @relation(fields: [agent_session_id], references: [id], onDelete: SetNull)
+
+  @@index([organization_id, created_at])
+  @@index([project_id, created_at])
+  @@map("activities")
 }

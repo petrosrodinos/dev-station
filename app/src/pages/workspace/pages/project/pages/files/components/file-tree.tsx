@@ -1,0 +1,145 @@
+import { useState } from "react";
+import { ChevronRight, Copy, ExternalLink, File, Folder, FolderOpen, FolderSearch, SquarePen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useCopyFilePath, useDirectory, useOpenFileExternally, useOpenInEditor, useRevealFile } from "@/features/files/hooks/use-files";
+import { GitFileStateOptions } from "@/config/constants/dropdowns/git/git-file-state.options";
+import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
+import { cn } from "@/lib/utils";
+import { EditorTargets, type FileEntry, type GitFileState } from "@shared/contract";
+
+const GIT_DOT: Record<GitFileState, string> = {
+  M: "bg-warning",
+  A: "bg-success",
+  D: "bg-danger",
+  R: "bg-info",
+  U: "bg-info",
+  C: "bg-danger",
+};
+
+const HEAVY_DIRS = new Set(["node_modules", ".git", "dist", "build", ".next", ".turbo"]);
+
+interface TreeProps {
+  projectId: string;
+  dir: string;
+  depth: number;
+  gitStates: Map<string, GitFileState>;
+}
+
+/** Lazily loaded directory level. */
+export function FileTreeNode({ projectId, dir, depth, gitStates }: TreeProps) {
+  const { data, isPending, isError, error } = useDirectory(projectId, dir);
+
+  if (isPending) {
+    return (
+      <div className="space-y-1 py-1" style={{ paddingLeft: depth * 16 + 8 }}>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-4 w-40" />
+        ))}
+      </div>
+    );
+  }
+  if (isError) return <div className="px-2 py-1 text-xs text-danger">{error.message}</div>;
+  if (!data?.length) return <div className="py-1 text-xs text-ash" style={{ paddingLeft: depth * 16 + 28 }}>Empty folder</div>;
+
+  return (
+    <>
+      {data.map((entry) =>
+        entry.type === "dir" ? (
+          <DirRow key={entry.path} projectId={projectId} entry={entry} depth={depth} gitStates={gitStates} />
+        ) : (
+          <FileRow key={entry.path} projectId={projectId} entry={entry} depth={depth} gitState={gitStates.get(entry.path)} />
+        ),
+      )}
+    </>
+  );
+}
+
+function DirRow({ projectId, entry, depth, gitStates }: { projectId: string; entry: FileEntry; depth: number; gitStates: Map<string, GitFileState> }) {
+  const [open, setOpen] = useState(false);
+  const reveal = useRevealFile();
+  const changed = [...gitStates.keys()].some((p) => p.startsWith(`${entry.path}/`));
+
+  return (
+    <div>
+      <div
+        role="treeitem"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className="group flex h-[26px] cursor-pointer items-center gap-1.5 rounded-sm pr-1 text-[13px] text-body hover:bg-surface-elevated"
+        style={{ paddingLeft: depth * 16 + 6 }}
+      >
+        <ChevronRight className={cn("size-3.5 text-ash transition-transform", open && "rotate-90")} />
+        {open ? <FolderOpen className="size-3.5 text-muted-foreground" /> : <Folder className="size-3.5 text-muted-foreground" />}
+        <span className={cn("truncate", HEAVY_DIRS.has(entry.name) && "text-ash")}>{entry.name}</span>
+        {changed && <span className="size-1.5 rounded-full bg-warning" />}
+        <div className="ml-auto hidden gap-0.5 group-hover:flex">
+          <RowAction label="Reveal in file manager" onClick={() => reveal.mutate({ projectId, path: entry.path })}>
+            <FolderSearch className="size-3" />
+          </RowAction>
+        </div>
+      </div>
+      {open && <FileTreeNode projectId={projectId} dir={entry.path} depth={depth + 1} gitStates={gitStates} />}
+    </div>
+  );
+}
+
+export function FileRow({ projectId, entry, depth, gitState, showPath = false }: { projectId: string; entry: FileEntry; depth: number; gitState?: GitFileState; showPath?: boolean }) {
+  const openExternal = useOpenFileExternally();
+  const openInEditor = useOpenInEditor();
+  const reveal = useRevealFile();
+  const copyPath = useCopyFilePath();
+
+  return (
+    <div
+      onDoubleClick={() => openInEditor.mutate({ projectId, editor: EditorTargets.CURSOR, path: entry.path })}
+      className="group flex h-[26px] items-center gap-1.5 rounded-sm pr-1 text-[13px] text-body hover:bg-surface-elevated"
+      style={{ paddingLeft: depth * 16 + 26 }}
+      title="Double-click to open in Cursor"
+    >
+      <File className="size-3.5 shrink-0 text-muted-foreground" />
+      <span className="truncate">{showPath ? entry.path : entry.name}</span>
+      {gitState && <span className={cn("size-1.5 shrink-0 rounded-full", GIT_DOT[gitState])} title={getDropdownOptionLabel(GitFileStateOptions, gitState)} />}
+      <div className="ml-auto hidden gap-0.5 group-hover:flex">
+        <RowAction label="Open in Cursor" onClick={() => openInEditor.mutate({ projectId, editor: EditorTargets.CURSOR, path: entry.path })}>
+          <SquarePen className="size-3" />
+        </RowAction>
+        <RowAction label="Open in VS Code" onClick={() => openInEditor.mutate({ projectId, editor: EditorTargets.VSCODE, path: entry.path })}>
+          <span className="text-[9px] font-bold">VS</span>
+        </RowAction>
+        <RowAction label="Open with default app" onClick={() => openExternal.mutate({ projectId, path: entry.path })}>
+          <ExternalLink className="size-3" />
+        </RowAction>
+        <RowAction label="Copy path" onClick={() => copyPath.mutate({ projectId, path: entry.path })}>
+          <Copy className="size-3" />
+        </RowAction>
+        <RowAction label="Reveal in file manager" onClick={() => reveal.mutate({ projectId, path: entry.path })}>
+          <FolderSearch className="size-3" />
+        </RowAction>
+      </div>
+    </div>
+  );
+}
+
+function RowAction({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-5 text-muted-foreground"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+          }}
+          aria-label={label}
+        >
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}

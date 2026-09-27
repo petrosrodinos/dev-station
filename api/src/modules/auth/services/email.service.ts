@@ -1,130 +1,92 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { AuthRole, User } from 'generated/prisma';
+import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { CreateJwtService } from '@/shared/utils/jwt/jwt.service';
+import { createOrganizationWithOwner } from '@/modules/organizations/utils/organizations.utils';
 import { RegisterEmailDto } from '../dto/register-email.dto';
 import { LoginEmailDto } from '../dto/login-email.dto';
-import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
-import { CreateJwtService } from '@/shared/utils/jwt/jwt.service';
-import { AuthRoles } from '../interfaces/auth.interface';
-import { WaitlistDto } from '../dto/waitlist.dto';
-import { ResendMailService } from '@/integrations/notifications/resend/services/mail.service';
-import { EmailConfig } from '@/shared/constants/email';
+import { AuthResponse } from '../interfaces/auth.interface';
 
 @Injectable()
 export class EmailAuthService {
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly jwtService: CreateJwtService,
-        private readonly mailService: ResendMailService,
-    ) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: CreateJwtService,
+  ) {}
 
-    async registerWithEmail(dto: RegisterEmailDto) {
+  async registerWithEmail(dto: RegisterEmailDto): Promise<AuthResponse> {
+    const email = dto.email.toLowerCase().trim();
+    const existing = await this.prisma.user.findUnique({ where: { email } });
+    if (existing)
+      throw new ConflictException('User with this email already exists');
 
-        try {
-            const existingUser = await this.prisma.user.findUnique({
-                where: {
-                    email: dto.email,
-                },
-            });
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const fullName = dto.full_name?.trim() || null;
+    const displayName = fullName || email.split('@')[0];
 
-            if (existingUser) {
-                throw new ConflictException('User with this email already exists');
-            }
+    const user = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          full_name: fullName,
+          role: AuthRole.USER,
+        },
+      });
+      const organization = await createOrganizationWithOwner(
+        tx,
+        created.id,
+        `${displayName}'s Workspace`,
+      );
+      await tx.userPreference.create({
+        data: { user_id: created.id, active_organization_id: organization.id },
+      });
+      return created;
+    });
 
-            const hashedPassword = await bcrypt.hash(dto.password, 10);
+    return this.buildAuthResponse(user);
+  }
 
-            const user = await this.prisma.user.create({
-                data: {
-                    email: dto.email,
-                    password: hashedPassword,
-                    role: AuthRoles.USER,
-                },
-            });
+  async loginWithEmail(dto: LoginEmailDto): Promise<AuthResponse> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email.toLowerCase().trim() },
+    });
+    if (!user || !user.password)
+      throw new UnauthorizedException('Invalid credentials');
 
-            const token = await this.jwtService.signToken({
-                id: user.id,
-                role: user.role,
-            });
+    const passwordMatch = await bcrypt.compare(dto.password, user.password);
+    if (!passwordMatch) throw new UnauthorizedException('Invalid credentials');
 
-            const expires_in = this.jwtService.getExpirationTime(token);
+    return this.buildAuthResponse(user);
+  }
 
-            delete user.password;
+  async refreshToken(userId: string): Promise<AuthResponse> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    return this.buildAuthResponse(user);
+  }
 
-            return { access_token: token, expires_in: expires_in, user: user };
-        } catch (error) {
-            console.log(error);
-            throw new BadRequestException(error.message);
-        }
-    }
-
-    async loginWithEmail(dto: LoginEmailDto) {
-
-        try {
-            const user = await this.prisma.user.findUnique({
-                where: {
-                    email: dto.email,
-                },
-            });
-
-            if (!user) {
-                throw new UnauthorizedException('Invalid credentials');
-            }
-
-            const password_match = await bcrypt.compare(dto.password, user.password);
-
-            if (!password_match) {
-                throw new UnauthorizedException('Invalid credentials');
-            }
-
-            const token = await this.jwtService.signToken({
-                id: user.id,
-                role: user.role,
-            });
-
-            const expires_in = this.jwtService.getExpirationTime(token);
-
-            delete user.password;
-
-            return { access_token: token, expires_in: expires_in, user: user };
-        } catch (error) {
-            throw new BadRequestException(error.message);
-        }
-
-    }
-
-    async waitlist(dto: WaitlistDto) {
-
-        try {
-            const existingUser = await this.prisma.user.findUnique({
-                where: {
-                    email: dto.email,
-                },
-            });
-
-            if (existingUser) {
-                return { message: 'You are already in the waitlist', code: 'WAITLIST_ALREADY_EXISTS' };
-            }
-
-            const user = await this.prisma.user.create({
-                data: {
-                    email: dto.email,
-                    password: '',
-                    role: AuthRoles.USER,
-                },
-            });
-
-            await this.mailService.sendEmail({
-                to: dto.email,
-                from: EmailConfig.email_addresses.alert,
-                subject: EmailConfig.templates.waitlist.subject,
-                template_id: EmailConfig.templates.waitlist.template_id,
-            });
-
-
-            return { message: 'You have been successfully added to the waitlist', code: 'WAITLIST_SUCCESS' };
-
-        } catch (error) {
-            throw new BadRequestException('Failed to waitlist user', error.message);
-        }
-    }
-
+  private async buildAuthResponse(user: User): Promise<AuthResponse> {
+    const accessToken = await this.jwtService.signToken({
+      id: user.id,
+      role: user.role,
+    });
+    return {
+      access_token: accessToken,
+      expires_in: this.jwtService.getExpirationTime(accessToken),
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        avatar_url: user.avatar_url,
+        role: user.role,
+      },
+    };
+  }
 }

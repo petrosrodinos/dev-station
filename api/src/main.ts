@@ -1,36 +1,58 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { parseCorsUrls, resolveCorsOrigins } from './shared/config/cors';
+import { AppModule } from './app.module';
+import { isDesktopOrigin, resolveCorsOrigins } from './shared/config/cors';
+import { ORGANIZATION_HEADER } from './shared/constants/headers';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const config = app.get(ConfigService);
+
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.enableShutdownHooks();
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Appointly API')
-    .setDescription('The Appointly API documentation')
+    .setTitle('Dev Station API')
+    .setDescription(
+      'Organizations, projects, integrations and agent sessions for the Dev Station desktop app',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();
+  SwaggerModule.setup(
+    'api',
+    app,
+    SwaggerModule.createDocument(app, swaggerConfig),
+  );
 
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api', app, document);
-
-  const corsOrigins = resolveCorsOrigins({
-    nodeEnv: process.env.NODE_ENV,
-    corsUrls: parseCorsUrls(process.env.CORS_URLS),
-    appUrl: process.env.APP_URL,
-    landingUrl: process.env.LANDING_URL,
+  const allowedOrigins = resolveCorsOrigins({
+    nodeEnv: config.get('NODE_ENV'),
+    corsUrls: config.get('CORS_URLS'),
+    appUrl: config.get('APP_URL'),
+    landingUrl: config.get('LANDING_URL'),
   });
 
   app.enableCors({
-    origin: corsOrigins,
+    // The Electron renderer loads from file:// / app:// (origin "null") in production builds.
+    origin: (origin, callback) =>
+      callback(
+        null,
+        !origin || isDesktopOrigin(origin) || allowedOrigins.includes(origin),
+      ),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Access-Control-Allow-Origin'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      ORGANIZATION_HEADER,
+    ],
   });
 
-  const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+  const port = config.get<number>('PORT') || 3000;
   await app.listen(port);
+  new Logger('Bootstrap').log(`Dev Station API listening on port ${port}`);
 }
 bootstrap();

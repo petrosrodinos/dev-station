@@ -1,20 +1,25 @@
 {
   "files": [],
-  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./tsconfig.electron.json"
+    }
+  ],
   "compilerOptions": {
-    "types": ["google.maps"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@/config/*": ["./src/config/*"],
-      "@/lib/*": ["./src/lib/*"],
-      "@/stores/*": ["./src/stores/*"],
-      "@/components/*": ["./src/components/*"],
-      "@/features/*": ["./src/features/*"],
-      "@/hooks/*": ["./src/hooks/*"],
-      "@/pages/*": ["./src/pages/*"],
-      "@/types/*": ["./src/types/*"],
-      "@/utils/*": ["./src/utils/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@shared/*": [
+        "./electron/shared/*"
+      ]
     }
   }
 }

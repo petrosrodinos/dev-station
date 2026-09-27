@@ -4,5 +4,10 @@ export interface Pagination {
     total: number;
     total_pages: number;
     has_next: boolean;
-    has_previous: boolean;
+    has_prev: boolean;
+}
+
+export interface Paginated<T> {
+    data: T[];
+    pagination: Pagination;
 }

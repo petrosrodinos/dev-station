@@ -1,24 +1,25 @@
-import { Card } from "@/components/ui/card";
-import { SignUpForm } from "./components/sign-up-form";
-import { Suspense } from "react";
+import type { FC } from "react";
 import { Link } from "react-router-dom";
+import { Panel } from "@/components/ui/panel";
+import { Routes } from "@/routes/routes";
+import { SignUpForm } from "./components/sign-up-form";
 
-export default function SignUp() {
+const SignUpPage: FC = () => {
   return (
-    <Card className="p-6 max-w-md mx-auto">
-      <div className="mb-2 flex flex-col space-y-2 text-left">
-        <h1 className="text-lg font-semibold tracking-tight">Create an account</h1>
+    <Panel className="p-6">
+      <div className="mb-5 space-y-1">
+        <h2 className="text-lg font-medium">Create your account</h2>
+        <p className="text-[13px] text-muted-foreground">You'll get a personal workspace; invite your team or join theirs afterwards.</p>
       </div>
-      <Suspense fallback={<div>Loading...</div>}>
-        <SignUpForm />
-      </Suspense>
-
-      <div className="text-center text-sm mt-3">
+      <SignUpForm />
+      <div className="mt-4 text-center text-[13px] text-muted-foreground">
         Already have an account?{" "}
-        <Link to="/auth/sign-in" className="underline underline-offset-4">
-          Sign In
+        <Link to={Routes.auth.sign_in} className="text-foreground underline underline-offset-4">
+          Sign in
         </Link>
       </div>
-    </Card>
+    </Panel>
   );
-}
+};
+
+export default SignUpPage;

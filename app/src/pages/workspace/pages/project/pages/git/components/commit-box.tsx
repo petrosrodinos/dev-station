@@ -1,0 +1,99 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { GitCommitHorizontal } from "lucide-react";
+import { Panel, PanelBody } from "@/components/ui/panel";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import type { Project } from "@/features/projects/interfaces/projects.interfaces";
+import { useGitCommit, useGitPush } from "@/features/git/hooks/use-git";
+import { useGetPreferences } from "@/features/users/hooks/use-users";
+import { useAgentSessions, useRenameAgentSession } from "@/features/agent-sessions/hooks/use-agent-sessions";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
+import { commitSchema, type CommitFormData } from "../../../validation-schemas/project.schema";
+
+/** Commit is always an explicit developer action — AI changes are never auto-committed (Spec §17). */
+export function CommitBox({ project, selectedPaths, totalFiles }: { project: Project; selectedPaths: string[]; totalFiles: number }) {
+  const commit = useGitCommit();
+  const push = useGitPush();
+  const { data: preferences } = useGetPreferences();
+  const { data: sessions } = useAgentSessions({ project_id: project.id });
+  const linkCommit = useRenameAgentSession();
+  const { can } = usePermissions();
+  const form = useForm<CommitFormData>({ resolver: zodResolver(commitSchema), defaultValues: { message: "" } });
+
+  const submit = (andPush: boolean) =>
+    form.handleSubmit((data) =>
+      commit.mutate(
+        {
+          projectId: project.id,
+          message: data.message,
+          paths: selectedPaths.length === totalFiles ? undefined : selectedPaths,
+          name: preferences?.git_name,
+          email: preferences?.git_email,
+        },
+        {
+          onSuccess: (result) => {
+            form.reset({ message: "" });
+            // Attach the commit to the most recent AI session that produced uncommitted changes.
+            const session = sessions?.data.find((s) => s.files_changed > 0 && !s.commit_sha);
+            if (session) linkCommit.mutate({ id: session.id, commit_sha: result.sha });
+            if (andPush) push.mutate({ projectId: project.id });
+          },
+        },
+      ),
+    )();
+
+  const count = selectedPaths.length;
+
+  return (
+    <Panel>
+      <PanelBody>
+        <Form {...form}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void submit(false);
+            }}
+          >
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Textarea
+                      rows={2}
+                      placeholder="Commit message"
+                      className="font-mono text-[12.5px]"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                          e.preventDefault();
+                          void submit(false);
+                        }
+                      }}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="mt-2.5 flex items-center justify-end gap-2">
+              <span className="mr-auto text-xs text-ash">Ctrl+Enter to commit</span>
+              {can(PermissionKeys.GIT_PUSH) && (
+                <Button type="button" variant="outline" disabled={!count || commit.isPending} loading={push.isPending} onClick={() => void submit(true)}>
+                  Commit & push
+                </Button>
+              )}
+              <Button type="submit" disabled={!count} loading={commit.isPending} className="gap-1.5">
+                {!commit.isPending && <GitCommitHorizontal className="size-4" />} Commit {count} file{count === 1 ? "" : "s"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </PanelBody>
+    </Panel>
+  );
+}

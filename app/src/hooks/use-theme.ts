@@ -1,60 +1,53 @@
 import { useEffect, useState } from "react";
 
-type Theme = "light" | "dark" | "system";
+export type Theme = "light" | "dark" | "system";
+
+const STORAGE_KEY = "theme";
+
+const readTheme = (): Theme => {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
+        return stored === "light" || stored === "dark" || stored === "system" ? stored : "dark";
+    } catch {
+        return "dark";
+    }
+};
+
+const systemTheme = () => (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+
+/** Applies the theme class on <html>. Dark is the primary/default theme (Spec §1). */
+export const applyTheme = (theme: Theme) => {
+    const root = document.documentElement;
+    root.classList.remove("light", "dark");
+    root.classList.add(theme === "system" ? systemTheme() : theme);
+};
 
 export const useTheme = () => {
-    const [theme, setTheme] = useState<Theme>(() => {
-        const stored = localStorage.getItem("theme") as Theme;
-        return stored || "system";
-    });
+    const [theme, setTheme] = useState<Theme>(readTheme);
 
     useEffect(() => {
-        const root = window.document.documentElement;
-
-        const getSystemTheme = () =>
-            window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-
-        const applyTheme = (currentTheme: Theme) => {
-            root.classList.remove("light", "dark");
-
-            if (currentTheme === "system") {
-                root.classList.add(getSystemTheme());
-            } else {
-                root.classList.add(currentTheme);
-            }
-        };
-
         applyTheme(theme);
-        localStorage.setItem("theme", theme);
-
-        if (theme === "system") {
-            const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-            const handleChange = () => applyTheme(theme);
-            mediaQuery.addEventListener("change", handleChange);
-            return () => mediaQuery.removeEventListener("change", handleChange);
+        try {
+            localStorage.setItem(STORAGE_KEY, theme);
+        } catch {
+            /* storage unavailable */
         }
+        if (theme !== "system") return;
+        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+        const handleChange = () => applyTheme("system");
+        mediaQuery.addEventListener("change", handleChange);
+        return () => mediaQuery.removeEventListener("change", handleChange);
     }, [theme]);
 
-    const getSystemTheme = () =>
-        window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-
-    const getThemeLabel = () => {
-        const currentTheme = theme === "system" ? getSystemTheme() : theme;
-        return currentTheme === "dark" ? "Light" : "Dark";
-    };
-
-    const getThemeIconType = () => {
-        const currentTheme = theme === "system" ? getSystemTheme() : theme;
-        return currentTheme === "dark" ? "sun" : "moon";
-    };
-
+    const resolved = theme === "system" ? systemTheme() : theme;
     return {
         theme,
         setTheme,
-        toggleTheme: () => {
-            setTheme(prev => prev === "dark" ? "light" : "dark");
-        },
-        getThemeLabel,
-        getThemeIconType
+        toggleTheme: () => setTheme(resolved === "dark" ? "light" : "dark"),
+        getThemeLabel: () => (resolved === "dark" ? "Light" : "Dark"),
+        getThemeIconType: () => (resolved === "dark" ? "sun" : "moon"),
     };
 };
+
+/** Call once at startup so the first paint uses the stored theme. */
+export const initTheme = () => applyTheme(readTheme());
