@@ -573,7 +573,6 @@ Each integration should expose:
 * Available actions
 * Available data
 * Permissions
-* AI-agent access
 
 The application should have a central integrations area where users can connect and manage services.
 
@@ -686,32 +685,7 @@ For example, an AI agent may use project documentation stored in Notion as conte
 
 ---
 
-# 19. AI Tool Permissions
-
-AI agents should not automatically receive unrestricted access to every connected application.
-
-Implement a permission/context model.
-
-For example:
-
-```text
-Agent: Claude Code
-
-Project access: ✓
-GitHub: ✓
-Linear: ✓
-Notion: ✓
-Slack: ✕
-Production systems: ✕
-```
-
-The user should be able to control which integrations an agent can access.
-
-The application should clearly indicate when an AI agent is using an external integration.
-
----
-
-# 20. Git Workflow
+# 19. Git Workflow
 
 Git operations should be accessible from the project workspace.
 
@@ -747,7 +721,7 @@ Before destructive operations such as discarding changes, require confirmation.
 
 ---
 
-# 21. Diff Viewer
+# 20. Diff Viewer
 
 Provide a lightweight Git diff viewer.
 
@@ -764,7 +738,7 @@ It does not need to be a complete GitHub-style code review interface.
 
 ---
 
-# 22. Organizations
+# 21. Organizations
 
 Support multiple organizations.
 
@@ -791,7 +765,7 @@ Each organization should have its own:
 
 ---
 
-# 23. Team Members & Roles
+# 22. Team Members & Roles
 
 Support organization members.
 
@@ -821,7 +795,6 @@ Manage branches
 AI
 Start agents
 Use agents
-Manage agent permissions
 
 Integrations
 View
@@ -839,7 +812,7 @@ Use a permission-based architecture rather than scattering role checks throughou
 
 ---
 
-# 24. Database
+# 23. Database
 
 Use PostgreSQL with Prisma.
 
@@ -875,7 +848,7 @@ Where appropriate, store external IDs and retrieve current data from the provide
 
 ---
 
-# 25. Security
+# 24. Security
 
 Electron security is important.
 
@@ -895,7 +868,7 @@ Third-party OAuth credentials and integration tokens must never be stored insecu
 
 ---
 
-# 26. Local Workspace Management
+# 25. Local Workspace Management
 
 The application should maintain a local workspace configuration.
 
@@ -920,6 +893,59 @@ When a project is opened, the application should know:
 * AI configuration
 
 If the directory no longer exists, show a clear recovery flow instead of failing silently.
+
+---
+
+# 26. Multi-Device Sign-In & Project Import
+
+Projects, clients, and organizations are stored server-side (Section 23), but the local workspace (repository clone, working directory, running processes) is specific to a single machine (Section 25). When a user signs in on a different or new device, the application must reconcile these two facts instead of assuming the new machine already has the same local state.
+
+### Detecting imported (not-yet-local) projects
+
+On sign-in, the application should compare the user's/organization's full project list from the server against what actually exists in the local workspace configuration on this machine.
+
+For each project, determine one of the following states:
+
+```text
+● Local       — repository is cloned and present at the expected local path on this device
+◐ Imported    — project exists in the organization, but has no local clone on this device
+✕ Missing     — project has a local record on this device, but the directory no longer exists (Section 25)
+```
+
+Projects in the **Imported** state should still appear in the left navigation rail (Section 5) and elsewhere in the UI, but visually indicated as not yet set up locally (e.g. a distinct icon treatment or badge), so the user can see the full picture of what they have access to without it being confused for a ready-to-use workspace.
+
+### Setting up an imported project on a new device
+
+Selecting an **Imported** project should open a lightweight setup flow rather than the normal Project Dashboard, offering:
+
+* **Clone project** — clone the associated repository to a local destination directory (reusing the flow from Section 7), then automatically run project detection (Section 8)
+* **Choose local path** — if the repository already exists on disk on this machine (e.g. restored from a backup or previously cloned outside the app), point the project at that existing path instead of cloning again
+* **Skip for now** — leave the project as Imported and dismiss the prompt without setting up a local workspace yet
+
+This should be exposed as a **menu on the project itself** (e.g. right-click or an action menu on the nav-rail entry, and as the primary action on the project's setup screen), not only as a one-time onboarding dialog, since the user may sign in on a new device well before they're ready to work on every project.
+
+After cloning or linking a path, the project transitions to **Local** and behaves like any other project (Sections 6 onward).
+
+### Bulk setup
+
+Where there are several Imported projects, provide a way to act on multiple at once, for example:
+
+```text
+Imported Projects (4)
+
+☐ Client A — Frontend
+☐ Client A — API
+☐ Client B — Website
+☐ Internal — Marketing Site
+
+[Clone Selected]  [Choose Local Paths...]
+```
+
+Cloning multiple projects should reuse the destination directory convention from Section 25 (e.g. `~/Development/Clients/<Client>/<Project>`) and run each clone as an independent, cancellable operation, surfacing progress per project.
+
+### Per-device local configuration
+
+Local-only details (local path, running processes, terminal sessions, workspace directory) must remain per-device and must never be inferred as identical across a user's machines. Only organization/project/client/repository metadata (Section 23) is shared across devices; everything under Section 25 is rebuilt independently on each device via this import flow.
 
 ---
 
@@ -980,7 +1006,6 @@ Create application settings for:
 
 * Preferred agent
 * Agent executable paths
-* Default permissions
 * Session settings
 
 ### Integrations
@@ -1267,7 +1292,6 @@ Build the MVP around the core developer workflow rather than implementing every 
 * AI sessions
 * Linear integration through Composio
 * Basic Notion integration through Composio
-* Project-level integration permissions
 
 ---
 
@@ -1326,7 +1350,6 @@ Implement:
 * Cursor CLI
 * Agent sessions
 * Session history
-* Project-level permissions
 
 ### Phase 5 — Composio
 
@@ -1346,7 +1369,6 @@ Implement:
 * Linear issue context
 * "Work on issue with AI"
 * Passing issue context to agents
-* AI access to approved integrations
 * Change review workflow
 
 ### Phase 7 — Polish
