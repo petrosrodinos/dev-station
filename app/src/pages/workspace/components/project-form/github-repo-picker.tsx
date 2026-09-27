@@ -22,7 +22,7 @@ export function GithubRepoPicker({ connectionId, selected, onSelect }: GithubRep
   const { data, isPending, isError, error } = useGetGithubRepositories(connectionId, debounced);
 
   return (
-    <div className="rounded-md border">
+    <div className="w-full min-w-0 overflow-hidden rounded-md border">
       <div className="relative border-b">
         <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ash" />
         <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search repositories…" className="border-0 pl-8 shadow-none focus-visible:ring-0" />
@@ -42,14 +42,17 @@ export function GithubRepoPicker({ connectionId, selected, onSelect }: GithubRep
               type="button"
               key={repo.id}
               onClick={() => onSelect(repo)}
-              className={cn("flex w-full items-center gap-2 border-b border-hairline-soft px-3 py-2 text-left last:border-b-0 hover:bg-surface-elevated", selected === repo.full_name && "bg-surface-card")}
+              className={cn(
+                "flex w-full min-w-0 items-center gap-2 overflow-hidden border-b border-hairline-soft px-3 py-2 text-left last:border-b-0 hover:bg-surface-elevated",
+                selected === repo.full_name && "bg-surface-card",
+              )}
             >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 truncate font-mono text-[12.5px]">
-                  {repo.full_name}
-                  {repo.private && <Lock className="size-3 text-ash" />}
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <div className="flex min-w-0 items-center gap-1.5 font-mono text-[12.5px]">
+                  <span className="min-w-0 truncate">{repo.full_name}</span>
+                  {repo.private && <Lock className="size-3 shrink-0 text-ash" />}
                 </div>
-                {repo.description && <div className="truncate text-[11.5px] text-muted-foreground">{repo.description}</div>}
+                {repo.description && <div className="min-w-0 truncate text-[11.5px] text-muted-foreground">{repo.description}</div>}
               </div>
               {repo.updated_at && <span className="shrink-0 text-[11px] text-ash">{formatRelative(repo.updated_at)}</span>}
             </button>

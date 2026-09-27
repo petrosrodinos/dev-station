@@ -1,18 +1,38 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Query, Res } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ApiExcludeController } from '@nestjs/swagger';
 import type { Response } from 'express';
 
 // No auth guards: this is the page Composio redirects the user's system
 // browser to after they finish OAuth for a provider (GitHub/Linear/Notion).
-// The Electron app never loads it - it polls
-// POST /integrations/connections/:id/refresh instead - so all this has to do
-// is tell the person it's safe to close the tab.
+// It bounces the browser straight back to the Integrations settings page in
+// the app - the app itself still polls
+// POST /integrations/connections/:id/refresh to flip the connection to
+// "Connected", this page just gets the person back there.
 @ApiExcludeController()
 @Controller('integrations/callback')
 export class IntegrationsCallbackController {
+  constructor(private readonly config: ConfigService) {}
+
   @Get()
-  get(@Res() response: Response) {
-    response.status(200).type('html').send(CALLBACK_HTML);
+  get(
+    @Query() query: Record<string, string>,
+    @Res() response: Response,
+  ) {
+    const appUrl = this.config.get<string>('APP_URL');
+    if (!appUrl) {
+      response.status(200).type('html').send(CALLBACK_HTML);
+      return;
+    }
+
+    const redirectUrl = new URL(
+      '/workspace/settings/integrations',
+      appUrl,
+    );
+    for (const [key, value] of Object.entries(query)) {
+      if (value) redirectUrl.searchParams.set(key, value);
+    }
+    response.redirect(302, redirectUrl.toString());
   }
 }
 

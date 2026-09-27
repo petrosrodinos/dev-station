@@ -10,7 +10,7 @@ export type ComposioAccountStatus =
 export interface ComposioConnectionRequest {
   id: string;
   redirect_url: string | null;
-  status: ComposioAccountStatus;
+  status?: ComposioAccountStatus;
 }
 
 export interface ComposioConnectedAccount {

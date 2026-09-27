@@ -92,19 +92,18 @@ export class ComposioService {
     userId: string,
     callbackUrl?: string,
   ): Promise<ComposioConnectionRequest> {
-    const response = await this.request<
-      ComposioConnectionRequest & { redirect_uri?: string | null }
-    >('post', '/connected_accounts', {
-      auth_config: { id: authConfigId },
-      connection: {
-        user_id: userId,
-        ...(callbackUrl && { callback_url: callbackUrl }),
-      },
+    const response = await this.request<{
+      connected_account_id: string;
+      redirect_url: string | null;
+    }>('post', '/connected_accounts/link', {
+      auth_config_id: authConfigId,
+      user_id: userId,
+      ...(callbackUrl && { callback_url: callbackUrl }),
     });
     return {
-      id: response.id,
-      status: response.status,
-      redirect_url: response.redirect_url ?? response.redirect_uri ?? null,
+      id: response.connected_account_id,
+      status: undefined,
+      redirect_url: response.redirect_url ?? null,
     };
   }
 
