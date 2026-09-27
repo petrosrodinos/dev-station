@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dev Station — UI Mockups</title>
+<title>Dev Station — Raycast-Inspired Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -11,23 +14,23 @@
     theme: {
       extend: {
         colors: {
-          bg: '#0b0d10',
-          panel: '#111418',
-          panel2: '#15181d',
-          border: '#22262c',
-          accent: '#6366f1',
-          accent2: '#22d3ee',
+          bg: '#07080a',
+          panel: '#0d0d0d',
+          panel2: '#101111',
+          border: '#242728',
+          accent: '#ffffff',
+          accent2: '#3b82f6',
         }
       }
     }
   }
 </script>
 <style>
-  body { background:#0b0d10; }
+  body { background:#07080a !important; font-family:'Inter', ui-sans-serif, system-ui, sans-serif !important; letter-spacing:0.01em; }
   ::-webkit-scrollbar { width:8px; height:8px; }
-  ::-webkit-scrollbar-thumb { background:#2a2f36; border-radius:4px; }
-  .mockup-frame { border:1px solid #22262c; background:#111418; }
-  .tab-btn.active { background:#1c2027; color:#fff; border-color:#33383f; }
+  ::-webkit-scrollbar-thumb { background:#242728; border-radius:4px; }
+  .mockup-frame { border:1px solid #242728; background:#0d0d0d; }
+  .tab-btn.active { background:#141516; color:#fff; border-color:#2c2f31; }
 </style>
 </head>
 <body class="text-gray-200 font-sans antialiased">
@@ -35,8 +38,8 @@
   <!-- Page header / tab switcher -->
   <div class="max-w-[1400px] mx-auto px-6 py-6">
     <div class="mb-6">
-      <h1 class="text-xl font-semibold text-white">Dev Station — Example UI Mockups</h1>
-      <p class="text-sm text-gray-400 mt-1">Three static reference screens generated from <code class="text-accent2">docs/Product_Specification.md</code>: Project Dashboard, AI Agent Session, and Git Review &amp; Commit. AI sessions are not a custom chat UI — the app spawns and attaches to the actual agent CLI (<code class="text-accent2">claude</code>, <code class="text-accent2">cursor-agent</code>, etc.) in an embedded, controllable terminal. A global session tab bar — visible on every screen, listing sessions from every project, each tinted with that project's color — lets you open, reorder, and close terminals directly. No toasts or notification center — beyond the tab bar itself, a finished agent only shows up as a badge on the project list (left) and an entry in the activity/status bar (bottom).</p>
+      <h1 class="text-xl font-semibold text-white">Dev Station — UI Mockups <span class="text-gray-500 font-normal">(Raycast-inspired restyle)</span></h1>
+      <p class="text-sm text-gray-400 mt-1">Same three reference screens from <code class="text-accent2">docs/Product_Specification.md</code>, restyled after Raycast's design language: a 4-step dark surface ladder for elevation instead of shadows, white as the sole primary-CTA color, saturated accents reserved for status/type badges only, and hairline borders throughout — built for fast, command-driven navigation. Structure and content are unchanged from the original mockup — only the visual theme differs.</p>
     </div>
 
     <div class="flex gap-2 mb-6">
@@ -67,13 +70,13 @@
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 2 services running
             </div>
             <button class="text-xs px-2.5 py-1 rounded-md border border-border text-gray-300 hover:bg-panel2">⌘K Search</button>
-            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-[11px] font-semibold">PR</div>
+            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-[11px] font-semibold text-[#07080a]">PR</div>
           </div>
         </div>
 
         <!-- Global AI session tab bar — visible on every main screen, sessions from every project, color-coded per project -->
         <div class="flex items-stretch bg-panel2 border-b border-border shrink-0 overflow-x-auto">
-          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border bg-[#0a0c0f] text-white text-xs min-w-[200px] max-w-[240px] cursor-pointer">
+          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border bg-[#050506] text-white text-xs min-w-[200px] max-w-[240px] cursor-pointer">
             <span class="w-1 self-stretch bg-indigo-400 shrink-0"></span>
             <span class="text-gray-600 cursor-grab select-none" title="Drag to reorder">⋮⋮</span>
             <span class="w-4 h-4 rounded-full bg-indigo-500/20 border border-indigo-400/60 flex items-center justify-center text-[8px] text-indigo-300 shrink-0">A</span>
@@ -159,7 +162,7 @@
                 <div class="flex gap-2">
                   <button class="text-xs px-2.5 py-1.5 rounded-md bg-panel border border-border hover:bg-[#1c2027]">Pull</button>
                   <button class="text-xs px-2.5 py-1.5 rounded-md bg-panel border border-border hover:bg-[#1c2027]">Fetch</button>
-                  <button class="text-xs px-2.5 py-1.5 rounded-md bg-accent/90 hover:bg-accent text-white">Commit</button>
+                  <button class="text-xs px-2.5 py-1.5 rounded-md bg-accent/90 hover:bg-accent text-[#07080a] font-semibold">Commit</button>
                   <button class="text-xs px-2.5 py-1.5 rounded-md bg-panel border border-border hover:bg-[#1c2027]">Push</button>
                 </div>
               </div>
@@ -216,7 +219,7 @@
                       <span class="text-xs font-mono text-gray-500">LIN-234</span>
                       <span class="text-gray-200">Fix property filtering</span>
                     </div>
-                    <button class="text-[10px] px-2 py-1 rounded bg-accent/90 hover:bg-accent text-white">Work with AI</button>
+                    <button class="text-[10px] px-2 py-1 rounded bg-accent/90 hover:bg-accent text-[#07080a] font-semibold">Work with AI</button>
                   </div>
                 </div>
               </div>
@@ -284,7 +287,7 @@
                   <div class="flex items-center justify-between"><span>Slack</span><span class="text-gray-600">✕</span></div>
                 </div>
               </div>
-              <button class="w-full text-xs px-3 py-2 rounded-md bg-accent/90 hover:bg-accent text-white font-medium mt-2">Work on issue with AI →</button>
+              <button class="w-full text-xs px-3 py-2 rounded-md bg-accent/90 hover:bg-accent text-[#07080a] font-semibold mt-2">Work on issue with AI →</button>
             </div>
           </div>
         </div>
@@ -329,7 +332,7 @@
 
         <!-- Global AI session tab bar — visible on every main screen, sessions from every project, color-coded per project -->
         <div class="flex items-stretch bg-panel2 border-b border-border shrink-0 overflow-x-auto">
-          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border bg-[#0a0c0f] text-white text-xs min-w-[200px] max-w-[240px] cursor-pointer">
+          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border bg-[#050506] text-white text-xs min-w-[200px] max-w-[240px] cursor-pointer">
             <span class="w-1 self-stretch bg-indigo-400 shrink-0"></span>
             <span class="text-gray-600 cursor-grab select-none" title="Drag to reorder">⋮⋮</span>
             <span class="w-4 h-4 rounded-full bg-indigo-500/20 border border-indigo-400/60 flex items-center justify-center text-[8px] text-indigo-300 shrink-0">A</span>
@@ -435,7 +438,7 @@
               </div>
             </div>
             <!-- Terminal surface: the app just attaches to / renders the CLI's own PTY output -->
-            <div class="flex-1 overflow-y-auto p-4 bg-[#0a0c0f] font-mono text-[13px] leading-relaxed text-gray-300">
+            <div class="flex-1 overflow-y-auto p-4 bg-[#050506] font-mono text-[13px] leading-relaxed text-gray-300">
               <div class="text-gray-500">$ cd ~/Development/Clients/ClientA/platform</div>
               <div class="text-gray-500">$ claude --context linear:LIN-234</div>
               <div class="mt-2 text-indigo-300">╭──────────────────────────────────────────────╮</div>
@@ -455,7 +458,7 @@
             </div>
             <!-- Raw stdin passthrough to the CLI process, not a custom chat protocol -->
             <div class="p-3 border-t border-border">
-              <div class="flex items-center gap-2 bg-[#0a0c0f] border border-border rounded-lg px-3 py-2 font-mono text-[13px]">
+              <div class="flex items-center gap-2 bg-[#050506] border border-border rounded-lg px-3 py-2 font-mono text-[13px]">
                 <span class="text-gray-600">&gt;</span>
                 <input class="flex-1 bg-transparent outline-none placeholder:text-gray-600 text-gray-300" placeholder="Type to send input to the claude process…" />
               </div>
@@ -529,7 +532,7 @@
 
         <!-- Global AI session tab bar — visible on every main screen, sessions from every project, color-coded per project -->
         <div class="flex items-stretch bg-panel2 border-b border-border shrink-0 overflow-x-auto">
-          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border bg-[#0a0c0f] text-white text-xs min-w-[200px] max-w-[240px] cursor-pointer">
+          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border bg-[#050506] text-white text-xs min-w-[200px] max-w-[240px] cursor-pointer">
             <span class="w-1 self-stretch bg-indigo-400 shrink-0"></span>
             <span class="text-gray-600 cursor-grab select-none" title="Drag to reorder">⋮⋮</span>
             <span class="w-4 h-4 rounded-full bg-indigo-500/20 border border-indigo-400/60 flex items-center justify-center text-[8px] text-indigo-300 shrink-0">A</span>
@@ -622,7 +625,7 @@
               <textarea class="w-full h-20 bg-panel border border-border rounded-md p-2.5 text-sm outline-none focus:border-accent resize-none" placeholder="Describe the change...">Fix property filtering to combine price and location with AND</textarea>
             </div>
             <div class="flex gap-2">
-              <button class="flex-1 text-sm px-3 py-2 rounded-md bg-accent/90 hover:bg-accent text-white font-medium">Commit</button>
+              <button class="flex-1 text-sm px-3 py-2 rounded-md bg-accent/90 hover:bg-accent text-[#07080a] font-semibold">Commit</button>
               <button class="text-sm px-3 py-2 rounded-md border border-border hover:bg-panel">Discard</button>
             </div>
             <div class="h-px bg-border"></div>
