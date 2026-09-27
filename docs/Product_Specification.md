@@ -185,6 +185,7 @@ Projects should appear in a **left-side vertical navigation rail**, visually sim
 Each project should have:
 
 * Circular project icon
+* A distinct color, assigned automatically or chosen by the user, used consistently everywhere that project is referenced elsewhere in the app (e.g. the global AI session tab bar in Section 13)
 * Project/client name
 * Tooltip on hover
 * Active-state indicator
@@ -513,6 +514,21 @@ The user should be able to:
 * Switch between active AI sessions without losing project context or killing the underlying process
 * Send input directly to the session's terminal (stdin passthrough)
 * Stop, restart, or open the session in an external terminal window
+
+### Session tabs
+
+Open AI agent sessions should be presented as a **global tab strip**, similar to browser or editor tabs — this is the primary way the user opens a session's terminal and switches between the ones they're actively working with.
+
+* The tab strip is **persistent across the whole application**, not scoped to a single project screen — it stays visible whether the user is on the Project Dashboard, an AI Agent Session view, the Git Review screen, or anywhere else, so a session in another project is always one click away.
+* It lists sessions **from every project**, not just the currently selected one, since the user will typically have several agents running across several different projects at once (see Section 27).
+* Each tab is **color-coded to match its project's color** (the same color used for that project's icon in the left navigation rail), so the user can tell at a glance which project a session belongs to without reading the label.
+* Clicking a tab opens that session's terminal directly and switches to its project, without extra navigation
+* Tabs can be reordered by dragging
+* Tabs can be closed (closing a tab should ask whether to also stop the underlying process, or leave it running in the background and only remove it from the tab strip)
+* A tab can be added to start a new session (choose project, agent type, optional issue/task context)
+* A tab's status indicator (running / awaiting input / finished, per below) should be visible directly on the tab, without needing to select it
+
+The full session list (Section 13's example list, including sessions not currently open as a tab) remains available within each project as a separate, persistent view for finding and reopening past sessions.
 
 ### Detecting when a session has finished
 

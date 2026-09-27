@@ -36,7 +36,7 @@
   <div class="max-w-[1400px] mx-auto px-6 py-6">
     <div class="mb-6">
       <h1 class="text-xl font-semibold text-white">Dev Station — Example UI Mockups</h1>
-      <p class="text-sm text-gray-400 mt-1">Three static reference screens generated from <code class="text-accent2">docs/Product_Specification.md</code>: Project Dashboard, AI Agent Session, and Git Review &amp; Commit. AI sessions are not a custom chat UI — the app spawns and attaches to the actual agent CLI (<code class="text-accent2">claude</code>, <code class="text-accent2">cursor-agent</code>, etc.) in an embedded, controllable terminal. No toasts or notification center — when agents finish across multiple projects at once, it only shows up as badges on the project list (left) and entries in the activity/status bar (bottom).</p>
+      <p class="text-sm text-gray-400 mt-1">Three static reference screens generated from <code class="text-accent2">docs/Product_Specification.md</code>: Project Dashboard, AI Agent Session, and Git Review &amp; Commit. AI sessions are not a custom chat UI — the app spawns and attaches to the actual agent CLI (<code class="text-accent2">claude</code>, <code class="text-accent2">cursor-agent</code>, etc.) in an embedded, controllable terminal. A global session tab bar — visible on every screen, listing sessions from every project, each tinted with that project's color — lets you open, reorder, and close terminals directly. No toasts or notification center — beyond the tab bar itself, a finished agent only shows up as a badge on the project list (left) and an entry in the activity/status bar (bottom).</p>
     </div>
 
     <div class="flex gap-2 mb-6">
@@ -71,6 +71,35 @@
           </div>
         </div>
 
+        <!-- Global AI session tab bar — visible on every main screen, sessions from every project, color-coded per project -->
+        <div class="flex items-stretch bg-panel2 border-b border-border shrink-0 overflow-x-auto">
+          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border bg-[#0a0c0f] text-white text-xs min-w-[200px] max-w-[240px] cursor-pointer">
+            <span class="w-1 self-stretch bg-indigo-400 shrink-0"></span>
+            <span class="text-gray-600 cursor-grab select-none" title="Drag to reorder">⋮⋮</span>
+            <span class="w-4 h-4 rounded-full bg-indigo-500/20 border border-indigo-400/60 flex items-center justify-center text-[8px] text-indigo-300 shrink-0">A</span>
+            <span class="truncate flex-1">Fix property filtering</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Finished"></span>
+            <button class="w-4 h-4 rounded flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 shrink-0" title="Close session">✕</button>
+          </div>
+          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border text-gray-400 text-xs min-w-[200px] max-w-[240px] cursor-pointer hover:bg-panel">
+            <span class="w-1 self-stretch bg-teal-400 shrink-0"></span>
+            <span class="text-gray-600 cursor-grab select-none" title="Drag to reorder">⋮⋮</span>
+            <span class="w-4 h-4 rounded-full bg-teal-500/20 border border-teal-400/60 flex items-center justify-center text-[8px] text-teal-300 shrink-0">B</span>
+            <span class="truncate flex-1">Redesign pricing page</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Finished"></span>
+            <button class="w-4 h-4 rounded flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 shrink-0" title="Close session">✕</button>
+          </div>
+          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border text-gray-400 text-xs min-w-[200px] max-w-[240px] cursor-pointer hover:bg-panel">
+            <span class="w-1 self-stretch bg-rose-400 shrink-0"></span>
+            <span class="text-gray-600 cursor-grab select-none" title="Drag to reorder">⋮⋮</span>
+            <span class="w-4 h-4 rounded-full bg-rose-500/20 border border-rose-400/60 flex items-center justify-center text-[8px] text-rose-300 shrink-0">C</span>
+            <span class="truncate flex-1">Update hero copy</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Awaiting input"></span>
+            <button class="w-4 h-4 rounded flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 shrink-0" title="Close session">✕</button>
+          </div>
+          <button class="px-3 flex items-center justify-center text-gray-500 hover:text-white hover:bg-panel shrink-0" title="New session">+</button>
+        </div>
+
         <div class="flex flex-1 min-h-0">
           <!-- Nav rail -->
           <div class="w-16 border-r border-border bg-panel2 flex flex-col items-center py-3 gap-2 shrink-0">
@@ -80,12 +109,12 @@
               <span class="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-400 ring-2 ring-panel2 flex items-center justify-center text-[9px] font-semibold text-black">1</span>
             </div>
             <div class="relative group">
-              <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400 hover:border-gray-500 cursor-pointer">B</div>
+              <div class="w-10 h-10 rounded-full bg-teal-500/20 border-2 border-teal-400 flex items-center justify-center text-sm font-semibold text-teal-300 cursor-pointer">B</div>
               <span class="absolute left-full ml-1 top-1/2 -translate-y-1/2 bg-black text-white text-[11px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-10">Client B · Website — Cursor CLI finished</span>
               <span class="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-400 ring-2 ring-panel2 flex items-center justify-center text-[9px] font-semibold text-black">1</span>
             </div>
             <div class="relative group">
-              <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400 hover:border-gray-500 cursor-pointer">C</div>
+              <div class="w-10 h-10 rounded-full bg-rose-500/20 border-2 border-rose-400 flex items-center justify-center text-sm font-semibold text-rose-300 cursor-pointer">C</div>
               <span class="absolute left-full ml-1 top-1/2 -translate-y-1/2 bg-black text-white text-[11px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-10">Internal · Marketing Site — awaiting input</span>
               <span class="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-400 ring-2 ring-panel2 flex items-center justify-center text-[9px] font-semibold text-black">1</span>
             </div>
@@ -298,6 +327,35 @@
           </div>
         </div>
 
+        <!-- Global AI session tab bar — visible on every main screen, sessions from every project, color-coded per project -->
+        <div class="flex items-stretch bg-panel2 border-b border-border shrink-0 overflow-x-auto">
+          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border bg-[#0a0c0f] text-white text-xs min-w-[200px] max-w-[240px] cursor-pointer">
+            <span class="w-1 self-stretch bg-indigo-400 shrink-0"></span>
+            <span class="text-gray-600 cursor-grab select-none" title="Drag to reorder">⋮⋮</span>
+            <span class="w-4 h-4 rounded-full bg-indigo-500/20 border border-indigo-400/60 flex items-center justify-center text-[8px] text-indigo-300 shrink-0">A</span>
+            <span class="truncate flex-1">Fix property filtering</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Finished"></span>
+            <button class="w-4 h-4 rounded flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 shrink-0" title="Close session">✕</button>
+          </div>
+          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border text-gray-400 text-xs min-w-[200px] max-w-[240px] cursor-pointer hover:bg-panel">
+            <span class="w-1 self-stretch bg-teal-400 shrink-0"></span>
+            <span class="text-gray-600 cursor-grab select-none" title="Drag to reorder">⋮⋮</span>
+            <span class="w-4 h-4 rounded-full bg-teal-500/20 border border-teal-400/60 flex items-center justify-center text-[8px] text-teal-300 shrink-0">B</span>
+            <span class="truncate flex-1">Redesign pricing page</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Finished"></span>
+            <button class="w-4 h-4 rounded flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 shrink-0" title="Close session">✕</button>
+          </div>
+          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border text-gray-400 text-xs min-w-[200px] max-w-[240px] cursor-pointer hover:bg-panel">
+            <span class="w-1 self-stretch bg-rose-400 shrink-0"></span>
+            <span class="text-gray-600 cursor-grab select-none" title="Drag to reorder">⋮⋮</span>
+            <span class="w-4 h-4 rounded-full bg-rose-500/20 border border-rose-400/60 flex items-center justify-center text-[8px] text-rose-300 shrink-0">C</span>
+            <span class="truncate flex-1">Update hero copy</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Awaiting input"></span>
+            <button class="w-4 h-4 rounded flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 shrink-0" title="Close session">✕</button>
+          </div>
+          <button class="px-3 flex items-center justify-center text-gray-500 hover:text-white hover:bg-panel shrink-0" title="New session">+</button>
+        </div>
+
         <div class="flex flex-1 min-h-0">
           <div class="w-16 border-r border-border bg-panel2 flex flex-col items-center py-3 gap-2 shrink-0">
             <div class="relative">
@@ -305,19 +363,19 @@
               <span class="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-400 ring-2 ring-panel2 flex items-center justify-center text-[9px] font-semibold text-black">1</span>
             </div>
             <div class="relative">
-              <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400">B</div>
+              <div class="w-10 h-10 rounded-full bg-teal-500/20 border-2 border-teal-400 flex items-center justify-center text-sm font-semibold text-teal-300 cursor-pointer">B</div>
               <span class="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-400 ring-2 ring-panel2 flex items-center justify-center text-[9px] font-semibold text-black">1</span>
             </div>
             <div class="relative">
-              <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400">C</div>
+              <div class="w-10 h-10 rounded-full bg-rose-500/20 border-2 border-rose-400 flex items-center justify-center text-sm font-semibold text-rose-300 cursor-pointer">C</div>
               <span class="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-400 ring-2 ring-panel2 flex items-center justify-center text-[9px] font-semibold text-black">1</span>
             </div>
           </div>
 
-          <!-- Sessions list -->
+          <!-- Sessions list: full history for this project, click to open as a tab -->
           <div class="w-64 border-r border-border bg-panel2 shrink-0 flex flex-col">
             <div class="px-3 py-3 border-b border-border flex items-center justify-between">
-              <span class="text-xs font-medium text-gray-400">AI Sessions</span>
+              <span class="text-xs font-medium text-gray-400">All Sessions</span>
               <button class="text-xs text-gray-400 hover:text-white">+ New</button>
             </div>
             <div class="flex-1 overflow-y-auto p-2 space-y-1">
@@ -469,11 +527,40 @@
           </div>
         </div>
 
+        <!-- Global AI session tab bar — visible on every main screen, sessions from every project, color-coded per project -->
+        <div class="flex items-stretch bg-panel2 border-b border-border shrink-0 overflow-x-auto">
+          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border bg-[#0a0c0f] text-white text-xs min-w-[200px] max-w-[240px] cursor-pointer">
+            <span class="w-1 self-stretch bg-indigo-400 shrink-0"></span>
+            <span class="text-gray-600 cursor-grab select-none" title="Drag to reorder">⋮⋮</span>
+            <span class="w-4 h-4 rounded-full bg-indigo-500/20 border border-indigo-400/60 flex items-center justify-center text-[8px] text-indigo-300 shrink-0">A</span>
+            <span class="truncate flex-1">Fix property filtering</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Finished"></span>
+            <button class="w-4 h-4 rounded flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 shrink-0" title="Close session">✕</button>
+          </div>
+          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border text-gray-400 text-xs min-w-[200px] max-w-[240px] cursor-pointer hover:bg-panel">
+            <span class="w-1 self-stretch bg-teal-400 shrink-0"></span>
+            <span class="text-gray-600 cursor-grab select-none" title="Drag to reorder">⋮⋮</span>
+            <span class="w-4 h-4 rounded-full bg-teal-500/20 border border-teal-400/60 flex items-center justify-center text-[8px] text-teal-300 shrink-0">B</span>
+            <span class="truncate flex-1">Redesign pricing page</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Finished"></span>
+            <button class="w-4 h-4 rounded flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 shrink-0" title="Close session">✕</button>
+          </div>
+          <div class="group flex items-center gap-1.5 pr-1.5 py-2 border-r border-border text-gray-400 text-xs min-w-[200px] max-w-[240px] cursor-pointer hover:bg-panel">
+            <span class="w-1 self-stretch bg-rose-400 shrink-0"></span>
+            <span class="text-gray-600 cursor-grab select-none" title="Drag to reorder">⋮⋮</span>
+            <span class="w-4 h-4 rounded-full bg-rose-500/20 border border-rose-400/60 flex items-center justify-center text-[8px] text-rose-300 shrink-0">C</span>
+            <span class="truncate flex-1">Update hero copy</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Awaiting input"></span>
+            <button class="w-4 h-4 rounded flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 shrink-0" title="Close session">✕</button>
+          </div>
+          <button class="px-3 flex items-center justify-center text-gray-500 hover:text-white hover:bg-panel shrink-0" title="New session">+</button>
+        </div>
+
         <div class="flex flex-1 min-h-0">
           <div class="w-16 border-r border-border bg-panel2 flex flex-col items-center py-3 gap-2 shrink-0">
             <div class="w-10 h-10 rounded-full bg-indigo-500/20 border-2 border-indigo-400 flex items-center justify-center text-sm font-semibold text-indigo-300">A</div>
-            <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400">B</div>
-            <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400">C</div>
+            <div class="w-10 h-10 rounded-full bg-teal-500/20 border-2 border-teal-400 flex items-center justify-center text-sm font-semibold text-teal-300 cursor-pointer">B</div>
+            <div class="w-10 h-10 rounded-full bg-rose-500/20 border-2 border-rose-400 flex items-center justify-center text-sm font-semibold text-rose-300 cursor-pointer">C</div>
           </div>
 
           <!-- Changed files list -->
