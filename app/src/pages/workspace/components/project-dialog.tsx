@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FolderInput, Github, Link2, NotebookPen } from "lucide-react";
+import { FolderInput, Github, Info, Link2, NotebookPen } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,6 +27,7 @@ import { useWorkspaceStore } from "@/stores/workspace";
 import { Routes } from "@/routes/routes";
 import { baseName, repoFullNameFromUrl, repoNameFromUrl } from "@/lib/path";
 import { isDesktop } from "@/lib/desktop";
+import { cn } from "@/lib/utils";
 import type { DetectionResult } from "@shared/contract";
 import { projectFormSchema, ProjectSources, type ProjectFormData, type ProjectSource } from "../validation-schemas/workspace.schema";
 import { ClientPicker } from "./project-form/client-picker";
@@ -34,6 +36,19 @@ import { DirectoryField } from "./project-form/directory-field";
 import { GithubRepoPicker } from "./project-form/github-repo-picker";
 
 const defaultColor = (count: number) => ProjectColorOptions[count % ProjectColorOptions.length].id;
+
+/** Shown above a source's fields when running outside the desktop app, whose fields stay visible but inert. */
+function DesktopOnlyNotice() {
+  return (
+    <Alert className="border-amber-500/40 bg-amber-500/10 text-amber-700 [&>svg]:text-amber-600 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400 dark:[&>svg]:text-amber-400">
+      <Info className="size-4" />
+      <AlertDescription className="text-current">
+        Only available in the Dev Station desktop app — cloning and reading local folders needs its filesystem bridge, which a browser tab doesn't have. Use{" "}
+        <span className="font-medium">No repository</span> here, or open the desktop app.
+      </AlertDescription>
+    </Alert>
+  );
+}
 
 /** Add a project (GitHub via Composio / clone URL / existing folder / metadata only) or edit one (Spec §5/§7). */
 export function ProjectDialog() {
@@ -189,17 +204,17 @@ export function ProjectDialog() {
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="min-w-0 space-y-4">
             {!editing && (
               <Tabs value={source} onValueChange={(v) => form.setValue("source", v as ProjectSource)}>
                 <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value={ProjectSources.GITHUB} disabled={!isDesktop()} className="gap-1.5 text-xs">
+                  <TabsTrigger value={ProjectSources.GITHUB} className="gap-1.5 text-xs">
                     <Github className="size-3.5" /> GitHub
                   </TabsTrigger>
-                  <TabsTrigger value={ProjectSources.URL} disabled={!isDesktop()} className="gap-1.5 text-xs">
+                  <TabsTrigger value={ProjectSources.URL} className="gap-1.5 text-xs">
                     <Link2 className="size-3.5" /> Clone URL
                   </TabsTrigger>
-                  <TabsTrigger value={ProjectSources.FOLDER} disabled={!isDesktop()} className="gap-1.5 text-xs">
+                  <TabsTrigger value={ProjectSources.FOLDER} className="gap-1.5 text-xs">
                     <FolderInput className="size-3.5" /> Existing folder
                   </TabsTrigger>
                   <TabsTrigger value={ProjectSources.NONE} className="gap-1.5 text-xs">
@@ -211,118 +226,132 @@ export function ProjectDialog() {
 
             {!editing && source === ProjectSources.GITHUB && (
               <div className="space-y-3">
-                {githubConnections.length === 0 ? (
-                  <div className="rounded-md border border-dashed p-4 text-center text-[13px] text-muted-foreground">
-                    No GitHub account is connected.{" "}
-                    <button
-                      type="button"
-                      className="text-foreground underline underline-offset-4"
-                      onClick={() => {
-                        close();
-                        navigate(Routes.workspace.integrations);
-                      }}
-                    >
-                      Connect one in Integrations
-                    </button>{" "}
-                    or use Clone URL.
-                  </div>
-                ) : (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="github_connection_id"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>GitHub account</FormLabel>
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Choose an account" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {githubConnections.map((c) => (
-                                <SelectItem key={c.id} value={c.id}>
-                                  {c.label}
-                                  {c.external_account ? ` (${c.external_account})` : ""}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="github_repo_full_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Repository</FormLabel>
-                          <GithubRepoPicker
-                            connectionId={form.watch("github_connection_id") ?? null}
-                            selected={field.value}
-                            onSelect={(repo) => {
-                              field.onChange(repo.full_name);
-                              form.setValue("clone_url", repo.clone_url);
-                              form.setValue("default_branch", repo.default_branch ?? undefined);
-                              if (!form.getValues("name")) form.setValue("name", repo.name);
-                            }}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
+                {!isDesktop() && <DesktopOnlyNotice />}
+                <div className={cn("space-y-3", !isDesktop() && "pointer-events-none select-none opacity-50")} aria-disabled={!isDesktop()} inert={!isDesktop()}>
+                  {isDesktop() && githubConnections.length === 0 ? (
+                    <div className="rounded-md border border-dashed p-4 text-center text-[13px] text-muted-foreground">
+                      No GitHub account is connected.{" "}
+                      <button
+                        type="button"
+                        className="text-foreground underline underline-offset-4"
+                        onClick={() => {
+                          close();
+                          navigate(Routes.workspace.integrations);
+                        }}
+                      >
+                        Connect one in Integrations
+                      </button>{" "}
+                      or use Clone URL.
+                    </div>
+                  ) : (
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="github_connection_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>GitHub account</FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange} disabled={!isDesktop()}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Choose an account" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {githubConnections.map((c) => (
+                                  <SelectItem key={c.id} value={c.id}>
+                                    {c.label}
+                                    {c.external_account ? ` (${c.external_account})` : ""}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="github_repo_full_name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Repository</FormLabel>
+                            <GithubRepoPicker
+                              connectionId={form.watch("github_connection_id") ?? null}
+                              selected={field.value}
+                              onSelect={(repo) => {
+                                field.onChange(repo.full_name);
+                                form.setValue("clone_url", repo.clone_url);
+                                form.setValue("default_branch", repo.default_branch ?? undefined);
+                                if (!form.getValues("name")) form.setValue("name", repo.name);
+                              }}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
+                </div>
               </div>
             )}
 
             {!editing && source === ProjectSources.URL && (
-              <FormField
-                control={form.control}
-                name="clone_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Repository URL</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://github.com/company/project.git"
-                        className="font-mono text-[12.5px]"
-                        {...field}
-                        value={field.value ?? ""}
-                        onBlur={() => {
-                          field.onBlur();
-                          const repoName = repoNameFromUrl(field.value ?? "");
-                          if (repoName && !form.getValues("name")) form.setValue("name", repoName);
-                        }}
-                      />
-                    </FormControl>
-                    <FormDescription>Cloned with your local Git credentials (credential manager or SSH keys).</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-3">
+                {!isDesktop() && <DesktopOnlyNotice />}
+                <div className={cn(!isDesktop() && "pointer-events-none select-none opacity-50")} aria-disabled={!isDesktop()} inert={!isDesktop()}>
+                  <FormField
+                    control={form.control}
+                    name="clone_url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Repository URL</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://github.com/company/project.git"
+                            className="font-mono text-[12.5px]"
+                            disabled={!isDesktop()}
+                            {...field}
+                            value={field.value ?? ""}
+                            onBlur={() => {
+                              field.onBlur();
+                              const repoName = repoNameFromUrl(field.value ?? "");
+                              if (repoName && !form.getValues("name")) form.setValue("name", repoName);
+                            }}
+                          />
+                        </FormControl>
+                        <FormDescription>Cloned with your local Git credentials (credential manager or SSH keys).</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
             )}
 
             {!editing && source === ProjectSources.FOLDER && (
-              <FormField
-                control={form.control}
-                name="local_path"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Project folder</FormLabel>
-                    <DirectoryField value={field.value ?? ""} onChange={field.onChange} onPicked={onFolderPicked} placeholder="C:\Users\you\Development\Client\Project" />
-                    {detection && (
-                      <FormDescription>
-                        {detection.git.is_repo ? `Git repo${detection.git.remote_url ? ` · ${detection.git.remote_url}` : ""}` : "Not a Git repository"} ·{" "}
-                        {detection.package_manager ?? "no package manager"} · {detection.services.length} service(s) detected
-                        {detection.monorepo_tools.length ? ` · ${detection.monorepo_tools.join(", ")}` : ""}
-                      </FormDescription>
+              <div className="space-y-3">
+                {!isDesktop() && <DesktopOnlyNotice />}
+                <div className={cn(!isDesktop() && "pointer-events-none select-none opacity-50")} aria-disabled={!isDesktop()} inert={!isDesktop()}>
+                  <FormField
+                    control={form.control}
+                    name="local_path"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Project folder</FormLabel>
+                        <DirectoryField value={field.value ?? ""} onChange={field.onChange} onPicked={onFolderPicked} placeholder="C:\Users\you\Development\Client\Project" />
+                        {detection && (
+                          <FormDescription>
+                            {detection.git.is_repo ? `Git repo${detection.git.remote_url ? ` · ${detection.git.remote_url}` : ""}` : "Not a Git repository"} ·{" "}
+                            {detection.package_manager ?? "no package manager"} · {detection.services.length} service(s) detected
+                            {detection.monorepo_tools.length ? ` · ${detection.monorepo_tools.join(", ")}` : ""}
+                          </FormDescription>
+                        )}
+                        <FormMessage />
+                      </FormItem>
                     )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  />
+                </div>
+              </div>
             )}
 
             <div className="grid grid-cols-2 gap-3">
@@ -353,23 +382,25 @@ export function ProjectDialog() {
             </div>
 
             {!editing && (source === ProjectSources.GITHUB || source === ProjectSources.URL) && (
-              <FormField
-                control={form.control}
-                name="destination"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Clone to</FormLabel>
-                    <DirectoryField
-                      value={field.value ?? ""}
-                      onChange={(v) => {
-                        destinationTouched.current = true;
-                        field.onChange(v);
-                      }}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className={cn(!isDesktop() && "pointer-events-none select-none opacity-50")} aria-disabled={!isDesktop()} inert={!isDesktop()}>
+                <FormField
+                  control={form.control}
+                  name="destination"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Clone to</FormLabel>
+                      <DirectoryField
+                        value={field.value ?? ""}
+                        onChange={(v) => {
+                          destinationTouched.current = true;
+                          field.onChange(v);
+                        }}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             )}
 
             <FormField
@@ -428,7 +459,7 @@ export function ProjectDialog() {
               <Button type="button" variant="outline" onClick={close} disabled={busy}>
                 Cancel
               </Button>
-              <Button type="submit" loading={busy}>
+              <Button type="submit" loading={busy} disabled={!editing && !isDesktop() && source !== ProjectSources.NONE}>
                 {editing ? "Save changes" : source === ProjectSources.GITHUB || source === ProjectSources.URL ? "Create & clone" : "Create project"}
               </Button>
             </DialogFooter>

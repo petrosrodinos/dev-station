@@ -239,6 +239,22 @@
   }
 }
 
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .landing-fade-up {
+    animation: landing-fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
 /* xterm fills its container */
 .xterm {
   height: 100%;

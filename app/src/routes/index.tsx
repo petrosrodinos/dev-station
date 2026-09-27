@@ -10,13 +10,32 @@ import WorkspaceHomePage from "@/pages/workspace/pages/home";
 import ProjectLayout from "@/pages/workspace/pages/project/layout";
 import ProjectTabPage from "@/pages/workspace/pages/project";
 import ProjectSetupPage from "@/pages/workspace/pages/project/pages/setup";
+import LandingPage from "@/pages/landing";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isDesktop } from "@/lib/desktop";
+import { useAuthStore } from "@/stores/auth";
 
 // Secondary screens are split out of the main bundle.
 const SettingsPage = lazy(() => import("@/pages/workspace/pages/settings"));
 const OrganizationPage = lazy(() => import("@/pages/workspace/pages/organization"));
 const ImportedProjectsPage = lazy(() => import("@/pages/workspace/pages/imported"));
 const AcceptInvitationPage = lazy(() => import("@/pages/invite"));
+
+/**
+ * Marketing landing page on the web. In the desktop app there's no one to market to —
+ * skip straight to the workspace (or sign-in) once the persisted session has hydrated.
+ */
+function RootRoute() {
+    const hydrated = useAuthStore((s) => s.hydrated);
+    const isLoggedIn = useAuthStore((s) => Boolean(s.isLoggedIn && s.access_token));
+
+    if (isDesktop()) {
+        if (!hydrated) return null;
+        return <Navigate to={isLoggedIn ? Routes.workspace.root : Routes.auth.sign_in} replace />;
+    }
+
+    return <LandingPage />;
+}
 
 const PageFallback = () => (
     <div className="flex flex-col gap-3 p-6">
@@ -72,7 +91,7 @@ export default function AppRoutes() {
                     <Route path={RoutePatterns.organization} element={<OrganizationPage />} />
                 </Route>
 
-                <Route path={Routes.root} element={<Navigate to={Routes.workspace.root} replace />} />
+                <Route path={Routes.root} element={<RootRoute />} />
                 <Route path="*" element={<Navigate to={Routes.root} replace />} />
             </RouterRoutes>
         </Suspense>

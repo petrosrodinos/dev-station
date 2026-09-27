@@ -70,7 +70,7 @@ export class IntegrationsService {
 
     return IntegrationCatalog.map((entry) => ({
       ...entry,
-      available: available && entry.supported,
+      available,
       connections: connections
         .filter((c) => c.provider === entry.provider)
         .map(this.toView),
@@ -295,7 +295,7 @@ export class IntegrationsService {
     return `${organizationId}:${userId}`;
   }
 
-  private mapStatus(status: ComposioAccountStatus): ConnectionStatus {
+  private mapStatus(status?: ComposioAccountStatus): ConnectionStatus {
     return (
       STATUS_MAP[String(status).toUpperCase()] ?? ConnectionStatus.INITIATED
     );

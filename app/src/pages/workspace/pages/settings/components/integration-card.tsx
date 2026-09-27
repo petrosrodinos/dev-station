@@ -51,20 +51,24 @@ export function IntegrationCard({ integration }: { integration: Integration }) {
 
   return (
     <Panel className="p-4">
-      <div className="flex items-start gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-card">
-          <Icon className="size-5" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{integration.name}</span>
-            {active.length ? (
-              <Badge className="bg-success-soft text-success hover:bg-success-soft">{active.length} connected</Badge>
-            ) : (
-              <Badge variant="secondary">{supported ? "Not connected" : "Coming soon"}</Badge>
-            )}
+      <div className="flex flex-wrap items-start gap-3">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-card">
+            <Icon className="size-5" />
           </div>
-          <div className="mt-0.5 text-[12.5px] text-muted-foreground">{integration.description || getIntegrationProviderDescription(integration.provider)}</div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="truncate text-sm font-medium">{integration.name}</span>
+              {active.length ? (
+                <Badge className="shrink-0 whitespace-nowrap bg-success-soft text-success hover:bg-success-soft">{active.length} connected</Badge>
+              ) : (
+                <Badge variant="secondary" className="shrink-0 whitespace-nowrap">
+                  {supported ? "Not connected" : "Coming soon"}
+                </Badge>
+              )}
+            </div>
+            <div className="mt-0.5 text-[12.5px] text-muted-foreground">{integration.description || getIntegrationProviderDescription(integration.provider)}</div>
+          </div>
         </div>
         {can(PermissionKeys.INTEGRATIONS_CONNECT) && supported && (
           <Button size="sm" variant="outline" className="shrink-0 gap-1.5" disabled={!integration.available} onClick={() => setConnecting(true)}>
@@ -74,23 +78,33 @@ export function IntegrationCard({ integration }: { integration: Integration }) {
       </div>
 
       {integration.connections.length > 0 && (
-        <div className="mt-3 space-y-1 border-t pt-3">
+        <div className="mt-3 border-t">
           {integration.connections.map((c) => (
-            <div key={c.id} className="flex items-center gap-2 rounded-sm py-1 text-[12.5px]">
+            <div key={c.id} className="flex items-center gap-3 border-b border-hairline-soft py-2.5 last:border-b-0">
               <StatusDot
+                className="shrink-0"
                 status={c.status === ConnectionStatuses.ACTIVE ? "running" : c.status === ConnectionStatuses.INITIATED ? "awaiting" : "crashed"}
                 title={getDropdownOptionLabel(ConnectionStatusOptions, c.status)}
               />
-              <span className="truncate font-medium">{c.label}</span>
-              {c.external_account && <span className="truncate text-muted-foreground">{c.external_account}</span>}
-              {c.is_default && <Badge variant="secondary" className="h-5 px-1.5 text-[11px]">Default</Badge>}
-              {c.status !== ConnectionStatuses.ACTIVE && <span className="text-[11.5px] text-warning">{getDropdownOptionLabel(ConnectionStatusOptions, c.status)}</span>}
-              <span className="ml-auto shrink-0 text-[11px] text-ash">
-                {c.user?.full_name ?? c.user?.email} · {formatRelative(c.created_at)}
-              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="truncate text-[13px] font-medium">{c.label}</span>
+                  {c.is_default && (
+                    <Badge variant="secondary" className="h-5 shrink-0 px-1.5 text-[11px]">
+                      Default
+                    </Badge>
+                  )}
+                  {c.status !== ConnectionStatuses.ACTIVE && (
+                    <span className="shrink-0 text-[11px] font-medium text-warning">{getDropdownOptionLabel(ConnectionStatusOptions, c.status)}</span>
+                  )}
+                </div>
+                <div className="truncate text-[12px] text-muted-foreground">
+                  {[c.external_account, c.user?.full_name ?? c.user?.email, formatRelative(c.created_at)].filter(Boolean).join(" · ")}
+                </div>
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-6 text-muted-foreground" aria-label="Connection actions">
+                  <Button variant="ghost" size="icon" className="size-8 shrink-0 text-muted-foreground" aria-label="Connection actions">
                     <MoreHorizontal className="size-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
