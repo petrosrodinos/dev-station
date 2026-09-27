@@ -13,7 +13,6 @@ import ProjectSetupPage from "@/pages/workspace/pages/project/pages/setup";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Secondary screens are split out of the main bundle.
-const IntegrationsPage = lazy(() => import("@/pages/workspace/pages/integrations"));
 const SettingsPage = lazy(() => import("@/pages/workspace/pages/settings"));
 const OrganizationPage = lazy(() => import("@/pages/workspace/pages/organization"));
 const ImportedProjectsPage = lazy(() => import("@/pages/workspace/pages/imported"));
@@ -68,7 +67,6 @@ export default function AppRoutes() {
                         <Route index element={<ProjectTabPage />} />
                     </Route>
                     <Route path={RoutePatterns.imported} element={<ImportedProjectsPage />} />
-                    <Route path={RoutePatterns.integrations} element={<IntegrationsPage />} />
                     <Route path={RoutePatterns.settings} element={<SettingsPage />} />
                     <Route path={RoutePatterns.settings_section} element={<SettingsPage />} />
                     <Route path={RoutePatterns.organization} element={<OrganizationPage />} />

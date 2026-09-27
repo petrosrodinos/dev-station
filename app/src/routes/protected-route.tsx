@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, loggedIn }: ProtectedRouteProps) {
-    const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+    const isLoggedIn = useAuthStore((s) => Boolean(s.isLoggedIn && s.access_token));
     const location = useLocation();
 
     if (!isLoggedIn && loggedIn) {
