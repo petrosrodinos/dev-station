@@ -4,7 +4,7 @@ globs: app/**
 alwaysApply: false
 ---
 
-# AI Agent Rules — React + TypeScript + HeroUI Project
+# AI Agent Rules — React + TypeScript + shadcn/ui Project
 
 ## 1. Purpose
 
@@ -18,8 +18,7 @@ This file defines architectural rules, naming conventions, and coding patterns f
 src/
 ├── App.tsx                        # Root: Router > QueryProvider > AppRoutes
 ├── main.tsx                       # Entry point
-├── index.css                      # Tailwind v4 CSS-first config + CSS variables
-├── DESIGN.md                      # Design system (Material Design 3) — read before UI work
+├── index.css                      # Tailwind v4 CSS-first config + design tokens from repo-root DESIGN.MD (read it before UI work)
 ├── routes/
 │   └── routes.ts                  # Centralized Routes object (all frontend paths)
 ├── config/
@@ -29,7 +28,7 @@ src/
 │   ├── environments/
 │   │   └── index.ts               # Typed and exported env vars
 │   └── constants/                 # Static maps and dropdown options
-│       └── dropdowns/             # Select/ListBox option arrays by domain folder
+│       └── dropdowns/             # Select / dropdown option arrays by domain folder
 ├── features/                      # Domain modules (see Feature Module Pattern)
 ├── pages/                         # Route-level page components
 ├── components/
@@ -83,7 +82,7 @@ pages/<section>/
 
 ### Static UI vocabulary (dropdowns, labels, descriptions)
 
-**All static human-readable enum vocabulary belongs in `src/config/constants/dropdowns/`.** This is not limited to `<Select>` / `<ListBox>` data. It includes anything that maps a domain enum/id to display text:
+**All static human-readable enum vocabulary belongs in `src/config/constants/dropdowns/`.** This is not limited to `<Select>` / `<DropdownMenu>` data. It includes anything that maps a domain enum/id to display text:
 
 - Filter/toolbar select options (`{ id, label }[]`)
 - Form select options (`{ id, label }[]`)
@@ -152,7 +151,7 @@ const statusLabel: Record<AgencyStatus, string> = {
   [AgencyStatuses.ACTIVE]: "Active",
   ...
 };
-<Chip.Label>{statusLabel[status]}</Chip.Label>
+<Badge>{statusLabel[status]}</Badge>
 ```
 
 **Correct:**
@@ -161,10 +160,10 @@ const statusLabel: Record<AgencyStatus, string> = {
 import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agencies/agency-status-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 
-<Chip.Label>{getDropdownOptionLabel(AgencyStatusFilterOptions, status)}</Chip.Label>
+<Badge>{getDropdownOptionLabel(AgencyStatusFilterOptions, status)}</Badge>
 ```
 
-Chip color maps (`Record<Enum, ChipColor>`) may stay in the chip component — only **text vocabulary** is centralized.
+Badge/chip color maps (`Record<Enum, string>` of Tailwind classes) may stay in the component — only **text vocabulary** is centralized.
 
 #### Hard bans (agents must not generate)
 
@@ -181,7 +180,7 @@ Chip color maps (`Record<Enum, ChipColor>`) may stay in the chip component — o
 
 - **Runtime/API-derived options only** — mapping fetched entities to `{ id, label }` in the component or hook that owns that query (e.g. connection picker built from `useUserIntegrationConnections()`).
 - **Ephemeral action menus** — row action definitions local to a table (`{ id: "delete", label: "Delete" }`) when they are not reused enum vocabulary.
-- **Chip color maps** — visual styling keyed by enum, not display strings.
+- **Badge/chip color maps** — visual styling (Tailwind classes) keyed by enum, not display strings.
 
 #### Agent checklist (before finishing any UI task)
 
@@ -247,19 +246,26 @@ Chip color maps (`Record<Enum, ChipColor>`) may stay in the chip component — o
 
 ### Shared UI reuse (`components/ui/`)
 
-**Before creating any new UI primitive**, list and read what already exists under `app/src/components/ui/`. Reuse or extend an existing component instead of duplicating markup in a page. Visual tokens and patterns live in `app/DESIGN.md`.
+**Before creating any new UI primitive**, list and read what already exists under `app/src/components/ui/`. Reuse or extend an existing component instead of duplicating markup in a page. Visual tokens and patterns live in the repo-root `DESIGN.MD` (tokens are mapped in `src/index.css`); layouts follow `mockup/`.
 
-Current shared primitives (extend this list as new ones land):
+Current shared primitives (extend this list as new ones land). Standard shadcn primitives (`button`, `dialog`, `select`, `dropdown-menu`, `command`, `popover`, `tabs`, `checkbox`, `switch`, `sheet`, `tooltip`, `context-menu`, `skeleton`, `table`, …) also live here — add missing ones with `npx shadcn@latest add <component>`.
 
 | File | Use for |
 | --- | --- |
-| `action-button-with-pending.tsx` | Submit / destructive actions while a mutation is pending (HeroUI `Button` + `Spinner`, no loading text) |
-| `password-input.tsx` | Password credential fields (connect / edit forms) |
-| `form.tsx` | React Hook Form field wrappers |
-| `toast.tsx` | Mutation feedback (already used by feature hooks) |
-| `table-skeleton.tsx` | List / connected-accounts table loading placeholders |
-| `detail-skeleton.tsx` | Detail page loading (header + fields + optional sub-table) |
-| `confirmation-dialog.tsx` | Destructive confirmations (delete, disconnect) via HeroUI `Modal` + `useOverlayState` |
+| `button.tsx` | All buttons; pass `loading={mutation.isPending}` on the triggering control (no loading text) |
+| `password-input.tsx` | Password credential fields |
+| `form.tsx` | React Hook Form field wrappers (`Form`, `FormField`, `FormItem`, `FormLabel`, `FormControl`, `FormMessage`) |
+| `toast.tsx` / `toaster.tsx` | Mutation feedback (via `toast()` from `@/hooks/use-toast`) |
+| `skeleton.tsx` | Base loading placeholder |
+| `list-skeleton.tsx` | `ListSkeleton` (row lists) and `CardGridSkeleton` (dashboard cards) loading layouts |
+| `confirmation-dialog.tsx` | Destructive confirmations (delete, disconnect, discard) via shadcn `Dialog` |
+| `panel.tsx` | Mockup-style card (`Panel`, `PanelHeader`, `PanelBody`, `StatRow`) built on shadcn `Card` |
+| `empty-state.tsx` | Empty / not-configured states (icon, title, description, action) |
+| `status-dot.tsx` | Process / agent / connection status dots |
+| `project-avatar.tsx` | Project color icon (`ProjectAvatar`) and color flag (`ProjectFlag`) |
+| `keycap.tsx` | Keyboard shortcut hints |
+| `diff-viewer.tsx` | Unified diff rendering (parse with `lib/diff.ts`) |
+| `xterm-terminal.tsx` | Embedded terminal attached to a PTY source |
 
 **Placement rule:**
 
@@ -272,17 +278,21 @@ Current shared primitives (extend this list as new ones land):
 
 When adding a shared component to `components/ui/`, keep it presentational — no API calls, no feature hooks.
 
-### Loading states — HeroUI Skeleton only
+### Loading states — shadcn Skeleton only
 
 While TanStack Query reports `isPending` / `isLoading`, render a **layout-shaped skeleton** — never a text label.
 
 **Do not use:** `"Loading..."`, `"Please wait"`, centered spinner-only placeholders, or any loading copy as the primary loading UI.
 
-**Do use:** `Skeleton` from `@heroui/react`, sized to match the final layout (table rows, detail header, form fields, card grid). HeroUI v3 pattern:
+**Do use:** `Skeleton` from `@/components/ui/skeleton` (or the shared `ListSkeleton` / `CardGridSkeleton`), sized to match the final layout (table rows, detail header, form fields, card grid):
 
 ```tsx
-import { Skeleton } from "@heroui/react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ListSkeleton } from "@/components/ui/list-skeleton";
 
+if (isPending) return <ListSkeleton rows={8} />;
+
+// or a custom layout:
 if (isPending) {
   return (
     <div className="flex flex-col gap-3">
@@ -294,148 +304,147 @@ if (isPending) {
 }
 ```
 
-When the same skeleton layout appears on more than one page, extract it to `app/src/components/ui/` (e.g. `table-skeleton.tsx`, `detail-skeleton.tsx`) **after checking no equivalent already exists**.
+When the same skeleton layout appears on more than one page, extract it to `app/src/components/ui/` **after checking no equivalent already exists** (e.g. extend `list-skeleton.tsx`).
 
-Mutations may still use `ActionButtonWithPending` / `Button isPending` on the triggering control — that is not a page-level loading label.
+Mutations may still use `<Button loading={mutation.isPending}>` on the triggering control — that is not a page-level loading label.
 
 ### Destructive actions — `ConfirmationDialog`
 
-**Never** delete or disconnect on a bare button press. Always confirm through the shared `ConfirmationDialog` in `components/ui/confirmation-dialog.tsx`.
+**Never** delete, disconnect or discard on a bare button press. Always confirm through the shared `ConfirmationDialog` in `components/ui/confirmation-dialog.tsx`.
 
 Pattern:
 
 ```tsx
-import { useOverlayState } from "@heroui/react";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { useState } from "react";
+import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 
-const deleteConfirm = useOverlayState();
+const [deleting, setDeleting] = useState<Target | null>(null);
 
-<Button variant="danger" onPress={deleteConfirm.open}>Delete</Button>
+<Button variant="destructive" onClick={() => setDeleting(target)}>Delete</Button>
 
 <ConfirmationDialog
-  state={deleteConfirm}
+  isOpen={!!deleting}
+  onClose={() => setDeleting(null)}
   title="Delete integration target?"
   description="This action cannot be undone."
-  confirmLabel="Delete"
-  onConfirm={() => deleteTarget.mutateAsync(id)}
-  isPending={deleteTarget.isPending}
+  confirmText="Delete"
+  variant="destructive"
+  onConfirm={() => deleting && deleteTarget.mutate(deleting.id, { onSuccess: () => setDeleting(null) })}
+  isLoading={deleteTarget.isPending}
 />
 ```
 
-Use `confirmLabel="Disconnect"` for user integration disconnect flows. Reuse the same component — do not build one-off alert modals per page.
+Use `confirmText="Disconnect"` for integration disconnect flows. Reuse the same component — do not build one-off alert modals per page.
 
-### HeroUI v3 — Modal (required nesting)
+### shadcn — Dialog
 
-This project uses **HeroUI React v3** (`@heroui/react`). Modal dialog content **must** be nested inside `Modal.Backdrop`. Sibling `Backdrop` + `Container` renders only the overlay — no dialog.
-
-**Wrong — overlay only, dialog never appears:**
+Use `Dialog` from `@/components/ui/dialog` for every modal. Keep open state in the page (`useState`) or, for app-wide dialogs triggered from many places, in a Zustand store.
 
 ```tsx
-<Modal state={modal}>
-  <Modal.Backdrop isDismissable />
-  <Modal.Container>
-    <Modal.Dialog>...</Modal.Dialog>
-  </Modal.Container>
-</Modal>
-```
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-**Correct — `Container` is a child of `Backdrop`:**
-
-```tsx
-import { Modal, useOverlayState } from "@heroui/react";
-
-const modal = useOverlayState();
-
-<Modal state={modal}>
-  <Modal.Backdrop isDismissable={!mutation.isPending}>
-    <Modal.Container>
-      <Modal.Dialog>
-        <Modal.Header>
-          <Modal.Heading>Title</Modal.Heading>
-        </Modal.Header>
-        <Modal.Body>...</Modal.Body>
-        <Modal.Footer>...</Modal.Footer>
-      </Modal.Dialog>
-    </Modal.Container>
-  </Modal.Backdrop>
-</Modal>
+<Dialog open={open} onOpenChange={(o) => !mutation.isPending && setOpen(o)}>
+  <DialogContent className="max-w-md">
+    <DialogHeader>
+      <DialogTitle>Title</DialogTitle>
+      <DialogDescription>Short explanation.</DialogDescription>
+    </DialogHeader>
+    {/* body / form */}
+    <DialogFooter>
+      <Button variant="outline" onClick={() => setOpen(false)} disabled={mutation.isPending}>Cancel</Button>
+      <Button type="submit" loading={mutation.isPending}>Save</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
 ```
 
 Rules:
 
-- Always nest: `Modal` → `Modal.Backdrop` → `Modal.Container` → `Modal.Dialog`
-- Use `useOverlayState()` for open/close; pass `state={modal}` to `Modal`
-- Set `isDismissable={!isPending}` while a mutation inside the modal is in flight
-- For destructive confirms, reuse `ConfirmationDialog` — it already follows this structure
-- When adding or editing any modal, verify nesting before shipping — do not copy the sibling pattern from older HeroUI v2 examples or docs snippets
+- Every `DialogContent` has a `DialogTitle` (screen readers require it; use `className="sr-only"` if it must be hidden)
+- Block closing (`onOpenChange` guard) while a mutation inside the dialog is in flight
+- For destructive confirms, reuse `ConfirmationDialog`
+- Side panels (logs, details) use `Sheet`; command palettes use `CommandDialog`
 
-### HeroUI v3 — Table (collection context)
+### shadcn — Table
 
-`Table.Column` must render inside the table collection. Do not put `Table.Header` / `Table.Body` directly under `<Table>`.
-
-**Correct structure:**
+Use `Table`, `TableHeader`, `TableBody`, `TableRow`, `TableHead`, `TableCell` from `@/components/ui/table`:
 
 ```tsx
-<Table aria-label="Users">
-  <Table.ScrollContainer>
-    <Table.Content>
-      <Table.Header>
-        <Table.Column isRowHeader>Name</Table.Column>
-        <Table.Column>Email</Table.Column>
-      </Table.Header>
-      <Table.Body items={rows}>
-        {(row) => (
-          <Table.Row id={row.id}>
-            <Table.Cell>{row.name}</Table.Cell>
-            <Table.Cell>{row.email}</Table.Cell>
-          </Table.Row>
-        )}
-      </Table.Body>
-    </Table.Content>
-  </Table.ScrollContainer>
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Name</TableHead>
+      <TableHead>Email</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {rows.map((row) => (
+      <TableRow key={row.id}>
+        <TableCell>{row.name}</TableCell>
+        <TableCell>{row.email}</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
 </Table>
 ```
 
-### Dropdowns — HeroUI only (never plain HTML)
+### Dropdowns — shadcn only (never plain HTML)
 
-Every dropdown, select, or menu **must** use the shared HeroUI v3 components. **Never** render a plain HTML `<select>` / `<option>` / `<datalist>`, or hand-roll a dropdown from `<div>`/`<ul>` + state.
+Every dropdown, select, or menu **must** use the shared shadcn components. **Never** render a plain HTML `<select>` / `<option>` / `<datalist>`, or hand-roll a dropdown from `<div>`/`<ul>` + state.
 
-| Need                                   | Use                                                  |
-| -------------------------------------- | ---------------------------------------------------- |
-| Pick one/many values (form, filter)    | HeroUI `Select` + `ListBox`                          |
-| Searchable / type-ahead pick           | HeroUI `ComboBox` or `Autocomplete`                  |
-| Action menu (row actions, kebab, user) | HeroUI `Dropdown`                                    |
+| Need                                   | Use                                                              |
+| -------------------------------------- | ---------------------------------------------------------------- |
+| Pick one value (form, filter)          | `@/components/ui/select` (or the `select-dropdown.tsx` wrapper)  |
+| Searchable / type-ahead pick           | `Popover` + `Command` (combobox pattern)                         |
+| Action menu (row actions, kebab, user) | `@/components/ui/dropdown-menu`                                  |
+| Right-click menu                       | `@/components/ui/context-menu`                                   |
+| Command palette                        | `@/components/ui/command` (`CommandDialog`)                      |
 
-Before writing a dropdown, check `components/ui/` for an existing shared wrapper and reuse it. Read the HeroUI docs (`.heroui-docs/react/components/(pickers)/select.mdx`, `(collections)/dropdown.mdx`) first — do not rely on memory of the API.
+Before writing a dropdown, check `components/ui/` for an existing shared wrapper and reuse it. If a primitive is missing, add it with `npx shadcn@latest add <component>`.
 
-### HeroUI v3 — Select (accessible name required)
+### shadcn — Select (accessible name required)
 
-Every `Select` needs an accessible name. React Aria will throw if neither `aria-label` nor an associated label is present.
+Every `Select` needs an accessible name.
 
-**Form fields — put `<Label>` inside `<Select>`:**
+**Form fields — `FormLabel` in the `FormItem`, trigger wrapped in `FormControl`:**
 
 ```tsx
-<Select selectedKey={value} onSelectionChange={setValue}>
-  <Label>Agency</Label>
-  <Select.Trigger>
-    <Select.Value />
-  </Select.Trigger>
-  <Select.Popover>
-    <ListBox>...</ListBox>
-  </Select.Popover>
+<FormField
+  control={form.control}
+  name="agency_id"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Agency</FormLabel>
+      <Select value={field.value} onValueChange={field.onChange}>
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder="Choose an agency" />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+          {options.map((o) => (
+            <SelectItem key={o.id} value={o.id}>{o.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+**Toolbar / filter selects without visible labels — put `aria-label` on the trigger:**
+
+```tsx
+<Select value={status} onValueChange={setStatus}>
+  <SelectTrigger aria-label="Filter by status">
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>...</SelectContent>
 </Select>
 ```
 
-A sibling `<Label>` **outside** `<Select>` does **not** satisfy accessibility requirements.
-
-**Toolbar / filter selects without visible labels — use `aria-label`:**
-
-```tsx
-<Select aria-label="Filter by status" selectedKey={status} onSelectionChange={setStatus}>
-  <Select.Trigger>...</Select.Trigger>
-  <Select.Popover>...</Select.Popover>
-</Select>
-```
+`SelectItem` values must be non-empty strings — use a sentinel such as `"all"` for "no filter".
 
 ---
 
@@ -500,7 +509,7 @@ When adding a new route, **always add it to `routes.ts` first**, then reference 
 
 ## 10. Styling Guidelines
 
-- Follow `app/DESIGN.md` for colors, typography, status tokens, and component patterns
+- Follow the repo-root `DESIGN.MD` (and `mockup/`) for colors, typography, status tokens, and component patterns
 - Use Tailwind CSS utility classes — no CSS modules, no inline `style` objects
 - Theme tokens (colors, radius, etc.) defined as CSS variables in `index.css`
 - Dark mode: `data-theme="light|dark"` on `<html>` (see `use-theme.ts`)
@@ -541,13 +550,13 @@ When adding a new route, **always add it to `routes.ts` first**, then reference 
 | Extend shadcn/ui components via wrappers                     | Modify files inside `components/ui/` directly        |
 | List `components/ui/` before creating a new primitive      | Duplicate button/form/skeleton markup per page       |
 | Put cross-page shared UI in `components/ui/`                 | Leave reusable atoms inside a single page folder     |
-| Show HeroUI `Skeleton` layouts while queries are pending     | Show "Loading..." or spinner-only loading screens      |
+| Show shadcn `Skeleton` layouts while queries are pending     | Show "Loading..." or spinner-only loading screens      |
 | Extract repeated skeleton layouts to `components/ui/`        | Copy-paste skeleton blocks across list/detail pages    |
 | Confirm deletes/disconnects with `ConfirmationDialog`        | Delete or disconnect immediately without confirmation  |
-| Use `useOverlayState` + `ConfirmationDialog` for destructive UX | Build a custom confirm modal per page                 |
-| Nest `Modal.Container` inside `Modal.Backdrop`                 | Use sibling `Backdrop` + `Container` under `Modal`   |
-| Use `Table.ScrollContainer` → `Table.Content` for tables       | Put `Table.Column` directly under `<Table>`          |
-| Use HeroUI `Select` / `ComboBox` / `Autocomplete` / `Dropdown` for every dropdown | Use plain HTML `<select>`/`<option>` or a hand-rolled dropdown |
+| Use page state + `ConfirmationDialog` for destructive UX     | Build a custom confirm modal per page                 |
+| Use shadcn `Dialog` with a `DialogTitle` for every modal       | Build modals from raw divs or omit `DialogTitle`     |
+| Use shadcn `Table` / `TableHeader` / `TableRow` / `TableCell`  | Hand-roll table markup when a data table is needed   |
+| Use shadcn `Select` / `Popover`+`Command` / `DropdownMenu` / `ContextMenu` for every dropdown | Use plain HTML `<select>`/`<option>` or a hand-rolled dropdown |
 | Put `<Label>` inside `<Select>` or use `aria-label`            | Leave `Select` unlabeled or label as sibling only    |
 | Put static select/filter options in `config/constants/dropdowns/` | Define option arrays inline in pages or form components |
 | Put static labels/descriptions/getters in `config/constants/dropdowns/` | Add `*-label.utils.ts` / `*-description.utils.ts` under `features/**/utils/` |
@@ -619,7 +628,7 @@ export function getIntegrationTypeDescription(type: IntegrationType | string): s
 import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agencies/agency-status-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 
-<Chip.Label>{getDropdownOptionLabel(AgencyStatusFilterOptions, status)}</Chip.Label>
+<Badge>{getDropdownOptionLabel(AgencyStatusFilterOptions, status)}</Badge>
 ```
 
 **Select usage:**
@@ -627,13 +636,17 @@ import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 ```tsx
 import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agencies/agency-status-filter.options";
 
-<Select aria-label="Filter by status" selectedKey={status} onSelectionChange={setStatus}>
-  <Select.Trigger>...</Select.Trigger>
-  <Select.Popover>
-    <ListBox items={AgencyStatusFilterOptions}>
-      {(option) => <ListBox.Item id={option.id}>{option.label}</ListBox.Item>}
-    </ListBox>
-  </Select.Popover>
+<Select value={status} onValueChange={setStatus}>
+  <SelectTrigger aria-label="Filter by status">
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>
+    {AgencyStatusFilterOptions.map((option) => (
+      <SelectItem key={option.id} value={option.id}>
+        {option.label}
+      </SelectItem>
+    ))}
+  </SelectContent>
 </Select>
 ```
 
