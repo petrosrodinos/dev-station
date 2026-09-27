@@ -1,7 +1,8 @@
-import { useNavigate } from "react-router-dom";
-import { Building2, Check, ChevronDown, LogOut, PanelRight, Plus, Search, Settings, UserRound } from "lucide-react";
+import { useNavigate, useNavigationType } from "react-router-dom";
+import { ArrowLeft, ArrowRight, Building2, Check, ChevronDown, LogOut, Moon, PanelRight, Plus, Search, Settings, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Keycap } from "@/components/ui/keycap";
+import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,20 +14,58 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useCurrentOrganization } from "@/features/organizations/hooks/use-organizations";
 import { useSignOut } from "@/features/auth/hooks/use-auth";
+import { useUpdatePreferences } from "@/features/users/hooks/use-users";
 import { generateInitials } from "@/features/auth/utils/auth.utils";
 import { RoleKeyOptions } from "@/config/constants/dropdowns/users/role-key.options";
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { useDialogsStore } from "@/stores/dialogs";
 import { useWorkspaceStore } from "@/stores/workspace";
+import { useTheme } from "@/hooks/use-theme";
 import { environments } from "@/config/environments";
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
 import { CreateOrganizationDialog } from "./create-organization-dialog";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
+
+function useHistoryNav() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const navigationType = useNavigationType();
+  const stack = useRef<string[]>([]);
+  const pointer = useRef(-1);
+  const [canGoBack, setCanGoBack] = useState(false);
+  const [canGoForward, setCanGoForward] = useState(false);
+
+  useEffect(() => {
+    const key = location.key ?? "default";
+    if (navigationType === "PUSH") {
+      stack.current = stack.current.slice(0, pointer.current + 1);
+      stack.current.push(key);
+      pointer.current = stack.current.length - 1;
+    } else if (navigationType === "REPLACE") {
+      if (pointer.current < 0) pointer.current = 0;
+      stack.current[pointer.current] = key;
+    } else if (navigationType === "POP") {
+      const idx = stack.current.indexOf(key);
+      if (idx !== -1) pointer.current = idx;
+    }
+    setCanGoBack(pointer.current > 0);
+    setCanGoForward(pointer.current < stack.current.length - 1);
+  }, [location.key, navigationType]);
+
+  return {
+    canGoBack,
+    canGoForward,
+    goBack: () => navigate(-1),
+    goForward: () => navigate(1),
+  };
+}
 
 export function TopBar() {
   const navigate = useNavigate();
+  const { canGoBack, canGoForward, goBack, goForward } = useHistoryNav();
   const { organization, me } = useCurrentOrganization();
   const setActiveOrganization = useWorkspaceStore((s) => s.setActiveOrganization);
   const aiPanelOpen = useWorkspaceStore((s) => s.ai_panel_open);
@@ -34,6 +73,15 @@ export function TopBar() {
   const setCommandPalette = useDialogsStore((s) => s.setCommandPalette);
   const signOut = useSignOut();
   const [createOrgOpen, setCreateOrgOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const savePreferences = useUpdatePreferences();
+  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  const toggleDarkMode = (checked: boolean) => {
+    const next = checked ? "dark" : "light";
+    setTheme(next);
+    savePreferences.mutate({ theme: next });
+  };
 
   const switchOrganization = (id: string) => {
     setActiveOrganization(id);
@@ -45,6 +93,25 @@ export function TopBar() {
       <div className="flex items-center gap-2 text-[13px] font-semibold tracking-[0.2px]">
         <span className="size-[18px] rounded-[5px] bg-gradient-to-br from-[#ff5757] to-[#a1131a]" aria-hidden />
         {environments.APP_NAME}
+      </div>
+
+      <div className="app-no-drag flex items-center gap-0.5">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" disabled={!canGoBack} onClick={goBack} aria-label="Go back">
+              <ArrowLeft className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Back</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" disabled={!canGoForward} onClick={goForward} aria-label="Go forward">
+              <ArrowRight className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Forward</TooltipContent>
+        </Tooltip>
       </div>
 
       <DropdownMenu>
@@ -95,15 +162,6 @@ export function TopBar() {
           </TooltipTrigger>
           <TooltipContent>Toggle AI panel (Ctrl J)</TooltipContent>
         </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={() => navigate(Routes.workspace.settings)} aria-label="Settings">
-              <Settings className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Settings</TooltipContent>
-        </Tooltip>
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="ml-1 flex size-7 items-center justify-center rounded-full border bg-surface-card text-[11px] font-semibold" aria-label="Account">
@@ -121,6 +179,12 @@ export function TopBar() {
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => navigate(Routes.workspace.settings)} className="gap-2">
               <Settings className="size-3.5" /> Settings
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-2">
+              <Moon className="size-3.5" />
+              <span className="flex-1">Dark mode</span>
+              <Switch checked={isDark} onCheckedChange={toggleDarkMode} />
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={signOut} className="gap-2 text-danger focus:text-danger">

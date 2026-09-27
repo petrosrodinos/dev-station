@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Activity as ActivityIcon, Bell, GitBranch } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Activity as ActivityIcon, Bell, Copy, GitBranch } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useGetActivities } from "@/features/activities/hooks/use-activities";
 import type { Activity } from "@/features/activities/interfaces/activities.interfaces";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
@@ -14,6 +15,7 @@ import { useRuntimeStore } from "@/stores/runtime";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { formatTimelineTime } from "@/lib/date";
 import { isAgentActive } from "@/lib/status";
+import { toast } from "@/hooks/use-toast";
 import { environments } from "@/config/environments";
 import { Routes } from "@/routes/routes";
 
@@ -23,6 +25,7 @@ type Scope = (typeof Scopes)[keyof typeof Scopes];
 /** Bottom bar: processes, branch, and the activity feed (the notification surface, Spec §27). */
 export function StatusBar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
   const openSessionTab = useWorkspaceStore((s) => s.openSessionTab);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
@@ -38,6 +41,11 @@ export function StatusBar() {
   const projectById = useMemo(() => new Map((projects ?? []).map((p) => [p.id, p])), [projects]);
 
   const latestItem = latest?.data[0];
+
+  const copyPath = async () => {
+    await navigator.clipboard.writeText(location.pathname + location.search);
+    toast({ title: "Path copied", duration: 1500 });
+  };
 
   const openActivity = (a: Activity) => {
     if (a.project_id) {
@@ -106,6 +114,15 @@ export function StatusBar() {
           </div>
         </PopoverContent>
       </Popover>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button onClick={copyPath} className="flex items-center gap-1.5 whitespace-nowrap font-mono text-ash hover:text-foreground" aria-label="Copy current path">
+            <span className="max-w-64 truncate">{location.pathname}</span>
+            <Copy className="size-3" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Copy path — share with an AI agent to point it at this page</TooltipContent>
+      </Tooltip>
       <div className="whitespace-nowrap text-ash">
         {environments.APP_NAME} · v{environments.APP_VERSION}
       </div>

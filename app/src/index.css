@@ -139,10 +139,10 @@
 
 .dark {
   /* DESIGN.MD palette */
-  --canvas: #07080a;
-  --surface: #0d0d0d;
-  --surface-elevated: #101111;
-  --surface-card: #121212;
+  --canvas: #131417;
+  --surface: #1a1b1e;
+  --surface-elevated: #202124;
+  --surface-card: #26272a;
   --hairline-soft: rgba(255, 255, 255, 0.08);
   --hairline-strong: rgba(255, 255, 255, 0.16);
   --ink: #f4f4f6;

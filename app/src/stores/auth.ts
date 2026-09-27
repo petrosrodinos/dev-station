@@ -40,7 +40,8 @@ export const useAuthStore = create<AuthStore>()(
                 // Session token lives in the OS keychain via Electron safeStorage (localStorage in the browser).
                 storage: createJSONStorage(() => secureStateStorage),
                 partialize: ({ hydrated: _h, login: _l, logout: _o, updateUser: _u, setHydrated: _s, ...rest }) => rest,
-                onRehydrateStorage: () => (state) => state?.setHydrated(),
+                // Mark hydrated even when reading storage fails, so the app falls through to sign-in instead of hanging.
+                onRehydrateStorage: () => () => useAuthStore.setState({ hydrated: true }),
             },
         ),
     ),

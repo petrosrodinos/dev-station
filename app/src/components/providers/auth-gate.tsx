@@ -1,24 +1,31 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useAuthStore } from "@/stores/auth";
 import { useRefreshAccountToken } from "@/features/auth/hooks/use-auth";
+import { isTokenExpired } from "@/lib/token";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * The session is persisted asynchronously (OS keychain via Electron), so routing waits for rehydration.
- * Once hydrated, a signed-in session is refreshed so long-running desktop sessions stay valid.
+ * Once hydrated, a stale session (missing/expired token) is cleared so routing sends the user to sign-in;
+ * a valid one is refreshed so long-running desktop sessions stay valid.
  */
 export function AuthGate({ children }: { children: ReactNode }) {
   const hydrated = useAuthStore((s) => s.hydrated);
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const logout = useAuthStore((s) => s.logout);
   const { mutate: refresh } = useRefreshAccountToken();
   const refreshed = useRef(false);
 
   useEffect(() => {
-    if (hydrated && isLoggedIn && !refreshed.current) {
-      refreshed.current = true;
-      refresh();
+    if (!hydrated || !isLoggedIn || refreshed.current) return;
+    const { access_token, expires_in } = useAuthStore.getState();
+    if (!access_token || (expires_in && isTokenExpired(expires_in))) {
+      logout();
+      return;
     }
-  }, [hydrated, isLoggedIn, refresh]);
+    refreshed.current = true;
+    refresh();
+  }, [hydrated, isLoggedIn, logout, refresh]);
 
   if (!hydrated) {
     return (
