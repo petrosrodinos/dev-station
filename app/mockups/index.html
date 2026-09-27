@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dev Station — UI Mockups</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          bg: '#0b0d10',
+          panel: '#111418',
+          panel2: '#15181d',
+          border: '#22262c',
+          accent: '#6366f1',
+          accent2: '#22d3ee',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { background:#0b0d10; }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb { background:#2a2f36; border-radius:4px; }
+  .mockup-frame { border:1px solid #22262c; background:#111418; }
+  .tab-btn.active { background:#1c2027; color:#fff; border-color:#33383f; }
+</style>
+</head>
+<body class="text-gray-200 font-sans antialiased">
+
+  <!-- Page header / tab switcher -->
+  <div class="max-w-[1400px] mx-auto px-6 py-6">
+    <div class="mb-6">
+      <h1 class="text-xl font-semibold text-white">Dev Station — Example UI Mockups</h1>
+      <p class="text-sm text-gray-400 mt-1">Three static reference screens generated from <code class="text-accent2">docs/Product_Specification.md</code>: Project Dashboard, AI Agent Session, and Git Review &amp; Commit. AI sessions are not a custom chat UI — the app spawns and attaches to the actual agent CLI (<code class="text-accent2">claude</code>, <code class="text-accent2">cursor-agent</code>, etc.) in an embedded, controllable terminal. No toasts or notification center — when agents finish across multiple projects at once, it only shows up as badges on the project list (left) and entries in the activity/status bar (bottom).</p>
+    </div>
+
+    <div class="flex gap-2 mb-6">
+      <button class="tab-btn active px-4 py-2 rounded-md text-sm font-medium border border-border bg-panel2 hover:bg-[#1c2027] transition" data-tab="dashboard">1. Project Dashboard</button>
+      <button class="tab-btn px-4 py-2 rounded-md text-sm font-medium border border-border bg-panel2 hover:bg-[#1c2027] transition" data-tab="agent">2. AI Agent Session (embedded CLI terminal)</button>
+      <button class="tab-btn px-4 py-2 rounded-md text-sm font-medium border border-border bg-panel2 hover:bg-[#1c2027] transition" data-tab="git">3. Git Review &amp; Commit</button>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SCREEN 1: PROJECT DASHBOARD -->
+    <!-- ============================================================ -->
+    <div id="screen-dashboard" class="screen mockup-frame rounded-xl overflow-hidden shadow-2xl relative">
+      <div class="flex flex-col h-[820px]">
+
+        <!-- Top bar -->
+        <div class="h-12 flex items-center justify-between px-4 border-b border-border bg-panel2 shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="flex gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-[#ff5f57]"></span>
+              <span class="w-3 h-3 rounded-full bg-[#febc2e]"></span>
+              <span class="w-3 h-3 rounded-full bg-[#28c840]"></span>
+            </div>
+            <span class="text-sm font-medium text-gray-300 ml-2">Dev Station</span>
+            <span class="text-xs text-gray-500 border-l border-border pl-3 ml-1">LogiqDev</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1.5 text-xs text-gray-400 bg-panel px-2.5 py-1 rounded-md border border-border">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 2 services running
+            </div>
+            <button class="text-xs px-2.5 py-1 rounded-md border border-border text-gray-300 hover:bg-panel2">⌘K Search</button>
+            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-[11px] font-semibold">PR</div>
+          </div>
+        </div>
+
+        <div class="flex flex-1 min-h-0">
+          <!-- Nav rail -->
+          <div class="w-16 border-r border-border bg-panel2 flex flex-col items-center py-3 gap-2 shrink-0">
+            <div class="relative group">
+              <div class="w-10 h-10 rounded-full bg-indigo-500/20 border-2 border-indigo-400 flex items-center justify-center text-sm font-semibold text-indigo-300">A</div>
+              <span class="absolute left-full ml-1 top-1/2 -translate-y-1/2 bg-black text-white text-[11px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-10">Client A · Platform — Claude Code finished</span>
+              <span class="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-400 ring-2 ring-panel2 flex items-center justify-center text-[9px] font-semibold text-black">1</span>
+            </div>
+            <div class="relative group">
+              <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400 hover:border-gray-500 cursor-pointer">B</div>
+              <span class="absolute left-full ml-1 top-1/2 -translate-y-1/2 bg-black text-white text-[11px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-10">Client B · Website — Cursor CLI finished</span>
+              <span class="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-400 ring-2 ring-panel2 flex items-center justify-center text-[9px] font-semibold text-black">1</span>
+            </div>
+            <div class="relative group">
+              <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400 hover:border-gray-500 cursor-pointer">C</div>
+              <span class="absolute left-full ml-1 top-1/2 -translate-y-1/2 bg-black text-white text-[11px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-10">Internal · Marketing Site — awaiting input</span>
+              <span class="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-400 ring-2 ring-panel2 flex items-center justify-center text-[9px] font-semibold text-black">1</span>
+            </div>
+            <div class="w-full h-px bg-border my-1"></div>
+            <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400 hover:border-gray-500 cursor-pointer">S</div>
+            <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400 hover:border-gray-500 cursor-pointer">M</div>
+            <div class="mt-auto w-9 h-9 rounded-full border border-dashed border-gray-600 flex items-center justify-center text-gray-500 hover:text-gray-300 hover:border-gray-400 cursor-pointer text-lg">+</div>
+          </div>
+
+          <!-- Project workspace -->
+          <div class="flex-1 min-w-0 overflow-y-auto p-5 space-y-5">
+            <!-- Project header -->
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="text-xs text-gray-500 mb-0.5">Client A</div>
+                <h2 class="text-lg font-semibold text-white">Platform</h2>
+                <div class="flex items-center gap-2 mt-1.5 text-xs text-gray-400">
+                  <span class="px-1.5 py-0.5 rounded bg-panel2 border border-border">github.com/clienta/platform</span>
+                  <span>·</span>
+                  <span>~/Development/Clients/ClientA/platform</span>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button class="text-xs px-3 py-1.5 rounded-md border border-border hover:bg-panel2">Open in Cursor</button>
+                <button class="text-xs px-3 py-1.5 rounded-md border border-border hover:bg-panel2">Open in VS Code</button>
+              </div>
+            </div>
+
+            <!-- Info + Git row -->
+            <div class="grid grid-cols-2 gap-4">
+              <div class="rounded-lg border border-border bg-panel2 p-4">
+                <div class="text-xs font-medium text-gray-400 mb-3">Git</div>
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="text-sm font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">main</span>
+                  <span class="text-xs text-gray-500">↑0 ↓0 with origin</span>
+                </div>
+                <div class="flex gap-4 text-xs mb-4">
+                  <span class="text-amber-400">● 3 modified</span>
+                  <span class="text-emerald-400">● 1 added</span>
+                  <span class="text-gray-500">● 0 untracked</span>
+                </div>
+                <div class="flex gap-2">
+                  <button class="text-xs px-2.5 py-1.5 rounded-md bg-panel border border-border hover:bg-[#1c2027]">Pull</button>
+                  <button class="text-xs px-2.5 py-1.5 rounded-md bg-panel border border-border hover:bg-[#1c2027]">Fetch</button>
+                  <button class="text-xs px-2.5 py-1.5 rounded-md bg-accent/90 hover:bg-accent text-white">Commit</button>
+                  <button class="text-xs px-2.5 py-1.5 rounded-md bg-panel border border-border hover:bg-[#1c2027]">Push</button>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-border bg-panel2 p-4">
+                <div class="text-xs font-medium text-gray-400 mb-3">Services</div>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between text-sm">
+                    <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Frontend <span class="text-gray-500 text-xs">apps/frontend</span></div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="text-gray-400">localhost:5173</span>
+                      <button class="px-2 py-0.5 rounded border border-border hover:bg-panel">Restart</button>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between text-sm">
+                    <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> API <span class="text-gray-500 text-xs">apps/api</span></div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="text-gray-400">localhost:3000</span>
+                      <button class="px-2 py-0.5 rounded border border-border hover:bg-panel">Restart</button>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between text-sm">
+                    <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span> Worker <span class="text-gray-500 text-xs">apps/worker</span></div>
+                    <button class="px-2 py-0.5 rounded border border-border hover:bg-panel text-xs">Start</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Linear + AI row -->
+            <div class="grid grid-cols-2 gap-4">
+              <div class="rounded-lg border border-border bg-panel2 p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="text-xs font-medium text-gray-400">Linear · Client Platform</div>
+                  <span class="text-xs text-gray-500">3 open</span>
+                </div>
+                <div class="space-y-1.5">
+                  <div class="flex items-center justify-between text-sm px-2 py-1.5 rounded hover:bg-panel">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-mono text-gray-500">LIN-231</span>
+                      <span class="text-gray-200">Fix login redirect</span>
+                    </div>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/30">Urgent</span>
+                  </div>
+                  <div class="flex items-center justify-between text-sm px-2 py-1.5 rounded hover:bg-panel">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-mono text-gray-500">LIN-232</span>
+                      <span class="text-gray-200">Add property search</span>
+                    </div>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">Medium</span>
+                  </div>
+                  <div class="flex items-center justify-between text-sm px-2 py-1.5 rounded bg-panel border border-border">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-mono text-gray-500">LIN-234</span>
+                      <span class="text-gray-200">Fix property filtering</span>
+                    </div>
+                    <button class="text-[10px] px-2 py-1 rounded bg-accent/90 hover:bg-accent text-white">Work with AI</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-border bg-panel2 p-4">
+                <div class="text-xs font-medium text-gray-400 mb-3">AI Agents</div>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between text-sm px-2 py-1.5 rounded bg-panel border border-border">
+                    <div class="flex items-center gap-2">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      Claude Code
+                      <span class="text-xs text-gray-500">Fix property filtering</span>
+                    </div>
+                    <span class="text-[10px] text-emerald-400">Working</span>
+                  </div>
+                  <div class="flex items-center justify-between text-sm px-2 py-1.5 rounded hover:bg-panel">
+                    <div class="flex items-center gap-2">
+                      <span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
+                      Cursor CLI
+                    </div>
+                    <span class="text-[10px] text-gray-500">Available</span>
+                  </div>
+                  <button class="w-full text-xs px-2.5 py-1.5 rounded-md border border-dashed border-gray-600 text-gray-400 hover:text-gray-200 hover:border-gray-400 mt-1">+ New Agent Session</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Activity -->
+            <div class="rounded-lg border border-border bg-panel2 p-4">
+              <div class="text-xs font-medium text-gray-400 mb-3">Recent Activity</div>
+              <div class="space-y-2 text-xs text-gray-400">
+                <div class="flex gap-3"><span class="text-gray-600 w-10 shrink-0">09:42</span> Claude Code modified 8 files</div>
+                <div class="flex gap-3"><span class="text-gray-600 w-10 shrink-0">09:45</span> Changes reviewed</div>
+                <div class="flex gap-3"><span class="text-gray-600 w-10 shrink-0">09:47</span> Commit created — "Fix property filtering"</div>
+                <div class="flex gap-3"><span class="text-gray-600 w-10 shrink-0">09:48</span> Push completed to <span class="text-gray-300">main</span></div>
+                <div class="flex gap-3 items-center"><span class="text-gray-600 w-10 shrink-0">09:51</span> <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span> <span class="text-amber-300">Cursor CLI finished on Client B / Website</span> <span class="text-gray-600">— awaiting review</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right rail: AI / Terminal / Details -->
+          <div class="w-80 border-l border-border bg-panel2 shrink-0 flex flex-col">
+            <div class="flex border-b border-border text-xs">
+              <div class="flex-1 text-center py-2.5 text-white border-b-2 border-accent font-medium">Details</div>
+              <div class="flex-1 text-center py-2.5 text-gray-500">Terminal</div>
+              <div class="flex-1 text-center py-2.5 text-gray-500">Files</div>
+            </div>
+            <div class="p-4 space-y-4 overflow-y-auto text-sm">
+              <div>
+                <div class="text-xs text-gray-500 mb-1">Selected Issue</div>
+                <div class="font-medium text-gray-200">LIN-234 · Fix property filtering</div>
+                <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">Filters on the property search page don't combine correctly when both price and location filters are active.</p>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-panel border border-border text-gray-400">bug</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-panel border border-border text-gray-400">frontend</span>
+              </div>
+              <div class="pt-3 border-t border-border">
+                <div class="text-xs text-gray-500 mb-2">Agent Access</div>
+                <div class="space-y-1.5 text-xs">
+                  <div class="flex items-center justify-between"><span>Project</span><span class="text-emerald-400">✓</span></div>
+                  <div class="flex items-center justify-between"><span>GitHub</span><span class="text-emerald-400">✓</span></div>
+                  <div class="flex items-center justify-between"><span>Linear</span><span class="text-emerald-400">✓</span></div>
+                  <div class="flex items-center justify-between"><span>Notion</span><span class="text-emerald-400">✓</span></div>
+                  <div class="flex items-center justify-between"><span>Slack</span><span class="text-gray-600">✕</span></div>
+                </div>
+              </div>
+              <button class="w-full text-xs px-3 py-2 rounded-md bg-accent/90 hover:bg-accent text-white font-medium mt-2">Work on issue with AI →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Global status bar: processes + cross-project agent notifications, no popups -->
+        <div class="h-8 border-t border-border bg-panel2 flex items-center justify-between px-4 text-[11px] text-gray-500 shrink-0">
+          <div class="flex items-center gap-4">
+            <span>2 processes running</span>
+            <span>1 AI session active</span>
+            <span class="flex items-center gap-1.5 text-amber-300 border-l border-border pl-4">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              3 sessions awaiting review — Client A, Client B, Internal
+            </span>
+          </div>
+          <div class="flex items-center gap-4">
+            <span>node v20.11</span>
+            <span>pnpm</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SCREEN 2: AI AGENT SESSION -->
+    <!-- ============================================================ -->
+    <div id="screen-agent" class="screen mockup-frame rounded-xl overflow-hidden shadow-2xl hidden">
+      <div class="flex flex-col h-[820px]">
+        <div class="h-12 flex items-center justify-between px-4 border-b border-border bg-panel2 shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="flex gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-[#ff5f57]"></span>
+              <span class="w-3 h-3 rounded-full bg-[#febc2e]"></span>
+              <span class="w-3 h-3 rounded-full bg-[#28c840]"></span>
+            </div>
+            <span class="text-sm font-medium text-gray-300 ml-2">Dev Station</span>
+            <span class="text-xs text-gray-500 border-l border-border pl-3 ml-1">Client A / Platform</span>
+          </div>
+          <div class="flex items-center gap-2 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-md">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Claude Code finished — awaiting review
+          </div>
+        </div>
+
+        <div class="flex flex-1 min-h-0">
+          <div class="w-16 border-r border-border bg-panel2 flex flex-col items-center py-3 gap-2 shrink-0">
+            <div class="relative">
+              <div class="w-10 h-10 rounded-full bg-indigo-500/20 border-2 border-indigo-400 flex items-center justify-center text-sm font-semibold text-indigo-300">A</div>
+              <span class="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-400 ring-2 ring-panel2 flex items-center justify-center text-[9px] font-semibold text-black">1</span>
+            </div>
+            <div class="relative">
+              <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400">B</div>
+              <span class="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-400 ring-2 ring-panel2 flex items-center justify-center text-[9px] font-semibold text-black">1</span>
+            </div>
+            <div class="relative">
+              <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400">C</div>
+              <span class="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full bg-amber-400 ring-2 ring-panel2 flex items-center justify-center text-[9px] font-semibold text-black">1</span>
+            </div>
+          </div>
+
+          <!-- Sessions list -->
+          <div class="w-64 border-r border-border bg-panel2 shrink-0 flex flex-col">
+            <div class="px-3 py-3 border-b border-border flex items-center justify-between">
+              <span class="text-xs font-medium text-gray-400">AI Sessions</span>
+              <button class="text-xs text-gray-400 hover:text-white">+ New</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2 space-y-1">
+              <div class="px-3 py-2.5 rounded-md bg-panel border border-amber-500/40">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-sm text-white">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                    Fix property filtering
+                  </div>
+                  <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-400/15 text-amber-300 border border-amber-400/30">Finished</span>
+                </div>
+                <div class="text-[11px] text-gray-500 mt-1 pl-3.5">Claude Code · LIN-234 · 09:41 → 09:51</div>
+              </div>
+              <div class="px-3 py-2.5 rounded-md hover:bg-panel cursor-pointer">
+                <div class="flex items-center gap-2 text-sm text-gray-300">
+                  <span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
+                  Implement LIN-234 auth check
+                </div>
+                <div class="text-[11px] text-gray-500 mt-1 pl-3.5">Claude Code · Reviewed · Yesterday</div>
+              </div>
+              <div class="px-3 py-2.5 rounded-md hover:bg-panel cursor-pointer">
+                <div class="flex items-center gap-2 text-sm text-gray-300">
+                  <span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
+                  Refactor API validation
+                </div>
+                <div class="text-[11px] text-gray-500 mt-1 pl-3.5">Cursor CLI · Reviewed · 2d ago</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Embedded terminal running the real CLI -->
+          <div class="flex-1 min-w-0 flex flex-col">
+            <!-- Completion banner: shown once the process exits / goes idle, per Section 13 detection rules -->
+            <div class="px-4 py-2.5 bg-amber-500/10 border-b border-amber-500/30 flex items-center justify-between text-sm">
+              <div class="flex items-center gap-2 text-amber-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                Process exited · task finished at 09:51 · 3 files changed
+              </div>
+              <div class="flex gap-2">
+                <button class="text-xs px-2.5 py-1 rounded-md bg-amber-400/90 hover:bg-amber-400 text-black font-medium">View Diff</button>
+                <button class="text-xs px-2.5 py-1 rounded-md border border-amber-500/40 text-amber-200 hover:bg-amber-500/10">Continue Session</button>
+              </div>
+            </div>
+            <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+              <div>
+                <div class="text-sm font-medium text-white flex items-center gap-2">
+                  Fix property filtering
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-panel border border-border text-gray-400 font-mono">claude</span>
+                </div>
+                <div class="text-[11px] text-gray-500">Claude Code CLI · PTY attached · Session started 09:41 · Linear LIN-234</div>
+              </div>
+              <div class="flex gap-2">
+                <button class="text-xs px-2.5 py-1.5 rounded-md border border-border hover:bg-panel2">View Diff</button>
+                <button class="text-xs px-2.5 py-1.5 rounded-md border border-border hover:bg-panel2">Open in External Terminal</button>
+                <button class="text-xs px-2.5 py-1.5 rounded-md border border-border hover:bg-panel2">Restart</button>
+                <button class="text-xs px-2.5 py-1.5 rounded-md border border-border text-red-400 hover:bg-red-500/10">Stop</button>
+              </div>
+            </div>
+            <!-- Terminal surface: the app just attaches to / renders the CLI's own PTY output -->
+            <div class="flex-1 overflow-y-auto p-4 bg-[#0a0c0f] font-mono text-[13px] leading-relaxed text-gray-300">
+              <div class="text-gray-500">$ cd ~/Development/Clients/ClientA/platform</div>
+              <div class="text-gray-500">$ claude --context linear:LIN-234</div>
+              <div class="mt-2 text-indigo-300">╭──────────────────────────────────────────────╮</div>
+              <div class="text-indigo-300">│ Claude Code · connected to project context     │</div>
+              <div class="text-indigo-300">╰──────────────────────────────────────────────╯</div>
+              <div class="mt-2">&gt; Reading Linear issue LIN-234: "Fix property filtering"…</div>
+              <div>&gt; Scanning <span class="text-accent2">apps/frontend/src/features/search</span> for filter logic…</div>
+              <div class="mt-1">Found issue in <span class="text-accent2">usePropertyFilters.ts</span> — price and location combined with OR instead of AND.</div>
+              <div class="mt-2 text-gray-500">── editing usePropertyFilters.ts ──────────────────</div>
+              <div class="text-red-400">- return price || location;</div>
+              <div class="text-emerald-400">+ return Boolean(price) &amp;&amp; Boolean(location);</div>
+              <div class="mt-2">Same OR logic found in <span class="text-accent2">apps/api/src/properties/properties.service.ts</span>. Updating both, and added a regression test.</div>
+              <div class="mt-2 text-gray-500">── 3 files changed · +23 −2 ──────────────────────</div>
+              <div class="mt-1 text-emerald-400">✓ Done. Filters now combine with AND across frontend and API.</div>
+              <div class="mt-2 text-gray-600">[process exited — code 0]</div>
+              <div class="text-gray-600">$ <span class="inline-block w-2 h-3.5 bg-gray-500 ml-1 animate-pulse align-middle"></span></div>
+            </div>
+            <!-- Raw stdin passthrough to the CLI process, not a custom chat protocol -->
+            <div class="p-3 border-t border-border">
+              <div class="flex items-center gap-2 bg-[#0a0c0f] border border-border rounded-lg px-3 py-2 font-mono text-[13px]">
+                <span class="text-gray-600">&gt;</span>
+                <input class="flex-1 bg-transparent outline-none placeholder:text-gray-600 text-gray-300" placeholder="Type to send input to the claude process…" />
+              </div>
+              <div class="text-[10px] text-gray-600 mt-1.5 pl-1">Input is piped directly to the CLI's stdin — no intermediate chat layer.</div>
+            </div>
+          </div>
+
+          <!-- Right rail: session details -->
+          <div class="w-72 border-l border-border bg-panel2 shrink-0 p-4 space-y-4 text-sm overflow-y-auto">
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Status</div>
+              <div class="flex items-center gap-2 text-amber-300 text-sm"><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Finished — awaiting review</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Process</div>
+              <div class="text-xs font-mono text-gray-300 break-all">claude --context linear:LIN-234</div>
+              <div class="text-[11px] text-gray-500 mt-1">PID 48213 · exited (code 0) · ran 10m 04s</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Working directory</div>
+              <div class="text-xs font-mono text-gray-300 break-all">~/Development/Clients/ClientA/platform</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-500 mb-2">Changes so far</div>
+              <div class="space-y-1 text-xs">
+                <div class="flex justify-between"><span class="text-gray-300">usePropertyFilters.ts</span><span class="text-emerald-400">+3 -1</span></div>
+                <div class="flex justify-between"><span class="text-gray-300">properties.service.ts</span><span class="text-emerald-400">+2 -1</span></div>
+                <div class="flex justify-between"><span class="text-gray-300">properties.service.spec.ts</span><span class="text-emerald-400">+18</span></div>
+              </div>
+              <div class="text-xs text-gray-500 mt-2">3 files · +23 −2</div>
+            </div>
+            <div class="pt-3 border-t border-border">
+              <div class="text-xs text-gray-500 mb-2">Integration access</div>
+              <div class="space-y-1.5 text-xs">
+                <div class="flex items-center justify-between"><span>GitHub</span><span class="text-emerald-400">✓</span></div>
+                <div class="flex items-center justify-between"><span>Linear</span><span class="text-emerald-400 flex items-center gap-1">✓ <span class="text-[10px] text-gray-500">(active)</span></span></div>
+                <div class="flex items-center justify-between"><span>Notion</span><span class="text-emerald-400">✓</span></div>
+                <div class="flex items-center justify-between"><span>Slack</span><span class="text-gray-600">✕</span></div>
+              </div>
+            </div>
+            <button class="w-full text-xs px-3 py-2 rounded-md bg-amber-400/90 hover:bg-amber-400 text-black font-medium">Review changes →</button>
+          </div>
+        </div>
+
+        <div class="h-8 border-t border-border bg-panel2 flex items-center justify-between px-4 text-[11px] text-amber-300 shrink-0">
+          <span>claude (PID 48213) · exited code 0 · finished 09:51</span>
+          <span class="text-gray-500">Attached PTY · scrollback 2,140 lines</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SCREEN 3: GIT REVIEW & COMMIT -->
+    <!-- ============================================================ -->
+    <div id="screen-git" class="screen mockup-frame rounded-xl overflow-hidden shadow-2xl hidden">
+      <div class="flex flex-col h-[820px]">
+        <div class="h-12 flex items-center justify-between px-4 border-b border-border bg-panel2 shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="flex gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-[#ff5f57]"></span>
+              <span class="w-3 h-3 rounded-full bg-[#febc2e]"></span>
+              <span class="w-3 h-3 rounded-full bg-[#28c840]"></span>
+            </div>
+            <span class="text-sm font-medium text-gray-300 ml-2">Dev Station</span>
+            <span class="text-xs text-gray-500 border-l border-border pl-3 ml-1">Client A / Platform · Git Review</span>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <span class="font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">main</span>
+          </div>
+        </div>
+
+        <div class="flex flex-1 min-h-0">
+          <div class="w-16 border-r border-border bg-panel2 flex flex-col items-center py-3 gap-2 shrink-0">
+            <div class="w-10 h-10 rounded-full bg-indigo-500/20 border-2 border-indigo-400 flex items-center justify-center text-sm font-semibold text-indigo-300">A</div>
+            <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400">B</div>
+            <div class="w-10 h-10 rounded-full bg-panel border border-border flex items-center justify-center text-sm text-gray-400">C</div>
+          </div>
+
+          <!-- Changed files list -->
+          <div class="w-72 border-r border-border bg-panel2 shrink-0 flex flex-col">
+            <div class="px-3 py-3 border-b border-border">
+              <div class="text-xs font-medium text-gray-400">Changed Files</div>
+              <div class="text-[11px] text-gray-500 mt-0.5">3 files changed · +23 −2</div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2 space-y-1 text-sm">
+              <div class="px-3 py-2 rounded-md bg-panel border border-accent/40 flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-amber-400 text-xs shrink-0">M</span>
+                  <span class="truncate">usePropertyFilters.ts</span>
+                </div>
+                <span class="text-[10px] text-gray-500 shrink-0">+3 −1</span>
+              </div>
+              <div class="px-3 py-2 rounded-md hover:bg-panel flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-amber-400 text-xs shrink-0">M</span>
+                  <span class="truncate">properties.service.ts</span>
+                </div>
+                <span class="text-[10px] text-gray-500 shrink-0">+2 −1</span>
+              </div>
+              <div class="px-3 py-2 rounded-md hover:bg-panel flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-emerald-400 text-xs shrink-0">A</span>
+                  <span class="truncate">properties.service.spec.ts</span>
+                </div>
+                <span class="text-[10px] text-gray-500 shrink-0">+18</span>
+              </div>
+            </div>
+            <div class="p-3 border-t border-border text-[11px] text-gray-500">
+              Generated by <span class="text-indigo-300">Claude Code</span> · LIN-234
+            </div>
+          </div>
+
+          <!-- Diff viewer -->
+          <div class="flex-1 min-w-0 flex flex-col">
+            <div class="px-4 py-2.5 border-b border-border flex items-center justify-between">
+              <span class="text-sm font-mono text-gray-300">apps/frontend/src/features/search/usePropertyFilters.ts</span>
+              <span class="text-xs text-gray-500">+3 −1</span>
+            </div>
+            <div class="flex-1 overflow-y-auto font-mono text-xs leading-relaxed">
+              <div class="flex"><span class="w-10 text-right pr-2 text-gray-600 select-none shrink-0">18</span><span class="px-2 text-gray-500">  const usePropertyFilters = (params: FilterParams) =&gt; {'{'}</span></div>
+              <div class="flex"><span class="w-10 text-right pr-2 text-gray-600 select-none shrink-0">19</span><span class="px-2 text-gray-500">    const {'{'} price, location {'}'} = params;</span></div>
+              <div class="flex bg-red-500/10"><span class="w-10 text-right pr-2 text-red-500/70 select-none shrink-0">20</span><span class="px-2 text-red-400">-   return price || location;</span></div>
+              <div class="flex bg-emerald-500/10"><span class="w-10 text-right pr-2 text-emerald-500/70 select-none shrink-0">20</span><span class="px-2 text-emerald-400">+   return Boolean(price) &amp;&amp; Boolean(location);</span></div>
+              <div class="flex bg-emerald-500/10"><span class="w-10 text-right pr-2 text-emerald-500/70 select-none shrink-0">21</span><span class="px-2 text-emerald-400">+   // filters must combine with AND, see LIN-234</span></div>
+              <div class="flex"><span class="w-10 text-right pr-2 text-gray-600 select-none shrink-0">22</span><span class="px-2 text-gray-500">  {'}'};</span></div>
+              <div class="flex"><span class="w-10 text-right pr-2 text-gray-600 select-none shrink-0">23</span><span class="px-2 text-gray-500"></span></div>
+              <div class="flex"><span class="w-10 text-right pr-2 text-gray-600 select-none shrink-0">24</span><span class="px-2 text-gray-500">  export default usePropertyFilters;</span></div>
+            </div>
+          </div>
+
+          <!-- Commit / push panel -->
+          <div class="w-80 border-l border-border bg-panel2 shrink-0 p-4 flex flex-col gap-4">
+            <div>
+              <div class="text-xs font-medium text-gray-400 mb-2">Commit message</div>
+              <textarea class="w-full h-20 bg-panel border border-border rounded-md p-2.5 text-sm outline-none focus:border-accent resize-none" placeholder="Describe the change...">Fix property filtering to combine price and location with AND</textarea>
+            </div>
+            <div class="flex gap-2">
+              <button class="flex-1 text-sm px-3 py-2 rounded-md bg-accent/90 hover:bg-accent text-white font-medium">Commit</button>
+              <button class="text-sm px-3 py-2 rounded-md border border-border hover:bg-panel">Discard</button>
+            </div>
+            <div class="h-px bg-border"></div>
+            <div class="flex items-center justify-between text-sm">
+              <div>
+                <div class="text-gray-300">Push to origin</div>
+                <div class="text-xs text-gray-500">main → origin/main</div>
+              </div>
+              <button class="text-sm px-3 py-2 rounded-md border border-border hover:bg-panel">Push</button>
+            </div>
+            <div class="h-px bg-border"></div>
+            <div class="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-300/90">
+              Review AI-generated changes before committing. Discarding changes requires confirmation.
+            </div>
+            <div class="mt-auto text-xs text-gray-500">
+              <div class="flex items-center gap-1.5 mb-1"><span class="text-indigo-300">●</span> Reviewed by you</div>
+              <div class="flex items-center gap-1.5"><span class="text-emerald-400">●</span> Tests passing (12/12)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="h-8 border-t border-border bg-panel2 flex items-center justify-between px-4 text-[11px] text-gray-500 shrink-0">
+          <span>3 files staged</span>
+          <span>Not yet pushed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab-btn');
+    const screens = { dashboard: document.getElementById('screen-dashboard'), agent: document.getElementById('screen-agent'), git: document.getElementById('screen-git') };
+    tabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabs.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        Object.entries(screens).forEach(([key, el]) => el.classList.toggle('hidden', key !== btn.dataset.tab));
+      });
+    });
+  </script>
+</body>
+</html>

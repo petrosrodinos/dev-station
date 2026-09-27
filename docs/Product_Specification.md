@@ -465,18 +465,22 @@ New Agent Session
 
 A user should be able to start an agent inside the selected project.
 
-The agent must receive:
+**Do not build a custom AI chat/messaging interface.** Each agent is its own CLI tool (`claude`, `cursor-agent`, etc.) with its own interaction model. Instead, the application should spawn the agent's CLI as a real process and attach an embedded, controllable terminal to it inside the app. The developer interacts with the agent through that terminal exactly as they would in a standalone terminal window — typing input, reading streamed output — with the app only responsible for spawning, displaying, and managing the process (start/stop/restart, visibility, working directory).
+
+The agent process must receive:
 
 * Project working directory
 * Relevant environment
-* User-selected instructions
-* Optional issue/task context
+* User-selected instructions (e.g. an initial prompt/flag passed to the CLI invocation)
+* Optional issue/task context (e.g. passed as CLI arguments or piped into the session)
 
 ---
 
 # 13. AI Agent Sessions
 
 AI sessions should be persistent within the project workspace.
+
+An AI agent session is a managed CLI process with an embedded terminal attached to it — not a custom chat conversation. The application is responsible for spawning, tracking, and controlling that process (via the Electron main process's AI Agent Manager/Process Manager), and for rendering its terminal output live in the UI. Session state (status, timestamps, changes) is derived from the process lifecycle and the project's Git state, not from parsing a proprietary message format.
 
 Example:
 
@@ -493,17 +497,39 @@ AI Sessions
 
 Each session should have:
 
-* Agent type
+* Agent type (which CLI is running, e.g. Claude Code, Cursor CLI)
 * Session name
+* Underlying process (command, PID, working directory)
 * Start time
-* Status
+* Status (running/stopped/crashed)
 * Project
-* Conversation/output logs
+* Terminal output/scrollback (the raw CLI output, not a custom chat log)
 * Related issue/task
 * Changes produced
 * Git commit if available
 
-The user should be able to switch between active AI sessions without losing project context.
+The user should be able to:
+
+* Switch between active AI sessions without losing project context or killing the underlying process
+* Send input directly to the session's terminal (stdin passthrough)
+* Stop, restart, or open the session in an external terminal window
+
+### Detecting when a session has finished
+
+The user must be notified when an agent finishes its task so they can review and continue, without having to keep the terminal in view. Since agents are plain CLI processes rather than a structured chat protocol, status must be inferred:
+
+* **Process exit** — the CLI process exits (naturally or via a completion/exit code). Treated as "Finished".
+* **Idle/output-quiet detection** — no new terminal output for a configurable threshold (e.g. 30–60s) while the process is still running. Treated as "Awaiting input" (the agent is likely waiting on the user, or done and sitting at its prompt).
+* **Working tree change detection** — Git status changes in the project directory while a session is running are attached to that session as "changes produced," used to enrich the notification (e.g. "3 files changed").
+* Where a given CLI exposes a more structured completion signal (e.g. a hook, exit code, or notification flag), the corresponding agent adapter may use it instead of the generic heuristics above. This should be pluggable per agent, not hard-coded.
+
+The user will typically have several agent sessions running across several different projects at once. **Do not use in-app toasts/popups or a separate notification center for this** — with multiple concurrent sessions they add a layer of transient UI on top of what the app already shows. Keep it to the two places the user already looks: the project list and the project's own activity.
+
+When a session transitions to **Finished** or **Awaiting input**, the application should:
+
+* Update the session's status indicator in the AI Sessions list
+* Surface a status badge on the project's icon in the left navigation rail, visible even when another project is open, showing a count if more than one session in that project needs attention
+* Add an entry to the project's Activity feed, shown in the bottom Status/Processes/Notifications bar (see Section 27)
 
 ---
 
@@ -896,13 +922,23 @@ Repository has uncommitted changes
 AI agent requires approval
 ```
 
+**AI agent completion is the most important notification case.** The user may have several agent sessions running across several different projects at the same time, so this must be built for that from the start — not just the single-session case. The user should be able to notice a finished session and jump back in without keeping that project's terminal in view.
+
+**Do not implement this as toasts/popups or a dedicated notification center.** Keep it to two places the user already looks:
+
+* A status badge on each project's icon in the left navigation rail (visible while working in a different project), showing a count when more than one of that project's sessions needs attention
+* An entry in that project's Activity feed, surfaced through the bottom Status/Processes/Notifications bar (see Section 4)
+
+Clicking a nav-rail badge or an activity entry should switch to that project and open the finished session.
+
 A project activity timeline could display:
 
 ```text
 09:42  Claude Code modified 8 files
-09:45  Changes reviewed
-09:47  Commit created
-09:48  Push completed
+09:45  Claude Code finished — awaiting review
+09:47  Changes reviewed
+09:49  Commit created
+09:50  Push completed
 ```
 
 ---
