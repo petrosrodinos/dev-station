@@ -127,4 +127,5 @@ All payloads validated with zod in main; paths must resolve inside a known proje
 - `process.list/start/stop/restart/logs` + event `process:event`
 - `terminal.create/write/resize/kill/list` + events `terminal:data`, `terminal:exit`
 - `agent.list/start/write/resize/stop/restart/openExternal/scrollback` + events `agent:data`, `agent:status`
+- `skills.list(projectId|null)` · `skills.read(skillId)` · `skills.send({ session_id, skill_id, mode: 'content'|'reference', submit? })` — read-only scan of Claude/Cursor/Codex/Gemini/Copilot/`.agents` skill locations (user, project, plus `settings.skill_folders`); `send` bracketed-pastes into a running agent PTY (needs `AI_USE_AGENTS`); ids only resolve to files the scanner found
 - `secure.get/set/delete` (safeStorage), `shell.openUrl(url)` (http/https only), `app.info()`

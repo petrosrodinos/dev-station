@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, shell } from "electron";
 import os from "node:os";
 import path from "node:path";
 import { z } from "zod";
-import { AgentTypes, EditorTargets, IpcChannels, ProcessStatuses } from "../shared/contract";
+import { AgentTypes, EditorTargets, IpcChannels, ProcessStatuses, SkillSendModes } from "../shared/contract";
 import { accessManager } from "../managers/access-manager";
 import { agentManager } from "../managers/agent-manager";
 import { inspect } from "../managers/detection-manager";
@@ -11,6 +11,7 @@ import { gitManager } from "../managers/git-manager";
 import { notificationManager } from "../managers/notification-manager";
 import { previewManager } from "../managers/preview-manager";
 import { processManager } from "../managers/process-manager";
+import { skillManager } from "../managers/skill-manager";
 import { SECURE_KEYS, secureStore } from "../managers/secure-store";
 import { terminalManager } from "../managers/terminal-manager";
 import { workspaceConfig } from "../managers/workspace-config";
@@ -40,6 +41,7 @@ const zSettings = z
     default_shell: z.string().max(1000).nullable(),
     agent_executables: z.object({ CLAUDE_CODE: z.string().max(1000).nullable(), CURSOR_CLI: z.string().max(1000).nullable() }).partial(),
     editor_executables: z.object({ cursor: z.string().max(1000).nullable(), vscode: z.string().max(1000).nullable() }).partial(),
+    skill_folders: z.array(zAbsPath).max(50),
   })
   .partial();
 
@@ -210,6 +212,16 @@ export function registerIpc() {
   handle(IpcChannels.AGENT_OPEN_EXTERNAL, args(zId), ([id]) => agentManager.openExternal(id), { requires: ["AI_USE_AGENTS"] });
   handle(IpcChannels.AGENT_SCROLLBACK, args(zId), ([id]) => agentManager.scrollback(id));
   handle(IpcChannels.AGENT_SET_IDLE, args(z.number().int().min(10).max(600)), ([s]) => agentManager.setIdleThreshold(s));
+
+  // Skills ---------------------------------------------------------------------------------
+  handle(IpcChannels.SKILLS_LIST, args(zId.nullable()), ([projectId]) => skillManager.list(projectId));
+  handle(IpcChannels.SKILLS_READ, args(z.string().min(1).max(100)), ([id]) => skillManager.read(id));
+  handle(
+    IpcChannels.SKILLS_SEND,
+    args(z.object({ session_id: zId, skill_id: z.string().min(1).max(100), mode: z.enum([SkillSendModes.CONTENT, SkillSendModes.REFERENCE]), submit: z.boolean().optional() })),
+    ([input]) => skillManager.send(input),
+    { requires: ["AI_USE_AGENTS"] },
+  );
 
   // Preview --------------------------------------------------------------------------------
   const zBounds = z.object({ x: z.number().finite(), y: z.number().finite(), width: z.number().finite(), height: z.number().finite() });

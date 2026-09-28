@@ -6,6 +6,7 @@ export const ProjectTabs = {
     FILES: "files",
     TERMINAL: "terminal",
     SESSIONS: "sessions",
+    SKILLS: "skills",
     INTEGRATIONS: "integrations",
 } as const;
 export type ProjectTab = (typeof ProjectTabs)[keyof typeof ProjectTabs];
@@ -17,5 +18,6 @@ export const ProjectTabOptions: { id: ProjectTab; label: string; permission?: Ac
     { id: ProjectTabs.FILES, label: "Files" },
     { id: ProjectTabs.TERMINAL, label: "Terminal", permission: PermissionKeys.PROJECTS_EDIT },
     { id: ProjectTabs.SESSIONS, label: "AI Sessions", permission: PermissionKeys.AI_USE_AGENTS },
+    { id: ProjectTabs.SKILLS, label: "Skills", permission: PermissionKeys.AI_USE_AGENTS },
     { id: ProjectTabs.INTEGRATIONS, label: "Integrations", permission: PermissionKeys.INTEGRATIONS_VIEW },
 ];
