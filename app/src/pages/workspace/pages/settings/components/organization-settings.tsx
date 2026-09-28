@@ -6,6 +6,7 @@ import { MembersCard } from "./members-card";
 import { InvitationsCard } from "./invitations-card";
 import { RolesCard } from "./roles-card";
 import { JoinOrganizationCard } from "./join-organization-card";
+import { CreateOrganizationCard } from "./create-organization-card";
 
 export function OrganizationSettings() {
   const { organization } = useCurrentOrganization();
@@ -18,6 +19,7 @@ export function OrganizationSettings() {
       {can(PermissionKeys.ORG_MANAGE_MEMBERS) && <InvitationsCard />}
       <RolesCard />
       <JoinOrganizationCard />
+      <CreateOrganizationCard />
     </div>
   );
 }
