@@ -1,8 +1,10 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { MemberStatus, Prisma } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
@@ -11,6 +13,7 @@ import {
 } from '@/modules/organizations/utils/organizations.utils';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePreferencesDto } from './dto/update-preferences.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { Me } from './interfaces/users.interface';
 import { NOTIFICATION_EVENT_TYPES } from './constants/notification-settings.constants';
 import {
@@ -47,6 +50,38 @@ export class UsersService {
   async updateMe(userId: string, dto: UpdateUserDto): Promise<Me> {
     await this.prisma.user.update({ where: { id: userId }, data: dto });
     return this.getMe(userId);
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { password: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    const matches = await bcrypt.compare(dto.current_password, user.password);
+    if (!matches)
+      throw new BadRequestException('Current password is incorrect');
+
+    if (dto.current_password === dto.new_password)
+      throw new BadRequestException(
+        'New password must be different from your current password',
+      );
+
+    const hashed = await bcrypt.hash(dto.new_password, 10);
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { password: hashed },
+      }),
+      this.prisma.passwordResetToken.updateMany({
+        where: { user_uuid: userId, used_at: null },
+        data: { used_at: new Date() },
+      }),
+    ]);
+
+    return { message: 'Password changed successfully' };
   }
 
   async getPreferences(userId: string) {

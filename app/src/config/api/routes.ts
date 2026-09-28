@@ -11,6 +11,7 @@ export const ApiRoutes = {
     },
     users: {
         me: "/users/me",
+        password: "/users/me/password",
         preferences: "/users/me/preferences",
     },
     gitIdentities: {

@@ -10,6 +10,11 @@ export interface Me {
     organizations: OrganizationSummary[];
 }
 
+export interface ChangePasswordDto {
+    current_password: string;
+    new_password: string;
+}
+
 export interface UpdateMeDto {
     full_name?: string;
     avatar_url?: string | null;
