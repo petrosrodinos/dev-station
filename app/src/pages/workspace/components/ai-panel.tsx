@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, ExternalLink, FileDiff, Plus, RotateCw, Square, Terminal, X } from "lucide-react";
+import { Bot, ExternalLink, FileDiff, Plus, RotateCw, Square, Terminal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -11,7 +11,6 @@ import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { XtermTerminal } from "@/components/ui/xterm-terminal";
 import {
   useAgentSessions,
-  useCloseSessionTab,
   useOpenAgentExternally,
   useRestartAgentSession,
   useRuntimeAgent,
@@ -27,15 +26,14 @@ import { AgentStatusOptions } from "@/config/constants/dropdowns/agents/agent-st
 import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
 import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
-import { agentStatusDot, isAgentActive } from "@/lib/status";
+import { agentStatusDot } from "@/lib/status";
 import { formatRelative } from "@/lib/date";
 import { isDesktop } from "@/lib/desktop";
 import { AiPanelModes, useWorkspaceStore, type AiPanelMode } from "@/stores/workspace";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
 import { Routes } from "@/routes/routes";
-import { CloseSessionDialog } from "./close-session-dialog";
-import { SessionContextMenu } from "./session-context-menu";
+import { DeleteSessionDialog, SessionContextMenu } from "./session-context-menu";
 import { cn } from "@/lib/utils";
 
 /** Right-hand panel: the active session's embedded agent terminal, or the list of all sessions. */
@@ -82,8 +80,7 @@ function ActiveSessionTerminal() {
   const stop = useStopAgentSession();
   const restart = useRestartAgentSession();
   const openExternal = useOpenAgentExternally();
-  const closeTab = useCloseSessionTab();
-  const [confirmClose, setConfirmClose] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const { can } = usePermissions();
 
   const { data: workspaceConfig } = useWorkspaceConfig();
@@ -110,11 +107,6 @@ function ActiveSessionTerminal() {
       />
     );
   }
-
-  const requestClose = () => {
-    if (runtime?.alive && isAgentActive(runtime.status)) setConfirmClose(true);
-    else closeTab.mutate({ id: activeId, stopProcess: !!runtime });
-  };
 
   const changes = runtime?.changes ?? (session ? { files_changed: session.files_changed, additions: session.additions, deletions: session.deletions } : null);
 
@@ -154,19 +146,15 @@ function ActiveSessionTerminal() {
             </PanelIconButton>
           </>
         )}
-        {can(PermissionKeys.AI_USE_AGENTS) && (
-          <PanelIconButton label="Close session" onClick={requestClose} disabled={closeTab.isPending}>
-            <X className="size-3.5" />
-          </PanelIconButton>
+        {session && can(PermissionKeys.AI_USE_AGENTS) && (
+          <>
+            <PanelIconButton label="Delete session" onClick={() => setConfirmDelete(true)}>
+              <Trash2 className="size-3.5" />
+            </PanelIconButton>
+            <DeleteSessionDialog session={session} open={confirmDelete} onOpenChange={setConfirmDelete} />
+          </>
         )}
       </div>
-      <CloseSessionDialog
-        sessionName={session?.name ?? runtime?.name ?? "This session"}
-        open={confirmClose}
-        isPending={closeTab.isPending}
-        onOpenChange={setConfirmClose}
-        onChoose={(stopProcess) => closeTab.mutate({ id: activeId, stopProcess }, { onSettled: () => setConfirmClose(false) })}
-      />
       <div className="min-h-0 flex-1 bg-terminal">
         {source && ranOnThisDevice ? (
           <XtermTerminal key={activeId} source={source} sourceKey={activeId} readOnly={!runtime?.alive || !can(PermissionKeys.AI_USE_AGENTS)} className="h-full" />
