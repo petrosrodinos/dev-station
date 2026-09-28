@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronRight, Github } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetPreferences, useUpdatePreferences } from "@/features/users/hooks/use-users";
@@ -14,6 +13,7 @@ import { IntegrationProviders } from "@/features/integrations/interfaces/integra
 import { DefaultBranchOptions } from "@/config/constants/dropdowns/settings/default-branch.options";
 import { Routes } from "@/routes/routes";
 import { gitSettingsSchema, type GitSettingsFormData } from "../validation-schemas/settings.schema";
+import { GitIdentitiesSection } from "./git-identities-section";
 import { SettingsRow, SettingsSectionHeader } from "./settings-row";
 
 export function GitSettings() {
@@ -21,48 +21,22 @@ export function GitSettings() {
   const { data: preferences, isPending } = useGetPreferences();
   const save = useUpdatePreferences();
   const { connections } = useProviderConnections(IntegrationProviders.GITHUB);
-  const form = useForm<GitSettingsFormData>({ resolver: zodResolver(gitSettingsSchema), defaultValues: { git_name: "", git_email: "", default_branch: "main" } });
+  const form = useForm<GitSettingsFormData>({ resolver: zodResolver(gitSettingsSchema), defaultValues: { default_branch: "main" } });
 
   useEffect(() => {
-    if (preferences) form.reset({ git_name: preferences.git_name ?? "", git_email: preferences.git_email ?? "", default_branch: preferences.default_branch });
+    if (preferences) form.reset({ default_branch: preferences.default_branch });
   }, [preferences, form]);
 
-  const onSubmit = (data: GitSettingsFormData) => save.mutate({ git_name: data.git_name || null, git_email: data.git_email || null, default_branch: data.default_branch });
+  const onSubmit = (data: GitSettingsFormData) => save.mutate({ default_branch: data.default_branch });
 
   if (isPending) return <Skeleton className="h-48 w-full" />;
 
   return (
     <div className="space-y-8">
+      <GitIdentitiesSection />
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <SettingsSectionHeader title="Identity" description="Used as the author of commits made from Dev Station. Leave empty to use your global Git config." />
-          <SettingsRow label="Git name">
-            <FormField
-              control={form.control}
-              name="git_name"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormControl>
-                    <Input {...field} value={field.value ?? ""} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </SettingsRow>
-          <SettingsRow label="Git email">
-            <FormField
-              control={form.control}
-              name="git_email"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormControl>
-                    <Input {...field} value={field.value ?? ""} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </SettingsRow>
           <SettingsRow label="Default branch" description="Suggested when creating new projects and branches.">
             <FormField
               control={form.control}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { GitCommitHorizontal } from "lucide-react";
@@ -7,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { useGitCommit, useGitPush } from "@/features/git/hooks/use-git";
-import { useGetPreferences } from "@/features/users/hooks/use-users";
+import { useGitIdentities } from "@/features/git-identities/hooks/use-git-identities";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAgentSessions, useRenameAgentSession } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
@@ -17,7 +19,9 @@ import { commitSchema, type CommitFormData } from "../../../validation-schemas/p
 export function CommitBox({ project, selectedPaths, totalFiles }: { project: Project; selectedPaths: string[]; totalFiles: number }) {
   const commit = useGitCommit();
   const push = useGitPush();
-  const { data: preferences } = useGetPreferences();
+  const { data: identities } = useGitIdentities();
+  const [identityId, setIdentityId] = useState<string | null>(null);
+  const identity = identities?.find((i) => i.id === identityId) ?? identities?.find((i) => i.is_default);
   const { data: sessions } = useAgentSessions({ project_id: project.id });
   const linkCommit = useRenameAgentSession();
   const { can } = usePermissions();
@@ -30,8 +34,8 @@ export function CommitBox({ project, selectedPaths, totalFiles }: { project: Pro
           projectId: project.id,
           message: data.message,
           paths: selectedPaths.length === totalFiles ? undefined : selectedPaths,
-          name: preferences?.git_name,
-          email: preferences?.git_email,
+          name: identity?.name,
+          email: identity?.email,
         },
         {
           onSuccess: (result) => {
@@ -82,6 +86,20 @@ export function CommitBox({ project, selectedPaths, totalFiles }: { project: Pro
             />
             <div className="mt-2.5 flex items-center justify-end gap-2">
               <span className="mr-auto text-xs text-ash">Ctrl+Enter to commit</span>
+              {identities && identities.length > 1 && identity && (
+                <Select value={identity.id} onValueChange={setIdentityId}>
+                  <SelectTrigger className="h-9 w-44 text-xs" aria-label="Commit as">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {identities.map((i) => (
+                      <SelectItem key={i.id} value={i.id}>
+                        {i.label} · {i.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               {can(PermissionKeys.GIT_PUSH) && (
                 <Button type="button" variant="outline" disabled={!count || commit.isPending} loading={push.isPending} onClick={() => void submit(true)}>
                   Commit & push

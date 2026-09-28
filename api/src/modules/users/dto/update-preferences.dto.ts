@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { AgentType } from 'generated/prisma';
 import {
   IsBoolean,
-  IsEmail,
   IsEnum,
   IsIn,
   IsInt,
@@ -22,17 +21,6 @@ export class UpdatePreferencesDto {
   @IsOptional()
   @IsUUID()
   active_organization_id?: string;
-
-  @ApiProperty({ required: false, example: 'Ada Lovelace' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(120)
-  git_name?: string;
-
-  @ApiProperty({ required: false, example: 'ada@example.com' })
-  @IsOptional()
-  @IsEmail()
-  git_email?: string;
 
   @ApiProperty({ required: false, enum: AgentType })
   @IsOptional()

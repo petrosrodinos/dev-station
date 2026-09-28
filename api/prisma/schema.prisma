@@ -150,6 +150,7 @@ model User {
   connections           IntegrationConnection[]
   agent_sessions        AgentSession[]
   activities            Activity[]
+  git_identities        GitIdentity[]
 
   @@index([email])
   @@index([phone])
@@ -186,7 +187,25 @@ model Document {
   @@map("documents")
 }
 
-/// Cross-device user preferences (Git identity, preferred agent...). Device-only settings live in Electron.
+/// Commit author identities. Exactly one per user is the default (enforced in the service).
+model GitIdentity {
+  id         String   @id @default(uuid())
+  user_id    String
+  label      String
+  name       String
+  email      String
+  is_default Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, label])
+  @@index([user_id])
+  @@map("git_identities")
+}
+
+/// Cross-device user preferences (preferred agent, theme...). Device-only settings live in Electron.
 model UserPreference {
   id                     String     @id @default(uuid())
   user_id                String     @unique
