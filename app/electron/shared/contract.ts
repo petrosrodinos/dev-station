@@ -324,6 +324,18 @@ export interface PreviewState {
 
 export type Unsubscribe = () => void;
 
+export interface OsNotificationInput {
+  title: string;
+  body: string;
+  project_id?: string;
+  session_id?: string;
+}
+
+export interface OsNotificationClick {
+  project_id?: string;
+  session_id?: string;
+}
+
 export interface DevStationBridge {
   app: {
     info(): Promise<AppInfo>;
@@ -417,6 +429,11 @@ export interface DevStationBridge {
     destroy(input: { projectId: string }): Promise<void>;
     onState(cb: (e: PreviewState) => void): Unsubscribe;
   };
+  notifications: {
+    /** Resolves to false when the OS does not support notifications. */
+    show(input: OsNotificationInput): Promise<boolean>;
+    onClick(cb: (e: OsNotificationClick) => void): Unsubscribe;
+  };
 }
 
 export const IpcChannels = {
@@ -492,6 +509,8 @@ export const IpcChannels = {
   PREVIEW_LOAD: "preview:load",
   PREVIEW_DESTROY: "preview:destroy",
   PREVIEW_STATE: "preview:state",
+  NOTIF_SHOW: "notification:show",
+  NOTIF_CLICK: "notification:click",
 } as const;
 
 export const IpcErrorCodes = {

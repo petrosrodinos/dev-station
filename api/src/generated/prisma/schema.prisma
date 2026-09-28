@@ -217,6 +217,13 @@ model UserPreference {
   idle_threshold_seconds Int       @default(45)
   confirm_destructive    Boolean   @default(true)
   theme                  String    @default("dark")
+  theme_preset           String    @default("default")
+  accent_color           String?
+  font_size              Int       @default(14)
+  font_family            String    @default("inter")
+  mono_font_family       String    @default("jetbrains-mono")
+  /// Partial override of the notification defaults (see users/constants/notification-settings.constants.ts); null = defaults
+  notification_settings  Json?
   created_at             DateTime  @default(now())
   updated_at             DateTime  @updatedAt
 

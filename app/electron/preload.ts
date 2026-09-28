@@ -113,6 +113,10 @@ const bridge: DevStationBridge = {
     destroy: (input) => call(C.PREVIEW_DESTROY, input),
     onState: (cb) => on(C.PREVIEW_STATE, cb),
   },
+  notifications: {
+    show: (input) => call(C.NOTIF_SHOW, input),
+    onClick: (cb) => on(C.NOTIF_CLICK, cb),
+  },
 };
 
 contextBridge.exposeInMainWorld("devStation", bridge);

@@ -175,6 +175,12 @@ exports.Prisma.UserPreferenceScalarFieldEnum = {
   idle_threshold_seconds: 'idle_threshold_seconds',
   confirm_destructive: 'confirm_destructive',
   theme: 'theme',
+  theme_preset: 'theme_preset',
+  accent_color: 'accent_color',
+  font_size: 'font_size',
+  font_family: 'font_family',
+  mono_font_family: 'mono_font_family',
+  notification_settings: 'notification_settings',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };

@@ -105,6 +105,9 @@ app.on("web-contents-created", (_e, contents) => {
   contents.on("will-attach-webview", (event) => event.preventDefault());
 });
 
+// Windows attributes toast notifications to this id; without it they are dropped or mislabeled.
+if (process.platform === "win32") app.setAppUserModelId("dev.logiqdev.devstation");
+
 app.whenReady().then(() => {
   if (process.platform !== "darwin") Menu.setApplicationMenu(null);
   session.defaultSession.setPermissionRequestHandler((_wc, permission, callback) => callback(permission === "clipboard-sanitized-write"));

@@ -9,6 +9,7 @@ import { useUpdateDeviceSettings, useWorkspaceConfig } from "@/features/local-wo
 import { isDesktop } from "@/lib/desktop";
 import { DirectoryField } from "@/pages/workspace/components/project-form/directory-field";
 import { deviceSettingsSchema, type DeviceSettingsFormData } from "../validation-schemas/settings.schema";
+import { NotificationSettings } from "./notification-settings";
 import { SettingsRow, SettingsSectionHeader } from "./settings-row";
 
 export function GeneralSettings() {
@@ -35,12 +36,7 @@ export function GeneralSettings() {
 
   return (
     <div className="space-y-8">
-      <section>
-        <SettingsSectionHeader title="Notifications" description="Theme and fonts live in the Theme section." />
-        <SettingsRow label="Notifications" description="Finished or waiting AI sessions show a badge on the project in the rail and an entry in the activity feed — no pop-ups.">
-          <span className="text-xs text-muted-foreground">Rail badges + activity feed</span>
-        </SettingsRow>
-      </section>
+      <NotificationSettings />
 
       <section>
         <SettingsSectionHeader title="This device" description="Stored only on this computer — never synced to your organization." />

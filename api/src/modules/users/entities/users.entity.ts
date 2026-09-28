@@ -5,6 +5,7 @@ import {
   PermissionKey,
   SystemRoleKey,
 } from 'generated/prisma';
+import { NotificationSettings } from '../constants/notification-settings.constants';
 
 export class OrganizationRoleRef {
   @ApiProperty() id: string;
@@ -44,4 +45,9 @@ export class UserPreferenceEntity {
   @ApiProperty() font_size: number;
   @ApiProperty() font_family: string;
   @ApiProperty() mono_font_family: string;
+  @ApiProperty({
+    description:
+      'Resolved notification settings: { enabled, events: { [EVENT_TYPE]: { badge, feed, os } } }',
+  })
+  notification_settings: NotificationSettings;
 }
