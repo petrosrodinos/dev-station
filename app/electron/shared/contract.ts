@@ -297,6 +297,28 @@ export interface StartAgentInput {
 }
 
 // ---------------------------------------------------------------------------
+// Preview (embedded WebContentsView for localhost dev services)
+// ---------------------------------------------------------------------------
+
+/** Rectangle in window (CSS pixel) coordinates. */
+export interface PreviewBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface PreviewState {
+  projectId: string;
+  url: string;
+  title: string;
+  loading: boolean;
+  canGoBack: boolean;
+  canGoForward: boolean;
+  error: string | null;
+}
+
+// ---------------------------------------------------------------------------
 // Bridge surface exposed on window.devStation
 // ---------------------------------------------------------------------------
 
@@ -386,6 +408,15 @@ export interface DevStationBridge {
     onData(cb: (e: PtyDataEvent) => void): Unsubscribe;
     onStatus(cb: (e: AgentStatusEvent) => void): Unsubscribe;
   };
+  preview: {
+    show(input: { projectId: string; url: string; bounds: PreviewBounds }): Promise<void>;
+    hide(input: { projectId: string }): Promise<void>;
+    setBounds(input: { projectId: string; bounds: PreviewBounds }): Promise<void>;
+    navigate(input: { projectId: string; action: "back" | "forward" | "reload" }): Promise<void>;
+    load(input: { projectId: string; url: string }): Promise<void>;
+    destroy(input: { projectId: string }): Promise<void>;
+    onState(cb: (e: PreviewState) => void): Unsubscribe;
+  };
 }
 
 export const IpcChannels = {
@@ -454,6 +485,13 @@ export const IpcChannels = {
   AGENT_SET_IDLE: "agent:set-idle",
   AGENT_DATA: "agent:data",
   AGENT_STATUS: "agent:status",
+  PREVIEW_SHOW: "preview:show",
+  PREVIEW_HIDE: "preview:hide",
+  PREVIEW_SET_BOUNDS: "preview:set-bounds",
+  PREVIEW_NAVIGATE: "preview:navigate",
+  PREVIEW_LOAD: "preview:load",
+  PREVIEW_DESTROY: "preview:destroy",
+  PREVIEW_STATE: "preview:state",
 } as const;
 
 export const IpcErrorCodes = {
@@ -463,4 +501,5 @@ export const IpcErrorCodes = {
   VALIDATION: "VALIDATION",
   AGENT_NOT_FOUND: "AGENT_NOT_FOUND",
   GIT_FAILED: "GIT_FAILED",
+  PREVIEW_URL_NOT_ALLOWED: "PREVIEW_URL_NOT_ALLOWED",
 } as const;

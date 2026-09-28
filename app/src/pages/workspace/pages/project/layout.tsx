@@ -1,6 +1,6 @@
 import { useEffect, type FC } from "react";
 import { Navigate, NavLink, Outlet, useLocation, useParams } from "react-router-dom";
-import { Bot, ChevronDown, ExternalLink, Files, GitBranch, Home, Plug, SquareTerminal } from "lucide-react";
+import { Bot, ChevronDown, ExternalLink, Files, GitBranch, Home, PanelRight, Plug, SquareTerminal } from "lucide-react";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +12,8 @@ import { useGitStatus } from "@/features/git/hooks/use-git";
 import { useOpenInEditor } from "@/features/files/hooks/use-files";
 import { EditorTargetOptions } from "@/config/constants/dropdowns/settings/editor-target.options";
 import { ProjectTabOptions, ProjectTabs, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
-import { useWorkspaceStore } from "@/stores/workspace";
+import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
+import { PreviewPanel } from "./components/preview-panel";
 import { Routes } from "@/routes/routes";
 import { isDesktop } from "@/lib/desktop";
 import { cn } from "@/lib/utils";
@@ -37,6 +38,9 @@ const ProjectLayout: FC = () => {
   const { data: git } = useGitStatus(projectId ?? null);
   const openInEditor = useOpenInEditor();
   const onSetup = location.pathname.endsWith("/setup");
+  const previewOpen = useWorkspaceStore((s) => (projectId ? s.preview_by_project[projectId]?.previewOpen : false)) ?? DEFAULT_PREVIEW_PREFS.previewOpen;
+  const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
+  const previewAvailable = isDesktop() && !onSetup;
 
   useEffect(() => {
     if (projectId) setActiveProject(projectId);
@@ -86,6 +90,18 @@ const ProjectLayout: FC = () => {
                 <GitBranch className="size-3.5" /> {git.branch}
               </NavLink>
             )}
+            {previewAvailable && (
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn("h-[30px] gap-1.5", previewOpen && "border-hairline-strong bg-accent")}
+                aria-pressed={previewOpen}
+                title="Toggle preview (Ctrl+Shift+P)"
+                onClick={() => setProjectPreview(project.id, { previewOpen: !previewOpen })}
+              >
+                <PanelRight className="size-3.5" /> Preview
+              </Button>
+            )}
             {localState === ProjectLocalStates.LOCAL && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -127,8 +143,11 @@ const ProjectLayout: FC = () => {
           </nav>
         )}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <Outlet context={{ project }} />
+      <div className="flex min-h-0 flex-1">
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+          <Outlet context={{ project }} />
+        </div>
+        {previewOpen && previewAvailable && <PreviewPanel key={project.id} project={project} />}
       </div>
     </div>
   );

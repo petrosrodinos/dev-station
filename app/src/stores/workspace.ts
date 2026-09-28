@@ -9,6 +9,15 @@ export const AiPanelModes = {
 } as const;
 export type AiPanelMode = (typeof AiPanelModes)[keyof typeof AiPanelModes];
 
+export interface ProjectPreviewPrefs {
+    previewOpen: boolean;
+    previewWidth: number;
+    previewServiceId: string | null;
+}
+
+export const DEFAULT_PREVIEW_WIDTH = 480;
+export const DEFAULT_PREVIEW_PREFS: ProjectPreviewPrefs = { previewOpen: false, previewWidth: DEFAULT_PREVIEW_WIDTH, previewServiceId: null };
+
 interface WorkspaceState {
     active_organization_id: string | null;
     active_project_id: string | null;
@@ -20,6 +29,8 @@ interface WorkspaceState {
     /** Sessions that finished/await input and haven't been looked at yet (drives nav-rail badges). */
     attention_session_ids: string[];
     collapsed_client_ids: string[];
+    /** Per-project preview panel state (open, width in px, previewed service). */
+    preview_by_project: Record<string, ProjectPreviewPrefs>;
 }
 
 interface WorkspaceActions {
@@ -34,6 +45,7 @@ interface WorkspaceActions {
     markAttention(id: string): void;
     clearAttention(id: string): void;
     toggleClientCollapsed(id: string): void;
+    setProjectPreview(projectId: string, patch: Partial<ProjectPreviewPrefs>): void;
     reset(): void;
 }
 
@@ -46,6 +58,7 @@ const initialValues: WorkspaceState = {
     ai_panel_open: true,
     attention_session_ids: [],
     collapsed_client_ids: [],
+    preview_by_project: {},
 };
 
 const STORE_KEY = "workspace";
@@ -84,6 +97,13 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                 toggleClientCollapsed: (id) =>
                     set((s) => ({
                         collapsed_client_ids: s.collapsed_client_ids.includes(id) ? s.collapsed_client_ids.filter((x) => x !== id) : [...s.collapsed_client_ids, id],
+                    })),
+                setProjectPreview: (projectId, patch) =>
+                    set((s) => ({
+                        preview_by_project: {
+                            ...s.preview_by_project,
+                            [projectId]: { ...DEFAULT_PREVIEW_PREFS, ...s.preview_by_project[projectId], ...patch },
+                        },
                     })),
                 reset: () => set(initialValues),
             }),

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, Building2, CircleDot, FolderGit2, Plug, Plus, Settings } from "lucide-react";
+import { Bot, Building2, CircleDot, FolderGit2, PanelRight, Plug, Plus, Settings } from "lucide-react";
+import { isDesktop } from "@/lib/desktop";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
@@ -20,6 +21,8 @@ export function CommandPalette() {
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
   const openSessionTab = useWorkspaceStore((s) => s.openSessionTab);
+  const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
+  const previews = useWorkspaceStore((s) => s.preview_by_project);
   const [search, setSearch] = useState("");
   const { data: projects } = useGetProjects();
   const { data: sessions } = useAgentSessions();
@@ -100,6 +103,14 @@ export function CommandPalette() {
           <CommandItem value="action new ai session" onSelect={() => run(() => openNewSession({ project_id: activeProjectId }))}>
             <Bot className="size-4" /> New AI session
           </CommandItem>
+          {activeProjectId && isDesktop() && (
+            <CommandItem
+              value="action toggle preview"
+              onSelect={() => run(() => setProjectPreview(activeProjectId, { previewOpen: !previews[activeProjectId]?.previewOpen }))}
+            >
+              <PanelRight className="size-4" /> Toggle preview
+            </CommandItem>
+          )}
           <CommandItem value="action add project" onSelect={() => run(() => openProjectDialog(null))}>
             <Plus className="size-4" /> Add project
           </CommandItem>
