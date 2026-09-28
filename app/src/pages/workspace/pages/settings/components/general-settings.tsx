@@ -9,7 +9,6 @@ import { useUpdateDeviceSettings, useWorkspaceConfig } from "@/features/local-wo
 import { isDesktop } from "@/lib/desktop";
 import { DirectoryField } from "@/pages/workspace/components/project-form/directory-field";
 import { deviceSettingsSchema, type DeviceSettingsFormData } from "../validation-schemas/settings.schema";
-import { NotificationSettings } from "./notification-settings";
 import { SettingsRow, SettingsSectionHeader } from "./settings-row";
 
 export function GeneralSettings() {
@@ -36,8 +35,6 @@ export function GeneralSettings() {
 
   return (
     <div className="space-y-8">
-      <NotificationSettings />
-
       <section>
         <SettingsSectionHeader title="This device" description="Stored only on this computer — never synced to your organization." />
         {!isDesktop() ? (
