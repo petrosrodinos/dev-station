@@ -72,11 +72,18 @@ const WorkspaceHomePage: FC = () => {
             {projects.length} project{projects.length === 1 ? "" : "s"} — pick one from the rail or below.
           </p>
         </div>
-        {importedCount > 0 && (
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(Routes.workspace.imported)}>
-            <CloudDownload className="size-3.5" /> Set up {importedCount} imported project{importedCount === 1 ? "" : "s"}
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {importedCount > 0 && (
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(Routes.workspace.imported)}>
+              <CloudDownload className="size-3.5" /> Set up {importedCount} imported project{importedCount === 1 ? "" : "s"}
+            </Button>
+          )}
+          {can(PermissionKeys.PROJECTS_CREATE) && (
+            <Button size="sm" className="gap-1.5" onClick={() => openProjectDialog(null)}>
+              <Plus className="size-3.5" /> Add project
+            </Button>
+          )}
+        </div>
       </div>
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
         {projects.map((p) => (
