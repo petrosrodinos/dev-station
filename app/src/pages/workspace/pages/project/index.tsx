@@ -8,8 +8,7 @@ import GitTab from "./pages/git";
 import FilesTab from "./pages/files";
 import TerminalTab from "./pages/terminal";
 import SessionsTab from "./pages/sessions";
-import LinearTab from "./pages/linear";
-import NotionTab from "./pages/notion";
+import IntegrationsTab from "./pages/integrations";
 
 const TAB_PAGES: Record<ProjectTab, FC> = {
   [ProjectTabs.OVERVIEW]: OverviewTab,
@@ -17,8 +16,7 @@ const TAB_PAGES: Record<ProjectTab, FC> = {
   [ProjectTabs.FILES]: FilesTab,
   [ProjectTabs.TERMINAL]: TerminalTab,
   [ProjectTabs.SESSIONS]: SessionsTab,
-  [ProjectTabs.LINEAR]: LinearTab,
-  [ProjectTabs.NOTION]: NotionTab,
+  [ProjectTabs.INTEGRATIONS]: IntegrationsTab,
 };
 
 const ProjectTabPage: FC = () => {

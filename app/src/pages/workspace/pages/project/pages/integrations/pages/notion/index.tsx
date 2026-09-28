@@ -20,7 +20,7 @@ import { useDialogsStore } from "@/stores/dialogs";
 import { formatRelative } from "@/lib/date";
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
-import { useProjectContext } from "../../hooks/use-project-context";
+import { useProjectContext } from "../../../../hooks/use-project-context";
 
 const MAX_CONTEXT_CHARS = 30_000;
 

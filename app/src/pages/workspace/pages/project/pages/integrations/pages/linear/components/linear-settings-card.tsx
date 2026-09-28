@@ -15,7 +15,7 @@ import { IntegrationProviders } from "@/features/integrations/interfaces/integra
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { Routes } from "@/routes/routes";
-import { linearSettingsSchema, type LinearSettingsFormData } from "../../../validation-schemas/project.schema";
+import { linearSettingsSchema, type LinearSettingsFormData } from "../../../../../validation-schemas/project.schema";
 
 const ANY = "__any";
 
