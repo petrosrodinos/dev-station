@@ -34,6 +34,7 @@ import { LinearIntegrationService } from './services/linear-integration.service'
 import { NotionIntegrationService } from './services/notion-integration.service';
 import { CreateConnectionDto } from './dto/create-connection.dto';
 import { UpdateConnectionDto } from './dto/update-connection.dto';
+import { UpdateLinearIssueDto } from './dto/update-linear-issue.dto';
 import {
   GithubRepositoriesQuerySchema,
   GithubRepositoriesQueryType,
@@ -223,6 +224,57 @@ export class IntegrationsController {
       IntegrationProvider.LINEAR,
     );
     return this.linear.getIssue(connection, issueId);
+  }
+
+  @Get('linear/:connectionId/teams/:teamId/states')
+  @RequirePermissions(PermissionKey.PROJECTS_VIEW)
+  @ApiOperation({ summary: 'Workflow states of a Linear team' })
+  async linearTeamStates(
+    @CurrentMembership('organization_id') organizationId: string,
+    @Param('connectionId', ParseUUIDPipe) connectionId: string,
+    @Param('teamId', ExternalIdValidationPipe) teamId: string,
+  ) {
+    const connection = await this.integrationsService.getActiveConnection(
+      organizationId,
+      connectionId,
+      IntegrationProvider.LINEAR,
+    );
+    return this.linear.listTeamStates(connection, teamId);
+  }
+
+  @Get('linear/:connectionId/teams/:teamId/members')
+  @RequirePermissions(PermissionKey.PROJECTS_VIEW)
+  @ApiOperation({ summary: 'Members of a Linear team (assignee candidates)' })
+  async linearTeamMembers(
+    @CurrentMembership('organization_id') organizationId: string,
+    @Param('connectionId', ParseUUIDPipe) connectionId: string,
+    @Param('teamId', ExternalIdValidationPipe) teamId: string,
+  ) {
+    const connection = await this.integrationsService.getActiveConnection(
+      organizationId,
+      connectionId,
+      IntegrationProvider.LINEAR,
+    );
+    return this.linear.listTeamMembers(connection, teamId);
+  }
+
+  @Patch('linear/:connectionId/issues/:issueId')
+  @RequirePermissions(PermissionKey.PROJECTS_EDIT)
+  @ApiOperation({
+    summary: 'Update a Linear issue (status, assignee, priority, title, description)',
+  })
+  async updateLinearIssue(
+    @CurrentMembership('organization_id') organizationId: string,
+    @Param('connectionId', ParseUUIDPipe) connectionId: string,
+    @Param('issueId', ExternalIdValidationPipe) issueId: string,
+    @Body() dto: UpdateLinearIssueDto,
+  ) {
+    const connection = await this.integrationsService.getActiveConnection(
+      organizationId,
+      connectionId,
+      IntegrationProvider.LINEAR,
+    );
+    return this.linear.updateIssue(connection, issueId, dto);
   }
 
   @Get('notion/:connectionId/pages')

@@ -92,6 +92,28 @@ export interface LinearIssue {
     comments?: LinearIssueComment[];
 }
 
+export interface LinearWorkflowState {
+    id: string;
+    name: string;
+    type: string;
+    color: string | null;
+    position: number;
+}
+
+export interface LinearMember {
+    id: string;
+    name: string;
+    avatar_url: string | null;
+}
+
+export interface UpdateLinearIssueDto {
+    title?: string;
+    description?: string;
+    state_id?: string;
+    assignee_id?: string | null;
+    priority?: number;
+}
+
 export interface LinearIssuesQuery {
     team_id?: string | null;
     project_id?: string | null;

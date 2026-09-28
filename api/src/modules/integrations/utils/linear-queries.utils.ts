@@ -20,3 +20,15 @@ export const LINEAR_ISSUES_QUERY = `query Issues($filter: IssueFilter, $first: I
 export const LINEAR_ISSUE_QUERY = `query Issue($id: String!) {
   issue(id: $id) { ${ISSUE_FIELDS} comments(first: 50) { nodes { id body createdAt user { id name avatarUrl } } } }
 }`;
+
+export const LINEAR_TEAM_STATES_QUERY = `query TeamStates($id: String!) {
+  team(id: $id) { states(first: 100) { nodes { id name type color position } } }
+}`;
+
+export const LINEAR_TEAM_MEMBERS_QUERY = `query TeamMembers($id: String!) {
+  team(id: $id) { members(first: 100) { nodes { id name avatarUrl active } } }
+}`;
+
+export const LINEAR_ISSUE_UPDATE_MUTATION = `mutation IssueUpdate($id: String!, $input: IssueUpdateInput!) {
+  issueUpdate(id: $id, input: $input) { success issue { ${ISSUE_FIELDS} } }
+}`;

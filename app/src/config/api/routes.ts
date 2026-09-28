@@ -47,6 +47,8 @@ export const ApiRoutes = {
         linear_projects: (connectionId: string) => `/integrations/linear/${connectionId}/projects`,
         linear_issues: (connectionId: string) => `/integrations/linear/${connectionId}/issues`,
         linear_issue: (connectionId: string, issueId: string) => `/integrations/linear/${connectionId}/issues/${issueId}`,
+        linear_team_states: (connectionId: string, teamId: string) => `/integrations/linear/${connectionId}/teams/${teamId}/states`,
+        linear_team_members: (connectionId: string, teamId: string) => `/integrations/linear/${connectionId}/teams/${teamId}/members`,
         notion_pages: (connectionId: string) => `/integrations/notion/${connectionId}/pages`,
         notion_page: (connectionId: string, pageId: string) => `/integrations/notion/${connectionId}/pages/${pageId}`,
     },

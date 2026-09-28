@@ -8,8 +8,11 @@ import type {
     IntegrationProvider,
     LinearIssue,
     LinearIssuesQuery,
+    LinearMember,
     LinearProject,
     LinearTeam,
+    LinearWorkflowState,
+    UpdateLinearIssueDto,
     NotionPage,
     NotionPageContent,
 } from "../interfaces/integrations.interfaces";
@@ -107,6 +110,33 @@ export const getLinearIssue = async (connectionId: string, issueId: string): Pro
         return response.data;
     } catch (error) {
         throw new Error(getApiErrorMessage(error, "Failed to load the Linear issue."));
+    }
+};
+
+export const getLinearTeamStates = async (connectionId: string, teamId: string): Promise<LinearWorkflowState[]> => {
+    try {
+        const response = await axiosInstance.get<LinearWorkflowState[]>(ApiRoutes.integrations.linear_team_states(connectionId, teamId));
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to load Linear statuses."));
+    }
+};
+
+export const getLinearTeamMembers = async (connectionId: string, teamId: string): Promise<LinearMember[]> => {
+    try {
+        const response = await axiosInstance.get<LinearMember[]>(ApiRoutes.integrations.linear_team_members(connectionId, teamId));
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to load Linear team members."));
+    }
+};
+
+export const updateLinearIssue = async ({ connectionId, issueId, ...dto }: UpdateLinearIssueDto & { connectionId: string; issueId: string }): Promise<LinearIssue> => {
+    try {
+        const response = await axiosInstance.patch<LinearIssue>(ApiRoutes.integrations.linear_issue(connectionId, issueId), dto);
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to update the Linear issue."));
     }
 };
 

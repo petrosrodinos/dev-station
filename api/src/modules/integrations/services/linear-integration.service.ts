@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ComposioService } from '@/integrations/composio/services/composio.service';
 import { ComposioTools } from '@/integrations/composio/config/composio.config';
 import { findObjectWithKey } from '@/integrations/composio/utils/composio.utils';
@@ -10,10 +14,14 @@ import {
   ActiveConnection,
   LinearIssue,
 } from '../interfaces/integrations.interface';
+import { UpdateLinearIssueDto } from '../dto/update-linear-issue.dto';
 import {
   LINEAR_ISSUE_QUERY,
+  LINEAR_ISSUE_UPDATE_MUTATION,
   LINEAR_ISSUES_QUERY,
   LINEAR_PROJECTS_QUERY,
+  LINEAR_TEAM_MEMBERS_QUERY,
+  LINEAR_TEAM_STATES_QUERY,
   LINEAR_TEAMS_QUERY,
   LINEAR_VIEWER_QUERY,
 } from '../utils/linear-queries.utils';
@@ -91,6 +99,80 @@ export class LinearIntegrationService {
     );
     if (!data.issue) throw new NotFoundException('Linear issue not found');
     return this.toIssue(data.issue, true);
+  }
+
+  async listTeamStates(connection: ActiveConnection, teamId: string) {
+    const data = await this.graphql<{
+      team?: {
+        states?: {
+          nodes: {
+            id: string;
+            name: string;
+            type: string;
+            color?: string;
+            position?: number;
+          }[];
+        };
+      };
+    }>(connection, LINEAR_TEAM_STATES_QUERY, { id: teamId }, 'team');
+    return (data.team?.states?.nodes ?? [])
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        type: s.type,
+        color: s.color ?? null,
+        position: s.position ?? 0,
+      }))
+      .sort((a, b) => a.position - b.position);
+  }
+
+  async listTeamMembers(connection: ActiveConnection, teamId: string) {
+    const data = await this.graphql<{
+      team?: {
+        members?: {
+          nodes: {
+            id: string;
+            name: string;
+            avatarUrl?: string;
+            active?: boolean;
+          }[];
+        };
+      };
+    }>(connection, LINEAR_TEAM_MEMBERS_QUERY, { id: teamId }, 'team');
+    return (data.team?.members?.nodes ?? [])
+      .filter((u) => u.active !== false)
+      .map((u) => ({
+        id: u.id,
+        name: u.name,
+        avatar_url: u.avatarUrl ?? null,
+      }));
+  }
+
+  async updateIssue(
+    connection: ActiveConnection,
+    issueId: string,
+    dto: UpdateLinearIssueDto,
+  ): Promise<LinearIssue> {
+    const input: Record<string, unknown> = {};
+    if (dto.title !== undefined) input.title = dto.title.trim();
+    if (dto.description !== undefined) input.description = dto.description;
+    if (dto.state_id !== undefined) input.stateId = dto.state_id;
+    if (dto.assignee_id !== undefined) input.assigneeId = dto.assignee_id;
+    if (dto.priority !== undefined) input.priority = dto.priority;
+    if (!Object.keys(input).length)
+      throw new BadRequestException('Nothing to update');
+
+    const data = await this.graphql<{
+      issueUpdate?: { success?: boolean; issue?: Record<string, any> | null };
+    }>(
+      connection,
+      LINEAR_ISSUE_UPDATE_MUTATION,
+      { id: issueId, input },
+      'issueUpdate',
+    );
+    if (!data.issueUpdate?.success || !data.issueUpdate.issue)
+      throw new BadRequestException('Linear did not accept the update');
+    return this.toIssue(data.issueUpdate.issue);
   }
 
   private async graphql<T>(
