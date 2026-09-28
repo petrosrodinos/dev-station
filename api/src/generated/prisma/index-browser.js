@@ -217,16 +217,6 @@ exports.Prisma.OrganizationInvitationScalarFieldEnum = {
   created_at: 'created_at'
 };
 
-exports.Prisma.ClientScalarFieldEnum = {
-  id: 'id',
-  organization_id: 'organization_id',
-  name: 'name',
-  color: 'color',
-  sort_order: 'sort_order',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
-};
-
 exports.Prisma.RepositoryScalarFieldEnum = {
   id: 'id',
   organization_id: 'organization_id',
@@ -243,7 +233,6 @@ exports.Prisma.RepositoryScalarFieldEnum = {
 exports.Prisma.ProjectScalarFieldEnum = {
   id: 'id',
   organization_id: 'organization_id',
-  client_id: 'client_id',
   repository_id: 'repository_id',
   name: 'name',
   description: 'description',
@@ -500,7 +489,6 @@ exports.Prisma.ModelName = {
   RolePermission: 'RolePermission',
   OrganizationMember: 'OrganizationMember',
   OrganizationInvitation: 'OrganizationInvitation',
-  Client: 'Client',
   Repository: 'Repository',
   Project: 'Project',
   ProjectService: 'ProjectService',

@@ -106,7 +106,7 @@ const ProjectLayout: FC = () => {
           </div>
         </div>
         {!onSetup && (
-          <nav className="-mx-4 flex gap-1 overflow-x-auto border-b px-4" aria-label="Project sections">
+          <nav className="-mx-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b px-4" aria-label="Project sections">
             {ProjectTabOptions.map((tab) => {
               const Icon = TAB_ICONS[tab.id];
               return (

@@ -50,14 +50,8 @@ export class ProjectsService {
     const projects = await this.prisma.project.findMany({
       where: {
         organization_id: organizationId,
-        ...(query.client_id && { client_id: query.client_id }),
         ...(query.search && {
-          OR: [
-            { name: { contains: query.search, mode: 'insensitive' } },
-            {
-              client: { name: { contains: query.search, mode: 'insensitive' } },
-            },
-          ],
+          name: { contains: query.search, mode: 'insensitive' },
         }),
       },
       include: projectInclude,
@@ -78,13 +72,7 @@ export class ProjectsService {
     await this.assertReferences(organizationId, dto);
 
     const project = await this.prisma.$transaction(async (tx) => {
-      const [clientId, repositoryId, count] = await Promise.all([
-        this.resolveClientId(
-          tx,
-          organizationId,
-          dto.client_id,
-          dto.client_name,
-        ),
+      const [repositoryId, count] = await Promise.all([
         dto.repository
           ? this.upsertRepository(tx, organizationId, dto.repository)
           : Promise.resolve(null),
@@ -103,7 +91,6 @@ export class ProjectsService {
           sort_order: count,
           sub_path: this.normalizeSubPath(dto.sub_path),
           preferred_agent: dto.preferred_agent,
-          client_id: clientId,
           repository_id: repositoryId,
           github_connection_id:
             dto.github_connection_id ?? dto.repository?.connection_id,
@@ -144,15 +131,6 @@ export class ProjectsService {
     await this.assertReferences(organizationId, dto);
 
     const project = await this.prisma.$transaction(async (tx) => {
-      const clientId =
-        dto.client_id !== undefined || dto.client_name !== undefined
-          ? await this.resolveClientId(
-              tx,
-              organizationId,
-              dto.client_id,
-              dto.client_name,
-            )
-          : undefined;
       const repositoryId =
         dto.repository === null
           ? null
@@ -181,7 +159,6 @@ export class ProjectsService {
               ? undefined
               : this.normalizeSubPath(dto.sub_path),
           preferred_agent: dto.preferred_agent,
-          client_id: clientId,
           repository_id: repositoryId,
           github_connection_id: dto.github_connection_id,
           linear_connection_id: dto.linear_connection_id,
@@ -282,7 +259,7 @@ export class ProjectsService {
     return project;
   }
 
-  /** Ensures referenced clients / connections belong to the organization (and to the right provider). */
+  /** Ensures referenced connections belong to the organization (and to the right provider). */
   private async assertReferences(
     organizationId: string,
     dto: UpdateProjectDto,
@@ -296,26 +273,15 @@ export class ProjectsService {
         provider: IntegrationProvider.GITHUB,
       });
 
-    const [client, connections] = await Promise.all([
-      dto.client_id
-        ? this.prisma.client.findFirst({
-            where: { id: dto.client_id, organization_id: organizationId },
-          })
-        : Promise.resolve(true),
-      connectionChecks.length
-        ? this.prisma.integrationConnection.findMany({
-            where: {
-              organization_id: organizationId,
-              id: { in: connectionChecks.map((c) => c.id) },
-            },
-          })
-        : Promise.resolve([]),
-    ]);
+    const connections = connectionChecks.length
+      ? await this.prisma.integrationConnection.findMany({
+          where: {
+            organization_id: organizationId,
+            id: { in: connectionChecks.map((c) => c.id) },
+          },
+        })
+      : [];
 
-    if (!client)
-      throw new BadRequestException(
-        'Client does not belong to this organization',
-      );
     for (const check of connectionChecks) {
       const connection = connections.find((c) => c.id === check.id);
       if (!connection || connection.provider !== check.provider) {
@@ -324,26 +290,6 @@ export class ProjectsService {
         );
       }
     }
-  }
-
-  private async resolveClientId(
-    tx: Prisma.TransactionClient,
-    organizationId: string,
-    clientId?: string | null,
-    clientName?: string | null,
-  ) {
-    if (clientId) return clientId;
-    const name = clientName?.trim();
-    if (!name) return null;
-
-    const client = await tx.client.upsert({
-      where: {
-        organization_id_name: { organization_id: organizationId, name },
-      },
-      update: {},
-      create: { organization_id: organizationId, name },
-    });
-    return client.id;
   }
 
   private async upsertRepository(
@@ -407,7 +353,7 @@ export class ProjectsService {
   }
 
   private toView = (project: ProjectWithRelations): ProjectView => {
-    const { client_id, repository_id, created_by, ...view } = project;
+    const { repository_id, created_by, ...view } = project;
     return view;
   };
 }

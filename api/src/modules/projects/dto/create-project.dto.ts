@@ -17,26 +17,11 @@ import { RepositoryInputDto } from './repository-input.dto';
 import { ServiceInputDto } from './service-input.dto';
 
 export class CreateProjectDto {
-  @ApiProperty({ example: 'Client Platform' })
+  @ApiProperty({ example: 'Frontend App' })
   @IsString()
   @MinLength(1)
   @MaxLength(80)
   name: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsUUID()
-  client_id?: string;
-
-  @ApiProperty({
-    required: false,
-    description:
-      'Creates (or reuses) a client by name when client_id is not given',
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  client_name?: string;
 
   @ApiProperty({ required: false, example: '#8b7cf6' })
   @IsOptional()

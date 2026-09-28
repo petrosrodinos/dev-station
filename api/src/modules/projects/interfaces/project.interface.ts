@@ -1,7 +1,6 @@
 import { Prisma } from 'generated/prisma';
 
 export const projectInclude = {
-  client: { select: { id: true, name: true } },
   repository: {
     select: {
       id: true,
@@ -18,5 +17,5 @@ export const projectInclude = {
 
 export type ProjectView = Omit<
   Prisma.ProjectGetPayload<{ include: typeof projectInclude }>,
-  'client_id' | 'repository_id' | 'created_by'
+  'repository_id' | 'created_by'
 >;

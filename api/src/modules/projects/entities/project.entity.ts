@@ -32,11 +32,6 @@ export class RepositoryEntity {
   @ApiProperty({ nullable: true }) connection_id: string | null;
 }
 
-export class ProjectClientRef {
-  @ApiProperty() id: string;
-  @ApiProperty() name: string;
-}
-
 export class ProjectEntity {
   @ApiProperty() id: string;
   @ApiProperty() organization_id: string;
@@ -47,8 +42,6 @@ export class ProjectEntity {
   @ApiProperty({ nullable: true }) sub_path: string | null;
   @ApiProperty({ nullable: true, enum: AgentType })
   preferred_agent: AgentType | null;
-  @ApiProperty({ nullable: true, type: ProjectClientRef })
-  client: ProjectClientRef | null;
   @ApiProperty({ nullable: true, type: RepositoryEntity })
   repository: RepositoryEntity | null;
   @ApiProperty({ nullable: true }) github_connection_id: string | null;
