@@ -7,7 +7,6 @@ import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
-import { ClientsModule } from './modules/clients/clients.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { AgentsModule } from './modules/agents/agents.module';
@@ -22,7 +21,6 @@ import { ActivitiesModule } from './modules/activities/activities.module';
     AuthModule,
     UsersModule,
     OrganizationsModule,
-    ClientsModule,
     ProjectsModule,
     IntegrationsModule,
     AgentsModule,

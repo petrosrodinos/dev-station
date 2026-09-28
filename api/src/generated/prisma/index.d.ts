@@ -59,11 +59,6 @@ export type OrganizationMember = $Result.DefaultSelection<Prisma.$OrganizationMe
  */
 export type OrganizationInvitation = $Result.DefaultSelection<Prisma.$OrganizationInvitationPayload>
 /**
- * Model Client
- * 
- */
-export type Client = $Result.DefaultSelection<Prisma.$ClientPayload>
-/**
  * Model Repository
  * A Git repository. One repository can back several projects (monorepos) via Project.sub_path.
  */
@@ -517,16 +512,6 @@ export class PrismaClient<
     * ```
     */
   get organizationInvitation(): Prisma.OrganizationInvitationDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.client`: Exposes CRUD operations for the **Client** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more Clients
-    * const clients = await prisma.client.findMany()
-    * ```
-    */
-  get client(): Prisma.ClientDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.repository`: Exposes CRUD operations for the **Repository** model.
@@ -1040,7 +1025,6 @@ export namespace Prisma {
     RolePermission: 'RolePermission',
     OrganizationMember: 'OrganizationMember',
     OrganizationInvitation: 'OrganizationInvitation',
-    Client: 'Client',
     Repository: 'Repository',
     Project: 'Project',
     ProjectService: 'ProjectService',
@@ -1063,7 +1047,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "passwordResetToken" | "document" | "userPreference" | "organization" | "role" | "rolePermission" | "organizationMember" | "organizationInvitation" | "client" | "repository" | "project" | "projectService" | "projectIssue" | "integrationConnection" | "agentSession" | "activity"
+      modelProps: "user" | "passwordResetToken" | "document" | "userPreference" | "organization" | "role" | "rolePermission" | "organizationMember" | "organizationInvitation" | "repository" | "project" | "projectService" | "projectIssue" | "integrationConnection" | "agentSession" | "activity"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1733,80 +1717,6 @@ export namespace Prisma {
           }
         }
       }
-      Client: {
-        payload: Prisma.$ClientPayload<ExtArgs>
-        fields: Prisma.ClientFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.ClientFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ClientPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.ClientFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ClientPayload>
-          }
-          findFirst: {
-            args: Prisma.ClientFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ClientPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.ClientFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ClientPayload>
-          }
-          findMany: {
-            args: Prisma.ClientFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ClientPayload>[]
-          }
-          create: {
-            args: Prisma.ClientCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ClientPayload>
-          }
-          createMany: {
-            args: Prisma.ClientCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.ClientCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ClientPayload>[]
-          }
-          delete: {
-            args: Prisma.ClientDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ClientPayload>
-          }
-          update: {
-            args: Prisma.ClientUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ClientPayload>
-          }
-          deleteMany: {
-            args: Prisma.ClientDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.ClientUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.ClientUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ClientPayload>[]
-          }
-          upsert: {
-            args: Prisma.ClientUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ClientPayload>
-          }
-          aggregate: {
-            args: Prisma.ClientAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateClient>
-          }
-          groupBy: {
-            args: Prisma.ClientGroupByArgs<ExtArgs>
-            result: $Utils.Optional<ClientGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.ClientCountArgs<ExtArgs>
-            result: $Utils.Optional<ClientCountAggregateOutputType> | number
-          }
-        }
-      }
       Repository: {
         payload: Prisma.$RepositoryPayload<ExtArgs>
         fields: Prisma.RepositoryFieldRefs
@@ -2442,7 +2352,6 @@ export namespace Prisma {
     rolePermission?: RolePermissionOmit
     organizationMember?: OrganizationMemberOmit
     organizationInvitation?: OrganizationInvitationOmit
-    client?: ClientOmit
     repository?: RepositoryOmit
     project?: ProjectOmit
     projectService?: ProjectServiceOmit
@@ -2600,7 +2509,6 @@ export namespace Prisma {
     members: number
     roles: number
     invitations: number
-    clients: number
     projects: number
     repositories: number
     connections: number
@@ -2612,7 +2520,6 @@ export namespace Prisma {
     members?: boolean | OrganizationCountOutputTypeCountMembersArgs
     roles?: boolean | OrganizationCountOutputTypeCountRolesArgs
     invitations?: boolean | OrganizationCountOutputTypeCountInvitationsArgs
-    clients?: boolean | OrganizationCountOutputTypeCountClientsArgs
     projects?: boolean | OrganizationCountOutputTypeCountProjectsArgs
     repositories?: boolean | OrganizationCountOutputTypeCountRepositoriesArgs
     connections?: boolean | OrganizationCountOutputTypeCountConnectionsArgs
@@ -2650,13 +2557,6 @@ export namespace Prisma {
    */
   export type OrganizationCountOutputTypeCountInvitationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: OrganizationInvitationWhereInput
-  }
-
-  /**
-   * OrganizationCountOutputType without action
-   */
-  export type OrganizationCountOutputTypeCountClientsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ClientWhereInput
   }
 
   /**
@@ -2741,37 +2641,6 @@ export namespace Prisma {
    */
   export type RoleCountOutputTypeCountInvitationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: OrganizationInvitationWhereInput
-  }
-
-
-  /**
-   * Count Type ClientCountOutputType
-   */
-
-  export type ClientCountOutputType = {
-    projects: number
-  }
-
-  export type ClientCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    projects?: boolean | ClientCountOutputTypeCountProjectsArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * ClientCountOutputType without action
-   */
-  export type ClientCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ClientCountOutputType
-     */
-    select?: ClientCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * ClientCountOutputType without action
-   */
-  export type ClientCountOutputTypeCountProjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProjectWhereInput
   }
 
 
@@ -7724,7 +7593,6 @@ export namespace Prisma {
     members?: boolean | Organization$membersArgs<ExtArgs>
     roles?: boolean | Organization$rolesArgs<ExtArgs>
     invitations?: boolean | Organization$invitationsArgs<ExtArgs>
-    clients?: boolean | Organization$clientsArgs<ExtArgs>
     projects?: boolean | Organization$projectsArgs<ExtArgs>
     repositories?: boolean | Organization$repositoriesArgs<ExtArgs>
     connections?: boolean | Organization$connectionsArgs<ExtArgs>
@@ -7765,7 +7633,6 @@ export namespace Prisma {
     members?: boolean | Organization$membersArgs<ExtArgs>
     roles?: boolean | Organization$rolesArgs<ExtArgs>
     invitations?: boolean | Organization$invitationsArgs<ExtArgs>
-    clients?: boolean | Organization$clientsArgs<ExtArgs>
     projects?: boolean | Organization$projectsArgs<ExtArgs>
     repositories?: boolean | Organization$repositoriesArgs<ExtArgs>
     connections?: boolean | Organization$connectionsArgs<ExtArgs>
@@ -7782,7 +7649,6 @@ export namespace Prisma {
       members: Prisma.$OrganizationMemberPayload<ExtArgs>[]
       roles: Prisma.$RolePayload<ExtArgs>[]
       invitations: Prisma.$OrganizationInvitationPayload<ExtArgs>[]
-      clients: Prisma.$ClientPayload<ExtArgs>[]
       projects: Prisma.$ProjectPayload<ExtArgs>[]
       repositories: Prisma.$RepositoryPayload<ExtArgs>[]
       connections: Prisma.$IntegrationConnectionPayload<ExtArgs>[]
@@ -8193,7 +8059,6 @@ export namespace Prisma {
     members<T extends Organization$membersArgs<ExtArgs> = {}>(args?: Subset<T, Organization$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrganizationMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     roles<T extends Organization$rolesArgs<ExtArgs> = {}>(args?: Subset<T, Organization$rolesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     invitations<T extends Organization$invitationsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$invitationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrganizationInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    clients<T extends Organization$clientsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$clientsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     projects<T extends Organization$projectsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     repositories<T extends Organization$repositoriesArgs<ExtArgs> = {}>(args?: Subset<T, Organization$repositoriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RepositoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     connections<T extends Organization$connectionsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$connectionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationConnectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -8691,30 +8556,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: OrganizationInvitationScalarFieldEnum | OrganizationInvitationScalarFieldEnum[]
-  }
-
-  /**
-   * Organization.clients
-   */
-  export type Organization$clientsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientInclude<ExtArgs> | null
-    where?: ClientWhereInput
-    orderBy?: ClientOrderByWithRelationInput | ClientOrderByWithRelationInput[]
-    cursor?: ClientWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ClientScalarFieldEnum | ClientScalarFieldEnum[]
   }
 
   /**
@@ -13303,1154 +13144,6 @@ export namespace Prisma {
 
 
   /**
-   * Model Client
-   */
-
-  export type AggregateClient = {
-    _count: ClientCountAggregateOutputType | null
-    _avg: ClientAvgAggregateOutputType | null
-    _sum: ClientSumAggregateOutputType | null
-    _min: ClientMinAggregateOutputType | null
-    _max: ClientMaxAggregateOutputType | null
-  }
-
-  export type ClientAvgAggregateOutputType = {
-    sort_order: number | null
-  }
-
-  export type ClientSumAggregateOutputType = {
-    sort_order: number | null
-  }
-
-  export type ClientMinAggregateOutputType = {
-    id: string | null
-    organization_id: string | null
-    name: string | null
-    color: string | null
-    sort_order: number | null
-    created_at: Date | null
-    updated_at: Date | null
-  }
-
-  export type ClientMaxAggregateOutputType = {
-    id: string | null
-    organization_id: string | null
-    name: string | null
-    color: string | null
-    sort_order: number | null
-    created_at: Date | null
-    updated_at: Date | null
-  }
-
-  export type ClientCountAggregateOutputType = {
-    id: number
-    organization_id: number
-    name: number
-    color: number
-    sort_order: number
-    created_at: number
-    updated_at: number
-    _all: number
-  }
-
-
-  export type ClientAvgAggregateInputType = {
-    sort_order?: true
-  }
-
-  export type ClientSumAggregateInputType = {
-    sort_order?: true
-  }
-
-  export type ClientMinAggregateInputType = {
-    id?: true
-    organization_id?: true
-    name?: true
-    color?: true
-    sort_order?: true
-    created_at?: true
-    updated_at?: true
-  }
-
-  export type ClientMaxAggregateInputType = {
-    id?: true
-    organization_id?: true
-    name?: true
-    color?: true
-    sort_order?: true
-    created_at?: true
-    updated_at?: true
-  }
-
-  export type ClientCountAggregateInputType = {
-    id?: true
-    organization_id?: true
-    name?: true
-    color?: true
-    sort_order?: true
-    created_at?: true
-    updated_at?: true
-    _all?: true
-  }
-
-  export type ClientAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Client to aggregate.
-     */
-    where?: ClientWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Clients to fetch.
-     */
-    orderBy?: ClientOrderByWithRelationInput | ClientOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: ClientWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Clients from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Clients.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned Clients
-    **/
-    _count?: true | ClientCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: ClientAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: ClientSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: ClientMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: ClientMaxAggregateInputType
-  }
-
-  export type GetClientAggregateType<T extends ClientAggregateArgs> = {
-        [P in keyof T & keyof AggregateClient]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateClient[P]>
-      : GetScalarType<T[P], AggregateClient[P]>
-  }
-
-
-
-
-  export type ClientGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ClientWhereInput
-    orderBy?: ClientOrderByWithAggregationInput | ClientOrderByWithAggregationInput[]
-    by: ClientScalarFieldEnum[] | ClientScalarFieldEnum
-    having?: ClientScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: ClientCountAggregateInputType | true
-    _avg?: ClientAvgAggregateInputType
-    _sum?: ClientSumAggregateInputType
-    _min?: ClientMinAggregateInputType
-    _max?: ClientMaxAggregateInputType
-  }
-
-  export type ClientGroupByOutputType = {
-    id: string
-    organization_id: string
-    name: string
-    color: string | null
-    sort_order: number
-    created_at: Date
-    updated_at: Date
-    _count: ClientCountAggregateOutputType | null
-    _avg: ClientAvgAggregateOutputType | null
-    _sum: ClientSumAggregateOutputType | null
-    _min: ClientMinAggregateOutputType | null
-    _max: ClientMaxAggregateOutputType | null
-  }
-
-  type GetClientGroupByPayload<T extends ClientGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<ClientGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof ClientGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], ClientGroupByOutputType[P]>
-            : GetScalarType<T[P], ClientGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type ClientSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    organization_id?: boolean
-    name?: boolean
-    color?: boolean
-    sort_order?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
-    projects?: boolean | Client$projectsArgs<ExtArgs>
-    _count?: boolean | ClientCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["client"]>
-
-  export type ClientSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    organization_id?: boolean
-    name?: boolean
-    color?: boolean
-    sort_order?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["client"]>
-
-  export type ClientSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    organization_id?: boolean
-    name?: boolean
-    color?: boolean
-    sort_order?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["client"]>
-
-  export type ClientSelectScalar = {
-    id?: boolean
-    organization_id?: boolean
-    name?: boolean
-    color?: boolean
-    sort_order?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-  }
-
-  export type ClientOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organization_id" | "name" | "color" | "sort_order" | "created_at" | "updated_at", ExtArgs["result"]["client"]>
-  export type ClientInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
-    projects?: boolean | Client$projectsArgs<ExtArgs>
-    _count?: boolean | ClientCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type ClientIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
-  }
-  export type ClientIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
-  }
-
-  export type $ClientPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Client"
-    objects: {
-      organization: Prisma.$OrganizationPayload<ExtArgs>
-      projects: Prisma.$ProjectPayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      organization_id: string
-      name: string
-      color: string | null
-      sort_order: number
-      created_at: Date
-      updated_at: Date
-    }, ExtArgs["result"]["client"]>
-    composites: {}
-  }
-
-  type ClientGetPayload<S extends boolean | null | undefined | ClientDefaultArgs> = $Result.GetResult<Prisma.$ClientPayload, S>
-
-  type ClientCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<ClientFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: ClientCountAggregateInputType | true
-    }
-
-  export interface ClientDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Client'], meta: { name: 'Client' } }
-    /**
-     * Find zero or one Client that matches the filter.
-     * @param {ClientFindUniqueArgs} args - Arguments to find a Client
-     * @example
-     * // Get one Client
-     * const client = await prisma.client.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends ClientFindUniqueArgs>(args: SelectSubset<T, ClientFindUniqueArgs<ExtArgs>>): Prisma__ClientClient<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one Client that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {ClientFindUniqueOrThrowArgs} args - Arguments to find a Client
-     * @example
-     * // Get one Client
-     * const client = await prisma.client.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends ClientFindUniqueOrThrowArgs>(args: SelectSubset<T, ClientFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ClientClient<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Client that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ClientFindFirstArgs} args - Arguments to find a Client
-     * @example
-     * // Get one Client
-     * const client = await prisma.client.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends ClientFindFirstArgs>(args?: SelectSubset<T, ClientFindFirstArgs<ExtArgs>>): Prisma__ClientClient<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Client that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ClientFindFirstOrThrowArgs} args - Arguments to find a Client
-     * @example
-     * // Get one Client
-     * const client = await prisma.client.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends ClientFindFirstOrThrowArgs>(args?: SelectSubset<T, ClientFindFirstOrThrowArgs<ExtArgs>>): Prisma__ClientClient<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more Clients that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ClientFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all Clients
-     * const clients = await prisma.client.findMany()
-     * 
-     * // Get first 10 Clients
-     * const clients = await prisma.client.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const clientWithIdOnly = await prisma.client.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends ClientFindManyArgs>(args?: SelectSubset<T, ClientFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a Client.
-     * @param {ClientCreateArgs} args - Arguments to create a Client.
-     * @example
-     * // Create one Client
-     * const Client = await prisma.client.create({
-     *   data: {
-     *     // ... data to create a Client
-     *   }
-     * })
-     * 
-     */
-    create<T extends ClientCreateArgs>(args: SelectSubset<T, ClientCreateArgs<ExtArgs>>): Prisma__ClientClient<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many Clients.
-     * @param {ClientCreateManyArgs} args - Arguments to create many Clients.
-     * @example
-     * // Create many Clients
-     * const client = await prisma.client.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends ClientCreateManyArgs>(args?: SelectSubset<T, ClientCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many Clients and returns the data saved in the database.
-     * @param {ClientCreateManyAndReturnArgs} args - Arguments to create many Clients.
-     * @example
-     * // Create many Clients
-     * const client = await prisma.client.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Clients and only return the `id`
-     * const clientWithIdOnly = await prisma.client.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends ClientCreateManyAndReturnArgs>(args?: SelectSubset<T, ClientCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a Client.
-     * @param {ClientDeleteArgs} args - Arguments to delete one Client.
-     * @example
-     * // Delete one Client
-     * const Client = await prisma.client.delete({
-     *   where: {
-     *     // ... filter to delete one Client
-     *   }
-     * })
-     * 
-     */
-    delete<T extends ClientDeleteArgs>(args: SelectSubset<T, ClientDeleteArgs<ExtArgs>>): Prisma__ClientClient<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one Client.
-     * @param {ClientUpdateArgs} args - Arguments to update one Client.
-     * @example
-     * // Update one Client
-     * const client = await prisma.client.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends ClientUpdateArgs>(args: SelectSubset<T, ClientUpdateArgs<ExtArgs>>): Prisma__ClientClient<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more Clients.
-     * @param {ClientDeleteManyArgs} args - Arguments to filter Clients to delete.
-     * @example
-     * // Delete a few Clients
-     * const { count } = await prisma.client.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends ClientDeleteManyArgs>(args?: SelectSubset<T, ClientDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Clients.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ClientUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many Clients
-     * const client = await prisma.client.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends ClientUpdateManyArgs>(args: SelectSubset<T, ClientUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Clients and returns the data updated in the database.
-     * @param {ClientUpdateManyAndReturnArgs} args - Arguments to update many Clients.
-     * @example
-     * // Update many Clients
-     * const client = await prisma.client.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Clients and only return the `id`
-     * const clientWithIdOnly = await prisma.client.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends ClientUpdateManyAndReturnArgs>(args: SelectSubset<T, ClientUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one Client.
-     * @param {ClientUpsertArgs} args - Arguments to update or create a Client.
-     * @example
-     * // Update or create a Client
-     * const client = await prisma.client.upsert({
-     *   create: {
-     *     // ... data to create a Client
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the Client we want to update
-     *   }
-     * })
-     */
-    upsert<T extends ClientUpsertArgs>(args: SelectSubset<T, ClientUpsertArgs<ExtArgs>>): Prisma__ClientClient<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of Clients.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ClientCountArgs} args - Arguments to filter Clients to count.
-     * @example
-     * // Count the number of Clients
-     * const count = await prisma.client.count({
-     *   where: {
-     *     // ... the filter for the Clients we want to count
-     *   }
-     * })
-    **/
-    count<T extends ClientCountArgs>(
-      args?: Subset<T, ClientCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], ClientCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a Client.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ClientAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends ClientAggregateArgs>(args: Subset<T, ClientAggregateArgs>): Prisma.PrismaPromise<GetClientAggregateType<T>>
-
-    /**
-     * Group by Client.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ClientGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends ClientGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: ClientGroupByArgs['orderBy'] }
-        : { orderBy?: ClientGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, ClientGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetClientGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the Client model
-   */
-  readonly fields: ClientFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for Client.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__ClientClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    organization<T extends OrganizationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizationDefaultArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    projects<T extends Client$projectsArgs<ExtArgs> = {}>(args?: Subset<T, Client$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the Client model
-   */
-  interface ClientFieldRefs {
-    readonly id: FieldRef<"Client", 'String'>
-    readonly organization_id: FieldRef<"Client", 'String'>
-    readonly name: FieldRef<"Client", 'String'>
-    readonly color: FieldRef<"Client", 'String'>
-    readonly sort_order: FieldRef<"Client", 'Int'>
-    readonly created_at: FieldRef<"Client", 'DateTime'>
-    readonly updated_at: FieldRef<"Client", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * Client findUnique
-   */
-  export type ClientFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientInclude<ExtArgs> | null
-    /**
-     * Filter, which Client to fetch.
-     */
-    where: ClientWhereUniqueInput
-  }
-
-  /**
-   * Client findUniqueOrThrow
-   */
-  export type ClientFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientInclude<ExtArgs> | null
-    /**
-     * Filter, which Client to fetch.
-     */
-    where: ClientWhereUniqueInput
-  }
-
-  /**
-   * Client findFirst
-   */
-  export type ClientFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientInclude<ExtArgs> | null
-    /**
-     * Filter, which Client to fetch.
-     */
-    where?: ClientWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Clients to fetch.
-     */
-    orderBy?: ClientOrderByWithRelationInput | ClientOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Clients.
-     */
-    cursor?: ClientWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Clients from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Clients.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Clients.
-     */
-    distinct?: ClientScalarFieldEnum | ClientScalarFieldEnum[]
-  }
-
-  /**
-   * Client findFirstOrThrow
-   */
-  export type ClientFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientInclude<ExtArgs> | null
-    /**
-     * Filter, which Client to fetch.
-     */
-    where?: ClientWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Clients to fetch.
-     */
-    orderBy?: ClientOrderByWithRelationInput | ClientOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Clients.
-     */
-    cursor?: ClientWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Clients from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Clients.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Clients.
-     */
-    distinct?: ClientScalarFieldEnum | ClientScalarFieldEnum[]
-  }
-
-  /**
-   * Client findMany
-   */
-  export type ClientFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientInclude<ExtArgs> | null
-    /**
-     * Filter, which Clients to fetch.
-     */
-    where?: ClientWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Clients to fetch.
-     */
-    orderBy?: ClientOrderByWithRelationInput | ClientOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing Clients.
-     */
-    cursor?: ClientWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Clients from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Clients.
-     */
-    skip?: number
-    distinct?: ClientScalarFieldEnum | ClientScalarFieldEnum[]
-  }
-
-  /**
-   * Client create
-   */
-  export type ClientCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientInclude<ExtArgs> | null
-    /**
-     * The data needed to create a Client.
-     */
-    data: XOR<ClientCreateInput, ClientUncheckedCreateInput>
-  }
-
-  /**
-   * Client createMany
-   */
-  export type ClientCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many Clients.
-     */
-    data: ClientCreateManyInput | ClientCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Client createManyAndReturn
-   */
-  export type ClientCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * The data used to create many Clients.
-     */
-    data: ClientCreateManyInput | ClientCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * Client update
-   */
-  export type ClientUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientInclude<ExtArgs> | null
-    /**
-     * The data needed to update a Client.
-     */
-    data: XOR<ClientUpdateInput, ClientUncheckedUpdateInput>
-    /**
-     * Choose, which Client to update.
-     */
-    where: ClientWhereUniqueInput
-  }
-
-  /**
-   * Client updateMany
-   */
-  export type ClientUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update Clients.
-     */
-    data: XOR<ClientUpdateManyMutationInput, ClientUncheckedUpdateManyInput>
-    /**
-     * Filter which Clients to update
-     */
-    where?: ClientWhereInput
-    /**
-     * Limit how many Clients to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * Client updateManyAndReturn
-   */
-  export type ClientUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * The data used to update Clients.
-     */
-    data: XOR<ClientUpdateManyMutationInput, ClientUncheckedUpdateManyInput>
-    /**
-     * Filter which Clients to update
-     */
-    where?: ClientWhereInput
-    /**
-     * Limit how many Clients to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * Client upsert
-   */
-  export type ClientUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientInclude<ExtArgs> | null
-    /**
-     * The filter to search for the Client to update in case it exists.
-     */
-    where: ClientWhereUniqueInput
-    /**
-     * In case the Client found by the `where` argument doesn't exist, create a new Client with this data.
-     */
-    create: XOR<ClientCreateInput, ClientUncheckedCreateInput>
-    /**
-     * In case the Client was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<ClientUpdateInput, ClientUncheckedUpdateInput>
-  }
-
-  /**
-   * Client delete
-   */
-  export type ClientDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientInclude<ExtArgs> | null
-    /**
-     * Filter which Client to delete.
-     */
-    where: ClientWhereUniqueInput
-  }
-
-  /**
-   * Client deleteMany
-   */
-  export type ClientDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Clients to delete
-     */
-    where?: ClientWhereInput
-    /**
-     * Limit how many Clients to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * Client.projects
-   */
-  export type Client$projectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Project
-     */
-    select?: ProjectSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Project
-     */
-    omit?: ProjectOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProjectInclude<ExtArgs> | null
-    where?: ProjectWhereInput
-    orderBy?: ProjectOrderByWithRelationInput | ProjectOrderByWithRelationInput[]
-    cursor?: ProjectWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ProjectScalarFieldEnum | ProjectScalarFieldEnum[]
-  }
-
-  /**
-   * Client without action
-   */
-  export type ClientDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model Repository
    */
 
@@ -15653,7 +14346,6 @@ export namespace Prisma {
   export type ProjectMinAggregateOutputType = {
     id: string | null
     organization_id: string | null
-    client_id: string | null
     repository_id: string | null
     name: string | null
     description: string | null
@@ -15676,7 +14368,6 @@ export namespace Prisma {
   export type ProjectMaxAggregateOutputType = {
     id: string | null
     organization_id: string | null
-    client_id: string | null
     repository_id: string | null
     name: string | null
     description: string | null
@@ -15699,7 +14390,6 @@ export namespace Prisma {
   export type ProjectCountAggregateOutputType = {
     id: number
     organization_id: number
-    client_id: number
     repository_id: number
     name: number
     description: number
@@ -15732,7 +14422,6 @@ export namespace Prisma {
   export type ProjectMinAggregateInputType = {
     id?: true
     organization_id?: true
-    client_id?: true
     repository_id?: true
     name?: true
     description?: true
@@ -15755,7 +14444,6 @@ export namespace Prisma {
   export type ProjectMaxAggregateInputType = {
     id?: true
     organization_id?: true
-    client_id?: true
     repository_id?: true
     name?: true
     description?: true
@@ -15778,7 +14466,6 @@ export namespace Prisma {
   export type ProjectCountAggregateInputType = {
     id?: true
     organization_id?: true
-    client_id?: true
     repository_id?: true
     name?: true
     description?: true
@@ -15888,7 +14575,6 @@ export namespace Prisma {
   export type ProjectGroupByOutputType = {
     id: string
     organization_id: string
-    client_id: string | null
     repository_id: string | null
     name: string
     description: string | null
@@ -15930,7 +14616,6 @@ export namespace Prisma {
   export type ProjectSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     organization_id?: boolean
-    client_id?: boolean
     repository_id?: boolean
     name?: boolean
     description?: boolean
@@ -15949,7 +14634,6 @@ export namespace Prisma {
     created_at?: boolean
     updated_at?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
-    client?: boolean | Project$clientArgs<ExtArgs>
     repository?: boolean | Project$repositoryArgs<ExtArgs>
     github_connection?: boolean | Project$github_connectionArgs<ExtArgs>
     linear_connection?: boolean | Project$linear_connectionArgs<ExtArgs>
@@ -15964,7 +14648,6 @@ export namespace Prisma {
   export type ProjectSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     organization_id?: boolean
-    client_id?: boolean
     repository_id?: boolean
     name?: boolean
     description?: boolean
@@ -15983,7 +14666,6 @@ export namespace Prisma {
     created_at?: boolean
     updated_at?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
-    client?: boolean | Project$clientArgs<ExtArgs>
     repository?: boolean | Project$repositoryArgs<ExtArgs>
     github_connection?: boolean | Project$github_connectionArgs<ExtArgs>
     linear_connection?: boolean | Project$linear_connectionArgs<ExtArgs>
@@ -15993,7 +14675,6 @@ export namespace Prisma {
   export type ProjectSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     organization_id?: boolean
-    client_id?: boolean
     repository_id?: boolean
     name?: boolean
     description?: boolean
@@ -16012,7 +14693,6 @@ export namespace Prisma {
     created_at?: boolean
     updated_at?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
-    client?: boolean | Project$clientArgs<ExtArgs>
     repository?: boolean | Project$repositoryArgs<ExtArgs>
     github_connection?: boolean | Project$github_connectionArgs<ExtArgs>
     linear_connection?: boolean | Project$linear_connectionArgs<ExtArgs>
@@ -16022,7 +14702,6 @@ export namespace Prisma {
   export type ProjectSelectScalar = {
     id?: boolean
     organization_id?: boolean
-    client_id?: boolean
     repository_id?: boolean
     name?: boolean
     description?: boolean
@@ -16042,10 +14721,9 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organization_id" | "client_id" | "repository_id" | "name" | "description" | "color" | "sort_order" | "sub_path" | "preferred_agent" | "github_connection_id" | "linear_connection_id" | "linear_team_id" | "linear_project_id" | "notion_connection_id" | "notion_root_page_id" | "last_activity_at" | "created_by" | "created_at" | "updated_at", ExtArgs["result"]["project"]>
+  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organization_id" | "repository_id" | "name" | "description" | "color" | "sort_order" | "sub_path" | "preferred_agent" | "github_connection_id" | "linear_connection_id" | "linear_team_id" | "linear_project_id" | "notion_connection_id" | "notion_root_page_id" | "last_activity_at" | "created_by" | "created_at" | "updated_at", ExtArgs["result"]["project"]>
   export type ProjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
-    client?: boolean | Project$clientArgs<ExtArgs>
     repository?: boolean | Project$repositoryArgs<ExtArgs>
     github_connection?: boolean | Project$github_connectionArgs<ExtArgs>
     linear_connection?: boolean | Project$linear_connectionArgs<ExtArgs>
@@ -16058,7 +14736,6 @@ export namespace Prisma {
   }
   export type ProjectIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
-    client?: boolean | Project$clientArgs<ExtArgs>
     repository?: boolean | Project$repositoryArgs<ExtArgs>
     github_connection?: boolean | Project$github_connectionArgs<ExtArgs>
     linear_connection?: boolean | Project$linear_connectionArgs<ExtArgs>
@@ -16066,7 +14743,6 @@ export namespace Prisma {
   }
   export type ProjectIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
-    client?: boolean | Project$clientArgs<ExtArgs>
     repository?: boolean | Project$repositoryArgs<ExtArgs>
     github_connection?: boolean | Project$github_connectionArgs<ExtArgs>
     linear_connection?: boolean | Project$linear_connectionArgs<ExtArgs>
@@ -16077,7 +14753,6 @@ export namespace Prisma {
     name: "Project"
     objects: {
       organization: Prisma.$OrganizationPayload<ExtArgs>
-      client: Prisma.$ClientPayload<ExtArgs> | null
       repository: Prisma.$RepositoryPayload<ExtArgs> | null
       github_connection: Prisma.$IntegrationConnectionPayload<ExtArgs> | null
       linear_connection: Prisma.$IntegrationConnectionPayload<ExtArgs> | null
@@ -16090,7 +14765,6 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       organization_id: string
-      client_id: string | null
       repository_id: string | null
       name: string
       description: string | null
@@ -16503,7 +15177,6 @@ export namespace Prisma {
   export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     organization<T extends OrganizationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizationDefaultArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    client<T extends Project$clientArgs<ExtArgs> = {}>(args?: Subset<T, Project$clientArgs<ExtArgs>>): Prisma__ClientClient<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     repository<T extends Project$repositoryArgs<ExtArgs> = {}>(args?: Subset<T, Project$repositoryArgs<ExtArgs>>): Prisma__RepositoryClient<$Result.GetResult<Prisma.$RepositoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     github_connection<T extends Project$github_connectionArgs<ExtArgs> = {}>(args?: Subset<T, Project$github_connectionArgs<ExtArgs>>): Prisma__IntegrationConnectionClient<$Result.GetResult<Prisma.$IntegrationConnectionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     linear_connection<T extends Project$linear_connectionArgs<ExtArgs> = {}>(args?: Subset<T, Project$linear_connectionArgs<ExtArgs>>): Prisma__IntegrationConnectionClient<$Result.GetResult<Prisma.$IntegrationConnectionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -16543,7 +15216,6 @@ export namespace Prisma {
   interface ProjectFieldRefs {
     readonly id: FieldRef<"Project", 'String'>
     readonly organization_id: FieldRef<"Project", 'String'>
-    readonly client_id: FieldRef<"Project", 'String'>
     readonly repository_id: FieldRef<"Project", 'String'>
     readonly name: FieldRef<"Project", 'String'>
     readonly description: FieldRef<"Project", 'String'>
@@ -16954,25 +15626,6 @@ export namespace Prisma {
      * Limit how many Projects to delete.
      */
     limit?: number
-  }
-
-  /**
-   * Project.client
-   */
-  export type Project$clientArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Client
-     */
-    select?: ClientSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Client
-     */
-    omit?: ClientOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ClientInclude<ExtArgs> | null
-    where?: ClientWhereInput
   }
 
   /**
@@ -23439,19 +22092,6 @@ export namespace Prisma {
   export type OrganizationInvitationScalarFieldEnum = (typeof OrganizationInvitationScalarFieldEnum)[keyof typeof OrganizationInvitationScalarFieldEnum]
 
 
-  export const ClientScalarFieldEnum: {
-    id: 'id',
-    organization_id: 'organization_id',
-    name: 'name',
-    color: 'color',
-    sort_order: 'sort_order',
-    created_at: 'created_at',
-    updated_at: 'updated_at'
-  };
-
-  export type ClientScalarFieldEnum = (typeof ClientScalarFieldEnum)[keyof typeof ClientScalarFieldEnum]
-
-
   export const RepositoryScalarFieldEnum: {
     id: 'id',
     organization_id: 'organization_id',
@@ -23471,7 +22111,6 @@ export namespace Prisma {
   export const ProjectScalarFieldEnum: {
     id: 'id',
     organization_id: 'organization_id',
-    client_id: 'client_id',
     repository_id: 'repository_id',
     name: 'name',
     description: 'description',
@@ -24212,7 +22851,6 @@ export namespace Prisma {
     members?: OrganizationMemberListRelationFilter
     roles?: RoleListRelationFilter
     invitations?: OrganizationInvitationListRelationFilter
-    clients?: ClientListRelationFilter
     projects?: ProjectListRelationFilter
     repositories?: RepositoryListRelationFilter
     connections?: IntegrationConnectionListRelationFilter
@@ -24230,7 +22868,6 @@ export namespace Prisma {
     members?: OrganizationMemberOrderByRelationAggregateInput
     roles?: RoleOrderByRelationAggregateInput
     invitations?: OrganizationInvitationOrderByRelationAggregateInput
-    clients?: ClientOrderByRelationAggregateInput
     projects?: ProjectOrderByRelationAggregateInput
     repositories?: RepositoryOrderByRelationAggregateInput
     connections?: IntegrationConnectionOrderByRelationAggregateInput
@@ -24251,7 +22888,6 @@ export namespace Prisma {
     members?: OrganizationMemberListRelationFilter
     roles?: RoleListRelationFilter
     invitations?: OrganizationInvitationListRelationFilter
-    clients?: ClientListRelationFilter
     projects?: ProjectListRelationFilter
     repositories?: RepositoryListRelationFilter
     connections?: IntegrationConnectionListRelationFilter
@@ -24564,77 +23200,6 @@ export namespace Prisma {
     created_at?: DateTimeWithAggregatesFilter<"OrganizationInvitation"> | Date | string
   }
 
-  export type ClientWhereInput = {
-    AND?: ClientWhereInput | ClientWhereInput[]
-    OR?: ClientWhereInput[]
-    NOT?: ClientWhereInput | ClientWhereInput[]
-    id?: StringFilter<"Client"> | string
-    organization_id?: StringFilter<"Client"> | string
-    name?: StringFilter<"Client"> | string
-    color?: StringNullableFilter<"Client"> | string | null
-    sort_order?: IntFilter<"Client"> | number
-    created_at?: DateTimeFilter<"Client"> | Date | string
-    updated_at?: DateTimeFilter<"Client"> | Date | string
-    organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
-    projects?: ProjectListRelationFilter
-  }
-
-  export type ClientOrderByWithRelationInput = {
-    id?: SortOrder
-    organization_id?: SortOrder
-    name?: SortOrder
-    color?: SortOrderInput | SortOrder
-    sort_order?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-    organization?: OrganizationOrderByWithRelationInput
-    projects?: ProjectOrderByRelationAggregateInput
-  }
-
-  export type ClientWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    organization_id_name?: ClientOrganization_idNameCompoundUniqueInput
-    AND?: ClientWhereInput | ClientWhereInput[]
-    OR?: ClientWhereInput[]
-    NOT?: ClientWhereInput | ClientWhereInput[]
-    organization_id?: StringFilter<"Client"> | string
-    name?: StringFilter<"Client"> | string
-    color?: StringNullableFilter<"Client"> | string | null
-    sort_order?: IntFilter<"Client"> | number
-    created_at?: DateTimeFilter<"Client"> | Date | string
-    updated_at?: DateTimeFilter<"Client"> | Date | string
-    organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
-    projects?: ProjectListRelationFilter
-  }, "id" | "organization_id_name">
-
-  export type ClientOrderByWithAggregationInput = {
-    id?: SortOrder
-    organization_id?: SortOrder
-    name?: SortOrder
-    color?: SortOrderInput | SortOrder
-    sort_order?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-    _count?: ClientCountOrderByAggregateInput
-    _avg?: ClientAvgOrderByAggregateInput
-    _max?: ClientMaxOrderByAggregateInput
-    _min?: ClientMinOrderByAggregateInput
-    _sum?: ClientSumOrderByAggregateInput
-  }
-
-  export type ClientScalarWhereWithAggregatesInput = {
-    AND?: ClientScalarWhereWithAggregatesInput | ClientScalarWhereWithAggregatesInput[]
-    OR?: ClientScalarWhereWithAggregatesInput[]
-    NOT?: ClientScalarWhereWithAggregatesInput | ClientScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"Client"> | string
-    organization_id?: StringWithAggregatesFilter<"Client"> | string
-    name?: StringWithAggregatesFilter<"Client"> | string
-    color?: StringNullableWithAggregatesFilter<"Client"> | string | null
-    sort_order?: IntWithAggregatesFilter<"Client"> | number
-    created_at?: DateTimeWithAggregatesFilter<"Client"> | Date | string
-    updated_at?: DateTimeWithAggregatesFilter<"Client"> | Date | string
-  }
-
   export type RepositoryWhereInput = {
     AND?: RepositoryWhereInput | RepositoryWhereInput[]
     OR?: RepositoryWhereInput[]
@@ -24728,7 +23293,6 @@ export namespace Prisma {
     NOT?: ProjectWhereInput | ProjectWhereInput[]
     id?: StringFilter<"Project"> | string
     organization_id?: StringFilter<"Project"> | string
-    client_id?: StringNullableFilter<"Project"> | string | null
     repository_id?: StringNullableFilter<"Project"> | string | null
     name?: StringFilter<"Project"> | string
     description?: StringNullableFilter<"Project"> | string | null
@@ -24747,7 +23311,6 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"Project"> | Date | string
     updated_at?: DateTimeFilter<"Project"> | Date | string
     organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
-    client?: XOR<ClientNullableScalarRelationFilter, ClientWhereInput> | null
     repository?: XOR<RepositoryNullableScalarRelationFilter, RepositoryWhereInput> | null
     github_connection?: XOR<IntegrationConnectionNullableScalarRelationFilter, IntegrationConnectionWhereInput> | null
     linear_connection?: XOR<IntegrationConnectionNullableScalarRelationFilter, IntegrationConnectionWhereInput> | null
@@ -24761,7 +23324,6 @@ export namespace Prisma {
   export type ProjectOrderByWithRelationInput = {
     id?: SortOrder
     organization_id?: SortOrder
-    client_id?: SortOrderInput | SortOrder
     repository_id?: SortOrderInput | SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
@@ -24780,7 +23342,6 @@ export namespace Prisma {
     created_at?: SortOrder
     updated_at?: SortOrder
     organization?: OrganizationOrderByWithRelationInput
-    client?: ClientOrderByWithRelationInput
     repository?: RepositoryOrderByWithRelationInput
     github_connection?: IntegrationConnectionOrderByWithRelationInput
     linear_connection?: IntegrationConnectionOrderByWithRelationInput
@@ -24797,7 +23358,6 @@ export namespace Prisma {
     OR?: ProjectWhereInput[]
     NOT?: ProjectWhereInput | ProjectWhereInput[]
     organization_id?: StringFilter<"Project"> | string
-    client_id?: StringNullableFilter<"Project"> | string | null
     repository_id?: StringNullableFilter<"Project"> | string | null
     name?: StringFilter<"Project"> | string
     description?: StringNullableFilter<"Project"> | string | null
@@ -24816,7 +23376,6 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"Project"> | Date | string
     updated_at?: DateTimeFilter<"Project"> | Date | string
     organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
-    client?: XOR<ClientNullableScalarRelationFilter, ClientWhereInput> | null
     repository?: XOR<RepositoryNullableScalarRelationFilter, RepositoryWhereInput> | null
     github_connection?: XOR<IntegrationConnectionNullableScalarRelationFilter, IntegrationConnectionWhereInput> | null
     linear_connection?: XOR<IntegrationConnectionNullableScalarRelationFilter, IntegrationConnectionWhereInput> | null
@@ -24830,7 +23389,6 @@ export namespace Prisma {
   export type ProjectOrderByWithAggregationInput = {
     id?: SortOrder
     organization_id?: SortOrder
-    client_id?: SortOrderInput | SortOrder
     repository_id?: SortOrderInput | SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
@@ -24861,7 +23419,6 @@ export namespace Prisma {
     NOT?: ProjectScalarWhereWithAggregatesInput | ProjectScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Project"> | string
     organization_id?: StringWithAggregatesFilter<"Project"> | string
-    client_id?: StringNullableWithAggregatesFilter<"Project"> | string | null
     repository_id?: StringNullableWithAggregatesFilter<"Project"> | string | null
     name?: StringWithAggregatesFilter<"Project"> | string
     description?: StringNullableWithAggregatesFilter<"Project"> | string | null
@@ -25762,7 +24319,6 @@ export namespace Prisma {
     members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
     roles?: RoleCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationCreateNestedManyWithoutOrganizationInput
-    clients?: ClientCreateNestedManyWithoutOrganizationInput
     projects?: ProjectCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionCreateNestedManyWithoutOrganizationInput
@@ -25780,7 +24336,6 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
     roles?: RoleUncheckedCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationUncheckedCreateNestedManyWithoutOrganizationInput
-    clients?: ClientUncheckedCreateNestedManyWithoutOrganizationInput
     projects?: ProjectUncheckedCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryUncheckedCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutOrganizationInput
@@ -25798,7 +24353,6 @@ export namespace Prisma {
     members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUpdateManyWithoutOrganizationNestedInput
@@ -25816,7 +24370,6 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUncheckedUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUncheckedUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUncheckedUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -26136,79 +24689,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ClientCreateInput = {
-    id?: string
-    name: string
-    color?: string | null
-    sort_order?: number
-    created_at?: Date | string
-    updated_at?: Date | string
-    organization: OrganizationCreateNestedOneWithoutClientsInput
-    projects?: ProjectCreateNestedManyWithoutClientInput
-  }
-
-  export type ClientUncheckedCreateInput = {
-    id?: string
-    organization_id: string
-    name: string
-    color?: string | null
-    sort_order?: number
-    created_at?: Date | string
-    updated_at?: Date | string
-    projects?: ProjectUncheckedCreateNestedManyWithoutClientInput
-  }
-
-  export type ClientUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    color?: NullableStringFieldUpdateOperationsInput | string | null
-    sort_order?: IntFieldUpdateOperationsInput | number
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    organization?: OrganizationUpdateOneRequiredWithoutClientsNestedInput
-    projects?: ProjectUpdateManyWithoutClientNestedInput
-  }
-
-  export type ClientUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    organization_id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    color?: NullableStringFieldUpdateOperationsInput | string | null
-    sort_order?: IntFieldUpdateOperationsInput | number
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    projects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
-  }
-
-  export type ClientCreateManyInput = {
-    id?: string
-    organization_id: string
-    name: string
-    color?: string | null
-    sort_order?: number
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
-  export type ClientUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    color?: NullableStringFieldUpdateOperationsInput | string | null
-    sort_order?: IntFieldUpdateOperationsInput | number
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ClientUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    organization_id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    color?: NullableStringFieldUpdateOperationsInput | string | null
-    sort_order?: IntFieldUpdateOperationsInput | number
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type RepositoryCreateInput = {
     id?: string
     provider?: $Enums.RepositoryProvider
@@ -26318,7 +24798,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
-    client?: ClientCreateNestedOneWithoutProjectsInput
     repository?: RepositoryCreateNestedOneWithoutProjectsInput
     github_connection?: IntegrationConnectionCreateNestedOneWithoutGithub_projectsInput
     linear_connection?: IntegrationConnectionCreateNestedOneWithoutLinear_projectsInput
@@ -26332,7 +24811,6 @@ export namespace Prisma {
   export type ProjectUncheckedCreateInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -26372,7 +24850,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
-    client?: ClientUpdateOneWithoutProjectsNestedInput
     repository?: RepositoryUpdateOneWithoutProjectsNestedInput
     github_connection?: IntegrationConnectionUpdateOneWithoutGithub_projectsNestedInput
     linear_connection?: IntegrationConnectionUpdateOneWithoutLinear_projectsNestedInput
@@ -26386,7 +24863,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26413,7 +24889,6 @@ export namespace Prisma {
   export type ProjectCreateManyInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -26453,7 +24928,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27486,12 +25960,6 @@ export namespace Prisma {
     none?: OrganizationInvitationWhereInput
   }
 
-  export type ClientListRelationFilter = {
-    every?: ClientWhereInput
-    some?: ClientWhereInput
-    none?: ClientWhereInput
-  }
-
   export type ProjectListRelationFilter = {
     every?: ProjectWhereInput
     some?: ProjectWhereInput
@@ -27509,10 +25977,6 @@ export namespace Prisma {
   }
 
   export type OrganizationInvitationOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type ClientOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -27757,49 +26221,6 @@ export namespace Prisma {
     created_at?: SortOrder
   }
 
-  export type ClientOrganization_idNameCompoundUniqueInput = {
-    organization_id: string
-    name: string
-  }
-
-  export type ClientCountOrderByAggregateInput = {
-    id?: SortOrder
-    organization_id?: SortOrder
-    name?: SortOrder
-    color?: SortOrder
-    sort_order?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-  }
-
-  export type ClientAvgOrderByAggregateInput = {
-    sort_order?: SortOrder
-  }
-
-  export type ClientMaxOrderByAggregateInput = {
-    id?: SortOrder
-    organization_id?: SortOrder
-    name?: SortOrder
-    color?: SortOrder
-    sort_order?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-  }
-
-  export type ClientMinOrderByAggregateInput = {
-    id?: SortOrder
-    organization_id?: SortOrder
-    name?: SortOrder
-    color?: SortOrder
-    sort_order?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-  }
-
-  export type ClientSumOrderByAggregateInput = {
-    sort_order?: SortOrder
-  }
-
   export type EnumRepositoryProviderFilter<$PrismaModel = never> = {
     equals?: $Enums.RepositoryProvider | EnumRepositoryProviderFieldRefInput<$PrismaModel>
     in?: $Enums.RepositoryProvider[] | ListEnumRepositoryProviderFieldRefInput<$PrismaModel>
@@ -27873,11 +26294,6 @@ export namespace Prisma {
     not?: NestedEnumAgentTypeNullableFilter<$PrismaModel> | $Enums.AgentType | null
   }
 
-  export type ClientNullableScalarRelationFilter = {
-    is?: ClientWhereInput | null
-    isNot?: ClientWhereInput | null
-  }
-
   export type RepositoryNullableScalarRelationFilter = {
     is?: RepositoryWhereInput | null
     isNot?: RepositoryWhereInput | null
@@ -27906,7 +26322,6 @@ export namespace Prisma {
   export type ProjectCountOrderByAggregateInput = {
     id?: SortOrder
     organization_id?: SortOrder
-    client_id?: SortOrder
     repository_id?: SortOrder
     name?: SortOrder
     description?: SortOrder
@@ -27933,7 +26348,6 @@ export namespace Prisma {
   export type ProjectMaxOrderByAggregateInput = {
     id?: SortOrder
     organization_id?: SortOrder
-    client_id?: SortOrder
     repository_id?: SortOrder
     name?: SortOrder
     description?: SortOrder
@@ -27956,7 +26370,6 @@ export namespace Prisma {
   export type ProjectMinOrderByAggregateInput = {
     id?: SortOrder
     organization_id?: SortOrder
-    client_id?: SortOrder
     repository_id?: SortOrder
     name?: SortOrder
     description?: SortOrder
@@ -28785,13 +27198,6 @@ export namespace Prisma {
     connect?: OrganizationInvitationWhereUniqueInput | OrganizationInvitationWhereUniqueInput[]
   }
 
-  export type ClientCreateNestedManyWithoutOrganizationInput = {
-    create?: XOR<ClientCreateWithoutOrganizationInput, ClientUncheckedCreateWithoutOrganizationInput> | ClientCreateWithoutOrganizationInput[] | ClientUncheckedCreateWithoutOrganizationInput[]
-    connectOrCreate?: ClientCreateOrConnectWithoutOrganizationInput | ClientCreateOrConnectWithoutOrganizationInput[]
-    createMany?: ClientCreateManyOrganizationInputEnvelope
-    connect?: ClientWhereUniqueInput | ClientWhereUniqueInput[]
-  }
-
   export type ProjectCreateNestedManyWithoutOrganizationInput = {
     create?: XOR<ProjectCreateWithoutOrganizationInput, ProjectUncheckedCreateWithoutOrganizationInput> | ProjectCreateWithoutOrganizationInput[] | ProjectUncheckedCreateWithoutOrganizationInput[]
     connectOrCreate?: ProjectCreateOrConnectWithoutOrganizationInput | ProjectCreateOrConnectWithoutOrganizationInput[]
@@ -28846,13 +27252,6 @@ export namespace Prisma {
     connectOrCreate?: OrganizationInvitationCreateOrConnectWithoutOrganizationInput | OrganizationInvitationCreateOrConnectWithoutOrganizationInput[]
     createMany?: OrganizationInvitationCreateManyOrganizationInputEnvelope
     connect?: OrganizationInvitationWhereUniqueInput | OrganizationInvitationWhereUniqueInput[]
-  }
-
-  export type ClientUncheckedCreateNestedManyWithoutOrganizationInput = {
-    create?: XOR<ClientCreateWithoutOrganizationInput, ClientUncheckedCreateWithoutOrganizationInput> | ClientCreateWithoutOrganizationInput[] | ClientUncheckedCreateWithoutOrganizationInput[]
-    connectOrCreate?: ClientCreateOrConnectWithoutOrganizationInput | ClientCreateOrConnectWithoutOrganizationInput[]
-    createMany?: ClientCreateManyOrganizationInputEnvelope
-    connect?: ClientWhereUniqueInput | ClientWhereUniqueInput[]
   }
 
   export type ProjectUncheckedCreateNestedManyWithoutOrganizationInput = {
@@ -28930,20 +27329,6 @@ export namespace Prisma {
     update?: OrganizationInvitationUpdateWithWhereUniqueWithoutOrganizationInput | OrganizationInvitationUpdateWithWhereUniqueWithoutOrganizationInput[]
     updateMany?: OrganizationInvitationUpdateManyWithWhereWithoutOrganizationInput | OrganizationInvitationUpdateManyWithWhereWithoutOrganizationInput[]
     deleteMany?: OrganizationInvitationScalarWhereInput | OrganizationInvitationScalarWhereInput[]
-  }
-
-  export type ClientUpdateManyWithoutOrganizationNestedInput = {
-    create?: XOR<ClientCreateWithoutOrganizationInput, ClientUncheckedCreateWithoutOrganizationInput> | ClientCreateWithoutOrganizationInput[] | ClientUncheckedCreateWithoutOrganizationInput[]
-    connectOrCreate?: ClientCreateOrConnectWithoutOrganizationInput | ClientCreateOrConnectWithoutOrganizationInput[]
-    upsert?: ClientUpsertWithWhereUniqueWithoutOrganizationInput | ClientUpsertWithWhereUniqueWithoutOrganizationInput[]
-    createMany?: ClientCreateManyOrganizationInputEnvelope
-    set?: ClientWhereUniqueInput | ClientWhereUniqueInput[]
-    disconnect?: ClientWhereUniqueInput | ClientWhereUniqueInput[]
-    delete?: ClientWhereUniqueInput | ClientWhereUniqueInput[]
-    connect?: ClientWhereUniqueInput | ClientWhereUniqueInput[]
-    update?: ClientUpdateWithWhereUniqueWithoutOrganizationInput | ClientUpdateWithWhereUniqueWithoutOrganizationInput[]
-    updateMany?: ClientUpdateManyWithWhereWithoutOrganizationInput | ClientUpdateManyWithWhereWithoutOrganizationInput[]
-    deleteMany?: ClientScalarWhereInput | ClientScalarWhereInput[]
   }
 
   export type ProjectUpdateManyWithoutOrganizationNestedInput = {
@@ -29056,20 +27441,6 @@ export namespace Prisma {
     update?: OrganizationInvitationUpdateWithWhereUniqueWithoutOrganizationInput | OrganizationInvitationUpdateWithWhereUniqueWithoutOrganizationInput[]
     updateMany?: OrganizationInvitationUpdateManyWithWhereWithoutOrganizationInput | OrganizationInvitationUpdateManyWithWhereWithoutOrganizationInput[]
     deleteMany?: OrganizationInvitationScalarWhereInput | OrganizationInvitationScalarWhereInput[]
-  }
-
-  export type ClientUncheckedUpdateManyWithoutOrganizationNestedInput = {
-    create?: XOR<ClientCreateWithoutOrganizationInput, ClientUncheckedCreateWithoutOrganizationInput> | ClientCreateWithoutOrganizationInput[] | ClientUncheckedCreateWithoutOrganizationInput[]
-    connectOrCreate?: ClientCreateOrConnectWithoutOrganizationInput | ClientCreateOrConnectWithoutOrganizationInput[]
-    upsert?: ClientUpsertWithWhereUniqueWithoutOrganizationInput | ClientUpsertWithWhereUniqueWithoutOrganizationInput[]
-    createMany?: ClientCreateManyOrganizationInputEnvelope
-    set?: ClientWhereUniqueInput | ClientWhereUniqueInput[]
-    disconnect?: ClientWhereUniqueInput | ClientWhereUniqueInput[]
-    delete?: ClientWhereUniqueInput | ClientWhereUniqueInput[]
-    connect?: ClientWhereUniqueInput | ClientWhereUniqueInput[]
-    update?: ClientUpdateWithWhereUniqueWithoutOrganizationInput | ClientUpdateWithWhereUniqueWithoutOrganizationInput[]
-    updateMany?: ClientUpdateManyWithWhereWithoutOrganizationInput | ClientUpdateManyWithWhereWithoutOrganizationInput[]
-    deleteMany?: ClientScalarWhereInput | ClientScalarWhereInput[]
   }
 
   export type ProjectUncheckedUpdateManyWithoutOrganizationNestedInput = {
@@ -29378,62 +27749,6 @@ export namespace Prisma {
     update?: XOR<XOR<RoleUpdateToOneWithWhereWithoutInvitationsInput, RoleUpdateWithoutInvitationsInput>, RoleUncheckedUpdateWithoutInvitationsInput>
   }
 
-  export type OrganizationCreateNestedOneWithoutClientsInput = {
-    create?: XOR<OrganizationCreateWithoutClientsInput, OrganizationUncheckedCreateWithoutClientsInput>
-    connectOrCreate?: OrganizationCreateOrConnectWithoutClientsInput
-    connect?: OrganizationWhereUniqueInput
-  }
-
-  export type ProjectCreateNestedManyWithoutClientInput = {
-    create?: XOR<ProjectCreateWithoutClientInput, ProjectUncheckedCreateWithoutClientInput> | ProjectCreateWithoutClientInput[] | ProjectUncheckedCreateWithoutClientInput[]
-    connectOrCreate?: ProjectCreateOrConnectWithoutClientInput | ProjectCreateOrConnectWithoutClientInput[]
-    createMany?: ProjectCreateManyClientInputEnvelope
-    connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
-  }
-
-  export type ProjectUncheckedCreateNestedManyWithoutClientInput = {
-    create?: XOR<ProjectCreateWithoutClientInput, ProjectUncheckedCreateWithoutClientInput> | ProjectCreateWithoutClientInput[] | ProjectUncheckedCreateWithoutClientInput[]
-    connectOrCreate?: ProjectCreateOrConnectWithoutClientInput | ProjectCreateOrConnectWithoutClientInput[]
-    createMany?: ProjectCreateManyClientInputEnvelope
-    connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
-  }
-
-  export type OrganizationUpdateOneRequiredWithoutClientsNestedInput = {
-    create?: XOR<OrganizationCreateWithoutClientsInput, OrganizationUncheckedCreateWithoutClientsInput>
-    connectOrCreate?: OrganizationCreateOrConnectWithoutClientsInput
-    upsert?: OrganizationUpsertWithoutClientsInput
-    connect?: OrganizationWhereUniqueInput
-    update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutClientsInput, OrganizationUpdateWithoutClientsInput>, OrganizationUncheckedUpdateWithoutClientsInput>
-  }
-
-  export type ProjectUpdateManyWithoutClientNestedInput = {
-    create?: XOR<ProjectCreateWithoutClientInput, ProjectUncheckedCreateWithoutClientInput> | ProjectCreateWithoutClientInput[] | ProjectUncheckedCreateWithoutClientInput[]
-    connectOrCreate?: ProjectCreateOrConnectWithoutClientInput | ProjectCreateOrConnectWithoutClientInput[]
-    upsert?: ProjectUpsertWithWhereUniqueWithoutClientInput | ProjectUpsertWithWhereUniqueWithoutClientInput[]
-    createMany?: ProjectCreateManyClientInputEnvelope
-    set?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
-    disconnect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
-    delete?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
-    connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
-    update?: ProjectUpdateWithWhereUniqueWithoutClientInput | ProjectUpdateWithWhereUniqueWithoutClientInput[]
-    updateMany?: ProjectUpdateManyWithWhereWithoutClientInput | ProjectUpdateManyWithWhereWithoutClientInput[]
-    deleteMany?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
-  }
-
-  export type ProjectUncheckedUpdateManyWithoutClientNestedInput = {
-    create?: XOR<ProjectCreateWithoutClientInput, ProjectUncheckedCreateWithoutClientInput> | ProjectCreateWithoutClientInput[] | ProjectUncheckedCreateWithoutClientInput[]
-    connectOrCreate?: ProjectCreateOrConnectWithoutClientInput | ProjectCreateOrConnectWithoutClientInput[]
-    upsert?: ProjectUpsertWithWhereUniqueWithoutClientInput | ProjectUpsertWithWhereUniqueWithoutClientInput[]
-    createMany?: ProjectCreateManyClientInputEnvelope
-    set?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
-    disconnect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
-    delete?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
-    connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
-    update?: ProjectUpdateWithWhereUniqueWithoutClientInput | ProjectUpdateWithWhereUniqueWithoutClientInput[]
-    updateMany?: ProjectUpdateManyWithWhereWithoutClientInput | ProjectUpdateManyWithWhereWithoutClientInput[]
-    deleteMany?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
-  }
-
   export type OrganizationCreateNestedOneWithoutRepositoriesInput = {
     create?: XOR<OrganizationCreateWithoutRepositoriesInput, OrganizationUncheckedCreateWithoutRepositoriesInput>
     connectOrCreate?: OrganizationCreateOrConnectWithoutRepositoriesInput
@@ -29514,12 +27829,6 @@ export namespace Prisma {
     create?: XOR<OrganizationCreateWithoutProjectsInput, OrganizationUncheckedCreateWithoutProjectsInput>
     connectOrCreate?: OrganizationCreateOrConnectWithoutProjectsInput
     connect?: OrganizationWhereUniqueInput
-  }
-
-  export type ClientCreateNestedOneWithoutProjectsInput = {
-    create?: XOR<ClientCreateWithoutProjectsInput, ClientUncheckedCreateWithoutProjectsInput>
-    connectOrCreate?: ClientCreateOrConnectWithoutProjectsInput
-    connect?: ClientWhereUniqueInput
   }
 
   export type RepositoryCreateNestedOneWithoutProjectsInput = {
@@ -29612,16 +27921,6 @@ export namespace Prisma {
     upsert?: OrganizationUpsertWithoutProjectsInput
     connect?: OrganizationWhereUniqueInput
     update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutProjectsInput, OrganizationUpdateWithoutProjectsInput>, OrganizationUncheckedUpdateWithoutProjectsInput>
-  }
-
-  export type ClientUpdateOneWithoutProjectsNestedInput = {
-    create?: XOR<ClientCreateWithoutProjectsInput, ClientUncheckedCreateWithoutProjectsInput>
-    connectOrCreate?: ClientCreateOrConnectWithoutProjectsInput
-    upsert?: ClientUpsertWithoutProjectsInput
-    disconnect?: ClientWhereInput | boolean
-    delete?: ClientWhereInput | boolean
-    connect?: ClientWhereUniqueInput
-    update?: XOR<XOR<ClientUpdateToOneWithWhereWithoutProjectsInput, ClientUpdateWithoutProjectsInput>, ClientUncheckedUpdateWithoutProjectsInput>
   }
 
   export type RepositoryUpdateOneWithoutProjectsNestedInput = {
@@ -31336,36 +29635,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type ClientCreateWithoutOrganizationInput = {
-    id?: string
-    name: string
-    color?: string | null
-    sort_order?: number
-    created_at?: Date | string
-    updated_at?: Date | string
-    projects?: ProjectCreateNestedManyWithoutClientInput
-  }
-
-  export type ClientUncheckedCreateWithoutOrganizationInput = {
-    id?: string
-    name: string
-    color?: string | null
-    sort_order?: number
-    created_at?: Date | string
-    updated_at?: Date | string
-    projects?: ProjectUncheckedCreateNestedManyWithoutClientInput
-  }
-
-  export type ClientCreateOrConnectWithoutOrganizationInput = {
-    where: ClientWhereUniqueInput
-    create: XOR<ClientCreateWithoutOrganizationInput, ClientUncheckedCreateWithoutOrganizationInput>
-  }
-
-  export type ClientCreateManyOrganizationInputEnvelope = {
-    data: ClientCreateManyOrganizationInput | ClientCreateManyOrganizationInput[]
-    skipDuplicates?: boolean
-  }
-
   export type ProjectCreateWithoutOrganizationInput = {
     id?: string
     name: string
@@ -31381,7 +29650,6 @@ export namespace Prisma {
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
-    client?: ClientCreateNestedOneWithoutProjectsInput
     repository?: RepositoryCreateNestedOneWithoutProjectsInput
     github_connection?: IntegrationConnectionCreateNestedOneWithoutGithub_projectsInput
     linear_connection?: IntegrationConnectionCreateNestedOneWithoutLinear_projectsInput
@@ -31394,7 +29662,6 @@ export namespace Prisma {
 
   export type ProjectUncheckedCreateWithoutOrganizationInput = {
     id?: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -31680,35 +29947,6 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"OrganizationInvitation"> | Date | string
   }
 
-  export type ClientUpsertWithWhereUniqueWithoutOrganizationInput = {
-    where: ClientWhereUniqueInput
-    update: XOR<ClientUpdateWithoutOrganizationInput, ClientUncheckedUpdateWithoutOrganizationInput>
-    create: XOR<ClientCreateWithoutOrganizationInput, ClientUncheckedCreateWithoutOrganizationInput>
-  }
-
-  export type ClientUpdateWithWhereUniqueWithoutOrganizationInput = {
-    where: ClientWhereUniqueInput
-    data: XOR<ClientUpdateWithoutOrganizationInput, ClientUncheckedUpdateWithoutOrganizationInput>
-  }
-
-  export type ClientUpdateManyWithWhereWithoutOrganizationInput = {
-    where: ClientScalarWhereInput
-    data: XOR<ClientUpdateManyMutationInput, ClientUncheckedUpdateManyWithoutOrganizationInput>
-  }
-
-  export type ClientScalarWhereInput = {
-    AND?: ClientScalarWhereInput | ClientScalarWhereInput[]
-    OR?: ClientScalarWhereInput[]
-    NOT?: ClientScalarWhereInput | ClientScalarWhereInput[]
-    id?: StringFilter<"Client"> | string
-    organization_id?: StringFilter<"Client"> | string
-    name?: StringFilter<"Client"> | string
-    color?: StringNullableFilter<"Client"> | string | null
-    sort_order?: IntFilter<"Client"> | number
-    created_at?: DateTimeFilter<"Client"> | Date | string
-    updated_at?: DateTimeFilter<"Client"> | Date | string
-  }
-
   export type ProjectUpsertWithWhereUniqueWithoutOrganizationInput = {
     where: ProjectWhereUniqueInput
     update: XOR<ProjectUpdateWithoutOrganizationInput, ProjectUncheckedUpdateWithoutOrganizationInput>
@@ -31731,7 +29969,6 @@ export namespace Prisma {
     NOT?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
     id?: StringFilter<"Project"> | string
     organization_id?: StringFilter<"Project"> | string
-    client_id?: StringNullableFilter<"Project"> | string | null
     repository_id?: StringNullableFilter<"Project"> | string | null
     name?: StringFilter<"Project"> | string
     description?: StringNullableFilter<"Project"> | string | null
@@ -31840,7 +30077,6 @@ export namespace Prisma {
     updated_at?: Date | string
     members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationCreateNestedManyWithoutOrganizationInput
-    clients?: ClientCreateNestedManyWithoutOrganizationInput
     projects?: ProjectCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionCreateNestedManyWithoutOrganizationInput
@@ -31857,7 +30093,6 @@ export namespace Prisma {
     updated_at?: Date | string
     members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationUncheckedCreateNestedManyWithoutOrganizationInput
-    clients?: ClientUncheckedCreateNestedManyWithoutOrganizationInput
     projects?: ProjectUncheckedCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryUncheckedCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutOrganizationInput
@@ -31972,7 +30207,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUpdateManyWithoutOrganizationNestedInput
@@ -31989,7 +30223,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUncheckedUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUncheckedUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -32131,7 +30364,6 @@ export namespace Prisma {
     updated_at?: Date | string
     roles?: RoleCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationCreateNestedManyWithoutOrganizationInput
-    clients?: ClientCreateNestedManyWithoutOrganizationInput
     projects?: ProjectCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionCreateNestedManyWithoutOrganizationInput
@@ -32148,7 +30380,6 @@ export namespace Prisma {
     updated_at?: Date | string
     roles?: RoleUncheckedCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationUncheckedCreateNestedManyWithoutOrganizationInput
-    clients?: ClientUncheckedCreateNestedManyWithoutOrganizationInput
     projects?: ProjectUncheckedCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryUncheckedCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutOrganizationInput
@@ -32251,7 +30482,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     roles?: RoleUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUpdateManyWithoutOrganizationNestedInput
@@ -32268,7 +30498,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     roles?: RoleUncheckedUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUncheckedUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUncheckedUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -32367,7 +30596,6 @@ export namespace Prisma {
     updated_at?: Date | string
     members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
     roles?: RoleCreateNestedManyWithoutOrganizationInput
-    clients?: ClientCreateNestedManyWithoutOrganizationInput
     projects?: ProjectCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionCreateNestedManyWithoutOrganizationInput
@@ -32384,7 +30612,6 @@ export namespace Prisma {
     updated_at?: Date | string
     members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
     roles?: RoleUncheckedCreateNestedManyWithoutOrganizationInput
-    clients?: ClientUncheckedCreateNestedManyWithoutOrganizationInput
     projects?: ProjectUncheckedCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryUncheckedCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutOrganizationInput
@@ -32448,7 +30675,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUpdateManyWithoutOrganizationNestedInput
@@ -32465,7 +30691,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUncheckedUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUncheckedUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUncheckedUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -32510,168 +30735,6 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedUpdateManyWithoutRoleNestedInput
   }
 
-  export type OrganizationCreateWithoutClientsInput = {
-    id?: string
-    name: string
-    slug: string
-    created_by: string
-    created_at?: Date | string
-    updated_at?: Date | string
-    members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
-    roles?: RoleCreateNestedManyWithoutOrganizationInput
-    invitations?: OrganizationInvitationCreateNestedManyWithoutOrganizationInput
-    projects?: ProjectCreateNestedManyWithoutOrganizationInput
-    repositories?: RepositoryCreateNestedManyWithoutOrganizationInput
-    connections?: IntegrationConnectionCreateNestedManyWithoutOrganizationInput
-    sessions?: AgentSessionCreateNestedManyWithoutOrganizationInput
-    activities?: ActivityCreateNestedManyWithoutOrganizationInput
-  }
-
-  export type OrganizationUncheckedCreateWithoutClientsInput = {
-    id?: string
-    name: string
-    slug: string
-    created_by: string
-    created_at?: Date | string
-    updated_at?: Date | string
-    members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
-    roles?: RoleUncheckedCreateNestedManyWithoutOrganizationInput
-    invitations?: OrganizationInvitationUncheckedCreateNestedManyWithoutOrganizationInput
-    projects?: ProjectUncheckedCreateNestedManyWithoutOrganizationInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutOrganizationInput
-    connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutOrganizationInput
-    sessions?: AgentSessionUncheckedCreateNestedManyWithoutOrganizationInput
-    activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
-  }
-
-  export type OrganizationCreateOrConnectWithoutClientsInput = {
-    where: OrganizationWhereUniqueInput
-    create: XOR<OrganizationCreateWithoutClientsInput, OrganizationUncheckedCreateWithoutClientsInput>
-  }
-
-  export type ProjectCreateWithoutClientInput = {
-    id?: string
-    name: string
-    description?: string | null
-    color: string
-    sort_order?: number
-    sub_path?: string | null
-    preferred_agent?: $Enums.AgentType | null
-    linear_team_id?: string | null
-    linear_project_id?: string | null
-    notion_root_page_id?: string | null
-    last_activity_at?: Date | string | null
-    created_by: string
-    created_at?: Date | string
-    updated_at?: Date | string
-    organization: OrganizationCreateNestedOneWithoutProjectsInput
-    repository?: RepositoryCreateNestedOneWithoutProjectsInput
-    github_connection?: IntegrationConnectionCreateNestedOneWithoutGithub_projectsInput
-    linear_connection?: IntegrationConnectionCreateNestedOneWithoutLinear_projectsInput
-    notion_connection?: IntegrationConnectionCreateNestedOneWithoutNotion_projectsInput
-    services?: ProjectServiceCreateNestedManyWithoutProjectInput
-    issues?: ProjectIssueCreateNestedManyWithoutProjectInput
-    sessions?: AgentSessionCreateNestedManyWithoutProjectInput
-    activities?: ActivityCreateNestedManyWithoutProjectInput
-  }
-
-  export type ProjectUncheckedCreateWithoutClientInput = {
-    id?: string
-    organization_id: string
-    repository_id?: string | null
-    name: string
-    description?: string | null
-    color: string
-    sort_order?: number
-    sub_path?: string | null
-    preferred_agent?: $Enums.AgentType | null
-    github_connection_id?: string | null
-    linear_connection_id?: string | null
-    linear_team_id?: string | null
-    linear_project_id?: string | null
-    notion_connection_id?: string | null
-    notion_root_page_id?: string | null
-    last_activity_at?: Date | string | null
-    created_by: string
-    created_at?: Date | string
-    updated_at?: Date | string
-    services?: ProjectServiceUncheckedCreateNestedManyWithoutProjectInput
-    issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
-    sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
-    activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
-  }
-
-  export type ProjectCreateOrConnectWithoutClientInput = {
-    where: ProjectWhereUniqueInput
-    create: XOR<ProjectCreateWithoutClientInput, ProjectUncheckedCreateWithoutClientInput>
-  }
-
-  export type ProjectCreateManyClientInputEnvelope = {
-    data: ProjectCreateManyClientInput | ProjectCreateManyClientInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type OrganizationUpsertWithoutClientsInput = {
-    update: XOR<OrganizationUpdateWithoutClientsInput, OrganizationUncheckedUpdateWithoutClientsInput>
-    create: XOR<OrganizationCreateWithoutClientsInput, OrganizationUncheckedCreateWithoutClientsInput>
-    where?: OrganizationWhereInput
-  }
-
-  export type OrganizationUpdateToOneWithWhereWithoutClientsInput = {
-    where?: OrganizationWhereInput
-    data: XOR<OrganizationUpdateWithoutClientsInput, OrganizationUncheckedUpdateWithoutClientsInput>
-  }
-
-  export type OrganizationUpdateWithoutClientsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
-    created_by?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
-    roles?: RoleUpdateManyWithoutOrganizationNestedInput
-    invitations?: OrganizationInvitationUpdateManyWithoutOrganizationNestedInput
-    projects?: ProjectUpdateManyWithoutOrganizationNestedInput
-    repositories?: RepositoryUpdateManyWithoutOrganizationNestedInput
-    connections?: IntegrationConnectionUpdateManyWithoutOrganizationNestedInput
-    sessions?: AgentSessionUpdateManyWithoutOrganizationNestedInput
-    activities?: ActivityUpdateManyWithoutOrganizationNestedInput
-  }
-
-  export type OrganizationUncheckedUpdateWithoutClientsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
-    created_by?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
-    roles?: RoleUncheckedUpdateManyWithoutOrganizationNestedInput
-    invitations?: OrganizationInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
-    projects?: ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutOrganizationNestedInput
-    connections?: IntegrationConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
-    sessions?: AgentSessionUncheckedUpdateManyWithoutOrganizationNestedInput
-    activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
-  }
-
-  export type ProjectUpsertWithWhereUniqueWithoutClientInput = {
-    where: ProjectWhereUniqueInput
-    update: XOR<ProjectUpdateWithoutClientInput, ProjectUncheckedUpdateWithoutClientInput>
-    create: XOR<ProjectCreateWithoutClientInput, ProjectUncheckedCreateWithoutClientInput>
-  }
-
-  export type ProjectUpdateWithWhereUniqueWithoutClientInput = {
-    where: ProjectWhereUniqueInput
-    data: XOR<ProjectUpdateWithoutClientInput, ProjectUncheckedUpdateWithoutClientInput>
-  }
-
-  export type ProjectUpdateManyWithWhereWithoutClientInput = {
-    where: ProjectScalarWhereInput
-    data: XOR<ProjectUpdateManyMutationInput, ProjectUncheckedUpdateManyWithoutClientInput>
-  }
-
   export type OrganizationCreateWithoutRepositoriesInput = {
     id?: string
     name: string
@@ -32682,7 +30745,6 @@ export namespace Prisma {
     members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
     roles?: RoleCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationCreateNestedManyWithoutOrganizationInput
-    clients?: ClientCreateNestedManyWithoutOrganizationInput
     projects?: ProjectCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionCreateNestedManyWithoutOrganizationInput
     sessions?: AgentSessionCreateNestedManyWithoutOrganizationInput
@@ -32699,7 +30761,6 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
     roles?: RoleUncheckedCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationUncheckedCreateNestedManyWithoutOrganizationInput
-    clients?: ClientUncheckedCreateNestedManyWithoutOrganizationInput
     projects?: ProjectUncheckedCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutOrganizationInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutOrganizationInput
@@ -32770,7 +30831,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
-    client?: ClientCreateNestedOneWithoutProjectsInput
     github_connection?: IntegrationConnectionCreateNestedOneWithoutGithub_projectsInput
     linear_connection?: IntegrationConnectionCreateNestedOneWithoutLinear_projectsInput
     notion_connection?: IntegrationConnectionCreateNestedOneWithoutNotion_projectsInput
@@ -32783,7 +30843,6 @@ export namespace Prisma {
   export type ProjectUncheckedCreateWithoutRepositoryInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     name: string
     description?: string | null
     color: string
@@ -32837,7 +30896,6 @@ export namespace Prisma {
     members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUpdateManyWithoutOrganizationNestedInput
     sessions?: AgentSessionUpdateManyWithoutOrganizationNestedInput
@@ -32854,7 +30912,6 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUncheckedUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUncheckedUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -32936,7 +30993,6 @@ export namespace Prisma {
     members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
     roles?: RoleCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationCreateNestedManyWithoutOrganizationInput
-    clients?: ClientCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionCreateNestedManyWithoutOrganizationInput
     sessions?: AgentSessionCreateNestedManyWithoutOrganizationInput
@@ -32953,7 +31009,6 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
     roles?: RoleUncheckedCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationUncheckedCreateNestedManyWithoutOrganizationInput
-    clients?: ClientUncheckedCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryUncheckedCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutOrganizationInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutOrganizationInput
@@ -32963,31 +31018,6 @@ export namespace Prisma {
   export type OrganizationCreateOrConnectWithoutProjectsInput = {
     where: OrganizationWhereUniqueInput
     create: XOR<OrganizationCreateWithoutProjectsInput, OrganizationUncheckedCreateWithoutProjectsInput>
-  }
-
-  export type ClientCreateWithoutProjectsInput = {
-    id?: string
-    name: string
-    color?: string | null
-    sort_order?: number
-    created_at?: Date | string
-    updated_at?: Date | string
-    organization: OrganizationCreateNestedOneWithoutClientsInput
-  }
-
-  export type ClientUncheckedCreateWithoutProjectsInput = {
-    id?: string
-    organization_id: string
-    name: string
-    color?: string | null
-    sort_order?: number
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
-  export type ClientCreateOrConnectWithoutProjectsInput = {
-    where: ClientWhereUniqueInput
-    create: XOR<ClientCreateWithoutProjectsInput, ClientUncheckedCreateWithoutProjectsInput>
   }
 
   export type RepositoryCreateWithoutProjectsInput = {
@@ -33333,7 +31363,6 @@ export namespace Prisma {
     members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUpdateManyWithoutOrganizationNestedInput
     sessions?: AgentSessionUpdateManyWithoutOrganizationNestedInput
@@ -33350,42 +31379,10 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUncheckedUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUncheckedUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUncheckedUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutOrganizationNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
-  }
-
-  export type ClientUpsertWithoutProjectsInput = {
-    update: XOR<ClientUpdateWithoutProjectsInput, ClientUncheckedUpdateWithoutProjectsInput>
-    create: XOR<ClientCreateWithoutProjectsInput, ClientUncheckedCreateWithoutProjectsInput>
-    where?: ClientWhereInput
-  }
-
-  export type ClientUpdateToOneWithWhereWithoutProjectsInput = {
-    where?: ClientWhereInput
-    data: XOR<ClientUpdateWithoutProjectsInput, ClientUncheckedUpdateWithoutProjectsInput>
-  }
-
-  export type ClientUpdateWithoutProjectsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    color?: NullableStringFieldUpdateOperationsInput | string | null
-    sort_order?: IntFieldUpdateOperationsInput | number
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    organization?: OrganizationUpdateOneRequiredWithoutClientsNestedInput
-  }
-
-  export type ClientUncheckedUpdateWithoutProjectsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    organization_id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    color?: NullableStringFieldUpdateOperationsInput | string | null
-    sort_order?: IntFieldUpdateOperationsInput | number
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RepositoryUpsertWithoutProjectsInput = {
@@ -33686,7 +31683,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
-    client?: ClientCreateNestedOneWithoutProjectsInput
     repository?: RepositoryCreateNestedOneWithoutProjectsInput
     github_connection?: IntegrationConnectionCreateNestedOneWithoutGithub_projectsInput
     linear_connection?: IntegrationConnectionCreateNestedOneWithoutLinear_projectsInput
@@ -33699,7 +31695,6 @@ export namespace Prisma {
   export type ProjectUncheckedCreateWithoutServicesInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -33754,7 +31749,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
-    client?: ClientUpdateOneWithoutProjectsNestedInput
     repository?: RepositoryUpdateOneWithoutProjectsNestedInput
     github_connection?: IntegrationConnectionUpdateOneWithoutGithub_projectsNestedInput
     linear_connection?: IntegrationConnectionUpdateOneWithoutLinear_projectsNestedInput
@@ -33767,7 +31761,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateWithoutServicesInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33806,7 +31799,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
-    client?: ClientCreateNestedOneWithoutProjectsInput
     repository?: RepositoryCreateNestedOneWithoutProjectsInput
     github_connection?: IntegrationConnectionCreateNestedOneWithoutGithub_projectsInput
     linear_connection?: IntegrationConnectionCreateNestedOneWithoutLinear_projectsInput
@@ -33819,7 +31811,6 @@ export namespace Prisma {
   export type ProjectUncheckedCreateWithoutIssuesInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -33874,7 +31865,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
-    client?: ClientUpdateOneWithoutProjectsNestedInput
     repository?: RepositoryUpdateOneWithoutProjectsNestedInput
     github_connection?: IntegrationConnectionUpdateOneWithoutGithub_projectsNestedInput
     linear_connection?: IntegrationConnectionUpdateOneWithoutLinear_projectsNestedInput
@@ -33887,7 +31877,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateWithoutIssuesInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33920,7 +31909,6 @@ export namespace Prisma {
     members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
     roles?: RoleCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationCreateNestedManyWithoutOrganizationInput
-    clients?: ClientCreateNestedManyWithoutOrganizationInput
     projects?: ProjectCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryCreateNestedManyWithoutOrganizationInput
     sessions?: AgentSessionCreateNestedManyWithoutOrganizationInput
@@ -33937,7 +31925,6 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
     roles?: RoleUncheckedCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationUncheckedCreateNestedManyWithoutOrganizationInput
-    clients?: ClientUncheckedCreateNestedManyWithoutOrganizationInput
     projects?: ProjectUncheckedCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryUncheckedCreateNestedManyWithoutOrganizationInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutOrganizationInput
@@ -34040,7 +32027,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
-    client?: ClientCreateNestedOneWithoutProjectsInput
     repository?: RepositoryCreateNestedOneWithoutProjectsInput
     linear_connection?: IntegrationConnectionCreateNestedOneWithoutLinear_projectsInput
     notion_connection?: IntegrationConnectionCreateNestedOneWithoutNotion_projectsInput
@@ -34053,7 +32039,6 @@ export namespace Prisma {
   export type ProjectUncheckedCreateWithoutGithub_connectionInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -34102,7 +32087,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
-    client?: ClientCreateNestedOneWithoutProjectsInput
     repository?: RepositoryCreateNestedOneWithoutProjectsInput
     github_connection?: IntegrationConnectionCreateNestedOneWithoutGithub_projectsInput
     notion_connection?: IntegrationConnectionCreateNestedOneWithoutNotion_projectsInput
@@ -34115,7 +32099,6 @@ export namespace Prisma {
   export type ProjectUncheckedCreateWithoutLinear_connectionInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -34164,7 +32147,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
-    client?: ClientCreateNestedOneWithoutProjectsInput
     repository?: RepositoryCreateNestedOneWithoutProjectsInput
     github_connection?: IntegrationConnectionCreateNestedOneWithoutGithub_projectsInput
     linear_connection?: IntegrationConnectionCreateNestedOneWithoutLinear_projectsInput
@@ -34177,7 +32159,6 @@ export namespace Prisma {
   export type ProjectUncheckedCreateWithoutNotion_connectionInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -34231,7 +32212,6 @@ export namespace Prisma {
     members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUpdateManyWithoutOrganizationNestedInput
     sessions?: AgentSessionUpdateManyWithoutOrganizationNestedInput
@@ -34248,7 +32228,6 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUncheckedUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUncheckedUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUncheckedUpdateManyWithoutOrganizationNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -34374,7 +32353,6 @@ export namespace Prisma {
     members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
     roles?: RoleCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationCreateNestedManyWithoutOrganizationInput
-    clients?: ClientCreateNestedManyWithoutOrganizationInput
     projects?: ProjectCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionCreateNestedManyWithoutOrganizationInput
@@ -34391,7 +32369,6 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
     roles?: RoleUncheckedCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationUncheckedCreateNestedManyWithoutOrganizationInput
-    clients?: ClientUncheckedCreateNestedManyWithoutOrganizationInput
     projects?: ProjectUncheckedCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryUncheckedCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutOrganizationInput
@@ -34419,7 +32396,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
-    client?: ClientCreateNestedOneWithoutProjectsInput
     repository?: RepositoryCreateNestedOneWithoutProjectsInput
     github_connection?: IntegrationConnectionCreateNestedOneWithoutGithub_projectsInput
     linear_connection?: IntegrationConnectionCreateNestedOneWithoutLinear_projectsInput
@@ -34432,7 +32408,6 @@ export namespace Prisma {
   export type ProjectUncheckedCreateWithoutSessionsInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -34552,7 +32527,6 @@ export namespace Prisma {
     members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUpdateManyWithoutOrganizationNestedInput
@@ -34569,7 +32543,6 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUncheckedUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUncheckedUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUncheckedUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -34603,7 +32576,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
-    client?: ClientUpdateOneWithoutProjectsNestedInput
     repository?: RepositoryUpdateOneWithoutProjectsNestedInput
     github_connection?: IntegrationConnectionUpdateOneWithoutGithub_projectsNestedInput
     linear_connection?: IntegrationConnectionUpdateOneWithoutLinear_projectsNestedInput
@@ -34616,7 +32588,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateWithoutSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34710,7 +32681,6 @@ export namespace Prisma {
     members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
     roles?: RoleCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationCreateNestedManyWithoutOrganizationInput
-    clients?: ClientCreateNestedManyWithoutOrganizationInput
     projects?: ProjectCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionCreateNestedManyWithoutOrganizationInput
@@ -34727,7 +32697,6 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
     roles?: RoleUncheckedCreateNestedManyWithoutOrganizationInput
     invitations?: OrganizationInvitationUncheckedCreateNestedManyWithoutOrganizationInput
-    clients?: ClientUncheckedCreateNestedManyWithoutOrganizationInput
     projects?: ProjectUncheckedCreateNestedManyWithoutOrganizationInput
     repositories?: RepositoryUncheckedCreateNestedManyWithoutOrganizationInput
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutOrganizationInput
@@ -34755,7 +32724,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
-    client?: ClientCreateNestedOneWithoutProjectsInput
     repository?: RepositoryCreateNestedOneWithoutProjectsInput
     github_connection?: IntegrationConnectionCreateNestedOneWithoutGithub_projectsInput
     linear_connection?: IntegrationConnectionCreateNestedOneWithoutLinear_projectsInput
@@ -34768,7 +32736,6 @@ export namespace Prisma {
   export type ProjectUncheckedCreateWithoutActivitiesInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -34909,7 +32876,6 @@ export namespace Prisma {
     members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUpdateManyWithoutOrganizationNestedInput
@@ -34926,7 +32892,6 @@ export namespace Prisma {
     members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
     roles?: RoleUncheckedUpdateManyWithoutOrganizationNestedInput
     invitations?: OrganizationInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
-    clients?: ClientUncheckedUpdateManyWithoutOrganizationNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
     repositories?: RepositoryUncheckedUpdateManyWithoutOrganizationNestedInput
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -34960,7 +32925,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
-    client?: ClientUpdateOneWithoutProjectsNestedInput
     repository?: RepositoryUpdateOneWithoutProjectsNestedInput
     github_connection?: IntegrationConnectionUpdateOneWithoutGithub_projectsNestedInput
     linear_connection?: IntegrationConnectionUpdateOneWithoutLinear_projectsNestedInput
@@ -34973,7 +32937,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateWithoutActivitiesInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35405,18 +33368,8 @@ export namespace Prisma {
     created_at?: Date | string
   }
 
-  export type ClientCreateManyOrganizationInput = {
-    id?: string
-    name: string
-    color?: string | null
-    sort_order?: number
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
   export type ProjectCreateManyOrganizationInput = {
     id?: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -35596,35 +33549,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ClientUpdateWithoutOrganizationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    color?: NullableStringFieldUpdateOperationsInput | string | null
-    sort_order?: IntFieldUpdateOperationsInput | number
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    projects?: ProjectUpdateManyWithoutClientNestedInput
-  }
-
-  export type ClientUncheckedUpdateWithoutOrganizationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    color?: NullableStringFieldUpdateOperationsInput | string | null
-    sort_order?: IntFieldUpdateOperationsInput | number
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    projects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
-  }
-
-  export type ClientUncheckedUpdateManyWithoutOrganizationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    color?: NullableStringFieldUpdateOperationsInput | string | null
-    sort_order?: IntFieldUpdateOperationsInput | number
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type ProjectUpdateWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -35640,7 +33564,6 @@ export namespace Prisma {
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    client?: ClientUpdateOneWithoutProjectsNestedInput
     repository?: RepositoryUpdateOneWithoutProjectsNestedInput
     github_connection?: IntegrationConnectionUpdateOneWithoutGithub_projectsNestedInput
     linear_connection?: IntegrationConnectionUpdateOneWithoutLinear_projectsNestedInput
@@ -35653,7 +33576,6 @@ export namespace Prisma {
 
   export type ProjectUncheckedUpdateWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35679,7 +33601,6 @@ export namespace Prisma {
 
   export type ProjectUncheckedUpdateManyWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35998,106 +33919,9 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ProjectCreateManyClientInput = {
-    id?: string
-    organization_id: string
-    repository_id?: string | null
-    name: string
-    description?: string | null
-    color: string
-    sort_order?: number
-    sub_path?: string | null
-    preferred_agent?: $Enums.AgentType | null
-    github_connection_id?: string | null
-    linear_connection_id?: string | null
-    linear_team_id?: string | null
-    linear_project_id?: string | null
-    notion_connection_id?: string | null
-    notion_root_page_id?: string | null
-    last_activity_at?: Date | string | null
-    created_by: string
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
-  export type ProjectUpdateWithoutClientInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: StringFieldUpdateOperationsInput | string
-    sort_order?: IntFieldUpdateOperationsInput | number
-    sub_path?: NullableStringFieldUpdateOperationsInput | string | null
-    preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
-    linear_team_id?: NullableStringFieldUpdateOperationsInput | string | null
-    linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
-    notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
-    last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    created_by?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
-    repository?: RepositoryUpdateOneWithoutProjectsNestedInput
-    github_connection?: IntegrationConnectionUpdateOneWithoutGithub_projectsNestedInput
-    linear_connection?: IntegrationConnectionUpdateOneWithoutLinear_projectsNestedInput
-    notion_connection?: IntegrationConnectionUpdateOneWithoutNotion_projectsNestedInput
-    services?: ProjectServiceUpdateManyWithoutProjectNestedInput
-    issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
-    sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
-    activities?: ActivityUpdateManyWithoutProjectNestedInput
-  }
-
-  export type ProjectUncheckedUpdateWithoutClientInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    organization_id?: StringFieldUpdateOperationsInput | string
-    repository_id?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: StringFieldUpdateOperationsInput | string
-    sort_order?: IntFieldUpdateOperationsInput | number
-    sub_path?: NullableStringFieldUpdateOperationsInput | string | null
-    preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
-    github_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
-    linear_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
-    linear_team_id?: NullableStringFieldUpdateOperationsInput | string | null
-    linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
-    notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
-    notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
-    last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    created_by?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    services?: ProjectServiceUncheckedUpdateManyWithoutProjectNestedInput
-    issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
-    sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
-    activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
-  }
-
-  export type ProjectUncheckedUpdateManyWithoutClientInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    organization_id?: StringFieldUpdateOperationsInput | string
-    repository_id?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: StringFieldUpdateOperationsInput | string
-    sort_order?: IntFieldUpdateOperationsInput | number
-    sub_path?: NullableStringFieldUpdateOperationsInput | string | null
-    preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
-    github_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
-    linear_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
-    linear_team_id?: NullableStringFieldUpdateOperationsInput | string | null
-    linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
-    notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
-    notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
-    last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    created_by?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type ProjectCreateManyRepositoryInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     name: string
     description?: string | null
     color: string
@@ -36132,7 +33956,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
-    client?: ClientUpdateOneWithoutProjectsNestedInput
     github_connection?: IntegrationConnectionUpdateOneWithoutGithub_projectsNestedInput
     linear_connection?: IntegrationConnectionUpdateOneWithoutLinear_projectsNestedInput
     notion_connection?: IntegrationConnectionUpdateOneWithoutNotion_projectsNestedInput
@@ -36145,7 +33968,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateWithoutRepositoryInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
@@ -36171,7 +33993,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateManyWithoutRepositoryInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
@@ -36447,7 +34268,6 @@ export namespace Prisma {
   export type ProjectCreateManyGithub_connectionInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -36469,7 +34289,6 @@ export namespace Prisma {
   export type ProjectCreateManyLinear_connectionInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -36491,7 +34310,6 @@ export namespace Prisma {
   export type ProjectCreateManyNotion_connectionInput = {
     id?: string
     organization_id: string
-    client_id?: string | null
     repository_id?: string | null
     name: string
     description?: string | null
@@ -36564,7 +34382,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
-    client?: ClientUpdateOneWithoutProjectsNestedInput
     repository?: RepositoryUpdateOneWithoutProjectsNestedInput
     linear_connection?: IntegrationConnectionUpdateOneWithoutLinear_projectsNestedInput
     notion_connection?: IntegrationConnectionUpdateOneWithoutNotion_projectsNestedInput
@@ -36577,7 +34394,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateWithoutGithub_connectionInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36603,7 +34419,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateManyWithoutGithub_connectionInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36638,7 +34453,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
-    client?: ClientUpdateOneWithoutProjectsNestedInput
     repository?: RepositoryUpdateOneWithoutProjectsNestedInput
     github_connection?: IntegrationConnectionUpdateOneWithoutGithub_projectsNestedInput
     notion_connection?: IntegrationConnectionUpdateOneWithoutNotion_projectsNestedInput
@@ -36651,7 +34465,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateWithoutLinear_connectionInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36677,7 +34490,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateManyWithoutLinear_connectionInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36712,7 +34524,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
-    client?: ClientUpdateOneWithoutProjectsNestedInput
     repository?: RepositoryUpdateOneWithoutProjectsNestedInput
     github_connection?: IntegrationConnectionUpdateOneWithoutGithub_projectsNestedInput
     linear_connection?: IntegrationConnectionUpdateOneWithoutLinear_projectsNestedInput
@@ -36725,7 +34536,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateWithoutNotion_connectionInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36751,7 +34561,6 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateManyWithoutNotion_connectionInput = {
     id?: StringFieldUpdateOperationsInput | string
     organization_id?: StringFieldUpdateOperationsInput | string
-    client_id?: NullableStringFieldUpdateOperationsInput | string | null
     repository_id?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null

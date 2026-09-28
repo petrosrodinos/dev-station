@@ -1,5 +1,5 @@
 // Dev Station — server-side data model.
-// Only organization/project/client/repository metadata lives here (shared across devices).
+// Only organization/project/repository metadata lives here (shared across devices).
 // Local-only state (local paths, running processes, terminal scrollback) stays on each device.
 
 generator client {
@@ -217,7 +217,6 @@ model Organization {
   members      OrganizationMember[]
   roles        Role[]
   invitations  OrganizationInvitation[]
-  clients      Client[]
   projects     Project[]
   repositories Repository[]
   connections  IntegrationConnection[]
@@ -296,23 +295,6 @@ model OrganizationInvitation {
   @@map("organization_invitations")
 }
 
-model Client {
-  id              String   @id @default(uuid())
-  organization_id String
-  name            String
-  color           String?
-  sort_order      Int      @default(0)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  projects     Project[]
-
-  @@unique([organization_id, name])
-  @@index([organization_id])
-  @@map("clients")
-}
-
 /// A Git repository. One repository can back several projects (monorepos) via Project.sub_path.
 model Repository {
   id              String             @id @default(uuid())
@@ -338,7 +320,6 @@ model Repository {
 model Project {
   id                     String     @id @default(uuid())
   organization_id        String
-  client_id              String?
   repository_id          String?
   name                   String
   description            String?
@@ -358,7 +339,6 @@ model Project {
   updated_at             DateTime   @updatedAt
 
   organization      Organization           @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  client            Client?                @relation(fields: [client_id], references: [id], onDelete: SetNull)
   repository        Repository?            @relation(fields: [repository_id], references: [id], onDelete: SetNull)
   github_connection IntegrationConnection? @relation("ProjectGithubConnection", fields: [github_connection_id], references: [id], onDelete: SetNull)
   linear_connection IntegrationConnection? @relation("ProjectLinearConnection", fields: [linear_connection_id], references: [id], onDelete: SetNull)
@@ -369,7 +349,6 @@ model Project {
   activities        Activity[]
 
   @@index([organization_id])
-  @@index([client_id])
   @@map("projects")
 }
 
