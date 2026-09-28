@@ -13,6 +13,10 @@ export const ApiRoutes = {
         me: "/users/me",
         preferences: "/users/me/preferences",
     },
+    gitIdentities: {
+        prefix: "/git-identities",
+        byId: (id: string) => `/git-identities/${id}`,
+    },
     organizations: {
         prefix: "/organizations",
         current: "/organizations/current",

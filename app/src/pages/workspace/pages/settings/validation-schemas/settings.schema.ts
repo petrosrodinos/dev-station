@@ -11,11 +11,16 @@ export const deviceSettingsSchema = z.object({
 export type DeviceSettingsFormData = z.infer<typeof deviceSettingsSchema>;
 
 export const gitSettingsSchema = z.object({
-    git_name: z.string().trim().max(200).optional(),
-    git_email: z.union([z.literal(""), z.string().trim().email("Enter a valid email")]).optional(),
     default_branch: z.string().trim().min(1).max(100),
 });
 export type GitSettingsFormData = z.infer<typeof gitSettingsSchema>;
+
+export const gitIdentitySchema = z.object({
+    label: z.string().trim().min(1, "Label is required").max(60),
+    name: z.string().trim().min(1, "Name is required").max(120),
+    email: z.string().trim().email("Enter a valid email"),
+});
+export type GitIdentityFormData = z.infer<typeof gitIdentitySchema>;
 
 export const aiSettingsSchema = z.object({
     preferred_agent: z.enum(["CLAUDE_CODE", "CURSOR_CLI"]),

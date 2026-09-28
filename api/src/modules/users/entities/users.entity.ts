@@ -34,8 +34,6 @@ export class MeEntity {
 export class UserPreferenceEntity {
   @ApiProperty() id: string;
   @ApiProperty({ nullable: true }) active_organization_id: string | null;
-  @ApiProperty({ nullable: true }) git_name: string | null;
-  @ApiProperty({ nullable: true }) git_email: string | null;
   @ApiProperty({ enum: AgentType }) preferred_agent: AgentType;
   @ApiProperty() default_branch: string;
   @ApiProperty() idle_threshold_seconds: number;

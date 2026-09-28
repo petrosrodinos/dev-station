@@ -19,8 +19,6 @@ export interface UserPreference {
     id: string;
     user_id: string;
     active_organization_id: string | null;
-    git_name: string | null;
-    git_email: string | null;
     preferred_agent: AgentType;
     default_branch: string;
     idle_threshold_seconds: number;

@@ -153,6 +153,17 @@ exports.Prisma.DocumentScalarFieldEnum = {
   created_at: 'created_at'
 };
 
+exports.Prisma.GitIdentityScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  label: 'label',
+  name: 'name',
+  email: 'email',
+  is_default: 'is_default',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.UserPreferenceScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
@@ -483,6 +494,7 @@ exports.Prisma.ModelName = {
   User: 'User',
   PasswordResetToken: 'PasswordResetToken',
   Document: 'Document',
+  GitIdentity: 'GitIdentity',
   UserPreference: 'UserPreference',
   Organization: 'Organization',
   Role: 'Role',

@@ -29,8 +29,13 @@ export type PasswordResetToken = $Result.DefaultSelection<Prisma.$PasswordResetT
  */
 export type Document = $Result.DefaultSelection<Prisma.$DocumentPayload>
 /**
+ * Model GitIdentity
+ * Commit author identities. Exactly one per user is the default (enforced in the service).
+ */
+export type GitIdentity = $Result.DefaultSelection<Prisma.$GitIdentityPayload>
+/**
  * Model UserPreference
- * Cross-device user preferences (Git identity, preferred agent...). Device-only settings live in Electron.
+ * Cross-device user preferences (preferred agent, theme...). Device-only settings live in Electron.
  */
 export type UserPreference = $Result.DefaultSelection<Prisma.$UserPreferencePayload>
 /**
@@ -452,6 +457,16 @@ export class PrismaClient<
     * ```
     */
   get document(): Prisma.DocumentDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.gitIdentity`: Exposes CRUD operations for the **GitIdentity** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GitIdentities
+    * const gitIdentities = await prisma.gitIdentity.findMany()
+    * ```
+    */
+  get gitIdentity(): Prisma.GitIdentityDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.userPreference`: Exposes CRUD operations for the **UserPreference** model.
@@ -1019,6 +1034,7 @@ export namespace Prisma {
     User: 'User',
     PasswordResetToken: 'PasswordResetToken',
     Document: 'Document',
+    GitIdentity: 'GitIdentity',
     UserPreference: 'UserPreference',
     Organization: 'Organization',
     Role: 'Role',
@@ -1047,7 +1063,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "passwordResetToken" | "document" | "userPreference" | "organization" | "role" | "rolePermission" | "organizationMember" | "organizationInvitation" | "repository" | "project" | "projectService" | "projectIssue" | "integrationConnection" | "agentSession" | "activity"
+      modelProps: "user" | "passwordResetToken" | "document" | "gitIdentity" | "userPreference" | "organization" | "role" | "rolePermission" | "organizationMember" | "organizationInvitation" | "repository" | "project" | "projectService" | "projectIssue" | "integrationConnection" | "agentSession" | "activity"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1270,6 +1286,80 @@ export namespace Prisma {
           count: {
             args: Prisma.DocumentCountArgs<ExtArgs>
             result: $Utils.Optional<DocumentCountAggregateOutputType> | number
+          }
+        }
+      }
+      GitIdentity: {
+        payload: Prisma.$GitIdentityPayload<ExtArgs>
+        fields: Prisma.GitIdentityFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GitIdentityFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GitIdentityPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GitIdentityFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GitIdentityPayload>
+          }
+          findFirst: {
+            args: Prisma.GitIdentityFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GitIdentityPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GitIdentityFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GitIdentityPayload>
+          }
+          findMany: {
+            args: Prisma.GitIdentityFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GitIdentityPayload>[]
+          }
+          create: {
+            args: Prisma.GitIdentityCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GitIdentityPayload>
+          }
+          createMany: {
+            args: Prisma.GitIdentityCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.GitIdentityCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GitIdentityPayload>[]
+          }
+          delete: {
+            args: Prisma.GitIdentityDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GitIdentityPayload>
+          }
+          update: {
+            args: Prisma.GitIdentityUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GitIdentityPayload>
+          }
+          deleteMany: {
+            args: Prisma.GitIdentityDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GitIdentityUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.GitIdentityUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GitIdentityPayload>[]
+          }
+          upsert: {
+            args: Prisma.GitIdentityUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GitIdentityPayload>
+          }
+          aggregate: {
+            args: Prisma.GitIdentityAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGitIdentity>
+          }
+          groupBy: {
+            args: Prisma.GitIdentityGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GitIdentityGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GitIdentityCountArgs<ExtArgs>
+            result: $Utils.Optional<GitIdentityCountAggregateOutputType> | number
           }
         }
       }
@@ -2346,6 +2436,7 @@ export namespace Prisma {
     user?: UserOmit
     passwordResetToken?: PasswordResetTokenOmit
     document?: DocumentOmit
+    gitIdentity?: GitIdentityOmit
     userPreference?: UserPreferenceOmit
     organization?: OrganizationOmit
     role?: RoleOmit
@@ -2444,6 +2535,7 @@ export namespace Prisma {
     connections: number
     agent_sessions: number
     activities: number
+    git_identities: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2452,6 +2544,7 @@ export namespace Prisma {
     connections?: boolean | UserCountOutputTypeCountConnectionsArgs
     agent_sessions?: boolean | UserCountOutputTypeCountAgent_sessionsArgs
     activities?: boolean | UserCountOutputTypeCountActivitiesArgs
+    git_identities?: boolean | UserCountOutputTypeCountGit_identitiesArgs
   }
 
   // Custom InputTypes
@@ -2498,6 +2591,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountActivitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ActivityWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountGit_identitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GitIdentityWhereInput
   }
 
 
@@ -3028,6 +3128,7 @@ export namespace Prisma {
     connections?: boolean | User$connectionsArgs<ExtArgs>
     agent_sessions?: boolean | User$agent_sessionsArgs<ExtArgs>
     activities?: boolean | User$activitiesArgs<ExtArgs>
+    git_identities?: boolean | User$git_identitiesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3075,6 +3176,7 @@ export namespace Prisma {
     connections?: boolean | User$connectionsArgs<ExtArgs>
     agent_sessions?: boolean | User$agent_sessionsArgs<ExtArgs>
     activities?: boolean | User$activitiesArgs<ExtArgs>
+    git_identities?: boolean | User$git_identitiesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3089,6 +3191,7 @@ export namespace Prisma {
       connections: Prisma.$IntegrationConnectionPayload<ExtArgs>[]
       agent_sessions: Prisma.$AgentSessionPayload<ExtArgs>[]
       activities: Prisma.$ActivityPayload<ExtArgs>[]
+      git_identities: Prisma.$GitIdentityPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3500,6 +3603,7 @@ export namespace Prisma {
     connections<T extends User$connectionsArgs<ExtArgs> = {}>(args?: Subset<T, User$connectionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationConnectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     agent_sessions<T extends User$agent_sessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$agent_sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     activities<T extends User$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    git_identities<T extends User$git_identitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$git_identitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4062,6 +4166,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ActivityScalarFieldEnum | ActivityScalarFieldEnum[]
+  }
+
+  /**
+   * User.git_identities
+   */
+  export type User$git_identitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityInclude<ExtArgs> | null
+    where?: GitIdentityWhereInput
+    orderBy?: GitIdentityOrderByWithRelationInput | GitIdentityOrderByWithRelationInput[]
+    cursor?: GitIdentityWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GitIdentityScalarFieldEnum | GitIdentityScalarFieldEnum[]
   }
 
   /**
@@ -6232,6 +6360,1103 @@ export namespace Prisma {
      * Omit specific fields from the Document
      */
     omit?: DocumentOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model GitIdentity
+   */
+
+  export type AggregateGitIdentity = {
+    _count: GitIdentityCountAggregateOutputType | null
+    _min: GitIdentityMinAggregateOutputType | null
+    _max: GitIdentityMaxAggregateOutputType | null
+  }
+
+  export type GitIdentityMinAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    label: string | null
+    name: string | null
+    email: string | null
+    is_default: boolean | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type GitIdentityMaxAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    label: string | null
+    name: string | null
+    email: string | null
+    is_default: boolean | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type GitIdentityCountAggregateOutputType = {
+    id: number
+    user_id: number
+    label: number
+    name: number
+    email: number
+    is_default: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type GitIdentityMinAggregateInputType = {
+    id?: true
+    user_id?: true
+    label?: true
+    name?: true
+    email?: true
+    is_default?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type GitIdentityMaxAggregateInputType = {
+    id?: true
+    user_id?: true
+    label?: true
+    name?: true
+    email?: true
+    is_default?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type GitIdentityCountAggregateInputType = {
+    id?: true
+    user_id?: true
+    label?: true
+    name?: true
+    email?: true
+    is_default?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type GitIdentityAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GitIdentity to aggregate.
+     */
+    where?: GitIdentityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GitIdentities to fetch.
+     */
+    orderBy?: GitIdentityOrderByWithRelationInput | GitIdentityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GitIdentityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GitIdentities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GitIdentities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GitIdentities
+    **/
+    _count?: true | GitIdentityCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GitIdentityMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GitIdentityMaxAggregateInputType
+  }
+
+  export type GetGitIdentityAggregateType<T extends GitIdentityAggregateArgs> = {
+        [P in keyof T & keyof AggregateGitIdentity]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGitIdentity[P]>
+      : GetScalarType<T[P], AggregateGitIdentity[P]>
+  }
+
+
+
+
+  export type GitIdentityGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GitIdentityWhereInput
+    orderBy?: GitIdentityOrderByWithAggregationInput | GitIdentityOrderByWithAggregationInput[]
+    by: GitIdentityScalarFieldEnum[] | GitIdentityScalarFieldEnum
+    having?: GitIdentityScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GitIdentityCountAggregateInputType | true
+    _min?: GitIdentityMinAggregateInputType
+    _max?: GitIdentityMaxAggregateInputType
+  }
+
+  export type GitIdentityGroupByOutputType = {
+    id: string
+    user_id: string
+    label: string
+    name: string
+    email: string
+    is_default: boolean
+    created_at: Date
+    updated_at: Date
+    _count: GitIdentityCountAggregateOutputType | null
+    _min: GitIdentityMinAggregateOutputType | null
+    _max: GitIdentityMaxAggregateOutputType | null
+  }
+
+  type GetGitIdentityGroupByPayload<T extends GitIdentityGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GitIdentityGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GitIdentityGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GitIdentityGroupByOutputType[P]>
+            : GetScalarType<T[P], GitIdentityGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GitIdentitySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    label?: boolean
+    name?: boolean
+    email?: boolean
+    is_default?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["gitIdentity"]>
+
+  export type GitIdentitySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    label?: boolean
+    name?: boolean
+    email?: boolean
+    is_default?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["gitIdentity"]>
+
+  export type GitIdentitySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    label?: boolean
+    name?: boolean
+    email?: boolean
+    is_default?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["gitIdentity"]>
+
+  export type GitIdentitySelectScalar = {
+    id?: boolean
+    user_id?: boolean
+    label?: boolean
+    name?: boolean
+    email?: boolean
+    is_default?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type GitIdentityOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "label" | "name" | "email" | "is_default" | "created_at" | "updated_at", ExtArgs["result"]["gitIdentity"]>
+  export type GitIdentityInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type GitIdentityIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type GitIdentityIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $GitIdentityPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GitIdentity"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      user_id: string
+      label: string
+      name: string
+      email: string
+      is_default: boolean
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["gitIdentity"]>
+    composites: {}
+  }
+
+  type GitIdentityGetPayload<S extends boolean | null | undefined | GitIdentityDefaultArgs> = $Result.GetResult<Prisma.$GitIdentityPayload, S>
+
+  type GitIdentityCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<GitIdentityFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: GitIdentityCountAggregateInputType | true
+    }
+
+  export interface GitIdentityDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GitIdentity'], meta: { name: 'GitIdentity' } }
+    /**
+     * Find zero or one GitIdentity that matches the filter.
+     * @param {GitIdentityFindUniqueArgs} args - Arguments to find a GitIdentity
+     * @example
+     * // Get one GitIdentity
+     * const gitIdentity = await prisma.gitIdentity.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GitIdentityFindUniqueArgs>(args: SelectSubset<T, GitIdentityFindUniqueArgs<ExtArgs>>): Prisma__GitIdentityClient<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one GitIdentity that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GitIdentityFindUniqueOrThrowArgs} args - Arguments to find a GitIdentity
+     * @example
+     * // Get one GitIdentity
+     * const gitIdentity = await prisma.gitIdentity.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GitIdentityFindUniqueOrThrowArgs>(args: SelectSubset<T, GitIdentityFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GitIdentityClient<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GitIdentity that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GitIdentityFindFirstArgs} args - Arguments to find a GitIdentity
+     * @example
+     * // Get one GitIdentity
+     * const gitIdentity = await prisma.gitIdentity.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GitIdentityFindFirstArgs>(args?: SelectSubset<T, GitIdentityFindFirstArgs<ExtArgs>>): Prisma__GitIdentityClient<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GitIdentity that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GitIdentityFindFirstOrThrowArgs} args - Arguments to find a GitIdentity
+     * @example
+     * // Get one GitIdentity
+     * const gitIdentity = await prisma.gitIdentity.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GitIdentityFindFirstOrThrowArgs>(args?: SelectSubset<T, GitIdentityFindFirstOrThrowArgs<ExtArgs>>): Prisma__GitIdentityClient<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more GitIdentities that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GitIdentityFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GitIdentities
+     * const gitIdentities = await prisma.gitIdentity.findMany()
+     * 
+     * // Get first 10 GitIdentities
+     * const gitIdentities = await prisma.gitIdentity.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const gitIdentityWithIdOnly = await prisma.gitIdentity.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GitIdentityFindManyArgs>(args?: SelectSubset<T, GitIdentityFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a GitIdentity.
+     * @param {GitIdentityCreateArgs} args - Arguments to create a GitIdentity.
+     * @example
+     * // Create one GitIdentity
+     * const GitIdentity = await prisma.gitIdentity.create({
+     *   data: {
+     *     // ... data to create a GitIdentity
+     *   }
+     * })
+     * 
+     */
+    create<T extends GitIdentityCreateArgs>(args: SelectSubset<T, GitIdentityCreateArgs<ExtArgs>>): Prisma__GitIdentityClient<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many GitIdentities.
+     * @param {GitIdentityCreateManyArgs} args - Arguments to create many GitIdentities.
+     * @example
+     * // Create many GitIdentities
+     * const gitIdentity = await prisma.gitIdentity.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GitIdentityCreateManyArgs>(args?: SelectSubset<T, GitIdentityCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many GitIdentities and returns the data saved in the database.
+     * @param {GitIdentityCreateManyAndReturnArgs} args - Arguments to create many GitIdentities.
+     * @example
+     * // Create many GitIdentities
+     * const gitIdentity = await prisma.gitIdentity.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many GitIdentities and only return the `id`
+     * const gitIdentityWithIdOnly = await prisma.gitIdentity.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends GitIdentityCreateManyAndReturnArgs>(args?: SelectSubset<T, GitIdentityCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a GitIdentity.
+     * @param {GitIdentityDeleteArgs} args - Arguments to delete one GitIdentity.
+     * @example
+     * // Delete one GitIdentity
+     * const GitIdentity = await prisma.gitIdentity.delete({
+     *   where: {
+     *     // ... filter to delete one GitIdentity
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GitIdentityDeleteArgs>(args: SelectSubset<T, GitIdentityDeleteArgs<ExtArgs>>): Prisma__GitIdentityClient<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one GitIdentity.
+     * @param {GitIdentityUpdateArgs} args - Arguments to update one GitIdentity.
+     * @example
+     * // Update one GitIdentity
+     * const gitIdentity = await prisma.gitIdentity.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GitIdentityUpdateArgs>(args: SelectSubset<T, GitIdentityUpdateArgs<ExtArgs>>): Prisma__GitIdentityClient<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more GitIdentities.
+     * @param {GitIdentityDeleteManyArgs} args - Arguments to filter GitIdentities to delete.
+     * @example
+     * // Delete a few GitIdentities
+     * const { count } = await prisma.gitIdentity.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GitIdentityDeleteManyArgs>(args?: SelectSubset<T, GitIdentityDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GitIdentities.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GitIdentityUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GitIdentities
+     * const gitIdentity = await prisma.gitIdentity.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GitIdentityUpdateManyArgs>(args: SelectSubset<T, GitIdentityUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GitIdentities and returns the data updated in the database.
+     * @param {GitIdentityUpdateManyAndReturnArgs} args - Arguments to update many GitIdentities.
+     * @example
+     * // Update many GitIdentities
+     * const gitIdentity = await prisma.gitIdentity.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more GitIdentities and only return the `id`
+     * const gitIdentityWithIdOnly = await prisma.gitIdentity.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends GitIdentityUpdateManyAndReturnArgs>(args: SelectSubset<T, GitIdentityUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one GitIdentity.
+     * @param {GitIdentityUpsertArgs} args - Arguments to update or create a GitIdentity.
+     * @example
+     * // Update or create a GitIdentity
+     * const gitIdentity = await prisma.gitIdentity.upsert({
+     *   create: {
+     *     // ... data to create a GitIdentity
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GitIdentity we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GitIdentityUpsertArgs>(args: SelectSubset<T, GitIdentityUpsertArgs<ExtArgs>>): Prisma__GitIdentityClient<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of GitIdentities.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GitIdentityCountArgs} args - Arguments to filter GitIdentities to count.
+     * @example
+     * // Count the number of GitIdentities
+     * const count = await prisma.gitIdentity.count({
+     *   where: {
+     *     // ... the filter for the GitIdentities we want to count
+     *   }
+     * })
+    **/
+    count<T extends GitIdentityCountArgs>(
+      args?: Subset<T, GitIdentityCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GitIdentityCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GitIdentity.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GitIdentityAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GitIdentityAggregateArgs>(args: Subset<T, GitIdentityAggregateArgs>): Prisma.PrismaPromise<GetGitIdentityAggregateType<T>>
+
+    /**
+     * Group by GitIdentity.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GitIdentityGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GitIdentityGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GitIdentityGroupByArgs['orderBy'] }
+        : { orderBy?: GitIdentityGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GitIdentityGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGitIdentityGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GitIdentity model
+   */
+  readonly fields: GitIdentityFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GitIdentity.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GitIdentityClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GitIdentity model
+   */
+  interface GitIdentityFieldRefs {
+    readonly id: FieldRef<"GitIdentity", 'String'>
+    readonly user_id: FieldRef<"GitIdentity", 'String'>
+    readonly label: FieldRef<"GitIdentity", 'String'>
+    readonly name: FieldRef<"GitIdentity", 'String'>
+    readonly email: FieldRef<"GitIdentity", 'String'>
+    readonly is_default: FieldRef<"GitIdentity", 'Boolean'>
+    readonly created_at: FieldRef<"GitIdentity", 'DateTime'>
+    readonly updated_at: FieldRef<"GitIdentity", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * GitIdentity findUnique
+   */
+  export type GitIdentityFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityInclude<ExtArgs> | null
+    /**
+     * Filter, which GitIdentity to fetch.
+     */
+    where: GitIdentityWhereUniqueInput
+  }
+
+  /**
+   * GitIdentity findUniqueOrThrow
+   */
+  export type GitIdentityFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityInclude<ExtArgs> | null
+    /**
+     * Filter, which GitIdentity to fetch.
+     */
+    where: GitIdentityWhereUniqueInput
+  }
+
+  /**
+   * GitIdentity findFirst
+   */
+  export type GitIdentityFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityInclude<ExtArgs> | null
+    /**
+     * Filter, which GitIdentity to fetch.
+     */
+    where?: GitIdentityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GitIdentities to fetch.
+     */
+    orderBy?: GitIdentityOrderByWithRelationInput | GitIdentityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GitIdentities.
+     */
+    cursor?: GitIdentityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GitIdentities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GitIdentities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GitIdentities.
+     */
+    distinct?: GitIdentityScalarFieldEnum | GitIdentityScalarFieldEnum[]
+  }
+
+  /**
+   * GitIdentity findFirstOrThrow
+   */
+  export type GitIdentityFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityInclude<ExtArgs> | null
+    /**
+     * Filter, which GitIdentity to fetch.
+     */
+    where?: GitIdentityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GitIdentities to fetch.
+     */
+    orderBy?: GitIdentityOrderByWithRelationInput | GitIdentityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GitIdentities.
+     */
+    cursor?: GitIdentityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GitIdentities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GitIdentities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GitIdentities.
+     */
+    distinct?: GitIdentityScalarFieldEnum | GitIdentityScalarFieldEnum[]
+  }
+
+  /**
+   * GitIdentity findMany
+   */
+  export type GitIdentityFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityInclude<ExtArgs> | null
+    /**
+     * Filter, which GitIdentities to fetch.
+     */
+    where?: GitIdentityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GitIdentities to fetch.
+     */
+    orderBy?: GitIdentityOrderByWithRelationInput | GitIdentityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GitIdentities.
+     */
+    cursor?: GitIdentityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GitIdentities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GitIdentities.
+     */
+    skip?: number
+    distinct?: GitIdentityScalarFieldEnum | GitIdentityScalarFieldEnum[]
+  }
+
+  /**
+   * GitIdentity create
+   */
+  export type GitIdentityCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityInclude<ExtArgs> | null
+    /**
+     * The data needed to create a GitIdentity.
+     */
+    data: XOR<GitIdentityCreateInput, GitIdentityUncheckedCreateInput>
+  }
+
+  /**
+   * GitIdentity createMany
+   */
+  export type GitIdentityCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GitIdentities.
+     */
+    data: GitIdentityCreateManyInput | GitIdentityCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GitIdentity createManyAndReturn
+   */
+  export type GitIdentityCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * The data used to create many GitIdentities.
+     */
+    data: GitIdentityCreateManyInput | GitIdentityCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GitIdentity update
+   */
+  export type GitIdentityUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityInclude<ExtArgs> | null
+    /**
+     * The data needed to update a GitIdentity.
+     */
+    data: XOR<GitIdentityUpdateInput, GitIdentityUncheckedUpdateInput>
+    /**
+     * Choose, which GitIdentity to update.
+     */
+    where: GitIdentityWhereUniqueInput
+  }
+
+  /**
+   * GitIdentity updateMany
+   */
+  export type GitIdentityUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GitIdentities.
+     */
+    data: XOR<GitIdentityUpdateManyMutationInput, GitIdentityUncheckedUpdateManyInput>
+    /**
+     * Filter which GitIdentities to update
+     */
+    where?: GitIdentityWhereInput
+    /**
+     * Limit how many GitIdentities to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GitIdentity updateManyAndReturn
+   */
+  export type GitIdentityUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * The data used to update GitIdentities.
+     */
+    data: XOR<GitIdentityUpdateManyMutationInput, GitIdentityUncheckedUpdateManyInput>
+    /**
+     * Filter which GitIdentities to update
+     */
+    where?: GitIdentityWhereInput
+    /**
+     * Limit how many GitIdentities to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GitIdentity upsert
+   */
+  export type GitIdentityUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityInclude<ExtArgs> | null
+    /**
+     * The filter to search for the GitIdentity to update in case it exists.
+     */
+    where: GitIdentityWhereUniqueInput
+    /**
+     * In case the GitIdentity found by the `where` argument doesn't exist, create a new GitIdentity with this data.
+     */
+    create: XOR<GitIdentityCreateInput, GitIdentityUncheckedCreateInput>
+    /**
+     * In case the GitIdentity was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GitIdentityUpdateInput, GitIdentityUncheckedUpdateInput>
+  }
+
+  /**
+   * GitIdentity delete
+   */
+  export type GitIdentityDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityInclude<ExtArgs> | null
+    /**
+     * Filter which GitIdentity to delete.
+     */
+    where: GitIdentityWhereUniqueInput
+  }
+
+  /**
+   * GitIdentity deleteMany
+   */
+  export type GitIdentityDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GitIdentities to delete
+     */
+    where?: GitIdentityWhereInput
+    /**
+     * Limit how many GitIdentities to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * GitIdentity without action
+   */
+  export type GitIdentityDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GitIdentity
+     */
+    select?: GitIdentitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GitIdentity
+     */
+    omit?: GitIdentityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GitIdentityInclude<ExtArgs> | null
   }
 
 
@@ -22010,6 +23235,20 @@ export namespace Prisma {
   export type DocumentScalarFieldEnum = (typeof DocumentScalarFieldEnum)[keyof typeof DocumentScalarFieldEnum]
 
 
+  export const GitIdentityScalarFieldEnum: {
+    id: 'id',
+    user_id: 'user_id',
+    label: 'label',
+    name: 'name',
+    email: 'email',
+    is_default: 'is_default',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type GitIdentityScalarFieldEnum = (typeof GitIdentityScalarFieldEnum)[keyof typeof GitIdentityScalarFieldEnum]
+
+
   export const UserPreferenceScalarFieldEnum: {
     id: 'id',
     user_id: 'user_id',
@@ -22345,6 +23584,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'AgentType'
    */
   export type EnumAgentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AgentType'>
@@ -22355,13 +23601,6 @@ export namespace Prisma {
    * Reference to a field of type 'AgentType[]'
    */
   export type ListEnumAgentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AgentType[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -22541,6 +23780,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionListRelationFilter
     agent_sessions?: AgentSessionListRelationFilter
     activities?: ActivityListRelationFilter
+    git_identities?: GitIdentityListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -22559,6 +23799,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionOrderByRelationAggregateInput
     agent_sessions?: AgentSessionOrderByRelationAggregateInput
     activities?: ActivityOrderByRelationAggregateInput
+    git_identities?: GitIdentityOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -22580,6 +23821,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionListRelationFilter
     agent_sessions?: AgentSessionListRelationFilter
     activities?: ActivityListRelationFilter
+    git_identities?: GitIdentityListRelationFilter
   }, "id" | "email" | "phone">
 
   export type UserOrderByWithAggregationInput = {
@@ -22744,6 +23986,77 @@ export namespace Prisma {
     path?: StringWithAggregatesFilter<"Document"> | string
     type?: EnumDocumentTypeWithAggregatesFilter<"Document"> | $Enums.DocumentType
     created_at?: DateTimeWithAggregatesFilter<"Document"> | Date | string
+  }
+
+  export type GitIdentityWhereInput = {
+    AND?: GitIdentityWhereInput | GitIdentityWhereInput[]
+    OR?: GitIdentityWhereInput[]
+    NOT?: GitIdentityWhereInput | GitIdentityWhereInput[]
+    id?: StringFilter<"GitIdentity"> | string
+    user_id?: StringFilter<"GitIdentity"> | string
+    label?: StringFilter<"GitIdentity"> | string
+    name?: StringFilter<"GitIdentity"> | string
+    email?: StringFilter<"GitIdentity"> | string
+    is_default?: BoolFilter<"GitIdentity"> | boolean
+    created_at?: DateTimeFilter<"GitIdentity"> | Date | string
+    updated_at?: DateTimeFilter<"GitIdentity"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type GitIdentityOrderByWithRelationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    label?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    is_default?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type GitIdentityWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    user_id_label?: GitIdentityUser_idLabelCompoundUniqueInput
+    AND?: GitIdentityWhereInput | GitIdentityWhereInput[]
+    OR?: GitIdentityWhereInput[]
+    NOT?: GitIdentityWhereInput | GitIdentityWhereInput[]
+    user_id?: StringFilter<"GitIdentity"> | string
+    label?: StringFilter<"GitIdentity"> | string
+    name?: StringFilter<"GitIdentity"> | string
+    email?: StringFilter<"GitIdentity"> | string
+    is_default?: BoolFilter<"GitIdentity"> | boolean
+    created_at?: DateTimeFilter<"GitIdentity"> | Date | string
+    updated_at?: DateTimeFilter<"GitIdentity"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "user_id_label">
+
+  export type GitIdentityOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    label?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    is_default?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: GitIdentityCountOrderByAggregateInput
+    _max?: GitIdentityMaxOrderByAggregateInput
+    _min?: GitIdentityMinOrderByAggregateInput
+  }
+
+  export type GitIdentityScalarWhereWithAggregatesInput = {
+    AND?: GitIdentityScalarWhereWithAggregatesInput | GitIdentityScalarWhereWithAggregatesInput[]
+    OR?: GitIdentityScalarWhereWithAggregatesInput[]
+    NOT?: GitIdentityScalarWhereWithAggregatesInput | GitIdentityScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"GitIdentity"> | string
+    user_id?: StringWithAggregatesFilter<"GitIdentity"> | string
+    label?: StringWithAggregatesFilter<"GitIdentity"> | string
+    name?: StringWithAggregatesFilter<"GitIdentity"> | string
+    email?: StringWithAggregatesFilter<"GitIdentity"> | string
+    is_default?: BoolWithAggregatesFilter<"GitIdentity"> | boolean
+    created_at?: DateTimeWithAggregatesFilter<"GitIdentity"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"GitIdentity"> | Date | string
   }
 
   export type UserPreferenceWhereInput = {
@@ -23967,6 +25280,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -23985,6 +25299,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -24003,6 +25318,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -24021,6 +25337,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -24203,6 +25520,82 @@ export namespace Prisma {
     path?: StringFieldUpdateOperationsInput | string
     type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GitIdentityCreateInput = {
+    id?: string
+    label: string
+    name: string
+    email: string
+    is_default?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutGit_identitiesInput
+  }
+
+  export type GitIdentityUncheckedCreateInput = {
+    id?: string
+    user_id: string
+    label: string
+    name: string
+    email: string
+    is_default?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type GitIdentityUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutGit_identitiesNestedInput
+  }
+
+  export type GitIdentityUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GitIdentityCreateManyInput = {
+    id?: string
+    user_id: string
+    label: string
+    name: string
+    email: string
+    is_default?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type GitIdentityUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GitIdentityUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserPreferenceCreateInput = {
@@ -25599,6 +26992,12 @@ export namespace Prisma {
     none?: ActivityWhereInput
   }
 
+  export type GitIdentityListRelationFilter = {
+    every?: GitIdentityWhereInput
+    some?: GitIdentityWhereInput
+    none?: GitIdentityWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -25621,6 +27020,10 @@ export namespace Prisma {
   }
 
   export type ActivityOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type GitIdentityOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -25865,16 +27268,62 @@ export namespace Prisma {
     _max?: NestedEnumDocumentTypeFilter<$PrismaModel>
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type GitIdentityUser_idLabelCompoundUniqueInput = {
+    user_id: string
+    label: string
+  }
+
+  export type GitIdentityCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    label?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    is_default?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type GitIdentityMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    label?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    is_default?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type GitIdentityMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    label?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    is_default?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type EnumAgentTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.AgentType | EnumAgentTypeFieldRefInput<$PrismaModel>
     in?: $Enums.AgentType[] | ListEnumAgentTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.AgentType[] | ListEnumAgentTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumAgentTypeFilter<$PrismaModel> | $Enums.AgentType
-  }
-
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type UserPreferenceCountOrderByAggregateInput = {
@@ -25938,14 +27387,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumAgentTypeFilter<$PrismaModel>
     _max?: NestedEnumAgentTypeFilter<$PrismaModel>
-  }
-
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type RoleListRelationFilter = {
@@ -26908,6 +28349,13 @@ export namespace Prisma {
     connect?: ActivityWhereUniqueInput | ActivityWhereUniqueInput[]
   }
 
+  export type GitIdentityCreateNestedManyWithoutUserInput = {
+    create?: XOR<GitIdentityCreateWithoutUserInput, GitIdentityUncheckedCreateWithoutUserInput> | GitIdentityCreateWithoutUserInput[] | GitIdentityUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GitIdentityCreateOrConnectWithoutUserInput | GitIdentityCreateOrConnectWithoutUserInput[]
+    createMany?: GitIdentityCreateManyUserInputEnvelope
+    connect?: GitIdentityWhereUniqueInput | GitIdentityWhereUniqueInput[]
+  }
+
   export type PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<PasswordResetTokenCreateWithoutUserInput, PasswordResetTokenUncheckedCreateWithoutUserInput> | PasswordResetTokenCreateWithoutUserInput[] | PasswordResetTokenUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PasswordResetTokenCreateOrConnectWithoutUserInput | PasswordResetTokenCreateOrConnectWithoutUserInput[]
@@ -26947,6 +28395,13 @@ export namespace Prisma {
     connectOrCreate?: ActivityCreateOrConnectWithoutUserInput | ActivityCreateOrConnectWithoutUserInput[]
     createMany?: ActivityCreateManyUserInputEnvelope
     connect?: ActivityWhereUniqueInput | ActivityWhereUniqueInput[]
+  }
+
+  export type GitIdentityUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<GitIdentityCreateWithoutUserInput, GitIdentityUncheckedCreateWithoutUserInput> | GitIdentityCreateWithoutUserInput[] | GitIdentityUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GitIdentityCreateOrConnectWithoutUserInput | GitIdentityCreateOrConnectWithoutUserInput[]
+    createMany?: GitIdentityCreateManyUserInputEnvelope
+    connect?: GitIdentityWhereUniqueInput | GitIdentityWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -27045,6 +28500,20 @@ export namespace Prisma {
     deleteMany?: ActivityScalarWhereInput | ActivityScalarWhereInput[]
   }
 
+  export type GitIdentityUpdateManyWithoutUserNestedInput = {
+    create?: XOR<GitIdentityCreateWithoutUserInput, GitIdentityUncheckedCreateWithoutUserInput> | GitIdentityCreateWithoutUserInput[] | GitIdentityUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GitIdentityCreateOrConnectWithoutUserInput | GitIdentityCreateOrConnectWithoutUserInput[]
+    upsert?: GitIdentityUpsertWithWhereUniqueWithoutUserInput | GitIdentityUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: GitIdentityCreateManyUserInputEnvelope
+    set?: GitIdentityWhereUniqueInput | GitIdentityWhereUniqueInput[]
+    disconnect?: GitIdentityWhereUniqueInput | GitIdentityWhereUniqueInput[]
+    delete?: GitIdentityWhereUniqueInput | GitIdentityWhereUniqueInput[]
+    connect?: GitIdentityWhereUniqueInput | GitIdentityWhereUniqueInput[]
+    update?: GitIdentityUpdateWithWhereUniqueWithoutUserInput | GitIdentityUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: GitIdentityUpdateManyWithWhereWithoutUserInput | GitIdentityUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: GitIdentityScalarWhereInput | GitIdentityScalarWhereInput[]
+  }
+
   export type PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<PasswordResetTokenCreateWithoutUserInput, PasswordResetTokenUncheckedCreateWithoutUserInput> | PasswordResetTokenCreateWithoutUserInput[] | PasswordResetTokenUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PasswordResetTokenCreateOrConnectWithoutUserInput | PasswordResetTokenCreateOrConnectWithoutUserInput[]
@@ -27125,6 +28594,20 @@ export namespace Prisma {
     deleteMany?: ActivityScalarWhereInput | ActivityScalarWhereInput[]
   }
 
+  export type GitIdentityUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<GitIdentityCreateWithoutUserInput, GitIdentityUncheckedCreateWithoutUserInput> | GitIdentityCreateWithoutUserInput[] | GitIdentityUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: GitIdentityCreateOrConnectWithoutUserInput | GitIdentityCreateOrConnectWithoutUserInput[]
+    upsert?: GitIdentityUpsertWithWhereUniqueWithoutUserInput | GitIdentityUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: GitIdentityCreateManyUserInputEnvelope
+    set?: GitIdentityWhereUniqueInput | GitIdentityWhereUniqueInput[]
+    disconnect?: GitIdentityWhereUniqueInput | GitIdentityWhereUniqueInput[]
+    delete?: GitIdentityWhereUniqueInput | GitIdentityWhereUniqueInput[]
+    connect?: GitIdentityWhereUniqueInput | GitIdentityWhereUniqueInput[]
+    update?: GitIdentityUpdateWithWhereUniqueWithoutUserInput | GitIdentityUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: GitIdentityUpdateManyWithWhereWithoutUserInput | GitIdentityUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: GitIdentityScalarWhereInput | GitIdentityScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutPassword_reset_tokensInput = {
     create?: XOR<UserCreateWithoutPassword_reset_tokensInput, UserUncheckedCreateWithoutPassword_reset_tokensInput>
     connectOrCreate?: UserCreateOrConnectWithoutPassword_reset_tokensInput
@@ -27155,6 +28638,24 @@ export namespace Prisma {
     set?: $Enums.DocumentType
   }
 
+  export type UserCreateNestedOneWithoutGit_identitiesInput = {
+    create?: XOR<UserCreateWithoutGit_identitiesInput, UserUncheckedCreateWithoutGit_identitiesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGit_identitiesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type UserUpdateOneRequiredWithoutGit_identitiesNestedInput = {
+    create?: XOR<UserCreateWithoutGit_identitiesInput, UserUncheckedCreateWithoutGit_identitiesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGit_identitiesInput
+    upsert?: UserUpsertWithoutGit_identitiesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGit_identitiesInput, UserUpdateWithoutGit_identitiesInput>, UserUncheckedUpdateWithoutGit_identitiesInput>
+  }
+
   export type UserCreateNestedOneWithoutPreferenceInput = {
     create?: XOR<UserCreateWithoutPreferenceInput, UserUncheckedCreateWithoutPreferenceInput>
     connectOrCreate?: UserCreateOrConnectWithoutPreferenceInput
@@ -27163,10 +28664,6 @@ export namespace Prisma {
 
   export type EnumAgentTypeFieldUpdateOperationsInput = {
     set?: $Enums.AgentType
-  }
-
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
   }
 
   export type UserUpdateOneRequiredWithoutPreferenceNestedInput = {
@@ -28672,16 +30169,24 @@ export namespace Prisma {
     _max?: NestedEnumDocumentTypeFilter<$PrismaModel>
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type NestedEnumAgentTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.AgentType | EnumAgentTypeFieldRefInput<$PrismaModel>
     in?: $Enums.AgentType[] | ListEnumAgentTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.AgentType[] | ListEnumAgentTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumAgentTypeFilter<$PrismaModel> | $Enums.AgentType
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type NestedEnumAgentTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -28692,14 +30197,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumAgentTypeFilter<$PrismaModel>
     _max?: NestedEnumAgentTypeFilter<$PrismaModel>
-  }
-
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedEnumSystemRoleKeyFilter<$PrismaModel = never> = {
@@ -29164,6 +30661,36 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type GitIdentityCreateWithoutUserInput = {
+    id?: string
+    label: string
+    name: string
+    email: string
+    is_default?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type GitIdentityUncheckedCreateWithoutUserInput = {
+    id?: string
+    label: string
+    name: string
+    email: string
+    is_default?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type GitIdentityCreateOrConnectWithoutUserInput = {
+    where: GitIdentityWhereUniqueInput
+    create: XOR<GitIdentityCreateWithoutUserInput, GitIdentityUncheckedCreateWithoutUserInput>
+  }
+
+  export type GitIdentityCreateManyUserInputEnvelope = {
+    data: GitIdentityCreateManyUserInput | GitIdentityCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type PasswordResetTokenUpsertWithWhereUniqueWithoutUserInput = {
     where: PasswordResetTokenWhereUniqueInput
     update: XOR<PasswordResetTokenUpdateWithoutUserInput, PasswordResetTokenUncheckedUpdateWithoutUserInput>
@@ -29369,6 +30896,36 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"Activity"> | Date | string
   }
 
+  export type GitIdentityUpsertWithWhereUniqueWithoutUserInput = {
+    where: GitIdentityWhereUniqueInput
+    update: XOR<GitIdentityUpdateWithoutUserInput, GitIdentityUncheckedUpdateWithoutUserInput>
+    create: XOR<GitIdentityCreateWithoutUserInput, GitIdentityUncheckedCreateWithoutUserInput>
+  }
+
+  export type GitIdentityUpdateWithWhereUniqueWithoutUserInput = {
+    where: GitIdentityWhereUniqueInput
+    data: XOR<GitIdentityUpdateWithoutUserInput, GitIdentityUncheckedUpdateWithoutUserInput>
+  }
+
+  export type GitIdentityUpdateManyWithWhereWithoutUserInput = {
+    where: GitIdentityScalarWhereInput
+    data: XOR<GitIdentityUpdateManyMutationInput, GitIdentityUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type GitIdentityScalarWhereInput = {
+    AND?: GitIdentityScalarWhereInput | GitIdentityScalarWhereInput[]
+    OR?: GitIdentityScalarWhereInput[]
+    NOT?: GitIdentityScalarWhereInput | GitIdentityScalarWhereInput[]
+    id?: StringFilter<"GitIdentity"> | string
+    user_id?: StringFilter<"GitIdentity"> | string
+    label?: StringFilter<"GitIdentity"> | string
+    name?: StringFilter<"GitIdentity"> | string
+    email?: StringFilter<"GitIdentity"> | string
+    is_default?: BoolFilter<"GitIdentity"> | boolean
+    created_at?: DateTimeFilter<"GitIdentity"> | Date | string
+    updated_at?: DateTimeFilter<"GitIdentity"> | Date | string
+  }
+
   export type UserCreateWithoutPassword_reset_tokensInput = {
     id?: string
     email: string
@@ -29384,6 +30941,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPassword_reset_tokensInput = {
@@ -29401,6 +30959,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPassword_reset_tokensInput = {
@@ -29434,6 +30993,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPassword_reset_tokensInput = {
@@ -29446,6 +31006,95 @@ export namespace Prisma {
     role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    memberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutGit_identitiesInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
+    activities?: ActivityCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutGit_identitiesInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutGit_identitiesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutGit_identitiesInput, UserUncheckedCreateWithoutGit_identitiesInput>
+  }
+
+  export type UserUpsertWithoutGit_identitiesInput = {
+    update: XOR<UserUpdateWithoutGit_identitiesInput, UserUncheckedUpdateWithoutGit_identitiesInput>
+    create: XOR<UserCreateWithoutGit_identitiesInput, UserUncheckedCreateWithoutGit_identitiesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutGit_identitiesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutGit_identitiesInput, UserUncheckedUpdateWithoutGit_identitiesInput>
+  }
+
+  export type UserUpdateWithoutGit_identitiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
+    activities?: ActivityUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutGit_identitiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
     memberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     preference?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
@@ -29468,6 +31117,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPreferenceInput = {
@@ -29485,6 +31135,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPreferenceInput = {
@@ -29518,6 +31169,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPreferenceInput = {
@@ -29535,6 +31187,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrganizationMemberCreateWithoutOrganizationInput = {
@@ -30407,6 +32060,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -30424,6 +32078,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -30531,6 +32186,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -30548,6 +32204,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type RoleUpsertWithoutMembersInput = {
@@ -31951,6 +33608,7 @@ export namespace Prisma {
     preference?: UserPreferenceCreateNestedOneWithoutUserInput
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutConnectionsInput = {
@@ -31968,6 +33626,7 @@ export namespace Prisma {
     preference?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutConnectionsInput = {
@@ -32260,6 +33919,7 @@ export namespace Prisma {
     preference?: UserPreferenceUpdateOneWithoutUserNestedInput
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConnectionsInput = {
@@ -32277,6 +33937,7 @@ export namespace Prisma {
     preference?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type RepositoryUpsertWithWhereUniqueWithoutConnectionInput = {
@@ -32450,6 +34111,7 @@ export namespace Prisma {
     preference?: UserPreferenceCreateNestedOneWithoutUserInput
     connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAgent_sessionsInput = {
@@ -32467,6 +34129,7 @@ export namespace Prisma {
     preference?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAgent_sessionsInput = {
@@ -32636,6 +34299,7 @@ export namespace Prisma {
     preference?: UserPreferenceUpdateOneWithoutUserNestedInput
     connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAgent_sessionsInput = {
@@ -32653,6 +34317,7 @@ export namespace Prisma {
     preference?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ActivityUpsertWithWhereUniqueWithoutAgent_sessionInput = {
@@ -32778,6 +34443,7 @@ export namespace Prisma {
     preference?: UserPreferenceCreateNestedOneWithoutUserInput
     connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutActivitiesInput = {
@@ -32795,6 +34461,7 @@ export namespace Prisma {
     preference?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutActivitiesInput = {
@@ -32985,6 +34652,7 @@ export namespace Prisma {
     preference?: UserPreferenceUpdateOneWithoutUserNestedInput
     connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutActivitiesInput = {
@@ -33002,6 +34670,7 @@ export namespace Prisma {
     preference?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AgentSessionUpsertWithoutActivitiesInput = {
@@ -33127,6 +34796,16 @@ export namespace Prisma {
     message: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
+  }
+
+  export type GitIdentityCreateManyUserInput = {
+    id?: string
+    label: string
+    name: string
+    email: string
+    is_default?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
   }
 
   export type PasswordResetTokenUpdateWithoutUserInput = {
@@ -33335,6 +35014,36 @@ export namespace Prisma {
     message?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GitIdentityUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GitIdentityUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GitIdentityUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OrganizationMemberCreateManyOrganizationInput = {
