@@ -5,7 +5,7 @@ export const buildIssuePrompt = (issue: LinearIssue, extraInstructions?: string)
     const lines = [
         `You are working on Linear issue ${issue.identifier}: ${issue.title}`,
         "",
-        issue.description?.trim() ? `Description:\n${issue.description.trim()}` : "No description was provided.",
+        `Description:\n${issue.description?.trim() || issue.title}`,
     ];
 
     const meta = [
