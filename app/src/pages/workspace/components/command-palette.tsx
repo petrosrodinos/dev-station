@@ -14,6 +14,7 @@ import { filterByAccess, type AccessGated } from "@/lib/access.utils";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys, type PermissionKey } from "@/features/organizations/interfaces/organizations.interfaces";
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
+import { projectRouteKeepingTab } from "@/lib/project-route.utils";
 
 interface PaletteAction extends AccessGated<PermissionKey> {
   id: string;
@@ -90,7 +91,7 @@ export function CommandPalette() {
               onSelect={() =>
                 run(() => {
                   setActiveProject(p.id);
-                  navigate(Routes.workspace.project(p.id));
+                  navigate(projectRouteKeepingTab(p.id, window.location.pathname));
                 })
               }
             >
