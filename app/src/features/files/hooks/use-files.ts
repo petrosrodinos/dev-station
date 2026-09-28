@@ -1,5 +1,5 @@
-import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
-import { copyFilePath, listDirectory, openFileExternally, openInEditor, revealFile, searchFiles } from "../services/files.services";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { copyFilePath, listDirectory, openFileExternally, openInEditor, readFile, revealFile, searchFiles, writeFile } from "../services/files.services";
 import { getEditorTargetLabel } from "@/config/constants/dropdowns/settings/editor-target.options";
 import { toast } from "@/hooks/use-toast";
 
@@ -41,3 +41,24 @@ export const useCopyFilePath = () =>
         onSuccess: (path) => toast({ title: "Path copied", description: path, duration: 1500 }),
         onError: (error: Error) => toast({ title: "Could not copy path", description: error.message, variant: "error" }),
     });
+
+export const useFileContent = (projectId: string | null, path: string | null) =>
+    useQuery({
+        queryKey: ["file-content", projectId, path],
+        queryFn: () => readFile(projectId!, path!),
+        enabled: !!projectId && !!path,
+        staleTime: 0,
+        retry: false,
+    });
+
+export const useSaveFile = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: writeFile,
+        onSuccess: (_r, vars) => {
+            queryClient.setQueryData(["file-content", vars.projectId, vars.path], { content: vars.content });
+            toast({ title: "Saved", duration: 1000 });
+        },
+        onError: (error: Error) => toast({ title: "Could not save file", description: error.message, variant: "error" }),
+    });
+};

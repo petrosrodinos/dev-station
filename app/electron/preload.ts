@@ -52,6 +52,8 @@ const bridge: DevStationBridge = {
     openExternal: (id, rel) => call(C.FILES_OPEN_EXTERNAL, id, rel),
     openInEditor: (id, editor, rel) => call(C.FILES_OPEN_EDITOR, id, editor, rel),
     copyPath: (id, rel) => call(C.FILES_COPY_PATH, id, rel),
+    readFile: (id, rel) => call(C.FILES_READ, id, rel),
+    writeFile: (id, rel, content) => call(C.FILES_WRITE, id, rel, content),
   },
   git: {
     status: (id) => call(C.GIT_STATUS, id),
