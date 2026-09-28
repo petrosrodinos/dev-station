@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { registerIpc } from "./ipc/register";
 import { setTrustedSenderCheck } from "./ipc/handle";
 import { agentManager } from "./managers/agent-manager";
+import { previewManager } from "./managers/preview-manager";
 import { processManager } from "./managers/process-manager";
 import { terminalManager } from "./managers/terminal-manager";
 import { logger } from "./utils/logger";
@@ -70,6 +71,8 @@ function createWindow() {
   });
 
   mainWindow.once("ready-to-show", () => mainWindow?.show());
+  previewManager.attach(mainWindow);
+  mainWindow.on("focus", () => previewManager.reloadActive());
 
   // Only our renderer may navigate the window; external links go to the system browser.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -121,6 +124,7 @@ app.on("before-quit", (event) => {
   if (shuttingDown) return;
   shuttingDown = true;
   event.preventDefault();
+  previewManager.destroyAll();
   agentManager.stopAll();
   terminalManager.killAll();
   processManager
