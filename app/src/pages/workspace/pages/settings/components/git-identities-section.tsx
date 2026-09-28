@@ -15,6 +15,8 @@ import type { GitIdentity } from "@/features/git-identities/interfaces/git-ident
 import { gitIdentitySchema, type GitIdentityFormData } from "../validation-schemas/settings.schema";
 import { SettingsSectionHeader } from "./settings-row";
 
+const PLACEHOLDERS = { label: "Work", name: "Jane Doe", email: "jane@company.com" } as const;
+
 const EMPTY: GitIdentityFormData = { label: "", name: "", email: "" };
 
 function IdentityDialog({ identity, open, onClose }: { identity: GitIdentity | null; open: boolean; onClose: () => void }) {
@@ -49,7 +51,7 @@ function IdentityDialog({ identity, open, onClose }: { identity: GitIdentity | n
                   <FormItem>
                     <FormLabel className="capitalize">{key === "label" ? "Label (e.g. Work)" : key}</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input placeholder={PLACEHOLDERS[key]} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
