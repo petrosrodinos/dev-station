@@ -143,6 +143,7 @@ export interface GitStatus {
   upstream: string | null;
   ahead: number;
   behind: number;
+  commits: number;
   detached: boolean;
   files: GitFileChange[];
   counts: { modified: number; added: number; deleted: number; untracked: number; conflicted: number; renamed: number };

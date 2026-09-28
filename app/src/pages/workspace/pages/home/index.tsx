@@ -107,18 +107,20 @@ function ProjectCard({ project, localState }: { project: Project; localState: Pr
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-medium">{project.name}</div>
           <div className="truncate text-xs text-muted-foreground">
-            {project.client?.name ?? "Internal"} · {formatRelative(project.last_activity_at)}
+            {project.repository?.full_name ?? "No repository"} · {formatRelative(project.last_activity_at)}
           </div>
         </div>
         {localState && localState !== ProjectLocalStates.LOCAL && (
           <span className="rounded-xs bg-surface-elevated px-2 py-0.5 text-[11px] text-muted-foreground">{getDropdownOptionLabel(ProjectLocalStateOptions, localState)}</span>
         )}
       </div>
+      {project.description && <p className="mt-2 line-clamp-2 text-[12.5px] text-muted-foreground">{project.description}</p>}
       {localState === ProjectLocalStates.LOCAL && (
         <div className="mt-3 space-y-1.5 text-[12.5px]">
           <div className="flex items-center gap-2 text-body">
             <GitBranch className="size-3.5 text-muted-foreground" />
             <span className="font-mono">{git?.branch ?? "—"}</span>
+            {git && git.commits > 0 && <span className="text-ash">{git.commits} commit{git.commits === 1 ? "" : "s"}</span>}
             {git && git.files.length > 0 && <span className="text-warning">{git.files.length} changed</span>}
             {git && git.ahead > 0 && <span className="text-success">↑{git.ahead}</span>}
             {git && git.behind > 0 && <span className="text-info">↓{git.behind}</span>}
@@ -131,7 +133,7 @@ function ProjectCard({ project, localState }: { project: Project; localState: Pr
                   {s.name}
                 </span>
               ))}
-              {running === 0 && <span className="text-ash">not running</span>}
+              {running === 0 ? <span className="text-ash">not running</span> : <span className="text-ash">{running} running</span>}
             </div>
           )}
           {agents.length > 0 && (
