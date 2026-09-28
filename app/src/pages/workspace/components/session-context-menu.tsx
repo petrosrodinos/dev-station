@@ -78,7 +78,7 @@ function RenameSessionDialog({ session, open, onOpenChange }: SessionDialogProps
   );
 }
 
-function DeleteSessionDialog({ session, open, onOpenChange }: SessionDialogProps) {
+export function DeleteSessionDialog({ session, open, onOpenChange }: SessionDialogProps) {
   const remove = useDeleteAgentSession();
 
   return (
