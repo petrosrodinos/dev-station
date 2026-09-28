@@ -27,10 +27,12 @@ interface TreeProps {
   dir: string;
   depth: number;
   gitStates: Map<string, GitFileState>;
+  activePath?: string | null;
+  onSelect?: (path: string) => void;
 }
 
 /** Lazily loaded directory level. */
-export function FileTreeNode({ projectId, dir, depth, gitStates }: TreeProps) {
+export function FileTreeNode({ projectId, dir, depth, gitStates, activePath, onSelect }: TreeProps) {
   const { data, isPending, isError, error } = useDirectory(projectId, dir);
 
   if (isPending) {
@@ -49,16 +51,16 @@ export function FileTreeNode({ projectId, dir, depth, gitStates }: TreeProps) {
     <>
       {data.map((entry) =>
         entry.type === "dir" ? (
-          <DirRow key={entry.path} projectId={projectId} entry={entry} depth={depth} gitStates={gitStates} />
+          <DirRow key={entry.path} projectId={projectId} entry={entry} depth={depth} gitStates={gitStates} activePath={activePath} onSelect={onSelect} />
         ) : (
-          <FileRow key={entry.path} projectId={projectId} entry={entry} depth={depth} gitState={gitStates.get(entry.path)} />
+          <FileRow key={entry.path} projectId={projectId} entry={entry} depth={depth} gitState={gitStates.get(entry.path)} active={activePath === entry.path} onSelect={onSelect} />
         ),
       )}
     </>
   );
 }
 
-function DirRow({ projectId, entry, depth, gitStates }: { projectId: string; entry: FileEntry; depth: number; gitStates: Map<string, GitFileState> }) {
+function DirRow({ projectId, entry, depth, gitStates, activePath, onSelect }: { projectId: string; entry: FileEntry; depth: number; gitStates: Map<string, GitFileState>; activePath?: string | null; onSelect?: (path: string) => void }) {
   const [open, setOpen] = useState(false);
   const reveal = useRevealFile();
   const changed = [...gitStates.keys()].some((p) => p.startsWith(`${entry.path}/`));
@@ -82,22 +84,23 @@ function DirRow({ projectId, entry, depth, gitStates }: { projectId: string; ent
           </RowAction>
         </div>
       </div>
-      {open && <FileTreeNode projectId={projectId} dir={entry.path} depth={depth + 1} gitStates={gitStates} />}
+      {open && <FileTreeNode projectId={projectId} dir={entry.path} depth={depth + 1} gitStates={gitStates} activePath={activePath} onSelect={onSelect} />}
     </div>
   );
 }
 
-export function FileRow({ projectId, entry, depth, gitState, showPath = false }: { projectId: string; entry: FileEntry; depth: number; gitState?: GitFileState; showPath?: boolean }) {
+export function FileRow({ projectId, entry, depth, gitState, showPath = false, active = false, onSelect }: { projectId: string; entry: FileEntry; depth: number; gitState?: GitFileState; showPath?: boolean; active?: boolean; onSelect?: (path: string) => void }) {
   const openInEditor = useOpenInEditor();
   const reveal = useRevealFile();
   const copyPath = useCopyFilePath();
 
   return (
     <div
+      onClick={() => onSelect?.(entry.path)}
       onDoubleClick={() => openInEditor.mutate({ projectId, editor: EditorTargets.CURSOR, path: entry.path })}
-      className="group flex h-[26px] items-center gap-1.5 rounded-sm pr-1 text-[0.8125rem] text-body hover:bg-surface-elevated"
+      className={cn("group flex h-[26px] cursor-pointer items-center gap-1.5 rounded-sm pr-1 text-[0.8125rem] text-body hover:bg-surface-elevated", active && "bg-surface-card")}
       style={{ paddingLeft: depth * 16 + 26 }}
-      title="Double-click to open in Cursor"
+      title="Click to open · double-click to open in Cursor"
     >
       <File className="size-3.5 shrink-0 text-muted-foreground" />
       <span className="truncate">{showPath ? entry.path : entry.name}</span>

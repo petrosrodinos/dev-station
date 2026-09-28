@@ -2,17 +2,25 @@ import { clipboard, shell } from "electron";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import type { EditorTarget, FileEntry } from "../shared/contract";
+import type { EditorTarget, FileContent, FileEntry } from "../shared/contract";
 import { EditorTargets } from "../shared/contract";
 import { IpcError } from "../ipc/ipc-error";
 import { isWindows, toPosix, which } from "../utils/platform";
 import { workspaceConfig } from "./workspace-config";
 
-// Filesystem Manager (Spec §11). Browsing and hand-off only — Dev Station is not an editor.
+// Filesystem Manager (Spec §11). Browsing, hand-off, and lightweight in-app editing for text files.
 
 const IGNORED_DIRS = new Set([".git", "node_modules", "dist", "build", ".next", ".turbo", ".cache", "coverage", "out", ".venv", "__pycache__", "target"]);
 const MAX_SEARCH_RESULTS = 200;
 const MAX_SEARCH_VISITS = 50_000;
+const MAX_EDITABLE_BYTES = 5 * 1024 * 1024; // 5 MB — larger files go to Cursor / VS Code instead.
+
+/** Heuristic binary sniff: a NUL byte in the first few KB means "don't try to edit this as text". */
+function looksBinary(buffer: Buffer): boolean {
+  const len = Math.min(buffer.length, 8000);
+  for (let i = 0; i < len; i++) if (buffer[i] === 0) return true;
+  return false;
+}
 
 class FilesystemManager {
   async list(projectId: string, relDir: string): Promise<FileEntry[]> {
@@ -95,6 +103,36 @@ class FilesystemManager {
     const abs = workspaceConfig.resolveInProject(projectId, rel);
     clipboard.writeText(abs);
     return abs;
+  }
+
+  async readFile(projectId: string, rel: string): Promise<FileContent> {
+    const abs = workspaceConfig.resolveInProject(projectId, rel);
+    let stat: fs.Stats;
+    try {
+      stat = await fs.promises.stat(abs);
+    } catch {
+      throw new IpcError(`Cannot read file: ${rel}`);
+    }
+    if (!stat.isFile()) throw new IpcError(`Not a file: ${rel}`);
+    if (stat.size > MAX_EDITABLE_BYTES) throw new IpcError("This file is too large to edit here (over 5 MB). Open it in Cursor or VS Code instead.");
+
+    const buffer = await fs.promises.readFile(abs);
+    if (looksBinary(buffer)) throw new IpcError("This looks like a binary file and can't be edited here.");
+    return { content: buffer.toString("utf8") };
+  }
+
+  async writeFile(projectId: string, rel: string, content: string): Promise<void> {
+    const abs = workspaceConfig.resolveInProject(projectId, rel);
+    let stat: fs.Stats;
+    try {
+      stat = await fs.promises.stat(abs);
+    } catch {
+      throw new IpcError(`Cannot save file: ${rel}`);
+    }
+    if (!stat.isFile()) throw new IpcError(`Not a file: ${rel}`);
+    if (Buffer.byteLength(content, "utf8") > MAX_EDITABLE_BYTES) throw new IpcError("This file is too large to save here (over 5 MB).");
+
+    await fs.promises.writeFile(abs, content, "utf8");
   }
 }
 

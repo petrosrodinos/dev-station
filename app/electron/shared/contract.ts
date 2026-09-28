@@ -121,6 +121,10 @@ export interface FileEntry {
   size?: number;
 }
 
+export interface FileContent {
+  content: string;
+}
+
 // ---------------------------------------------------------------------------
 // Git
 // ---------------------------------------------------------------------------
@@ -369,6 +373,8 @@ export interface DevStationBridge {
     openExternal(projectId: string, relPath: string): Promise<void>;
     openInEditor(projectId: string, editor: EditorTarget, relPath?: string): Promise<void>;
     copyPath(projectId: string, relPath: string): Promise<string>;
+    readFile(projectId: string, relPath: string): Promise<FileContent>;
+    writeFile(projectId: string, relPath: string, content: string): Promise<void>;
   };
   git: {
     status(projectId: string): Promise<GitStatus>;
@@ -461,6 +467,8 @@ export const IpcChannels = {
   FILES_OPEN_EXTERNAL: "files:open-external",
   FILES_OPEN_EDITOR: "files:open-editor",
   FILES_COPY_PATH: "files:copy-path",
+  FILES_READ: "files:read",
+  FILES_WRITE: "files:write",
   GIT_STATUS: "git:status",
   GIT_FILE_DIFF: "git:file-diff",
   GIT_BRANCHES: "git:branches",

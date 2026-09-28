@@ -1,4 +1,4 @@
-import type { EditorTarget, FileEntry } from "@shared/contract";
+import type { EditorTarget, FileContent, FileEntry } from "@shared/contract";
 import { getBridge, getErrorMessage } from "@/lib/desktop";
 
 const wrap = async <T>(fn: () => Promise<T>, fallback: string): Promise<T> => {
@@ -16,3 +16,6 @@ export const openFileExternally = ({ projectId, path }: { projectId: string; pat
 export const openInEditor = ({ projectId, editor, path }: { projectId: string; editor: EditorTarget; path?: string }) =>
     wrap(() => getBridge().files.openInEditor(projectId, editor, path), "Could not open the editor.");
 export const copyFilePath = ({ projectId, path }: { projectId: string; path: string }) => wrap(() => getBridge().files.copyPath(projectId, path), "Could not copy the path.");
+export const readFile = (projectId: string, path: string): Promise<FileContent> => wrap(() => getBridge().files.readFile(projectId, path), "Could not read the file.");
+export const writeFile = ({ projectId, path, content }: { projectId: string; path: string; content: string }) =>
+    wrap(() => getBridge().files.writeFile(projectId, path, content), "Could not save the file.");
