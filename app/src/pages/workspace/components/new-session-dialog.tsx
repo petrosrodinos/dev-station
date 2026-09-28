@@ -15,7 +15,7 @@ import { useAgentAdapters, useStartAgentSession } from "@/features/agent-session
 import { buildIssuePrompt, sessionNameFromPrompt } from "@/features/agent-sessions/utils/issue-prompt.utils";
 import { useGetPreferences } from "@/features/users/hooks/use-users";
 import { IntegrationProviders } from "@/features/integrations/interfaces/integrations.interfaces";
-import { AgentTypeFormOptions, getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
+import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
 import { useDialogsStore } from "@/stores/dialogs";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
@@ -101,62 +101,33 @@ export function NewSessionDialog() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <FormField
-                  control={form.control}
-                  name="project_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Project</FormLabel>
-                      <Select value={field.value} onValueChange={field.onChange} disabled={!!issue}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Choose a project" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {localProjects.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>
-                              <span className="flex items-center gap-2">
-                                <ProjectAvatar name={p.name} color={p.color} size="xs" /> {p.name}
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="agent_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Agent</FormLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {AgentTypeFormOptions.map((o) => {
-                            const available = adapters?.find((a) => a.type === o.id)?.available;
-                            return (
-                              <SelectItem key={o.id} value={o.id}>
-                                {o.label}
-                                {available === false && <span className="ml-1 text-ash">(not installed)</span>}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="project_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Project</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange} disabled={!!issue}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose a project" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {localProjects.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            <span className="flex items-center gap-2">
+                              <ProjectAvatar name={p.name} color={p.color} size="xs" /> {p.name}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Runs with your default agent: {getAgentTypeLabel(agentType)}. Change it in Settings → AI.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {adapter && !adapter.available && (
                 <div className="flex items-start gap-2 rounded-md border border-warning/40 bg-warning-soft p-2.5 text-xs text-warning">
