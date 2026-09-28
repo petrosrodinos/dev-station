@@ -67,14 +67,14 @@ export function StatusBar() {
   };
 
   return (
-    <footer className="flex h-8 shrink-0 items-center gap-4 overflow-hidden border-t bg-canvas px-4 text-xs text-muted-foreground">
-      <div className="flex items-center gap-1.5 whitespace-nowrap">
+    <footer className="flex h-8 shrink-0 items-center gap-3 sm:gap-4 overflow-hidden border-t bg-canvas px-4 text-xs text-muted-foreground">
+      <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
         <ActivityIcon className="size-3.5" />
         {runningProcesses} process{runningProcesses === 1 ? "" : "es"} running
         {activeAgents > 0 && <span className="text-foreground">· {activeAgents} agent{activeAgents === 1 ? "" : "s"} active</span>}
       </div>
       {git?.branch && (
-        <div className="flex items-center gap-1 whitespace-nowrap font-mono text-ash">
+        <div className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-ash max-sm:hidden">
           <GitBranch className="size-3.5" />
           {git.branch}
           {git.files.length > 0 && <span className="text-warning">· {git.files.length} changed</span>}
@@ -87,7 +87,7 @@ export function StatusBar() {
             <span className="truncate">{latestItem ? `${formatTimelineTime(latestItem.created_at)} · ${latestItem.message}` : "No recent activity"}</span>
           </button>
         </PopoverTrigger>
-        <PopoverContent side="top" align="start" className="w-[420px] p-0">
+        <PopoverContent side="top" align="start" className="w-[min(420px,calc(100vw-1rem))] p-0">
           <div className="flex items-center justify-between border-b px-3 py-2">
             <span className="text-[0.8125rem] font-medium">Activity</span>
             <Tabs value={scope} onValueChange={(v) => setScope(v as Scope)}>
@@ -126,14 +126,14 @@ export function StatusBar() {
       </Popover>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button onClick={copyPath} className="flex items-center gap-1.5 whitespace-nowrap font-mono text-ash hover:text-foreground" aria-label="Copy current path">
+          <button onClick={copyPath} className="flex items-center gap-1.5 whitespace-nowrap font-mono text-ash hover:text-foreground max-lg:hidden" aria-label="Copy current path">
             <span className="max-w-64 truncate">{location.pathname}</span>
             <Copy className="size-3" />
           </button>
         </TooltipTrigger>
         <TooltipContent>Copy path — share with an AI agent to point it at this page</TooltipContent>
       </Tooltip>
-      <div className="whitespace-nowrap text-ash">
+      <div className="whitespace-nowrap text-ash max-md:hidden">
         {environments.APP_NAME} · v{environments.APP_VERSION}
       </div>
     </footer>

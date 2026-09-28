@@ -73,7 +73,7 @@ const GitTab: FC = () => {
 
       {files.length > 0 && can(PermissionKeys.GIT_COMMIT) && <CommitBox project={project} selectedPaths={selectedPaths} totalFiles={files.length} />}
 
-      <div className="grid grid-cols-1 items-start gap-4 2xl:grid-cols-[minmax(320px,2fr)_3fr]">
+      <div className="grid grid-cols-1 items-start gap-4 @5xl:grid-cols-[minmax(320px,2fr)_3fr]">
         <Panel className="overflow-hidden">
           <PanelHeader
             title={

@@ -68,8 +68,8 @@ const FilesTab: FC = () => {
   return (
     <TreeActionsContext.Provider value={actions}>
       <div className="space-y-3 p-4">
-        <div className="sticky top-0 z-10 -mx-4 -mt-4 flex items-center gap-3 bg-background px-4 py-3">
-          <div className="relative w-80">
+        <div className="sticky top-0 z-10 -mx-4 -mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 bg-background px-4 py-3">
+          <div className="relative w-full max-w-80 min-w-0 flex-1 sm:flex-none sm:basis-80">
             <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ash" />
             <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search files…" className="h-8 pl-8" />
           </div>
@@ -78,7 +78,7 @@ const FilesTab: FC = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-4 2xl:grid-cols-[minmax(280px,1fr)_2fr]">
+        <div className="grid grid-cols-1 items-start gap-4 @5xl:grid-cols-[minmax(280px,1fr)_2fr]">
           <Panel className="p-2">
             {searching ? (
               isFetching && !results ? (

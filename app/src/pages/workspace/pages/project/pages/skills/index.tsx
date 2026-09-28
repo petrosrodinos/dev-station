@@ -51,7 +51,7 @@ const SkillsTab: FC = () => {
   };
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-1 gap-3 p-4 lg:grid-cols-[22rem_minmax(0,1fr)]">
+    <div className="grid h-full min-h-0 grid-cols-1 gap-3 p-4 @3xl:grid-cols-[22rem_minmax(0,1fr)]">
       <Panel className="flex min-h-0 flex-col overflow-hidden">
         <PanelHeader
           title="Skills"
