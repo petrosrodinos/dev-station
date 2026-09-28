@@ -104,6 +104,15 @@ const bridge: DevStationBridge = {
     onData: (cb) => on(C.AGENT_DATA, cb),
     onStatus: (cb) => on(C.AGENT_STATUS, cb),
   },
+  preview: {
+    show: (input) => call(C.PREVIEW_SHOW, input),
+    hide: (input) => call(C.PREVIEW_HIDE, input),
+    setBounds: (input) => call(C.PREVIEW_SET_BOUNDS, input),
+    navigate: (input) => call(C.PREVIEW_NAVIGATE, input),
+    load: (input) => call(C.PREVIEW_LOAD, input),
+    destroy: (input) => call(C.PREVIEW_DESTROY, input),
+    onState: (cb) => on(C.PREVIEW_STATE, cb),
+  },
 };
 
 contextBridge.exposeInMainWorld("devStation", bridge);

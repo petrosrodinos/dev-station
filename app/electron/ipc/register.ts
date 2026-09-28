@@ -2,11 +2,12 @@ import { app, BrowserWindow, dialog, shell } from "electron";
 import os from "node:os";
 import path from "node:path";
 import { z } from "zod";
-import { AgentTypes, EditorTargets, IpcChannels } from "../shared/contract";
+import { AgentTypes, EditorTargets, IpcChannels, ProcessStatuses } from "../shared/contract";
 import { agentManager } from "../managers/agent-manager";
 import { inspect } from "../managers/detection-manager";
 import { filesystemManager } from "../managers/filesystem-manager";
 import { gitManager } from "../managers/git-manager";
+import { previewManager } from "../managers/preview-manager";
 import { processManager } from "../managers/process-manager";
 import { SECURE_KEYS, secureStore } from "../managers/secure-store";
 import { terminalManager } from "../managers/terminal-manager";
@@ -48,7 +49,11 @@ function broadcast(channel: string, payload: unknown) {
 
 export function registerIpc() {
   // Push events from managers to the renderer.
-  processManager.setEmitter((e) => broadcast(IpcChannels.PROC_EVENT, e));
+  processManager.setEmitter((e) => {
+    broadcast(IpcChannels.PROC_EVENT, e);
+    // A service (re)started: refresh the embedded preview of that project.
+    if (e.type === "status" && e.process.status === ProcessStatuses.RUNNING) previewManager.reloadProject(e.process.project_id, e.process.url);
+  });
   terminalManager.setEmitters(
     (e) => broadcast(IpcChannels.TERM_DATA, e),
     (e) => broadcast(IpcChannels.TERM_EXIT, e),
@@ -184,4 +189,14 @@ export function registerIpc() {
   handle(IpcChannels.AGENT_OPEN_EXTERNAL, args(zId), ([id]) => agentManager.openExternal(id));
   handle(IpcChannels.AGENT_SCROLLBACK, args(zId), ([id]) => agentManager.scrollback(id));
   handle(IpcChannels.AGENT_SET_IDLE, args(z.number().int().min(10).max(600)), ([s]) => agentManager.setIdleThreshold(s));
+
+  // Preview --------------------------------------------------------------------------------
+  const zBounds = z.object({ x: z.number().finite(), y: z.number().finite(), width: z.number().finite(), height: z.number().finite() });
+  const zPreviewUrl = z.string().min(1).max(4000);
+  handle(IpcChannels.PREVIEW_SHOW, args(z.object({ projectId: zId, url: zPreviewUrl, bounds: zBounds })), ([i]) => previewManager.show(i.projectId, i.url, i.bounds));
+  handle(IpcChannels.PREVIEW_HIDE, args(z.object({ projectId: zId })), ([i]) => previewManager.hide(i.projectId));
+  handle(IpcChannels.PREVIEW_SET_BOUNDS, args(z.object({ projectId: zId, bounds: zBounds })), ([i]) => previewManager.setBounds(i.projectId, i.bounds));
+  handle(IpcChannels.PREVIEW_NAVIGATE, args(z.object({ projectId: zId, action: z.enum(["back", "forward", "reload"]) })), ([i]) => previewManager.navigate(i.projectId, i.action));
+  handle(IpcChannels.PREVIEW_LOAD, args(z.object({ projectId: zId, url: zPreviewUrl })), ([i]) => previewManager.load(i.projectId, i.url));
+  handle(IpcChannels.PREVIEW_DESTROY, args(z.object({ projectId: zId })), ([i]) => previewManager.destroy(i.projectId));
 }
