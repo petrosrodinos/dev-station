@@ -22,6 +22,7 @@ import { useWorkspaceStore } from "@/stores/workspace";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
 import { Routes } from "@/routes/routes";
+import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { isDesktop } from "@/lib/desktop";
 import { cn } from "@/lib/utils";
 import { EditorTargets, ProjectLocalStates, type ProjectLocalState } from "@shared/contract";
@@ -148,7 +149,7 @@ export function ProjectRail() {
         <RailButton label="Integrations" onClick={() => navigate(Routes.workspace.integrations)}>
           <Plug className="size-4" />
         </RailButton>
-        <RailButton label="Organization" onClick={() => navigate(Routes.workspace.organization)}>
+        <RailButton label="Organization" onClick={() => navigate(Routes.workspace.settings_section(SettingsSections.ORGANIZATION))}>
           <Building2 className="size-4" />
         </RailButton>
         <RailButton label="Settings" onClick={() => navigate(Routes.workspace.settings)}>

@@ -25,7 +25,6 @@ export const Routes = {
         integrations: "/workspace/settings/integrations",
         settings: "/workspace/settings",
         settings_section: (section: SettingsSection) => `/workspace/settings/${section}`,
-        organization: "/workspace/organization",
     },
 };
 
@@ -42,5 +41,4 @@ export const RoutePatterns = {
     imported: "imported",
     settings: "settings",
     settings_section: "settings/:section",
-    organization: "organization",
 };
