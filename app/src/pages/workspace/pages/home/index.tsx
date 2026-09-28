@@ -103,7 +103,7 @@ function ProjectCard({ project, localState }: { project: Project; localState: Pr
   return (
     <Panel role="button" tabIndex={0} onClick={open} onKeyDown={(e) => e.key === "Enter" && open()} className="cursor-pointer p-4 transition-colors hover:border-hairline-strong">
       <div className="flex items-center gap-3">
-        <ProjectAvatar name={project.name} color={project.color} size="md" muted={localState === ProjectLocalStates.IMPORTED} />
+        <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="md" muted={localState === ProjectLocalStates.IMPORTED} />
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-medium">{project.name}</div>
           <div className="truncate text-xs text-muted-foreground">

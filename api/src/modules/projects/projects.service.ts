@@ -88,6 +88,7 @@ export class ProjectsService {
           color:
             dto.color ??
             ProjectColorPalette[count % ProjectColorPalette.length],
+          avatar_seed: dto.avatar_seed,
           sort_order: count,
           sub_path: this.normalizeSubPath(dto.sub_path),
           preferred_agent: dto.preferred_agent,
@@ -154,6 +155,7 @@ export class ProjectsService {
           name: dto.name?.trim(),
           description: dto.description,
           color: dto.color,
+          avatar_seed: dto.avatar_seed,
           sub_path:
             dto.sub_path === undefined
               ? undefined

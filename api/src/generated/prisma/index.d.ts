@@ -15715,6 +15715,7 @@ export namespace Prisma {
     name: string | null
     description: string | null
     color: string | null
+    avatar_seed: string | null
     sort_order: number | null
     sub_path: string | null
     preferred_agent: $Enums.AgentType | null
@@ -15737,6 +15738,7 @@ export namespace Prisma {
     name: string | null
     description: string | null
     color: string | null
+    avatar_seed: string | null
     sort_order: number | null
     sub_path: string | null
     preferred_agent: $Enums.AgentType | null
@@ -15759,6 +15761,7 @@ export namespace Prisma {
     name: number
     description: number
     color: number
+    avatar_seed: number
     sort_order: number
     sub_path: number
     preferred_agent: number
@@ -15791,6 +15794,7 @@ export namespace Prisma {
     name?: true
     description?: true
     color?: true
+    avatar_seed?: true
     sort_order?: true
     sub_path?: true
     preferred_agent?: true
@@ -15813,6 +15817,7 @@ export namespace Prisma {
     name?: true
     description?: true
     color?: true
+    avatar_seed?: true
     sort_order?: true
     sub_path?: true
     preferred_agent?: true
@@ -15835,6 +15840,7 @@ export namespace Prisma {
     name?: true
     description?: true
     color?: true
+    avatar_seed?: true
     sort_order?: true
     sub_path?: true
     preferred_agent?: true
@@ -15944,6 +15950,7 @@ export namespace Prisma {
     name: string
     description: string | null
     color: string
+    avatar_seed: string | null
     sort_order: number
     sub_path: string | null
     preferred_agent: $Enums.AgentType | null
@@ -15985,6 +15992,7 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     color?: boolean
+    avatar_seed?: boolean
     sort_order?: boolean
     sub_path?: boolean
     preferred_agent?: boolean
@@ -16017,6 +16025,7 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     color?: boolean
+    avatar_seed?: boolean
     sort_order?: boolean
     sub_path?: boolean
     preferred_agent?: boolean
@@ -16044,6 +16053,7 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     color?: boolean
+    avatar_seed?: boolean
     sort_order?: boolean
     sub_path?: boolean
     preferred_agent?: boolean
@@ -16071,6 +16081,7 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     color?: boolean
+    avatar_seed?: boolean
     sort_order?: boolean
     sub_path?: boolean
     preferred_agent?: boolean
@@ -16086,7 +16097,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organization_id" | "repository_id" | "name" | "description" | "color" | "sort_order" | "sub_path" | "preferred_agent" | "github_connection_id" | "linear_connection_id" | "linear_team_id" | "linear_project_id" | "notion_connection_id" | "notion_root_page_id" | "last_activity_at" | "created_by" | "created_at" | "updated_at", ExtArgs["result"]["project"]>
+  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organization_id" | "repository_id" | "name" | "description" | "color" | "avatar_seed" | "sort_order" | "sub_path" | "preferred_agent" | "github_connection_id" | "linear_connection_id" | "linear_team_id" | "linear_project_id" | "notion_connection_id" | "notion_root_page_id" | "last_activity_at" | "created_by" | "created_at" | "updated_at", ExtArgs["result"]["project"]>
   export type ProjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     repository?: boolean | Project$repositoryArgs<ExtArgs>
@@ -16134,6 +16145,7 @@ export namespace Prisma {
       name: string
       description: string | null
       color: string
+      avatar_seed: string | null
       sort_order: number
       sub_path: string | null
       preferred_agent: $Enums.AgentType | null
@@ -16585,6 +16597,7 @@ export namespace Prisma {
     readonly name: FieldRef<"Project", 'String'>
     readonly description: FieldRef<"Project", 'String'>
     readonly color: FieldRef<"Project", 'String'>
+    readonly avatar_seed: FieldRef<"Project", 'String'>
     readonly sort_order: FieldRef<"Project", 'Int'>
     readonly sub_path: FieldRef<"Project", 'String'>
     readonly preferred_agent: FieldRef<"Project", 'AgentType'>
@@ -23502,6 +23515,7 @@ export namespace Prisma {
     name: 'name',
     description: 'description',
     color: 'color',
+    avatar_seed: 'avatar_seed',
     sort_order: 'sort_order',
     sub_path: 'sub_path',
     preferred_agent: 'preferred_agent',
@@ -24800,6 +24814,7 @@ export namespace Prisma {
     name?: StringFilter<"Project"> | string
     description?: StringNullableFilter<"Project"> | string | null
     color?: StringFilter<"Project"> | string
+    avatar_seed?: StringNullableFilter<"Project"> | string | null
     sort_order?: IntFilter<"Project"> | number
     sub_path?: StringNullableFilter<"Project"> | string | null
     preferred_agent?: EnumAgentTypeNullableFilter<"Project"> | $Enums.AgentType | null
@@ -24831,6 +24846,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrderInput | SortOrder
     color?: SortOrder
+    avatar_seed?: SortOrderInput | SortOrder
     sort_order?: SortOrder
     sub_path?: SortOrderInput | SortOrder
     preferred_agent?: SortOrderInput | SortOrder
@@ -24865,6 +24881,7 @@ export namespace Prisma {
     name?: StringFilter<"Project"> | string
     description?: StringNullableFilter<"Project"> | string | null
     color?: StringFilter<"Project"> | string
+    avatar_seed?: StringNullableFilter<"Project"> | string | null
     sort_order?: IntFilter<"Project"> | number
     sub_path?: StringNullableFilter<"Project"> | string | null
     preferred_agent?: EnumAgentTypeNullableFilter<"Project"> | $Enums.AgentType | null
@@ -24896,6 +24913,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrderInput | SortOrder
     color?: SortOrder
+    avatar_seed?: SortOrderInput | SortOrder
     sort_order?: SortOrder
     sub_path?: SortOrderInput | SortOrder
     preferred_agent?: SortOrderInput | SortOrder
@@ -24926,6 +24944,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"Project"> | string
     description?: StringNullableWithAggregatesFilter<"Project"> | string | null
     color?: StringWithAggregatesFilter<"Project"> | string
+    avatar_seed?: StringNullableWithAggregatesFilter<"Project"> | string | null
     sort_order?: IntWithAggregatesFilter<"Project"> | number
     sub_path?: StringNullableWithAggregatesFilter<"Project"> | string | null
     preferred_agent?: EnumAgentTypeNullableWithAggregatesFilter<"Project"> | $Enums.AgentType | null
@@ -26426,6 +26445,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -26454,6 +26474,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -26478,6 +26499,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -26506,6 +26528,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -26532,6 +26555,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -26552,6 +26576,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -26571,6 +26596,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -28092,6 +28118,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     color?: SortOrder
+    avatar_seed?: SortOrder
     sort_order?: SortOrder
     sub_path?: SortOrder
     preferred_agent?: SortOrder
@@ -28118,6 +28145,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     color?: SortOrder
+    avatar_seed?: SortOrder
     sort_order?: SortOrder
     sub_path?: SortOrder
     preferred_agent?: SortOrder
@@ -28140,6 +28168,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     color?: SortOrder
+    avatar_seed?: SortOrder
     sort_order?: SortOrder
     sub_path?: SortOrder
     preferred_agent?: SortOrder
@@ -31599,6 +31628,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -31625,6 +31655,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -31933,6 +31964,7 @@ export namespace Prisma {
     name?: StringFilter<"Project"> | string
     description?: StringNullableFilter<"Project"> | string | null
     color?: StringFilter<"Project"> | string
+    avatar_seed?: StringNullableFilter<"Project"> | string | null
     sort_order?: IntFilter<"Project"> | number
     sub_path?: StringNullableFilter<"Project"> | string | null
     preferred_agent?: EnumAgentTypeNullableFilter<"Project"> | $Enums.AgentType | null
@@ -32796,6 +32828,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -32822,6 +32855,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -33648,6 +33682,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -33675,6 +33710,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -33714,6 +33750,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -33741,6 +33778,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -33764,6 +33802,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -33791,6 +33830,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -33830,6 +33870,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -33857,6 +33898,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -33994,6 +34036,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -34021,6 +34064,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -34054,6 +34098,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -34081,6 +34126,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -34114,6 +34160,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -34141,6 +34188,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -34365,6 +34413,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -34392,6 +34441,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -34547,6 +34597,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -34574,6 +34625,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -34697,6 +34749,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -34724,6 +34777,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -34900,6 +34954,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -34927,6 +34982,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -35403,6 +35459,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -35586,6 +35643,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -35612,6 +35670,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -35637,6 +35696,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -35957,6 +36017,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -35977,6 +36038,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -36003,6 +36065,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -36028,6 +36091,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -36304,6 +36368,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -36325,6 +36390,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -36346,6 +36412,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     color: string
+    avatar_seed?: string | null
     sort_order?: number
     sub_path?: string | null
     preferred_agent?: $Enums.AgentType | null
@@ -36403,6 +36470,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -36430,6 +36498,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -36455,6 +36524,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -36474,6 +36544,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -36501,6 +36572,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -36526,6 +36598,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -36545,6 +36618,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -36572,6 +36646,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
@@ -36597,6 +36672,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
     sort_order?: IntFieldUpdateOperationsInput | number
     sub_path?: NullableStringFieldUpdateOperationsInput | string | null
     preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
