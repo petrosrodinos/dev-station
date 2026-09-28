@@ -119,7 +119,7 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
 
   const startFirst = () => {
     const target = services.find((s) => !s.running && s.service.kind === ServiceKinds.FRONTEND) ?? services.find((s) => !s.running);
-    if (target) start.mutate({ projectId, service: target.service });
+    if (target) start.mutate({ projectId, service: target.service, siblings: project.services });
   };
 
   const close = () => setProjectPreview(projectId, { previewOpen: false });

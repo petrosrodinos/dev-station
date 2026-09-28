@@ -14,12 +14,20 @@ const serviceSchema = z
         script: z.string().trim().max(100).optional(),
         command: z.string().trim().max(2000).optional(),
         port: z.string().trim().regex(/^\d{0,5}$/, "Port must be a number").optional(),
+        env: z.array(z.object({ key: z.string().trim().max(120), value: z.string().max(2000) })).max(50),
         auto_detected: z.boolean().optional(),
     })
     .superRefine((s, ctx) => {
         if (s.mode === "script" && !s.script) ctx.addIssue({ code: "custom", path: ["script"], message: "Script is required" });
         if (s.mode === "command" && !s.command) ctx.addIssue({ code: "custom", path: ["command"], message: "Command is required" });
         if (s.command && /[\r\n]/.test(s.command)) ctx.addIssue({ code: "custom", path: ["command"], message: "Single-line commands only" });
+        const seen = new Set<string>();
+        s.env.forEach((row, i) => {
+            if (!row.key && !row.value) return;
+            if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(row.key)) ctx.addIssue({ code: "custom", path: ["env", i, "key"], message: "Letters, digits and _ only" });
+            else if (seen.has(row.key)) ctx.addIssue({ code: "custom", path: ["env", i, "key"], message: "Duplicate variable" });
+            seen.add(row.key);
+        });
     });
 
 export const servicesFormSchema = z.object({ services: z.array(serviceSchema).max(50) });

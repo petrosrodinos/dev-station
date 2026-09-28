@@ -3,19 +3,26 @@ import fs from "node:fs";
 import treeKill from "tree-kill";
 import type { LogLine, PackageManager, ProcessEvent, ProcessInfo, ServiceSpec } from "../shared/contract";
 import { IpcErrorCodes, ProcessStatuses } from "../shared/contract";
+import { appendScriptArgs, assignServiceSlugs, localUrl, portFlagFor, resolveTemplate, slugToEnvSegment, type ServiceRef, type TemplateContext } from "../shared/service-refs";
 import { IpcError } from "../ipc/ipc-error";
 import { childEnv } from "../utils/platform";
+import { findFreePort, isPortFree } from "../utils/port-allocator";
 import { workspaceConfig } from "./workspace-config";
 
 // Process Manager (Spec §9). Project services run as child processes owned by the main process.
 // Script-based commands are built here from detected package.json scripts; free-form commands
 // must be approved once per device before they run (they may come from another team member).
+//
+// Ports: several projects (and several services of one project) often want the same port. On start we
+// allocate a free port for every service of the project, hand it over as PORT / a framework flag, and
+// resolve `{{service.port}}` / `{{service.url}}` references so dependents follow the shift.
 
 const MAX_LOG_LINES = 4000;
 const URL_RE = /(https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1?\])(?::\d{2,5})?[^\s"'`)\]]*)/i;
 // eslint-disable-next-line no-control-regex
 const ANSI_RE = /\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07]*(\x07|\x1b\\)/g;
 const SCRIPT_NAME_RE = /^[A-Za-z0-9:_.@/-]{1,100}$/;
+const PORT_IN_USE_RE = /EADDRINUSE|address already in use|port \d+ is (?:already )?in use/i;
 
 interface Managed {
   info: ProcessInfo;
@@ -24,6 +31,9 @@ interface Managed {
   stopping: boolean;
   pending: LogLine[];
   flushTimer: NodeJS.Timeout | null;
+  /** service_id -> port, for the other services this process references (env / command templates). */
+  usedPorts: Map<string, number>;
+  hintedPortInUse: boolean;
 }
 
 function runScriptCommand(pm: PackageManager, script: string) {
@@ -39,8 +49,14 @@ function runScriptCommand(pm: PackageManager, script: string) {
   }
 }
 
+const projectOf = (key: string) => key.slice(0, key.indexOf(":"));
+
 class ProcessManager {
   private procs = new Map<string, Managed>();
+  private starting = new Map<string, Promise<ProcessInfo>>();
+  /** key -> port held for that service, so references stay stable across restarts. */
+  private reservations = new Map<string, number>();
+  private allocLock: Promise<unknown> = Promise.resolve();
   private emit: (e: ProcessEvent) => void = () => {};
 
   setEmitter(fn: (e: ProcessEvent) => void) {
@@ -73,6 +89,7 @@ class ProcessManager {
     const command = spec.command?.trim();
     if (!command) throw new IpcError("Service has neither a script nor a command.");
     if (/[\r\n\0]/.test(command) || command.length > 2000) throw new IpcError("Invalid command.");
+    // Approval is on the template as written (`--port {{port}}`), so a port shift never re-asks.
     if (!workspaceConfig.isCommandApproved(projectId, command)) {
       throw new IpcError(`This service runs a custom command that has not been approved on this device: ${command}`, IpcErrorCodes.COMMAND_NOT_APPROVED);
     }
@@ -83,21 +100,90 @@ class ProcessManager {
     workspaceConfig.approveCommand(projectId, command.trim());
   }
 
-  start(projectId: string, spec: ServiceSpec): ProcessInfo {
+  start(projectId: string, spec: ServiceSpec): Promise<ProcessInfo> {
     const key = `${projectId}:${spec.service_id}`;
     const existing = this.procs.get(key);
-    if (existing?.child && existing.info.status === ProcessStatuses.RUNNING) return existing.info;
+    if (existing?.child && existing.info.status === ProcessStatuses.RUNNING) return Promise.resolve(existing.info);
+    const inflight = this.starting.get(key);
+    if (inflight) return inflight;
+    const run = this.launch(projectId, spec, key).finally(() => this.starting.delete(key));
+    this.starting.set(key, run);
+    return run;
+  }
 
+  private async launch(projectId: string, spec: ServiceSpec, key: string): Promise<ProcessInfo> {
+    const existing = this.procs.get(key);
     const cwd = workspaceConfig.resolveInProject(projectId, spec.cwd || ".");
     if (!fs.existsSync(cwd)) throw new IpcError(`Working directory does not exist: ${spec.cwd}`);
-    const command = this.resolveCommand(projectId, spec, cwd);
+    const baseCommand = this.resolveCommand(projectId, spec, cwd);
 
-    const env = childEnv(spec.env);
+    // --- ports & references ---------------------------------------------------------------------
+    // The started service's own definition wins over what the sibling list says about it.
+    const refs: ServiceRef[] = spec.siblings.filter((r) => r.service_id !== spec.service_id);
+    refs.push({ service_id: spec.service_id, name: spec.name, port: spec.port });
+    const slugs = assignServiceSlugs(refs.map((r) => r.name));
+    const selfSlug = slugs[refs.length - 1];
+
+    const allocation = await this.withAllocLock(() => this.allocatePorts(projectId, spec.service_id, refs));
+    const ownPort = allocation.get(spec.service_id) ?? null;
+
+    const ctx: TemplateContext = { self: selfSlug, services: new Map() };
+    const idOfSlug = new Map<string, string>();
+    refs.forEach((r, i) => {
+      ctx.services.set(slugs[i], { name: r.name, port: allocation.get(r.service_id) ?? null });
+      idOfSlug.set(slugs[i], r.service_id);
+    });
+
+    // --- env ------------------------------------------------------------------------------------
+    const auto: Record<string, string> = {};
+    if (ownPort) {
+      auto.PORT = String(ownPort);
+      auto.DEV_STATION_PORT = String(ownPort);
+    }
+    for (const [slug, svc] of ctx.services) {
+      if (svc.port == null) continue;
+      auto[`DEV_STATION_${slugToEnvSegment(slug)}_PORT`] = String(svc.port);
+      auto[`DEV_STATION_${slugToEnvSegment(slug)}_URL`] = localUrl(svc.port);
+    }
+    const errors: string[] = [];
+    const dependsOn = new Set<string>();
+    const userEnv: Record<string, string> = {};
+    const templated: string[] = [];
+    for (const [k, v] of Object.entries(spec.env ?? {})) {
+      const r = resolveTemplate(v, ctx);
+      errors.push(...r.errors.map((e) => `${k}: ${e}`));
+      r.refs.forEach((x) => dependsOn.add(x));
+      userEnv[k] = r.value;
+      if (r.value !== v) templated.push(`${k}=${r.value}`);
+    }
+
+    // --- command --------------------------------------------------------------------------------
+    let command = baseCommand;
+    if (!spec.script) {
+      const r = resolveTemplate(baseCommand, ctx);
+      errors.push(...r.errors);
+      r.refs.forEach((x) => dependsOn.add(x));
+      command = r.value;
+    }
+    if (errors.length) throw new IpcError(errors.join("\n"));
+    if (ownPort) command = this.withPortFlag(spec, cwd, command, ownPort);
+
+    const usedPorts = new Map<string, number>();
+    for (const slug of dependsOn) {
+      const id = idOfSlug.get(slug);
+      const port = ctx.services.get(slug)?.port;
+      if (id && port != null) usedPorts.set(id, port);
+    }
+
+    // --- spawn ----------------------------------------------------------------------------------
+    const env = childEnv({ ...auto, ...userEnv });
     const child = spawn(command, { cwd, env, shell: true, windowsHide: true, detached: process.platform !== "win32" });
 
-    const managed: Managed = existing ?? { info: {} as ProcessInfo, child: null, logs: [], stopping: false, pending: [], flushTimer: null };
+    const managed: Managed = existing ?? { info: {} as ProcessInfo, child: null, logs: [], stopping: false, pending: [], flushTimer: null, usedPorts, hintedPortInUse: false };
     managed.child = child;
     managed.stopping = false;
+    managed.usedPorts = usedPorts;
+    managed.hintedPortInUse = false;
     managed.info = {
       key,
       project_id: projectId,
@@ -110,12 +196,19 @@ class ProcessManager {
       started_at: new Date().toISOString(),
       exited_at: null,
       exit_code: null,
-      url: spec.url,
-      env_keys: Object.keys(spec.env ?? {}),
+      url: ownPort ? localUrl(ownPort) : spec.url,
+      env_keys: Object.keys(userEnv),
+      port: ownPort,
+      requested_port: spec.port,
+      needs_restart: false,
     };
     this.procs.set(key, managed);
     this.append(managed, "system", `$ ${command}  (cwd: ${spec.cwd || "."})`);
+    if (ownPort && spec.port && ownPort !== spec.port) this.append(managed, "system", `Port ${spec.port} is taken — running on ${ownPort} instead (PORT=${ownPort}).`);
+    else if (ownPort) this.append(managed, "system", `Port ${ownPort} (PORT=${ownPort})`);
+    for (const line of templated) this.append(managed, "system", `env ${line}`);
     this.emit({ type: "status", process: managed.info });
+    this.markStaleDependents(projectId, spec.service_id, ownPort);
 
     const onData = (stream: "stdout" | "stderr") => (buf: Buffer) => {
       for (const raw of buf.toString().split(/\r?\n/)) {
@@ -127,6 +220,14 @@ class ProcessManager {
           this.emit({ type: "status", process: managed.info });
         }
         this.append(managed, stream, text);
+        if (!managed.hintedPortInUse && PORT_IN_USE_RE.test(text)) {
+          managed.hintedPortInUse = true;
+          this.append(
+            managed,
+            "system",
+            "The port is still in use. This app probably ignores the PORT variable and hardcodes its port — read process.env.PORT in its code, or use a custom command with --port {{port}}.",
+          );
+        }
       }
     };
     child.stdout?.on("data", onData("stdout"));
@@ -139,6 +240,92 @@ class ProcessManager {
     child.on("exit", (code) => this.finish(managed, code ?? 0));
 
     return managed.info;
+  }
+
+  /** Serializes allocation so two services starting at once cannot both probe the same port as free. */
+  private withAllocLock<T>(fn: () => Promise<T>): Promise<T> {
+    const run = this.allocLock.then(fn, fn);
+    this.allocLock = run.catch(() => undefined);
+    return run;
+  }
+
+  private projectHasRunning(projectId: string): boolean {
+    for (const p of this.procs.values()) if (p.info.project_id === projectId && p.info.status === ProcessStatuses.RUNNING) return true;
+    return false;
+  }
+
+  /**
+   * Picks a port for every service of the project that has one. Reservations are kept while the project is
+   * active so a restart keeps its port; once a project is idle its reservations are released so its ports
+   * are not blocked for other projects.
+   */
+  private async allocatePorts(projectId: string, startingServiceId: string, refs: ServiceRef[]): Promise<Map<string, number>> {
+    const keyOf = (id: string) => `${projectId}:${id}`;
+    const known = new Set(refs.map((r) => keyOf(r.service_id)));
+    const activeProjects = new Set<string>([projectId]);
+    for (const p of this.procs.values()) if (p.info.status === ProcessStatuses.RUNNING) activeProjects.add(p.info.project_id);
+    const projectIdle = !this.projectHasRunning(projectId);
+
+    for (const key of [...this.reservations.keys()]) {
+      if (this.procs.get(key)?.info.status === ProcessStatuses.RUNNING) continue;
+      const proj = projectOf(key);
+      const release = proj === projectId ? projectIdle || !known.has(key) : !activeProjects.has(proj);
+      if (release) this.reservations.delete(key);
+    }
+
+    const heldByOthers = (port: number, forKey: string) => {
+      for (const [key, p] of this.reservations) if (p === port && key !== forKey) return true;
+      return false;
+    };
+
+    // The service being started claims its port first, then its siblings in order.
+    const ordered = [...refs].sort((a, b) => Number(b.service_id === startingServiceId) - Number(a.service_id === startingServiceId));
+    const result = new Map<string, number>();
+    for (const ref of ordered) {
+      if (!ref.port) continue;
+      const key = keyOf(ref.service_id);
+      const running = this.procs.get(key);
+      if (running?.info.status === ProcessStatuses.RUNNING && running.info.port) {
+        result.set(ref.service_id, running.info.port);
+        this.reservations.set(key, running.info.port);
+        continue;
+      }
+      const held = this.reservations.get(key);
+      const port =
+        held && !heldByOthers(held, key) && (await isPortFree(held)) ? held : await findFreePort(ref.port, { isReserved: (p) => heldByOthers(p, key) });
+      this.reservations.set(key, port);
+      result.set(ref.service_id, port);
+    }
+    return result;
+  }
+
+  /** Appends the framework's port flag when the script is a known dev server that ignores PORT. */
+  private withPortFlag(spec: ServiceSpec, cwd: string, command: string, port: number): string {
+    if (spec.script) {
+      let scriptText = "";
+      try {
+        scriptText = JSON.parse(fs.readFileSync(`${cwd}/package.json`, "utf8")).scripts?.[spec.script] ?? "";
+      } catch {
+        return command;
+      }
+      return appendScriptArgs(command, spec.package_manager, portFlagFor(scriptText, port));
+    }
+    const flag = portFlagFor(command, port);
+    return flag ? `${command} ${flag}` : command;
+  }
+
+  /** Flags running services of the project that were started against an older port of `serviceId`. */
+  private markStaleDependents(projectId: string, serviceId: string, port: number | null) {
+    if (port == null) return;
+    for (const other of this.procs.values()) {
+      if (other.info.project_id !== projectId || other.info.status !== ProcessStatuses.RUNNING || other.info.service_id === serviceId) continue;
+      const used = other.usedPorts.get(serviceId);
+      if (used === undefined || used === port) continue;
+      other.usedPorts.set(serviceId, port);
+      other.info = { ...other.info, needs_restart: true };
+      this.append(other, "system", `A service this one references now runs on port ${port} (was ${used}). Restart this service to pick it up.`);
+      this.emit({ type: "status", process: other.info });
+    }
   }
 
   private finish(managed: Managed, code: number) {
