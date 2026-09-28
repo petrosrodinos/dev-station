@@ -26,6 +26,12 @@ export const DEFAULT_THEME_PRESET_ID = "default";
 export const ThemePresets: ThemePreset[] = [
     { id: DEFAULT_THEME_PRESET_ID, label: "Default", light: null, dark: null },
     {
+        id: "cyan",
+        label: "Cyan",
+        dark: { canvas: "#0a1517", surface: "#0f1f22", elevated: "#14292d", card: "#1a353a", ink: "#e6f7f8", body: "#b8d8db", muted: "#7fa7ab", border: "#1c3a3f", primary: "#22d3ee", primaryForeground: "#03242b", terminal: "#061012" },
+        light: { canvas: "#f2fafb", surface: "#ffffff", elevated: "#e6f4f6", card: "#d6ecef", ink: "#082024", body: "#2f4f54", muted: "#5b8085", border: "#d2e8eb", primary: "#0891b2", primaryForeground: "#ffffff", terminal: "#061012" },
+    },
+    {
         id: "aubergine",
         label: "Aubergine",
         dark: { canvas: "#1f0a21", surface: "#2a1030", elevated: "#351a3b", card: "#412247", ink: "#f5eef6", body: "#d8c8da", muted: "#a58aa9", border: "#4a2b50", primary: "#e8a5eb", primaryForeground: "#2a0a2c", terminal: "#170718" },

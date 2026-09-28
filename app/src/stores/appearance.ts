@@ -58,7 +58,14 @@ export const useAppearanceStore = create<AppearanceState & AppearanceActions>()(
             hydrateFromServer: (values) => set({ ...values, customized: false }),
             resetAll: () => set({ ...DEFAULT_APPEARANCE, customized: true }),
         }),
-        { name: STORE_KEY },
+        {
+            name: STORE_KEY,
+            // Drop null/undefined persisted values (e.g. saved while the API lacked these fields) so defaults apply.
+            merge: (persisted, current) => {
+                const defined = Object.fromEntries(Object.entries((persisted ?? {}) as Record<string, unknown>).filter(([k, v]) => v !== undefined && (v !== null || k === "accent_color")));
+                return { ...current, ...defined };
+            },
+        },
     ),
 );
 
