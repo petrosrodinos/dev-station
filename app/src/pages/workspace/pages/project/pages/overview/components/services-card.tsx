@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ExternalLink, Pencil, Play, RotateCw, ScrollText, ShieldAlert, Square } from "lucide-react";
+import { useWorkspaceStore } from "@/stores/workspace";
+import { ExternalLink, PanelRight, Pencil, Play, RotateCw, ScrollText, ShieldAlert, Square } from "lucide-react";
 import { Panel, PanelBody, PanelHeader } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
 import { StatusDot } from "@/components/ui/status-dot";
@@ -35,6 +36,7 @@ export function ServicesCard({ project }: { project: Project }) {
   const restart = useRestartService();
   const stop = useStopService();
   const { can } = usePermissions();
+  const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
 
   const run = (service: ProjectService, isRestart = false) => {
     const onNeedsApproval = (command: string) => setPendingApproval({ service, command, restart: isRestart });
@@ -104,6 +106,11 @@ export function ServicesCard({ project }: { project: Project }) {
                 </div>
                 {isDesktop() && (
                   <div className="flex items-center gap-0.5 opacity-70 transition-opacity group-hover:opacity-100">
+                    {running && url && (
+                      <IconAction label="Preview" onClick={() => setProjectPreview(project.id, { previewOpen: true, previewServiceId: service.id })}>
+                        <PanelRight className="size-3.5" />
+                      </IconAction>
+                    )}
                     {running && url && (
                       <IconAction label="Open URL" onClick={() => void openUrl(url)}>
                         <ExternalLink className="size-3.5" />

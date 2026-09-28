@@ -22,7 +22,11 @@ export const useGlobalShortcuts = () => {
       const ws = useWorkspaceStore.getState();
       const key = e.key.toLowerCase();
 
-      if (key === "k") {
+      if (key === "p" && e.shiftKey && ws.active_project_id) {
+        e.preventDefault();
+        const id = ws.active_project_id;
+        ws.setProjectPreview(id, { previewOpen: !ws.preview_by_project[id]?.previewOpen });
+      } else if (key === "k") {
         e.preventDefault();
         dialogs.setCommandPalette(!dialogs.command_palette);
       } else if (key === "t" && !e.shiftKey) {
