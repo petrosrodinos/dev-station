@@ -50,6 +50,31 @@ const OverviewTab: FC = () => {
 
   return (
     <div className="space-y-4 p-4">
+      <Panel>
+        <PanelHeader title="Quick actions" />
+        <PanelBody className="flex flex-wrap gap-2">
+          {can(PermissionKeys.GIT_COMMIT) && (
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(Routes.workspace.project_tab(project.id, ProjectTabs.GIT))}>
+              <GitCommitHorizontal className="size-3.5" /> Commit {git?.files.length ? `(${git.files.length})` : ""}
+            </Button>
+          )}
+          {can(PermissionKeys.GIT_PUSH) && (
+            <Button variant="outline" size="sm" className="gap-1.5" loading={push.isPending} onClick={() => push.mutate({ projectId: project.id })}>
+              <ArrowUp className="size-3.5" /> Push {git?.ahead ? `(${git.ahead})` : ""}
+            </Button>
+          )}
+          <Button variant="outline" size="sm" className="gap-1.5" loading={pull.isPending} onClick={() => pull.mutate({ projectId: project.id })}>
+            <ArrowDown className="size-3.5" /> Pull {git?.behind ? `(${git.behind})` : ""}
+          </Button>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => openInEditor.mutate({ projectId: project.id, editor: EditorTargets.CURSOR })}>
+            <ExternalLink className="size-3.5" /> Open in Cursor
+          </Button>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => openInEditor.mutate({ projectId: project.id, editor: EditorTargets.VSCODE })}>
+            <ExternalLink className="size-3.5" /> Open in VS Code
+          </Button>
+        </PanelBody>
+      </Panel>
+
       {needsAttention.length > 0 && (
         <Panel className="border-warning/60">
           <PanelBody className="flex items-center gap-2.5 py-3">
@@ -152,31 +177,6 @@ const OverviewTab: FC = () => {
         <LinearSummaryCard project={project} />
         <ProjectActivityCard projectId={project.id} />
       </div>
-
-      <Panel>
-        <PanelHeader title="Quick actions" />
-        <PanelBody className="flex flex-wrap gap-2">
-          {can(PermissionKeys.GIT_COMMIT) && (
-            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(Routes.workspace.project_tab(project.id, ProjectTabs.GIT))}>
-              <GitCommitHorizontal className="size-3.5" /> Commit {git?.files.length ? `(${git.files.length})` : ""}
-            </Button>
-          )}
-          {can(PermissionKeys.GIT_PUSH) && (
-            <Button variant="outline" size="sm" className="gap-1.5" loading={push.isPending} onClick={() => push.mutate({ projectId: project.id })}>
-              <ArrowUp className="size-3.5" /> Push {git?.ahead ? `(${git.ahead})` : ""}
-            </Button>
-          )}
-          <Button variant="outline" size="sm" className="gap-1.5" loading={pull.isPending} onClick={() => pull.mutate({ projectId: project.id })}>
-            <ArrowDown className="size-3.5" /> Pull {git?.behind ? `(${git.behind})` : ""}
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => openInEditor.mutate({ projectId: project.id, editor: EditorTargets.CURSOR })}>
-            <ExternalLink className="size-3.5" /> Open in Cursor
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => openInEditor.mutate({ projectId: project.id, editor: EditorTargets.VSCODE })}>
-            <ExternalLink className="size-3.5" /> Open in VS Code
-          </Button>
-        </PanelBody>
-      </Panel>
     </div>
   );
 };
