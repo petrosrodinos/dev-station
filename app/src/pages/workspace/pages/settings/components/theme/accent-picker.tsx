@@ -22,8 +22,8 @@ export function AccentPicker({ value, onChange }: AccentPickerProps) {
   };
 
   return (
-    <div className="flex flex-col items-end gap-2">
-      <div className="flex flex-wrap justify-end gap-1.5">
+    <div className="flex w-full flex-col gap-3">
+      <div className="flex items-center justify-between px-1">
         {ACCENT_SWATCHES.map((color) => (
           <button
             key={color}
@@ -39,7 +39,14 @@ export function AccentPicker({ value, onChange }: AccentPickerProps) {
         ))}
       </div>
       <div className="flex items-center gap-2">
-        <Input className="h-8 w-28 font-mono text-xs" placeholder="#5b8def" aria-label="Custom accent color" value={draft} onChange={(e) => commit(e.target.value)} maxLength={7} />
+        <input
+          type="color"
+          aria-label="Pick a custom accent color"
+          value={HEX.test(value ?? "") ? value! : "#5b8def"}
+          onChange={(e) => onChange(e.target.value.toLowerCase())}
+          className="h-8 w-10 shrink-0 cursor-pointer rounded-md border border-border bg-transparent p-0.5 [&::-moz-color-swatch]:rounded-sm [&::-moz-color-swatch]:border-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-sm [&::-webkit-color-swatch]:border-0"
+        />
+        <Input className="h-8 flex-1 font-mono text-xs" placeholder="#5b8def" aria-label="Custom accent color" value={draft} onChange={(e) => commit(e.target.value)} maxLength={7} />
         <Button variant="ghost" size="sm" disabled={!value} onClick={() => onChange(null)}>
           Reset
         </Button>

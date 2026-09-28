@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useAppearanceStore, type AppearanceValues, type ThemeMode } from "@/stores/appearance";
+import { DEFAULT_APPEARANCE, useAppearanceStore, type AppearanceValues, type ThemeMode } from "@/stores/appearance";
 import type { UpdatePreferenceDto } from "../interfaces/users.interfaces";
 import { useGetPreferences, useUpdatePreferences } from "./use-users";
 
@@ -26,11 +26,11 @@ export const useAppearanceHydration = () => {
         if (!preferences || customized) return;
         hydrateFromServer({
             mode: (["light", "dark", "system"].includes(preferences.theme) ? preferences.theme : "dark") as ThemeMode,
-            preset_id: preferences.theme_preset,
-            accent_color: preferences.accent_color,
-            font_size: preferences.font_size,
-            font_family: preferences.font_family,
-            mono_font_family: preferences.mono_font_family,
+            preset_id: preferences.theme_preset ?? DEFAULT_APPEARANCE.preset_id,
+            accent_color: preferences.accent_color ?? null,
+            font_size: preferences.font_size ?? DEFAULT_APPEARANCE.font_size,
+            font_family: preferences.font_family ?? DEFAULT_APPEARANCE.font_family,
+            mono_font_family: preferences.mono_font_family ?? DEFAULT_APPEARANCE.mono_font_family,
         });
     }, [preferences, customized, hydrateFromServer]);
 };
