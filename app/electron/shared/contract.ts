@@ -281,6 +281,8 @@ export interface AgentSessionInfo {
   exit_code: number | null;
   changes: AgentChanges;
   alive: boolean;
+  /** The agent CLI's own title for this conversation, when it has one. */
+  agent_title?: string | null;
 }
 
 export interface AgentStatusEvent {

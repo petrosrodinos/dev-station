@@ -9,6 +9,7 @@ import { getNotificationEventLabel } from "@/config/constants/dropdowns/notifica
 import { useRuntimeStore } from "@/stores/runtime";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { updateAgentSession } from "@/features/agent-sessions/services/agent-sessions.services";
+import type { AgentSession } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 import { createActivity } from "@/features/activities/services/activities.services";
 import { ActivityTypes } from "@/features/activities/interfaces/activities.interfaces";
 import { isDesktop } from "@/lib/desktop";
@@ -32,6 +33,7 @@ export function DesktopEventsProvider() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const changeTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  const appliedNames = useRef(new Map<string, string>());
 
   useEffect(() => {
     if (!isDesktop()) return;
@@ -57,8 +59,26 @@ export function DesktopEventsProvider() {
       );
     };
 
+    // Follow the agent CLI's own title, but only while the name is still the one we set — a manual rename wins.
+    const followAgentTitle = (session: AgentSessionInfo) => {
+      const title = session.agent_title;
+      if (!title) return;
+      const followed = appliedNames.current.get(session.id) ?? session.name;
+      if (title === followed) return;
+      const cached = queryClient
+        .getQueriesData<{ data: AgentSession[] }>({ queryKey: ["agent-sessions"] })
+        .flatMap(([, page]) => page?.data ?? [])
+        .find((s) => s.id === session.id);
+      if (!cached || cached.name !== followed) return;
+      appliedNames.current.set(session.id, title);
+      void updateAgentSession({ id: session.id, name: title })
+        .then(() => queryClient.invalidateQueries({ queryKey: ["agent-sessions"] }))
+        .catch(() => appliedNames.current.set(session.id, followed));
+    };
+
     const onAgentStatus = ({ session, previous }: AgentStatusEvent) => {
       useRuntimeStore.getState().upsertAgent(session);
+      followAgentTitle(session);
       const statusChanged = previous !== session.status;
       if (!statusChanged) {
         syncChanges(session);
