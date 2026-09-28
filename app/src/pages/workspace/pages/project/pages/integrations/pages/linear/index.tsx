@@ -11,7 +11,7 @@ import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { useGetLinearIssues } from "@/features/integrations/hooks/use-integrations";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { cn } from "@/lib/utils";
-import { useProjectContext } from "../../hooks/use-project-context";
+import { useProjectContext } from "../../../../hooks/use-project-context";
 import { LinearSettingsCard } from "./components/linear-settings-card";
 import { IssueDetail } from "./components/issue-detail";
 import { PriorityIcon } from "./components/priority-icon";

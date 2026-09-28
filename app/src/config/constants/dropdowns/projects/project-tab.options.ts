@@ -4,8 +4,7 @@ export const ProjectTabs = {
     FILES: "files",
     TERMINAL: "terminal",
     SESSIONS: "sessions",
-    LINEAR: "linear",
-    NOTION: "notion",
+    INTEGRATIONS: "integrations",
 } as const;
 export type ProjectTab = (typeof ProjectTabs)[keyof typeof ProjectTabs];
 
@@ -15,6 +14,5 @@ export const ProjectTabOptions: { id: ProjectTab; label: string }[] = [
     { id: ProjectTabs.FILES, label: "Files" },
     { id: ProjectTabs.TERMINAL, label: "Terminal" },
     { id: ProjectTabs.SESSIONS, label: "AI Sessions" },
-    { id: ProjectTabs.LINEAR, label: "Linear" },
-    { id: ProjectTabs.NOTION, label: "Notion" },
+    { id: ProjectTabs.INTEGRATIONS, label: "Integrations" },
 ];

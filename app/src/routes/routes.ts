@@ -1,3 +1,4 @@
+import type { ProjectIntegration } from "@/config/constants/dropdowns/projects/project-integration.options";
 import type { ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
 import type { SettingsSection } from "@/config/constants/dropdowns/settings/settings-section.options";
 
@@ -17,7 +18,8 @@ export const Routes = {
         project: (id: string) => `/workspace/projects/${id}`,
         project_tab: (id: string, tab: ProjectTab) => `/workspace/projects/${id}/${tab}`,
         project_setup: (id: string) => `/workspace/projects/${id}/setup`,
-        project_linear_issue: (id: string, issueId: string) => `/workspace/projects/${id}/linear?issue=${encodeURIComponent(issueId)}`,
+        project_integration: (id: string, integration: ProjectIntegration) => `/workspace/projects/${id}/integrations?integration=${integration}`,
+        project_linear_issue: (id: string, issueId: string) => `/workspace/projects/${id}/integrations?integration=linear&issue=${encodeURIComponent(issueId)}`,
         project_git_file: (id: string, path: string) => `/workspace/projects/${id}/git?file=${encodeURIComponent(path)}`,
         imported: "/workspace/imported",
         integrations: "/workspace/settings/integrations",

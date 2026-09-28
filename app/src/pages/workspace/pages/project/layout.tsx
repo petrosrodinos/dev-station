@@ -1,6 +1,6 @@
 import { useEffect, type FC } from "react";
 import { Navigate, NavLink, Outlet, useLocation, useParams } from "react-router-dom";
-import { Bot, ChevronDown, ExternalLink, FileText, Files, GitBranch, Home, ListChecks, SquareTerminal } from "lucide-react";
+import { Bot, ChevronDown, ExternalLink, Files, GitBranch, Home, Plug, SquareTerminal } from "lucide-react";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,8 +24,7 @@ const TAB_ICONS: Record<ProjectTab, typeof Home> = {
   [ProjectTabs.FILES]: Files,
   [ProjectTabs.TERMINAL]: SquareTerminal,
   [ProjectTabs.SESSIONS]: Bot,
-  [ProjectTabs.LINEAR]: ListChecks,
-  [ProjectTabs.NOTION]: FileText,
+  [ProjectTabs.INTEGRATIONS]: Plug,
 };
 
 /** Project workspace frame: header + sub navigation; non-local projects go to the setup flow (Spec §26). */

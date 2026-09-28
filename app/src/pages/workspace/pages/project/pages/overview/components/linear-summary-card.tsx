@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { useGetLinearIssues } from "@/features/integrations/hooks/use-integrations";
-import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
+import { ProjectIntegrations } from "@/config/constants/dropdowns/projects/project-integration.options";
 import { getLinearPriorityLabel } from "@/config/constants/dropdowns/integrations/linear-priority.options";
 import { Routes } from "@/routes/routes";
 
@@ -26,7 +26,7 @@ export function LinearSummaryCard({ project }: { project: Project }) {
           </>
         }
         actions={
-          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-muted-foreground" onClick={() => navigate(Routes.workspace.project_tab(project.id, ProjectTabs.LINEAR))}>
+          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-muted-foreground" onClick={() => navigate(Routes.workspace.project_integration(project.id, ProjectIntegrations.LINEAR))}>
             {connected ? "Open" : "Set up"} <ChevronRight className="size-3.5" />
           </Button>
         }

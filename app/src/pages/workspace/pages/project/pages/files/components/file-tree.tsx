@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { ChevronRight, Copy, ExternalLink, File, Folder, FolderOpen, FolderSearch, SquarePen } from "lucide-react";
+import { ChevronRight, Copy, File, Folder, FolderOpen, FolderSearch, SquarePen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useCopyFilePath, useDirectory, useOpenFileExternally, useOpenInEditor, useRevealFile } from "@/features/files/hooks/use-files";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useCopyFilePath, useDirectory, useOpenInEditor, useRevealFile } from "@/features/files/hooks/use-files";
 import { GitFileStateOptions } from "@/config/constants/dropdowns/git/git-file-state.options";
+import { EditorTargetOptions } from "@/config/constants/dropdowns/settings/editor-target.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { cn } from "@/lib/utils";
 import { EditorTargets, type FileEntry, type GitFileState } from "@shared/contract";
@@ -86,7 +88,6 @@ function DirRow({ projectId, entry, depth, gitStates }: { projectId: string; ent
 }
 
 export function FileRow({ projectId, entry, depth, gitState, showPath = false }: { projectId: string; entry: FileEntry; depth: number; gitState?: GitFileState; showPath?: boolean }) {
-  const openExternal = useOpenFileExternally();
   const openInEditor = useOpenInEditor();
   const reveal = useRevealFile();
   const copyPath = useCopyFilePath();
@@ -102,15 +103,25 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false }:
       <span className="truncate">{showPath ? entry.path : entry.name}</span>
       {gitState && <span className={cn("size-1.5 shrink-0 rounded-full", GIT_DOT[gitState])} title={getDropdownOptionLabel(GitFileStateOptions, gitState)} />}
       <div className="ml-auto hidden gap-0.5 group-hover:flex">
-        <RowAction label="Open in Cursor" onClick={() => openInEditor.mutate({ projectId, editor: EditorTargets.CURSOR, path: entry.path })}>
-          <SquarePen className="size-3" />
-        </RowAction>
-        <RowAction label="Open in VS Code" onClick={() => openInEditor.mutate({ projectId, editor: EditorTargets.VSCODE, path: entry.path })}>
-          <span className="text-[9px] font-bold">VS</span>
-        </RowAction>
-        <RowAction label="Open with default app" onClick={() => openExternal.mutate({ projectId, path: entry.path })}>
-          <ExternalLink className="size-3" />
-        </RowAction>
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-5 text-muted-foreground" onClick={(e) => e.stopPropagation()} aria-label="Open with">
+                  <SquarePen className="size-3" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Open with</TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            {EditorTargetOptions.map((o) => (
+              <DropdownMenuItem key={o.id} onSelect={() => openInEditor.mutate({ projectId, editor: o.id, path: entry.path })}>
+                {o.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <RowAction label="Copy path" onClick={() => copyPath.mutate({ projectId, path: entry.path })}>
           <Copy className="size-3" />
         </RowAction>
