@@ -10,9 +10,9 @@ import { SettingsRow, SettingsSectionHeader } from "./settings-row";
 const EMPTY: ChangePasswordFormData = { current_password: "", new_password: "", confirm_password: "" };
 
 const FIELDS = [
-  { name: "current_password", label: "Current password", autoComplete: "current-password" },
-  { name: "new_password", label: "New password", autoComplete: "new-password" },
-  { name: "confirm_password", label: "Confirm password", autoComplete: "new-password" },
+  { name: "current_password", label: "Current password", placeholder: "Enter your current password", autoComplete: "current-password" },
+  { name: "new_password", label: "New password", placeholder: "At least 8 characters", autoComplete: "new-password" },
+  { name: "confirm_password", label: "Confirm password", placeholder: "Re-enter your new password", autoComplete: "new-password" },
 ] as const;
 
 export function ChangePasswordSection() {
@@ -26,7 +26,7 @@ export function ChangePasswordSection() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <SettingsSectionHeader title="Password" description="Use at least 8 characters." />
-        {FIELDS.map(({ name, label, autoComplete }) => (
+        {FIELDS.map(({ name, label, placeholder, autoComplete }) => (
           <SettingsRow key={name} label={label}>
             <FormField
               control={form.control}
@@ -34,7 +34,7 @@ export function ChangePasswordSection() {
               render={({ field }) => (
                 <FormItem className="w-full">
                   <FormControl>
-                    <PasswordInput autoComplete={autoComplete} {...field} />
+                    <PasswordInput placeholder={placeholder} autoComplete={autoComplete} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
