@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { copyFilePath, listDirectory, openFileExternally, openInEditor, readFile, revealFile, searchFiles, writeFile } from "../services/files.services";
+import { copyFilePath, createFile, createFolder, deleteEntry, listDirectory, openFileExternally, openInEditor, readFile, renameEntry, revealFile, searchFiles, writeFile } from "../services/files.services";
 import { getEditorTargetLabel } from "@/config/constants/dropdowns/settings/editor-target.options";
 import { toast } from "@/hooks/use-toast";
 
@@ -60,5 +60,53 @@ export const useSaveFile = () => {
             toast({ title: "Saved", duration: 1000 });
         },
         onError: (error: Error) => toast({ title: "Could not save file", description: error.message, variant: "error" }),
+    });
+};
+
+const useInvalidateTree = () => {
+    const queryClient = useQueryClient();
+    return (projectId: string) => {
+        void queryClient.invalidateQueries({ queryKey: ["files", projectId] });
+        void queryClient.invalidateQueries({ queryKey: ["file-search", projectId] });
+        void queryClient.invalidateQueries({ queryKey: ["git-status", projectId] });
+    };
+};
+
+export const useCreateFile = () => {
+    const invalidate = useInvalidateTree();
+    return useMutation({
+        mutationFn: createFile,
+        onSuccess: (_r, vars) => invalidate(vars.projectId),
+        onError: (error: Error) => toast({ title: "Could not create file", description: error.message, variant: "error" }),
+    });
+};
+
+export const useCreateFolder = () => {
+    const invalidate = useInvalidateTree();
+    return useMutation({
+        mutationFn: createFolder,
+        onSuccess: (_r, vars) => invalidate(vars.projectId),
+        onError: (error: Error) => toast({ title: "Could not create folder", description: error.message, variant: "error" }),
+    });
+};
+
+export const useRenameEntry = () => {
+    const invalidate = useInvalidateTree();
+    return useMutation({
+        mutationFn: renameEntry,
+        onSuccess: (_r, vars) => invalidate(vars.projectId),
+        onError: (error: Error) => toast({ title: "Could not rename", description: error.message, variant: "error" }),
+    });
+};
+
+export const useDeleteEntry = () => {
+    const invalidate = useInvalidateTree();
+    return useMutation({
+        mutationFn: deleteEntry,
+        onSuccess: (_r, vars) => {
+            invalidate(vars.projectId);
+            toast({ title: "Moved to trash", description: vars.path, duration: 1500 });
+        },
+        onError: (error: Error) => toast({ title: "Could not delete", description: error.message, variant: "error" }),
     });
 };

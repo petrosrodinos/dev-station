@@ -22,7 +22,70 @@ function looksBinary(buffer: Buffer): boolean {
   return false;
 }
 
+// eslint-disable-next-line no-control-regex
+const INVALID_NAME_CHARS = /[<>:"|?*\x00-\x1f]/;
+
+/** Validates a user-typed path (or single name) and returns its normalized segments. */
+function nameSegments(input: string, allowNested: boolean): string[] {
+  const segments = input.trim().replace(/\\/g, "/").split("/").filter(Boolean);
+  if (!segments.length) throw new IpcError("Enter a name.");
+  if (!allowNested && segments.length > 1) throw new IpcError("A name cannot contain slashes.");
+  for (const seg of segments) {
+    if (seg === "." || seg === ".." || seg.toLowerCase() === ".git") throw new IpcError(`"${seg}" is not allowed as a name.`);
+    if (INVALID_NAME_CHARS.test(seg) || /[. ]$/.test(seg)) throw new IpcError(`"${seg}" contains characters that are not allowed.`);
+  }
+  return segments;
+}
+
 class FilesystemManager {
+  private async assertMissing(abs: string, rel: string) {
+    const exists = await fs.promises.stat(abs).then(() => true, () => false);
+    if (exists) throw new IpcError(`"${rel}" already exists.`);
+  }
+
+  private childPath(projectId: string, input: string) {
+    const rel = nameSegments(input, true).join("/");
+    return { rel, abs: workspaceConfig.resolveInProject(projectId, rel) };
+  }
+
+  async createFile(projectId: string, input: string): Promise<string> {
+    const { rel, abs } = this.childPath(projectId, input);
+    await this.assertMissing(abs, rel);
+    await fs.promises.mkdir(path.dirname(abs), { recursive: true });
+    await fs.promises.writeFile(abs, "", { flag: "wx" });
+    return rel;
+  }
+
+  async createFolder(projectId: string, input: string): Promise<string> {
+    const { rel, abs } = this.childPath(projectId, input);
+    await this.assertMissing(abs, rel);
+    await fs.promises.mkdir(abs, { recursive: true });
+    return rel;
+  }
+
+  async rename(projectId: string, rel: string, newName: string): Promise<string> {
+    if (!rel) throw new IpcError("The project root cannot be renamed.");
+    const from = workspaceConfig.resolveInProject(projectId, rel);
+    const [name] = nameSegments(newName, false);
+    const to = path.join(path.dirname(from), name);
+    const nextRel = toPosix(path.relative(workspaceConfig.projectRoot(projectId), to));
+    workspaceConfig.resolveInProject(projectId, nextRel);
+    // A case-only rename resolves to the same entry on case-insensitive filesystems, so it is not a collision.
+    if (from.toLowerCase() !== to.toLowerCase()) await this.assertMissing(to, nextRel);
+    await fs.promises.rename(from, to).catch(() => {
+      throw new IpcError(`Could not rename "${rel}".`);
+    });
+    return nextRel;
+  }
+
+  async delete(projectId: string, rel: string): Promise<void> {
+    if (!rel) throw new IpcError("The project root cannot be deleted.");
+    const abs = workspaceConfig.resolveInProject(projectId, rel);
+    await shell.trashItem(abs).catch(() => {
+      throw new IpcError(`Could not move "${rel}" to the trash.`);
+    });
+  }
+
   async list(projectId: string, relDir: string): Promise<FileEntry[]> {
     const root = workspaceConfig.projectRoot(projectId);
     const dir = workspaceConfig.resolveInProject(projectId, relDir);

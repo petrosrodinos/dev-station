@@ -126,6 +126,10 @@ export function registerIpc() {
   handle(IpcChannels.FILES_COPY_PATH, args(zId, zRelPath), ([id, rel]) => filesystemManager.copyPath(id, rel));
   handle(IpcChannels.FILES_READ, args(zId, zRelPath), ([id, rel]) => filesystemManager.readFile(id, rel));
   handle(IpcChannels.FILES_WRITE, args(zId, zRelPath, z.string().max(5_000_000)), ([id, rel, content]) => filesystemManager.writeFile(id, rel, content));
+  handle(IpcChannels.FILES_CREATE_FILE, args(zId, zRelPath), ([id, rel]) => filesystemManager.createFile(id, rel));
+  handle(IpcChannels.FILES_CREATE_FOLDER, args(zId, zRelPath), ([id, rel]) => filesystemManager.createFolder(id, rel));
+  handle(IpcChannels.FILES_RENAME, args(zId, zRelPath, z.string().max(255)), ([id, rel, name]) => filesystemManager.rename(id, rel, name));
+  handle(IpcChannels.FILES_DELETE, args(zId, zRelPath), ([id, rel]) => filesystemManager.delete(id, rel));
 
   // Git ----------------------------------------------------------------------------
   // Git runs at the repository top-level (projects may be monorepo sub-folders).
