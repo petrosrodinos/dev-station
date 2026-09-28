@@ -21,6 +21,8 @@ import { ActivityTypes, type ActivityType } from "@/features/activities/interfac
 import { useProjectLocalState } from "@/features/local-workspace/hooks/use-local-workspace";
 import { ProjectLocalStates } from "@shared/contract";
 import { toast } from "@/hooks/use-toast";
+import { NotificationChannels, NotificationEventTypes, type NotificationEventType, type UserPreference } from "@/features/users/interfaces/users.interfaces";
+import { shouldNotify } from "@/features/users/utils/notification-settings.utils";
 
 const GIT_KEYS = ["git-status", "git-branches", "git-log", "git-stashes", "git-diff"];
 
@@ -58,7 +60,10 @@ function useGitMutation<TVars extends { projectId: string }, TResult>(options: {
     success: (vars: TVars, result: TResult) => string;
     failure: string;
     activity?: ActivityType;
+    /** When set, the success toast follows the user's toast setting for this event. Failures always toast. */
+    event?: NotificationEventType;
 }) {
+    const queryClient = useQueryClient();
     const invalidate = useInvalidateGit();
     const record = useRecordActivity();
     return useMutation({
@@ -66,7 +71,8 @@ function useGitMutation<TVars extends { projectId: string }, TResult>(options: {
         onSuccess: (result, vars) => {
             invalidate();
             const message = options.success(vars, result);
-            toast({ title: message, duration: 2000 });
+            const settings = queryClient.getQueryData<UserPreference>(["preferences"])?.notification_settings;
+            if (!options.event || shouldNotify(settings, options.event, NotificationChannels.TOAST)) toast({ title: message, duration: 2000 });
             if (options.activity) record.mutate({ project_id: vars.projectId, type: options.activity, message });
         },
         onError: (error: Error) => {
@@ -80,10 +86,10 @@ export const useGitFetch = () =>
     useGitMutation({ mutationFn: ({ projectId }: { projectId: string }) => gitFetch(projectId), success: () => "Fetched from remote", failure: "Fetch failed" });
 
 export const useGitPull = () =>
-    useGitMutation({ mutationFn: ({ projectId }: { projectId: string }) => gitPull(projectId), success: () => "Pull completed", failure: "Pull failed", activity: ActivityTypes.GIT_PULL });
+    useGitMutation({ mutationFn: ({ projectId }: { projectId: string }) => gitPull(projectId), success: () => "Pull completed", failure: "Pull failed", activity: ActivityTypes.GIT_PULL, event: NotificationEventTypes.GIT_PULL });
 
 export const useGitPush = () =>
-    useGitMutation({ mutationFn: ({ projectId }: { projectId: string }) => gitPush(projectId), success: () => "Push completed", failure: "Push failed", activity: ActivityTypes.GIT_PUSH });
+    useGitMutation({ mutationFn: ({ projectId }: { projectId: string }) => gitPush(projectId), success: () => "Push completed", failure: "Push failed", activity: ActivityTypes.GIT_PUSH, event: NotificationEventTypes.GIT_PUSH });
 
 export const useGitCommit = () =>
     useGitMutation({
@@ -91,6 +97,7 @@ export const useGitCommit = () =>
         success: (vars, result) => `Commit created ${result.sha.slice(0, 7)} — ${vars.message.split("\n")[0].slice(0, 60)}`,
         failure: "Commit failed",
         activity: ActivityTypes.GIT_COMMIT,
+        event: NotificationEventTypes.GIT_COMMIT,
     });
 
 export const useGitCheckout = () =>

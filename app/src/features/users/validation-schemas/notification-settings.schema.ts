@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { NotificationEventTypes } from "../interfaces/users.interfaces";
 
-const channelFlags = z.object({ badge: z.boolean(), feed: z.boolean(), os: z.boolean() });
+const channelFlags = z.object({ badge: z.boolean(), feed: z.boolean(), os: z.boolean(), toast: z.boolean() });
 
 export const notificationSettingsSchema = z.object({
     enabled: z.boolean(),

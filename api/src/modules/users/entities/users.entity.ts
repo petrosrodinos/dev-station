@@ -50,7 +50,7 @@ export class UserPreferenceEntity {
   @ApiProperty() mono_font_family: string;
   @ApiProperty({
     description:
-      'Resolved notification settings: { enabled, events: { [EVENT_TYPE]: { badge, feed, os } } }',
+      'Resolved notification settings: { enabled, events: { [EVENT_TYPE]: { badge, feed, os, toast } } }',
   })
   notification_settings: NotificationSettings;
   @ApiProperty({

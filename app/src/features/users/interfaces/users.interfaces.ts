@@ -35,6 +35,7 @@ export const NotificationChannels = {
     BADGE: "badge",
     FEED: "feed",
     OS: "os",
+    TOAST: "toast",
 } as const;
 export type NotificationChannel = (typeof NotificationChannels)[keyof typeof NotificationChannels];
 

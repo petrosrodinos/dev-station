@@ -98,22 +98,20 @@ export function DesktopEventsProvider() {
       const attention = ATTENTION_EVENTS[session.status];
       if (attention) {
         const settings = getSettings();
-        if (!viewing && shouldNotify(settings, attention.type, NotificationChannels.BADGE)) {
-          workspace.markAttention(session.id);
-          // Unfocused windows get the OS notification instead; this is the in-app equivalent.
-          if (document.hasFocus()) {
-            const combo = goToFinishedComboRef.current;
-            toast({
-              title: `${session.name} ${attention.verb}`,
-              description: combo ? `Press ${formatComboParts(combo).join("+")} to jump to it.` : undefined,
-              variant: "info",
-              action: (
-                <ToastAction altText="View session" onClick={() => jumpToSession(session.id, navigate, session.project_id)}>
-                  View session
-                </ToastAction>
-              ),
-            });
-          }
+        if (!viewing && shouldNotify(settings, attention.type, NotificationChannels.BADGE)) workspace.markAttention(session.id);
+        // Unfocused windows get the OS notification instead; this is the in-app equivalent.
+        if (!viewing && document.hasFocus() && shouldNotify(settings, attention.type, NotificationChannels.TOAST)) {
+          const combo = goToFinishedComboRef.current;
+          toast({
+            title: `${session.name} ${attention.verb}`,
+            description: combo ? `Press ${formatComboParts(combo).join("+")} to jump to it.` : undefined,
+            variant: attention.type === NotificationEventTypes.AGENT_CRASHED ? "error" : "info",
+            action: (
+              <ToastAction altText="View session" onClick={() => jumpToSession(session.id, navigate, session.project_id)}>
+                View session
+              </ToastAction>
+            ),
+          });
         }
         // Skip only when the user is looking right at this session in a focused window.
         if ((!viewing || !document.hasFocus()) && shouldNotify(settings, attention.type, NotificationChannels.OS)) {
@@ -150,6 +148,9 @@ export function DesktopEventsProvider() {
         })
           .then(() => queryClient.invalidateQueries({ queryKey: ["activities"] }))
           .catch(() => undefined);
+        if (shouldNotify(getSettings(), NotificationEventTypes.SERVICE_CRASHED, NotificationChannels.TOAST)) {
+          toast({ title: `${event.process.name} crashed`, description: `Exit code ${event.process.exit_code ?? "?"}`, variant: "error" });
+        }
         if (shouldNotify(getSettings(), NotificationEventTypes.SERVICE_CRASHED, NotificationChannels.OS)) {
           void showOsNotification({ title: `${event.process.name} crashed`, body: `Exit code ${event.process.exit_code ?? "?"}`, project_id: event.process.project_id }).catch(() => undefined);
         }

@@ -93,7 +93,7 @@ export class UpdatePreferencesDto {
   @ApiProperty({
     required: false,
     description:
-      'Partial notification settings: { enabled?, events?: { [EVENT_TYPE]: { badge?, feed?, os? } } }',
+      'Partial notification settings: { enabled?, events?: { [EVENT_TYPE]: { badge?, feed?, os?, toast? } } }',
     example: { enabled: true, events: { AGENT_FINISHED: { os: true } } },
   })
   @IsOptional()
