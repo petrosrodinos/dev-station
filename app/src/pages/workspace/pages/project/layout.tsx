@@ -158,7 +158,7 @@ const ProjectLayout: FC = () => {
         )}
       </div>
       <div className="flex min-h-0 flex-1">
-        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+        <div className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">
           <Outlet context={{ project }} />
         </div>
         {previewOpen && previewAvailable && <PreviewPanel key={project.id} project={project} />}

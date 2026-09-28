@@ -106,7 +106,7 @@ export function TopBar() {
         aria-label="Go to workspace home"
       >
         <span className="size-[18px] rounded-[5px] bg-gradient-to-br from-[#ff5757] to-[#a1131a]" aria-hidden />
-        {environments.APP_NAME}
+        <span className="hidden md:inline">{environments.APP_NAME}</span>
       </button>
 
       <div className="app-no-drag flex items-center gap-0.5">
@@ -130,9 +130,9 @@ export function TopBar() {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="app-no-drag flex h-7 items-center gap-1.5 rounded-sm px-2 text-[0.7813rem] font-medium text-body hover:bg-surface-elevated">
+          <button className="app-no-drag flex h-7 min-w-0 items-center gap-1.5 rounded-sm px-2 text-[0.7813rem] font-medium text-body hover:bg-surface-elevated">
             <Building2 className="size-3.5 text-muted-foreground" />
-            <span className="max-w-48 truncate">{organization?.name ?? "Select organization"}</span>
+            <span className="max-w-24 truncate sm:max-w-48">{organization?.name ?? "Select organization"}</span>
             <ChevronDown className="size-3 text-muted-foreground" />
           </button>
         </DropdownMenuTrigger>
@@ -158,16 +158,16 @@ export function TopBar() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <div className="app-drag flex-1" />
+      <div className="app-drag min-w-0 flex-1" />
 
       <button
         onClick={() => setCommandPalette(true)}
-        className="app-no-drag flex h-7 w-72 shrink-0 items-center gap-2 rounded-md border bg-surface-elevated px-2.5 text-[0.7813rem] text-ash hover:border-hairline-strong"
+        className="app-no-drag flex h-7 w-72 min-w-7 shrink items-center gap-2 rounded-md border bg-surface-elevated px-2.5 text-[0.7813rem] text-ash hover:border-hairline-strong"
       >
         <Search className="size-3.5 shrink-0" />
-        <span className="min-w-0 flex-1 truncate whitespace-nowrap text-left">Search projects, issues…</span>
+        <span className="min-w-0 flex-1 truncate whitespace-nowrap text-left max-md:hidden">Search projects, issues…</span>
         {paletteCombo && (
-          <span className="shrink-0">
+          <span className="shrink-0 max-lg:hidden">
             <ShortcutKeys combo={paletteCombo} />
           </span>
         )}

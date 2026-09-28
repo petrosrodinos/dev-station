@@ -89,7 +89,7 @@ const NotionTab: FC = () => {
         <Info className="size-4 shrink-0 text-muted-foreground" />
         Open a page and use it as context when starting a Claude Code or Cursor CLI session in this project.
       </div>
-      <div className="grid grid-cols-1 items-start gap-4 2xl:grid-cols-[1fr_1.3fr]">
+      <div className="grid grid-cols-1 items-start gap-4 @5xl:grid-cols-[1fr_1.3fr]">
         <Panel className="overflow-hidden">
           <PanelHeader title="Project documentation" actions={<Badge className="bg-info-soft text-info hover:bg-info-soft">AI-accessible</Badge>} />
           <div className="relative border-b">

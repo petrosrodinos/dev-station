@@ -84,11 +84,11 @@ export function CommitBox({ project, selectedPaths, totalFiles }: { project: Pro
                 </FormItem>
               )}
             />
-            <div className="mt-2.5 flex items-center justify-end gap-2">
-              <span className="mr-auto text-xs text-ash">Ctrl+Enter to commit</span>
+            <div className="mt-2.5 flex flex-wrap items-center justify-end gap-2">
+              <span className="mr-auto text-xs text-ash max-sm:hidden">Ctrl+Enter to commit</span>
               {identities && identities.length > 1 && identity && (
                 <Select value={identity.id} onValueChange={setIdentityId}>
-                  <SelectTrigger className="h-9 w-44 text-xs" aria-label="Commit as">
+                  <SelectTrigger className="h-9 w-44 max-w-full text-xs" aria-label="Commit as">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

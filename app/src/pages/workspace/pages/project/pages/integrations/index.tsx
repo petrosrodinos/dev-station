@@ -24,8 +24,8 @@ const IntegrationsTab: FC = () => {
   const Page = INTEGRATION_PAGES[active];
 
   return (
-    <div className="flex min-h-full">
-      <nav className="w-48 shrink-0 space-y-0.5 border-r p-2" aria-label="Integrations">
+    <div className="flex min-h-full flex-col @2xl:flex-row">
+      <nav className="flex shrink-0 gap-0.5 overflow-x-auto border-b p-2 @2xl:block @2xl:w-48 @2xl:space-y-0.5 @2xl:border-b-0 @2xl:border-r" aria-label="Integrations">
         {ProjectIntegrationOptions.map((option) => {
           const Icon = INTEGRATION_ICONS[option.id];
           return (
@@ -34,7 +34,7 @@ const IntegrationsTab: FC = () => {
               onClick={() => setParams({ integration: option.id }, { replace: true })}
               aria-current={active === option.id ? "page" : undefined}
               className={cn(
-                "flex h-8 w-full items-center gap-2 rounded-md px-2.5 text-left text-[0.8125rem] font-medium text-muted-foreground hover:bg-surface-elevated hover:text-foreground",
+                "flex h-8 shrink-0 items-center gap-2 whitespace-nowrap @2xl:w-full rounded-md px-2.5 text-left text-[0.8125rem] font-medium text-muted-foreground hover:bg-surface-elevated hover:text-foreground",
                 active === option.id && "bg-surface-elevated text-foreground",
               )}
             >

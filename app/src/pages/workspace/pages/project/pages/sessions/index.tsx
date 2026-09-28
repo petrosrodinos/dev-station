@@ -59,13 +59,13 @@ const SessionsTab: FC = () => {
         )}
       </div>
 
-      <Panel className="overflow-hidden">
+      <Panel className="overflow-x-auto">
         {isPending ? (
           <ListSkeleton rows={8} />
         ) : !data?.data.length ? (
           <EmptyState icon={<Bot />} title="No sessions" description="Sessions you start in this project are listed here, including finished ones." />
         ) : (
-          <table className="w-full text-[0.8125rem]">
+          <table className="w-full min-w-[44rem] text-[0.8125rem]">
             <thead>
               <tr className="border-b text-left text-[0.7188rem] uppercase tracking-[0.4px] text-muted-foreground">
                 <th className="px-4 py-2 font-medium">Session</th>

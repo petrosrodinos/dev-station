@@ -94,7 +94,7 @@ const OverviewTab: FC = () => {
         </Panel>
       )}
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 @4xl:grid-cols-2">
         <Panel>
           <PanelHeader title="Project" />
           <PanelBody className="py-2">

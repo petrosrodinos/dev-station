@@ -43,7 +43,7 @@ const LinearTab: FC = () => {
   const select = (id: string) => setParams((p) => (p.set("issue", id), p), { replace: true });
 
   return (
-    <div className="grid grid-cols-1 items-start gap-4 p-4 2xl:grid-cols-[1.1fr_1fr]">
+    <div className="grid grid-cols-1 items-start gap-4 p-4 @5xl:grid-cols-[1.1fr_1fr]">
       <Panel className="overflow-hidden">
         <PanelHeader
           title={
