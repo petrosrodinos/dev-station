@@ -14,5 +14,10 @@ export const EmailConfig = {
             subject: 'Reset your password',
             template_id: EmailTemplates.PASSWORD_RESET,
         },
+        organization_invitation: {
+            subject: (organizationName: string) =>
+                `You're invited to ${organizationName} on Dev Station`,
+            template_id: EmailTemplates.ORGANIZATION_INVITATION,
+        },
     }
 }

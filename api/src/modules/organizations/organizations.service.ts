@@ -227,7 +227,7 @@ export class OrganizationsService {
     dto: CreateInvitationDto,
   ) {
     const email = dto.email.toLowerCase().trim();
-    const [role, existingMember, organization] = await Promise.all([
+    const [role, existingMember, organization, inviter] = await Promise.all([
       this.prisma.role.findFirst({
         where: { id: dto.role_id, organization_id: membership.organization_id },
       }),
@@ -236,6 +236,10 @@ export class OrganizationsService {
       }),
       this.prisma.organization.findUnique({
         where: { id: membership.organization_id },
+      }),
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { full_name: true },
       }),
     ]);
     if (!role)
@@ -277,11 +281,20 @@ export class OrganizationsService {
 
     setImmediate(async () => {
       try {
+        const template = EmailConfig.templates.organization_invitation;
         await this.mailService.sendEmail({
           to: email,
           from: EmailConfig.email_addresses.alert,
-          subject: `You're invited to ${organization.name} on Dev Station`,
-          html: `<p>You have been invited to join <strong>${organization.name}</strong> on Dev Station as ${role.name}.</p><p>Open Dev Station, go to Organization → Join organization and paste this invitation code:</p><pre>${token}</pre><p>The code expires in 7 days.</p>`,
+          subject: template.subject(organization.name),
+          template_id: template.template_id,
+          dynamic_template_data: {
+            organizationName: organization.name,
+            inviterName: inviter?.full_name,
+            roleName: role.name,
+            email,
+            token,
+            expiresInDays: INVITATION_TTL_MS / (24 * 60 * 60 * 1000),
+          },
         });
       } catch (error) {
         this.logger.warn(`Invitation email not sent: ${error?.message}`);

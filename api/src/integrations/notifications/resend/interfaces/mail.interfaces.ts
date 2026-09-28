@@ -31,6 +31,7 @@ export const EmailTemplates = {
     CAMPAIGN_MESSAGE: 'campaign-message',
     WAITLIST: 'waitlist',
     PASSWORD_RESET: 'password-reset',
+    ORGANIZATION_INVITATION: 'organization-invitation',
 } as const;
 
 export type EmailTemplate = (typeof EmailTemplates)[keyof typeof EmailTemplates];
