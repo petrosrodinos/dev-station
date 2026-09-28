@@ -36,6 +36,14 @@ export const updateAgentSession = async ({ id, ...dto }: UpdateAgentSessionDto &
     }
 };
 
+export const deleteAgentSession = async (id: string): Promise<void> => {
+    try {
+        await axiosInstance.delete(ApiRoutes.agent_sessions.by_id(id));
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to delete the AI session."));
+    }
+};
+
 export const getAgentCatalog = async (): Promise<AgentCatalogItem[]> => {
     try {
         const response = await axiosInstance.get<AgentCatalogItem[]>(ApiRoutes.agents.prefix);

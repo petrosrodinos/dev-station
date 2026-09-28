@@ -22,6 +22,7 @@ import { PermissionKeys } from "@/features/organizations/interfaces/organization
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
 import { CloseSessionDialog } from "./close-session-dialog";
+import { SessionContextMenu } from "./session-context-menu";
 import { useCloseSessionTab } from "@/features/agent-sessions/hooks/use-agent-sessions";
 
 interface TabModel {
@@ -146,7 +147,7 @@ function SessionTab({ tab, active, needsAttention, runtimeStatus, onFocus, onClo
   const status = runtimeStatus ?? tab.session?.status ?? null;
   const statusLabel = status ? getDropdownOptionLabel(AgentStatusOptions, status) : "Unknown";
 
-  return (
+  const body = (
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
@@ -180,4 +181,6 @@ function SessionTab({ tab, active, needsAttention, runtimeStatus, onFocus, onClo
       )}
     </div>
   );
+
+  return tab.session ? <SessionContextMenu session={tab.session}>{body}</SessionContextMenu> : body;
 }

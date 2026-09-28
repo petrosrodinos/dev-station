@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -96,5 +97,17 @@ export class AgentSessionsController {
     @Body() dto: UpdateAgentSessionDto,
   ) {
     return this.agentSessionsService.update(organizationId, userId, id, dto);
+  }
+
+  @Delete(':id')
+  @RequirePermissions(PermissionKey.AI_USE_AGENTS)
+  @ApiOperation({
+    summary: 'Delete a session (its activity entries are kept, unlinked)',
+  })
+  remove(
+    @CurrentMembership('organization_id') organizationId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.agentSessionsService.remove(organizationId, id);
   }
 }
