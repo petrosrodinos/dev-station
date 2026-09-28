@@ -102,4 +102,28 @@ export class UpdatePreferencesDto {
     enabled?: boolean;
     events?: Record<string, Partial<Record<string, boolean>>>;
   };
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Complete shortcut settings (replaces the stored value): { bindings: { [ACTION_ID]: combo }, custom: [{ id, name, combo, type, action_id?, prompt? }] }',
+    example: {
+      bindings: { command_palette: 'mod+shift+k' },
+      custom: [
+        {
+          id: 'c1',
+          name: 'Review my diff',
+          combo: 'mod+shift+d',
+          type: 'ai_prompt',
+          prompt: 'Review the uncommitted changes.',
+        },
+      ],
+    },
+  })
+  @IsOptional()
+  @IsObject()
+  shortcut_settings?: {
+    bindings?: Record<string, string>;
+    custom?: unknown[];
+  };
 }

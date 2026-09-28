@@ -45,6 +45,27 @@ export interface NotificationSettings {
     events: Record<NotificationEventType, NotificationChannelFlags>;
 }
 
+export const CustomShortcutTypes = {
+    ACTION: "action",
+    AI_PROMPT: "ai_prompt",
+} as const;
+export type CustomShortcutType = (typeof CustomShortcutTypes)[keyof typeof CustomShortcutTypes];
+
+export interface CustomShortcut {
+    id: string;
+    name: string;
+    combo: string;
+    type: CustomShortcutType;
+    action_id?: string;
+    prompt?: string;
+}
+
+export interface ShortcutSettings {
+    /** Combo overrides keyed by action id; a missing action uses its default binding. */
+    bindings: Record<string, string>;
+    custom: CustomShortcut[];
+}
+
 export interface UserPreference {
     id: string;
     user_id: string;
@@ -60,6 +81,7 @@ export interface UserPreference {
     font_family: string;
     mono_font_family: string;
     notification_settings: NotificationSettings;
+    shortcut_settings: ShortcutSettings;
 }
 
 export interface UpdateNotificationSettingsDto {

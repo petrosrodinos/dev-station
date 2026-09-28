@@ -3,6 +3,8 @@ import { PermissionKeys, type AccessRequirement } from "@/features/organizations
 export const SettingsSections = {
     GENERAL: "general",
     THEME: "theme",
+    NOTIFICATIONS: "notifications",
+    SHORTCUTS: "shortcuts",
     GIT: "git",
     AI: "ai",
     INTEGRATIONS: "integrations",
@@ -15,6 +17,8 @@ export type SettingsSection = (typeof SettingsSections)[keyof typeof SettingsSec
 export const SettingsSectionOptions: { id: SettingsSection; label: string; permission?: AccessRequirement }[] = [
     { id: SettingsSections.GENERAL, label: "General" },
     { id: SettingsSections.THEME, label: "Theme" },
+    { id: SettingsSections.NOTIFICATIONS, label: "Notifications" },
+    { id: SettingsSections.SHORTCUTS, label: "Shortcuts" },
     { id: SettingsSections.GIT, label: "Git" },
     { id: SettingsSections.AI, label: "AI" },
     { id: SettingsSections.INTEGRATIONS, label: "Integrations", permission: PermissionKeys.INTEGRATIONS_VIEW },
