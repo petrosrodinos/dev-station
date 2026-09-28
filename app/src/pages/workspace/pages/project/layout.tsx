@@ -73,7 +73,7 @@ const ProjectLayout: FC = () => {
   if (needsSetup && !onSetup) return <Navigate to={Routes.workspace.project_setup(project.id)} replace />;
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="@container flex h-full min-h-0 flex-col">
       <div className="shrink-0 px-4 pt-4">
         <div className="mb-3 flex items-center gap-3">
           <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="md" />
@@ -84,13 +84,14 @@ const ProjectLayout: FC = () => {
               {project.sub_path && <>{project.repository ? " · " : ""}{project.sub_path}</>}
             </div>
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             {git?.branch && (
               <NavLink
                 to={Routes.workspace.project_tab(project.id, ProjectTabs.GIT)}
-                className="inline-flex h-[30px] items-center gap-1.5 rounded-md border bg-surface-elevated px-2.5 font-mono text-[0.7813rem] font-medium hover:border-hairline-strong"
+                title={git.branch}
+                className="inline-flex h-[30px] max-w-[9rem] items-center gap-1.5 rounded-md border bg-surface-elevated px-2.5 font-mono text-[0.7813rem] font-medium hover:border-hairline-strong @2xl:max-w-[16rem]"
               >
-                <GitBranch className="size-3.5" /> {git.branch}
+                <GitBranch className="size-3.5 shrink-0" /> <span className="hidden truncate @md:inline">{git.branch}</span>
               </NavLink>
             )}
             {previewAvailable && (
@@ -102,14 +103,14 @@ const ProjectLayout: FC = () => {
                 title="Toggle preview (Ctrl+Shift+P)"
                 onClick={() => setProjectPreview(project.id, { previewOpen: !previewOpen })}
               >
-                <PanelRight className="size-3.5" /> Preview
+                <PanelRight className="size-3.5" /> <span className="hidden @xl:inline">Preview</span>
               </Button>
             )}
             {localState === ProjectLocalStates.LOCAL && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="h-[30px] gap-1.5">
-                    <ExternalLink className="size-3.5" /> Open in <ChevronDown className="size-3" />
+                    <ExternalLink className="size-3.5" /> <span className="hidden @xl:inline">Open in</span> <ChevronDown className="size-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -124,22 +125,32 @@ const ProjectLayout: FC = () => {
           </div>
         </div>
         {!onSetup && (
-          <nav className="-mx-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b px-4" aria-label="Project sections">
+          <nav className="-mx-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Project sections">
             {filterByAccess(ProjectTabOptions, can).map((tab) => {
               const Icon = TAB_ICONS[tab.id];
               return (
                 <NavLink
                   key={tab.id}
+                  title={tab.label}
+                  aria-label={tab.label}
                   to={Routes.workspace.project_tab(project.id, tab.id)}
                   end
                   className={({ isActive }) =>
                     cn(
-                      "-mb-px inline-flex h-10 items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent px-2 text-[0.8125rem] font-medium text-muted-foreground hover:text-foreground",
+                      "-mb-px inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent px-2 text-[0.8125rem] font-medium text-muted-foreground hover:text-foreground",
                       (isActive || (tab.id === ProjectTabs.OVERVIEW && location.pathname === Routes.workspace.project(project.id))) && "border-foreground text-foreground",
                     )
                   }
                 >
-                  <Icon className="size-3.5" /> {tab.label}
+                  {({ isActive }) => {
+                    const active = isActive || (tab.id === ProjectTabs.OVERVIEW && location.pathname === Routes.workspace.project(project.id));
+                    return (
+                      <>
+                        <Icon className="size-3.5 shrink-0" />
+                        <span className={cn(!active && "hidden @3xl:inline")}>{tab.label}</span>
+                      </>
+                    );
+                  }}
                 </NavLink>
               );
             })}
