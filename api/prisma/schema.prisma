@@ -259,6 +259,7 @@ model Role {
   key             SystemRoleKey @default(CUSTOM)
   description     String?
   is_system       Boolean       @default(false)
+  rank            Int           @default(10)
   created_at      DateTime      @default(now())
   updated_at      DateTime      @updatedAt
 

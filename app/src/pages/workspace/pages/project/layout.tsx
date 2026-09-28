@@ -16,6 +16,8 @@ import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
 import { PreviewPanel } from "./components/preview-panel";
 import { Routes } from "@/routes/routes";
 import { isDesktop } from "@/lib/desktop";
+import { filterByAccess } from "@/lib/access.utils";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { cn } from "@/lib/utils";
 import { ProjectLocalStates } from "@shared/contract";
 
@@ -37,6 +39,7 @@ const ProjectLayout: FC = () => {
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
   const { data: git } = useGitStatus(projectId ?? null);
   const openInEditor = useOpenInEditor();
+  const { can } = usePermissions();
   const onSetup = location.pathname.endsWith("/setup");
   const previewOpen = useWorkspaceStore((s) => (projectId ? s.preview_by_project[projectId]?.previewOpen : false)) ?? DEFAULT_PREVIEW_PREFS.previewOpen;
   const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
@@ -121,7 +124,7 @@ const ProjectLayout: FC = () => {
         </div>
         {!onSetup && (
           <nav className="-mx-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b px-4" aria-label="Project sections">
-            {ProjectTabOptions.map((tab) => {
+            {filterByAccess(ProjectTabOptions, can).map((tab) => {
               const Icon = TAB_ICONS[tab.id];
               return (
                 <NavLink

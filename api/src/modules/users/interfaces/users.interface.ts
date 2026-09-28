@@ -4,7 +4,7 @@ export interface OrganizationSummary {
   id: string;
   name: string;
   slug: string;
-  role: { id: string; name: string; key: SystemRoleKey };
+  role: { id: string; name: string; key: SystemRoleKey; rank: number };
   permissions: PermissionKey[];
 }
 

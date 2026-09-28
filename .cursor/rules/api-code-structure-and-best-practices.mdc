@@ -330,6 +330,15 @@ return {
 - Never decode or verify tokens manually in a controller or service
 - Auth strategy and guards live in `shared/` — do not duplicate them in feature modules
 
+### Organization access control
+
+Decorators in `shared/decorators/access.decorator.ts`, `OrganizationGuard` in `shared/guards/`, rank/permission rules in `shared/utils/access/access.utils.ts`, and `AccessService` / `MembershipService` in `shared/services/access/` (`AccessModule` is global).
+
+- Org-scoped controllers use `@UseGuards(JwtGuard, OrganizationGuard)`; **every** route must declare `@RequirePermissions(...)`, `@RequireAnyPermission(...)`, `@RequireOwner()` or an explicit `@OrgMemberOnly()`. `OrganizationGuard` fails closed and `access-coverage.spec.ts` fails the build otherwise
+- Read endpoints are gated too (a VIEW permission or any-of managers), never left open by omission
+- Role/member/permission mutations must call `AccessService` (`assertCanAssignRole`, `assertCanModifyMember`, `assertCanCreateRole`, `assertCanEditRole`) — never hand-roll owner/rank checks in services or compare `role_key` inline
+- New permission: add it to the Prisma enum, `PermissionCatalog`, and the `SystemRoles` presets (the catalog spec verifies coverage)
+
 ---
 
 ## 10. Error Handling & Logging

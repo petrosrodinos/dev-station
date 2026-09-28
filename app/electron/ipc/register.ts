@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { z } from "zod";
 import { AgentTypes, EditorTargets, IpcChannels, ProcessStatuses } from "../shared/contract";
+import { accessManager } from "../managers/access-manager";
 import { agentManager } from "../managers/agent-manager";
 import { inspect } from "../managers/detection-manager";
 import { filesystemManager } from "../managers/filesystem-manager";
@@ -63,6 +64,9 @@ export function registerIpc() {
     (e) => broadcast(IpcChannels.AGENT_DATA, e),
     (e) => broadcast(IpcChannels.AGENT_STATUS, e),
   );
+
+  // Access snapshot (defense-in-depth only; the API is the real enforcement point) ----
+  handle(IpcChannels.ACCESS_SYNC, args(z.array(z.string().max(64)).max(100)), ([permissions]) => accessManager.sync(permissions));
 
   // Notifications -------------------------------------------------------------
   handle(
@@ -130,21 +134,23 @@ export function registerIpc() {
   handle(IpcChannels.GIT_BRANCHES, args(zId), async ([id]) => gitManager.branches(await root(id)));
   handle(IpcChannels.GIT_LOG, args(zId, z.number().int().min(1).max(200).optional()), async ([id, limit]) => gitManager.log(await root(id), limit));
   handle(IpcChannels.GIT_STASHES, args(zId), async ([id]) => gitManager.stashes(await root(id)));
-  handle(IpcChannels.GIT_FETCH, args(zId), async ([id]) => gitManager.fetch(await root(id)));
-  handle(IpcChannels.GIT_PULL, args(zId), async ([id]) => gitManager.pull(await root(id)));
-  handle(IpcChannels.GIT_PUSH, args(zId), async ([id]) => gitManager.push(await root(id)));
+  handle(IpcChannels.GIT_FETCH, args(zId), async ([id]) => gitManager.fetch(await root(id)), { requires: ["GIT_COMMIT"] });
+  handle(IpcChannels.GIT_PULL, args(zId), async ([id]) => gitManager.pull(await root(id)), { requires: ["GIT_COMMIT"] });
+  handle(IpcChannels.GIT_PUSH, args(zId), async ([id]) => gitManager.push(await root(id)), { requires: ["GIT_PUSH"] });
   handle(
     IpcChannels.GIT_COMMIT,
     args(zId, z.object({ message: z.string().min(1).max(20_000), paths: zPaths.optional(), name: z.string().max(200).nullable().optional(), email: z.string().max(320).nullable().optional() })),
     async ([id, input]) => gitManager.commit(await root(id), input.message, input.paths, { name: input.name, email: input.email }),
+    { requires: ["GIT_COMMIT"] },
   );
-  handle(IpcChannels.GIT_CHECKOUT, args(zId, z.string().min(1).max(250)), async ([id, branch]) => gitManager.checkout(await root(id), branch));
-  handle(IpcChannels.GIT_CREATE_BRANCH, args(zId, z.string().min(1).max(200), z.boolean()), async ([id, name, checkout]) => gitManager.createBranch(await root(id), name, checkout));
-  handle(IpcChannels.GIT_MERGE, args(zId, z.string().min(1).max(250)), async ([id, branch]) => gitManager.merge(await root(id), branch));
-  handle(IpcChannels.GIT_STASH, args(zId, z.string().max(500).optional()), async ([id, msg]) => gitManager.stash(await root(id), msg));
-  handle(IpcChannels.GIT_STASH_POP, args(zId, z.string().max(50).optional()), async ([id, ref]) => gitManager.stashPop(await root(id), ref));
+  handle(IpcChannels.GIT_CHECKOUT, args(zId, z.string().min(1).max(250)), async ([id, branch]) => gitManager.checkout(await root(id), branch), { requires: ["GIT_MANAGE_BRANCHES"] });
+  handle(IpcChannels.GIT_CREATE_BRANCH, args(zId, z.string().min(1).max(200), z.boolean()), async ([id, name, checkout]) => gitManager.createBranch(await root(id), name, checkout), { requires: ["GIT_MANAGE_BRANCHES"] });
+  handle(IpcChannels.GIT_MERGE, args(zId, z.string().min(1).max(250)), async ([id, branch]) => gitManager.merge(await root(id), branch), { requires: ["GIT_COMMIT"] });
+  handle(IpcChannels.GIT_STASH, args(zId, z.string().max(500).optional()), async ([id, msg]) => gitManager.stash(await root(id), msg), { requires: ["GIT_COMMIT"] });
+  handle(IpcChannels.GIT_STASH_POP, args(zId, z.string().max(50).optional()), async ([id, ref]) => gitManager.stashPop(await root(id), ref), { requires: ["GIT_COMMIT"] });
   handle(IpcChannels.GIT_DISCARD, args(zId, z.object({ paths: zPaths.optional(), confirm: z.literal(true) })), async ([id, input]) =>
     gitManager.discard(await root(id), input.paths, input.confirm),
+    { requires: ["GIT_COMMIT"] },
   );
   handle(
     IpcChannels.GIT_CLONE,
@@ -155,18 +161,18 @@ export function registerIpc() {
 
   // Processes ------------------------------------------------------------------------
   handle(IpcChannels.PROC_LIST, none, () => processManager.list());
-  handle(IpcChannels.PROC_START, args(zId, zServiceSpec), ([id, spec]) => processManager.start(id, spec));
-  handle(IpcChannels.PROC_STOP, args(zId), ([key]) => processManager.stop(key));
-  handle(IpcChannels.PROC_RESTART, args(zId, zServiceSpec), ([id, spec]) => processManager.restart(id, spec));
+  handle(IpcChannels.PROC_START, args(zId, zServiceSpec), ([id, spec]) => processManager.start(id, spec), { requires: ["PROJECTS_EDIT"] });
+  handle(IpcChannels.PROC_STOP, args(zId), ([key]) => processManager.stop(key), { requires: ["PROJECTS_EDIT"] });
+  handle(IpcChannels.PROC_RESTART, args(zId, zServiceSpec), ([id, spec]) => processManager.restart(id, spec), { requires: ["PROJECTS_EDIT"] });
   handle(IpcChannels.PROC_LOGS, args(zId), ([key]) => processManager.logs(key));
-  handle(IpcChannels.PROC_APPROVE, args(zId, z.string().min(1).max(2000)), ([id, command]) => processManager.approveCommand(id, command));
+  handle(IpcChannels.PROC_APPROVE, args(zId, z.string().min(1).max(2000)), ([id, command]) => processManager.approveCommand(id, command), { requires: ["PROJECTS_EDIT"] });
 
   // Terminals ----------------------------------------------------------------------------
   handle(IpcChannels.TERM_LIST, none, () => terminalManager.list());
-  handle(IpcChannels.TERM_CREATE, args(zId, z.object({ cols: zCols.optional(), rows: zRows.optional() }).optional()), ([id, size]) => terminalManager.create(id, size?.cols, size?.rows));
-  handle(IpcChannels.TERM_WRITE, args(zId, z.string().max(100_000)), ([id, data]) => terminalManager.write(id, data));
+  handle(IpcChannels.TERM_CREATE, args(zId, z.object({ cols: zCols.optional(), rows: zRows.optional() }).optional()), ([id, size]) => terminalManager.create(id, size?.cols, size?.rows), { requires: ["PROJECTS_EDIT"] });
+  handle(IpcChannels.TERM_WRITE, args(zId, z.string().max(100_000)), ([id, data]) => terminalManager.write(id, data), { requires: ["PROJECTS_EDIT"] });
   handle(IpcChannels.TERM_RESIZE, args(zId, zCols, zRows), ([id, c, r]) => terminalManager.resize(id, c, r));
-  handle(IpcChannels.TERM_KILL, args(zId), ([id]) => terminalManager.kill(id));
+  handle(IpcChannels.TERM_KILL, args(zId), ([id]) => terminalManager.kill(id), { requires: ["PROJECTS_EDIT"] });
   handle(IpcChannels.TERM_SCROLLBACK, args(zId), ([id]) => terminalManager.scrollback(id));
 
   // Agents ---------------------------------------------------------------------------------
@@ -188,13 +194,14 @@ export function registerIpc() {
       }),
     ),
     ([input]) => agentManager.start(input),
+    { requires: ["AI_START_AGENTS"] },
   );
-  handle(IpcChannels.AGENT_WRITE, args(zId, z.string().max(100_000)), ([id, data]) => agentManager.write(id, data));
+  handle(IpcChannels.AGENT_WRITE, args(zId, z.string().max(100_000)), ([id, data]) => agentManager.write(id, data), { requires: ["AI_USE_AGENTS"] });
   handle(IpcChannels.AGENT_RESIZE, args(zId, zCols, zRows), ([id, c, r]) => agentManager.resize(id, c, r));
-  handle(IpcChannels.AGENT_STOP, args(zId), ([id]) => agentManager.stop(id));
-  handle(IpcChannels.AGENT_RESTART, args(zId), ([id]) => agentManager.restart(id));
+  handle(IpcChannels.AGENT_STOP, args(zId), ([id]) => agentManager.stop(id), { requires: ["AI_USE_AGENTS"] });
+  handle(IpcChannels.AGENT_RESTART, args(zId), ([id]) => agentManager.restart(id), { requires: ["AI_USE_AGENTS"] });
   handle(IpcChannels.AGENT_FORGET, args(zId), ([id]) => agentManager.forget(id));
-  handle(IpcChannels.AGENT_OPEN_EXTERNAL, args(zId), ([id]) => agentManager.openExternal(id));
+  handle(IpcChannels.AGENT_OPEN_EXTERNAL, args(zId), ([id]) => agentManager.openExternal(id), { requires: ["AI_USE_AGENTS"] });
   handle(IpcChannels.AGENT_SCROLLBACK, args(zId), ([id]) => agentManager.scrollback(id));
   handle(IpcChannels.AGENT_SET_IDLE, args(z.number().int().min(10).max(600)), ([s]) => agentManager.setIdleThreshold(s));
 

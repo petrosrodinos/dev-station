@@ -22,7 +22,7 @@ import {
 import { IntegrationProvider, PermissionKey } from 'generated/prisma';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { OrganizationGuard } from '@/shared/guards/organization.guard';
-import { RequirePermissions } from '@/shared/decorators/require-permissions.decorator';
+import { RequirePermissions } from '@/shared/decorators/access.decorator';
 import { CurrentMembership } from '@/shared/decorators/current-membership.decorator';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';

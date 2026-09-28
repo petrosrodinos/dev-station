@@ -16,7 +16,11 @@ import {
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { ResendMailService } from '@/integrations/notifications/resend/services/mail.service';
 import { EmailConfig } from '@/shared/constants/email';
-import { PermissionCatalog } from '@/shared/config/permissions';
+import {
+  DEFAULT_CUSTOM_ROLE_RANK,
+  PermissionCatalog,
+} from '@/shared/config/permissions';
+import { AccessService } from '@/shared/services/access/access.service';
 import { ErrorCodes } from '@/shared/config/error-codes';
 import { OrganizationMembership } from '@/shared/interfaces/membership.interface';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
@@ -42,7 +46,7 @@ const memberInclude = {
   user: {
     select: { id: true, email: true, full_name: true, avatar_url: true },
   },
-  role: { select: { id: true, name: true, key: true } },
+  role: { select: { id: true, name: true, key: true, rank: true } },
 } satisfies Prisma.OrganizationMemberInclude;
 
 @Injectable()
@@ -52,6 +56,7 @@ export class OrganizationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mailService: ResendMailService,
+    private readonly access: AccessService,
   ) {}
 
   // ---- Organizations ----
@@ -109,9 +114,6 @@ export class OrganizationsService {
   }
 
   async remove(membership: OrganizationMembership) {
-    if (membership.role_key !== SystemRoleKey.OWNER) {
-      throw new ForbiddenException('Only an owner can delete the organization');
-    }
     await this.prisma.organization.delete({
       where: { id: membership.organization_id },
     });
@@ -136,10 +138,11 @@ export class OrganizationsService {
   }
 
   async updateMember(
-    organizationId: string,
+    actor: OrganizationMembership,
     memberId: string,
     dto: UpdateMemberDto,
   ): Promise<OrganizationMemberView> {
+    const organizationId = actor.organization_id;
     const [member, role] = await Promise.all([
       this.prisma.organizationMember.findFirst({
         where: { id: memberId, organization_id: organizationId },
@@ -154,6 +157,12 @@ export class OrganizationsService {
       throw new BadRequestException(
         'Role does not belong to this organization',
       );
+
+    this.access.assertCanModifyMember(actor, {
+      member_id: member.id,
+      rank: member.role.rank,
+    });
+    this.access.assertCanAssignRole(actor, { rank: role.rank });
 
     if (
       member.role.key === SystemRoleKey.OWNER &&
@@ -176,12 +185,17 @@ export class OrganizationsService {
     };
   }
 
-  async removeMember(organizationId: string, memberId: string) {
+  async removeMember(actor: OrganizationMembership, memberId: string) {
+    const organizationId = actor.organization_id;
     const member = await this.prisma.organizationMember.findFirst({
       where: { id: memberId, organization_id: organizationId },
       include: { role: true },
     });
     if (!member) throw new NotFoundException('Member not found');
+    this.access.assertCanModifyMember(actor, {
+      member_id: member.id,
+      rank: member.role.rank,
+    });
     if (member.role.key === SystemRoleKey.OWNER)
       await this.assertNotLastOwner(organizationId);
 
@@ -215,7 +229,9 @@ export class OrganizationsService {
         revoked_at: null,
         expires_at: { gt: new Date() },
       },
-      include: { role: { select: { id: true, name: true, key: true } } },
+      include: {
+        role: { select: { id: true, name: true, key: true, rank: true } },
+      },
       orderBy: { created_at: 'desc' },
     });
     return invitations.map(this.toInvitationView);
@@ -248,12 +264,7 @@ export class OrganizationsService {
       );
     if (existingMember)
       throw new ConflictException('This user is already a member');
-    if (
-      role.key === SystemRoleKey.OWNER &&
-      membership.role_key !== SystemRoleKey.OWNER
-    ) {
-      throw new ForbiddenException('Only owners can invite other owners');
-    }
+    this.access.assertCanAssignRole(membership, { rank: role.rank });
 
     const token = randomBytes(24).toString('hex');
     const invitation = await this.prisma.$transaction(async (tx) => {
@@ -275,7 +286,9 @@ export class OrganizationsService {
           invited_by: userId,
           expires_at: new Date(Date.now() + INVITATION_TTL_MS),
         },
-        include: { role: { select: { id: true, name: true, key: true } } },
+        include: {
+          role: { select: { id: true, name: true, key: true, rank: true } },
+        },
       });
     });
 
@@ -304,11 +317,15 @@ export class OrganizationsService {
     return { invitation: this.toInvitationView(invitation), token };
   }
 
-  async revokeInvitation(organizationId: string, invitationId: string) {
+  async revokeInvitation(actor: OrganizationMembership, invitationId: string) {
     const invitation = await this.prisma.organizationInvitation.findFirst({
-      where: { id: invitationId, organization_id: organizationId },
+      where: { id: invitationId, organization_id: actor.organization_id },
+      include: { role: { select: { rank: true } } },
     });
     if (!invitation) throw new NotFoundException('Invitation not found');
+    this.access.assertCanAssignRole(actor, {
+      rank: invitation.role.rank,
+    });
     await this.prisma.organizationInvitation.update({
       where: { id: invitationId },
       data: { revoked_at: new Date() },
@@ -389,15 +406,20 @@ export class OrganizationsService {
       key: role.key,
       description: role.description,
       is_system: role.is_system,
+      rank: role.rank,
       permissions: role.permissions.map((p) => p.permission),
       member_count: role._count.members,
     }));
   }
 
   async createRole(
-    organizationId: string,
+    actor: OrganizationMembership,
     dto: CreateRoleDto,
   ): Promise<RoleView> {
+    const organizationId = actor.organization_id;
+    const rank = dto.rank ?? Math.min(DEFAULT_CUSTOM_ROLE_RANK, actor.rank - 1);
+    this.access.assertCanCreateRole(actor, rank, dto.permissions);
+
     const existing = await this.prisma.role.findFirst({
       where: { organization_id: organizationId, name: dto.name.trim() },
     });
@@ -410,6 +432,7 @@ export class OrganizationsService {
         name: dto.name.trim(),
         description: dto.description,
         key: SystemRoleKey.CUSTOM,
+        rank,
         permissions: {
           create: dto.permissions.map((permission) => ({ permission })),
         },
@@ -419,16 +442,25 @@ export class OrganizationsService {
   }
 
   async updateRole(
-    organizationId: string,
+    actor: OrganizationMembership,
     roleId: string,
     dto: UpdateRoleDto,
   ): Promise<RoleView> {
+    const organizationId = actor.organization_id;
     const role = await this.prisma.role.findFirst({
       where: { id: roleId, organization_id: organizationId },
+      include: { permissions: true },
     });
     if (!role) throw new NotFoundException('Role not found');
-    if (role.key === SystemRoleKey.OWNER)
-      throw new ForbiddenException('The Owner role cannot be modified');
+    this.access.assertCanEditRole(
+      actor,
+      { rank: role.rank, immutable: role.key === SystemRoleKey.OWNER },
+      role.permissions.map((p) => p.permission),
+      dto.permissions,
+    );
+    if (dto.rank !== undefined && !role.is_system) {
+      this.access.assertCanCreateRole(actor, dto.rank, []);
+    }
 
     await this.prisma.$transaction(async (tx) => {
       await tx.role.update({
@@ -436,6 +468,7 @@ export class OrganizationsService {
         data: {
           name: role.is_system ? undefined : dto.name?.trim(),
           description: dto.description,
+          rank: role.is_system ? undefined : dto.rank,
         },
       });
       if (dto.permissions) {
@@ -451,12 +484,18 @@ export class OrganizationsService {
     return this.findRole(organizationId, roleId);
   }
 
-  async removeRole(organizationId: string, roleId: string) {
+  async removeRole(actor: OrganizationMembership, roleId: string) {
     const role = await this.prisma.role.findFirst({
-      where: { id: roleId, organization_id: organizationId },
+      where: { id: roleId, organization_id: actor.organization_id },
       include: { _count: { select: { members: true } } },
     });
     if (!role) throw new NotFoundException('Role not found');
+    this.access.assertCanEditRole(
+      actor,
+      { rank: role.rank, immutable: role.key === SystemRoleKey.OWNER },
+      [],
+      undefined,
+    );
     if (role.is_system)
       throw new BadRequestException('System roles cannot be deleted');
     if (role._count.members > 0)
@@ -485,7 +524,7 @@ export class OrganizationsService {
     email: string;
     expires_at: Date;
     created_at: Date;
-    role: { id: string; name: string; key: SystemRoleKey };
+    role: { id: string; name: string; key: SystemRoleKey; rank: number };
   }): InvitationView {
     return {
       id: invitation.id,

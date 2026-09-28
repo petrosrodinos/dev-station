@@ -1,3 +1,5 @@
+import type { Requirement } from "@/lib/access.utils";
+
 export const PermissionKeys = {
     PROJECTS_VIEW: "PROJECTS_VIEW",
     PROJECTS_CREATE: "PROJECTS_CREATE",
@@ -19,6 +21,9 @@ export const PermissionKeys = {
 } as const;
 export type PermissionKey = (typeof PermissionKeys)[keyof typeof PermissionKeys];
 
+/** A permission, or `{ all }` / `{ any }` over several — used by every access check in the app. */
+export type AccessRequirement = Requirement<PermissionKey>;
+
 export const SystemRoleKeys = {
     OWNER: "OWNER",
     ADMIN: "ADMIN",
@@ -33,6 +38,8 @@ export interface RoleSummary {
     id: string;
     name: string;
     key: SystemRoleKey;
+    /** Authority ladder: higher outranks lower. */
+    rank: number;
 }
 
 export interface OrganizationSummary {
@@ -89,6 +96,7 @@ export interface CreateInvitationDto {
 export interface CreateRoleDto {
     name: string;
     description?: string;
+    rank?: number;
     permissions: PermissionKey[];
 }
 

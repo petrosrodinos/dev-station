@@ -5,5 +5,6 @@ export interface OrganizationMembership {
   member_id: string;
   role_id: string;
   role_key: SystemRoleKey;
+  rank: number;
   permissions: PermissionKey[];
 }

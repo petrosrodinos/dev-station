@@ -24,6 +24,7 @@ export const createOrganizationWithOwner = async (
           key: role.key,
           description: role.description,
           is_system: true,
+          rank: role.rank,
           permissions: {
             create: role.permissions.map((permission) => ({ permission })),
           },
@@ -62,6 +63,7 @@ export const toOrganizationSummary = (membership: MembershipWithOrg) => ({
     id: membership.role.id,
     name: membership.role.name,
     key: membership.role.key,
+    rank: membership.role.rank,
   },
   permissions: membership.role.permissions.map((p) => p.permission),
 });

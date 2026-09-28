@@ -4,6 +4,7 @@ import type { IpcResult } from "../shared/contract";
 import { IpcErrorCodes } from "../shared/contract";
 import { IpcError } from "./ipc-error";
 import { logger } from "../utils/logger";
+import { accessManager } from "../managers/access-manager";
 
 let trustedSender: ((event: IpcMainInvokeEvent) => boolean) | null = null;
 
@@ -16,7 +17,12 @@ export function setTrustedSenderCheck(check: (event: IpcMainInvokeEvent) => bool
  * Registers an invoke handler whose arguments are validated with zod before reaching any manager.
  * Results are wrapped in an envelope so error messages reach the renderer intact.
  */
-export function handle<S extends ZodType, R>(channel: string, schema: S, fn: (args: z.infer<S>) => Promise<R> | R) {
+export function handle<S extends ZodType, R>(
+  channel: string,
+  schema: S,
+  fn: (args: z.infer<S>) => Promise<R> | R,
+  options: { requires?: readonly string[] } = {},
+) {
   ipcMain.handle(channel, async (event, ...raw: unknown[]): Promise<IpcResult<R>> => {
     if (trustedSender && !trustedSender(event)) {
       logger.warn(`Rejected IPC ${channel} from untrusted frame ${event.senderFrame?.url}`);
@@ -27,6 +33,12 @@ export function handle<S extends ZodType, R>(channel: string, schema: S, fn: (ar
     if (!parsed.success) {
       logger.warn(`Invalid IPC payload for ${channel}: ${parsed.error.message}`);
       return { ok: false, error: "Invalid request", code: IpcErrorCodes.VALIDATION };
+    }
+
+    const missing = options.requires ? accessManager.missing(options.requires) : [];
+    if (missing.length) {
+      logger.warn(`Rejected IPC ${channel}: missing permission ${missing.join(", ")}`);
+      return { ok: false, error: `Missing permission: ${missing.join(", ")}`, code: IpcErrorCodes.FORBIDDEN };
     }
 
     try {

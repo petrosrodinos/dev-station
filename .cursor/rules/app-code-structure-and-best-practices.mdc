@@ -32,6 +32,7 @@ src/
 ├── features/                      # Domain modules (see Feature Module Pattern)
 ├── pages/                         # Route-level page components
 ├── components/
+│   ├── access/                    # Permission gates (<Can>, <RequirePermission>)
 │   ├── layout/                    # Layout shells (sidebar, header, etc.)
 │   ├── ui/                        # shadcn/ui base components + custom primitives
 │   └── providers/                 # React context providers
@@ -476,6 +477,18 @@ Use Zustand for global client state.
 - Always use shadcn `Form`, `FormField`, `FormItem`, `FormControl`, `FormLabel`, `FormMessage` components
 - Schema files export both the Zod schema and its inferred type
 - Zod schemas live in `features/<feature-name>/validation-schemas/` or `pages/<section>/validation-schemas/`
+
+---
+
+## 7b. Access control (permissions)
+
+- Gate through `usePermissions()` (`@/features/organizations/hooks/use-organizations`) — never compare role names in components
+- Nav items, tabs, settings sections and palette entries declare `permission` in their `config/constants/dropdowns/**` options entry and render through `filterByAccess` (`@/lib/access.utils`)
+- Whole screens/deep links: `<RequirePermission>` from `@/components/access/require-permission`; blocks/buttons: `<Can>` from `@/components/access/can`
+- Dialogs opened from many places gate inside the dialog component, not at each opener
+- Role/member/permission pickers use the hierarchy helpers in `@/lib/access.utils` so the UI only offers what the API accepts
+- Do not hide or redirect while `usePermissions().ready` is false
+- The client only decides what to offer; the API is the security boundary
 
 ---
 

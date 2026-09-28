@@ -21,6 +21,9 @@ function on<T>(channel: string, cb: (payload: T) => void) {
 }
 
 const bridge: DevStationBridge = {
+  access: {
+    sync: (permissions) => call(C.ACCESS_SYNC, permissions),
+  },
   app: {
     info: () => call(C.APP_INFO),
     openUrl: (url) => call(C.APP_OPEN_URL, url),

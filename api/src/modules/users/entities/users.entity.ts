@@ -11,6 +11,8 @@ export class OrganizationRoleRef {
   @ApiProperty() id: string;
   @ApiProperty() name: string;
   @ApiProperty({ enum: SystemRoleKey }) key: SystemRoleKey;
+  @ApiProperty({ description: 'Authority ladder; higher outranks lower' })
+  rank: number;
 }
 
 export class OrganizationSummaryEntity {

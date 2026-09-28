@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { Navigate, useParams } from "react-router-dom";
-import { ProjectTabs, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
+import { ProjectTabOptions, ProjectTabs, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
+import { RequirePermission } from "@/components/access/require-permission";
 import { Routes } from "@/routes/routes";
 import { useProjectContext } from "./hooks/use-project-context";
 import OverviewTab from "./pages/overview";
@@ -22,9 +23,16 @@ const TAB_PAGES: Record<ProjectTab, FC> = {
 const ProjectTabPage: FC = () => {
   const { tab } = useParams();
   const project = useProjectContext();
-  const Page = TAB_PAGES[(tab ?? ProjectTabs.OVERVIEW) as ProjectTab];
+  const id = (tab ?? ProjectTabs.OVERVIEW) as ProjectTab;
+  const Page = TAB_PAGES[id];
   if (!Page) return <Navigate to={Routes.workspace.project(project.id)} replace />;
-  return <Page />;
+  const permission = ProjectTabOptions.find((t) => t.id === id)?.permission;
+  if (!permission) return <Page />;
+  return (
+    <RequirePermission permission={permission} redirectTo={Routes.workspace.project(project.id)}>
+      <Page />
+    </RequirePermission>
+  );
 };
 
 export default ProjectTabPage;

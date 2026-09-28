@@ -16,7 +16,9 @@ import {
     updateMemberRole,
     updateRole,
 } from "../services/organizations.services";
-import type { PermissionKey } from "../interfaces/organizations.interfaces";
+import { useMemo } from "react";
+import { satisfiesRequirement, type AccessActor } from "@/lib/access.utils";
+import { SystemRoleKeys, type AccessRequirement, type PermissionKey } from "../interfaces/organizations.interfaces";
 import { useGetMe } from "@/features/users/hooks/use-users";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { toast } from "@/hooks/use-toast";
@@ -33,15 +35,27 @@ export const useCurrentOrganization = () => {
     return { organization, me, ...rest };
 };
 
-/** Permission-based UI checks — never compare role names in components. */
+/**
+ * The single entry point for UI access checks — never compare role names in components.
+ * `ready` is false while the profile is still loading (do not redirect/hide on an unready check).
+ */
 export const usePermissions = () => {
-    const { organization } = useCurrentOrganization();
-    const permissions = new Set<PermissionKey>(organization?.permissions ?? []);
-    return {
-        can: (permission: PermissionKey) => permissions.has(permission),
-        canAll: (...list: PermissionKey[]) => list.every((p) => permissions.has(p)),
-        permissions,
-    };
+    const { organization, me, isPending } = useCurrentOrganization();
+    return useMemo(() => {
+        const permissions = new Set<PermissionKey>(organization?.permissions ?? []);
+        const actor: AccessActor<PermissionKey> | null =
+            organization && me
+                ? { user_id: me.id, rank: organization.role.rank, is_owner: organization.role.key === SystemRoleKeys.OWNER, permissions }
+                : null;
+        return {
+            ready: !isPending,
+            permissions,
+            actor,
+            can: (requirement: AccessRequirement) => satisfiesRequirement(permissions, requirement),
+            canAll: (...list: PermissionKey[]) => satisfiesRequirement(permissions, { all: list }),
+            canAny: (...list: PermissionKey[]) => satisfiesRequirement(permissions, { any: list }),
+        };
+    }, [organization, me, isPending]);
 };
 
 export const useCreateOrganization = () => {

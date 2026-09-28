@@ -21,9 +21,9 @@ import {
 import { PermissionKey } from 'generated/prisma';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { OrganizationGuard } from '@/shared/guards/organization.guard';
+import { OrgMemberOnly, RequireAnyPermission, RequireOwner, RequirePermissions } from '@/shared/decorators/access.decorator';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { CurrentMembership } from '@/shared/decorators/current-membership.decorator';
-import { RequirePermissions } from '@/shared/decorators/require-permissions.decorator';
 import { ORGANIZATION_HEADER } from '@/shared/constants/headers';
 import { OrganizationMembership } from '@/shared/interfaces/membership.interface';
 import { OrganizationSummaryEntity } from '@/modules/users/entities/users.entity';
@@ -97,6 +97,7 @@ export class CurrentOrganizationController {
   constructor(private readonly organizationsService: OrganizationsService) {}
 
   @Get()
+  @OrgMemberOnly()
   @ApiOperation({
     summary: 'Current organization with caller role and permissions',
   })
@@ -115,12 +116,17 @@ export class CurrentOrganizationController {
   }
 
   @Delete()
+  @RequireOwner()
   @ApiOperation({ summary: 'Delete the organization (owners only)' })
   remove(@CurrentMembership() membership: OrganizationMembership) {
     return this.organizationsService.remove(membership);
   }
 
   @Get('members')
+  @RequireAnyPermission(
+    PermissionKey.ORG_MANAGE_MEMBERS,
+    PermissionKey.ORG_MANAGE_ROLES,
+  )
   @ApiOperation({ summary: 'List members' })
   @ApiResponse({ status: 200, type: OrganizationMemberEntity, isArray: true })
   findMembers(@CurrentMembership('organization_id') organizationId: string) {
@@ -132,25 +138,21 @@ export class CurrentOrganizationController {
   @ApiOperation({ summary: "Change a member's role" })
   @ApiResponse({ status: 200, type: OrganizationMemberEntity })
   updateMember(
-    @CurrentMembership('organization_id') organizationId: string,
+    @CurrentMembership() membership: OrganizationMembership,
     @Param('memberId', ParseUUIDPipe) memberId: string,
     @Body() dto: UpdateMemberDto,
   ) {
-    return this.organizationsService.updateMember(
-      organizationId,
-      memberId,
-      dto,
-    );
+    return this.organizationsService.updateMember(membership, memberId, dto);
   }
 
   @Delete('members/:memberId')
   @RequirePermissions(PermissionKey.ORG_MANAGE_MEMBERS)
   @ApiOperation({ summary: 'Remove a member' })
   removeMember(
-    @CurrentMembership('organization_id') organizationId: string,
+    @CurrentMembership() membership: OrganizationMembership,
     @Param('memberId', ParseUUIDPipe) memberId: string,
   ) {
-    return this.organizationsService.removeMember(organizationId, memberId);
+    return this.organizationsService.removeMember(membership, memberId);
   }
 
   @Get('invitations')
@@ -179,13 +181,17 @@ export class CurrentOrganizationController {
   @RequirePermissions(PermissionKey.ORG_MANAGE_MEMBERS)
   @ApiOperation({ summary: 'Revoke an invitation' })
   revokeInvitation(
-    @CurrentMembership('organization_id') organizationId: string,
+    @CurrentMembership() membership: OrganizationMembership,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.organizationsService.revokeInvitation(organizationId, id);
+    return this.organizationsService.revokeInvitation(membership, id);
   }
 
   @Get('roles')
+  @RequireAnyPermission(
+    PermissionKey.ORG_MANAGE_MEMBERS,
+    PermissionKey.ORG_MANAGE_ROLES,
+  )
   @ApiOperation({ summary: 'Roles with permissions' })
   @ApiResponse({ status: 200, type: RoleEntity, isArray: true })
   findRoles(@CurrentMembership('organization_id') organizationId: string) {
@@ -197,10 +203,10 @@ export class CurrentOrganizationController {
   @ApiOperation({ summary: 'Create a custom role' })
   @ApiResponse({ status: 201, type: RoleEntity })
   createRole(
-    @CurrentMembership('organization_id') organizationId: string,
+    @CurrentMembership() membership: OrganizationMembership,
     @Body() dto: CreateRoleDto,
   ) {
-    return this.organizationsService.createRole(organizationId, dto);
+    return this.organizationsService.createRole(membership, dto);
   }
 
   @Patch('roles/:id')
@@ -208,20 +214,20 @@ export class CurrentOrganizationController {
   @ApiOperation({ summary: 'Update a role and its permissions' })
   @ApiResponse({ status: 200, type: RoleEntity })
   updateRole(
-    @CurrentMembership('organization_id') organizationId: string,
+    @CurrentMembership() membership: OrganizationMembership,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateRoleDto,
   ) {
-    return this.organizationsService.updateRole(organizationId, id, dto);
+    return this.organizationsService.updateRole(membership, id, dto);
   }
 
   @Delete('roles/:id')
   @RequirePermissions(PermissionKey.ORG_MANAGE_ROLES)
   @ApiOperation({ summary: 'Delete a custom role' })
   removeRole(
-    @CurrentMembership('organization_id') organizationId: string,
+    @CurrentMembership() membership: OrganizationMembership,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.organizationsService.removeRole(organizationId, id);
+    return this.organizationsService.removeRole(membership, id);
   }
 }

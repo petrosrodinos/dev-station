@@ -12,6 +12,8 @@ import ProjectTabPage from "@/pages/workspace/pages/project";
 import ProjectSetupPage from "@/pages/workspace/pages/project/pages/setup";
 import LandingPage from "@/pages/landing";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RequirePermission } from "@/components/access/require-permission";
+import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { isDesktop } from "@/lib/desktop";
 import { useAuthStore } from "@/stores/auth";
 
@@ -79,7 +81,14 @@ export default function AppRoutes() {
                     }
                 >
                     <Route index element={<WorkspaceHomePage />} />
-                    <Route path={RoutePatterns.project} element={<ProjectLayout />}>
+                    <Route
+                        path={RoutePatterns.project}
+                        element={
+                            <RequirePermission permission={PermissionKeys.PROJECTS_VIEW}>
+                                <ProjectLayout />
+                            </RequirePermission>
+                        }
+                    >
                         <Route path={RoutePatterns.project_setup} element={<ProjectSetupPage />} />
                         <Route path={RoutePatterns.project_tab} element={<ProjectTabPage />} />
                         <Route index element={<ProjectTabPage />} />

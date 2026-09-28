@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bot, Building2, CircleDot, FolderGit2, PanelRight, Plug, Plus, Settings } from "lucide-react";
 import { isDesktop } from "@/lib/desktop";
@@ -10,7 +10,19 @@ import { useAgentSessions } from "@/features/agent-sessions/hooks/use-agent-sess
 import { useDialogsStore } from "@/stores/dialogs";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { Routes } from "@/routes/routes";
+import { filterByAccess, type AccessGated } from "@/lib/access.utils";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { PermissionKeys, type PermissionKey } from "@/features/organizations/interfaces/organizations.interfaces";
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
+
+interface PaletteAction extends AccessGated<PermissionKey> {
+  id: string;
+  value: string;
+  label: string;
+  icon: ReactNode;
+  visible?: boolean;
+  run: () => void;
+}
 
 /** Ctrl/⌘+K: jump to projects, sessions and Linear issues, or run common actions. */
 export function CommandPalette() {
@@ -24,11 +36,12 @@ export function CommandPalette() {
   const openSessionTab = useWorkspaceStore((s) => s.openSessionTab);
   const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
   const previews = useWorkspaceStore((s) => s.preview_by_project);
+  const { can } = usePermissions();
   const [search, setSearch] = useState("");
   const { data: projects } = useGetProjects();
   const { data: sessions } = useAgentSessions();
   const activeProject = projects?.find((p) => p.id === activeProjectId);
-  const { data: issues } = useGetLinearIssues(open && activeProject?.linear_connection_id ? activeProject.linear_connection_id : null, {
+  const { data: issues } = useGetLinearIssues(open && can(PermissionKeys.INTEGRATIONS_VIEW) && activeProject?.linear_connection_id ? activeProject.linear_connection_id : null, {
     team_id: activeProject?.linear_team_id,
     project_id: activeProject?.linear_project_id,
     search: search.length > 1 ? search : undefined,
@@ -39,6 +52,30 @@ export function CommandPalette() {
     setOpen(false);
     setSearch("");
   };
+
+  const actions: PaletteAction[] = [
+    { id: "new-session", value: "action new ai session", label: "New AI session", icon: <Bot className="size-4" />, permission: PermissionKeys.AI_START_AGENTS, run: () => openNewSession({ project_id: activeProjectId }) },
+    {
+      id: "toggle-preview",
+      value: "action toggle preview",
+      label: "Toggle preview",
+      icon: <PanelRight className="size-4" />,
+      visible: !!activeProjectId && isDesktop(),
+      run: () => activeProjectId && setProjectPreview(activeProjectId, { previewOpen: !previews[activeProjectId]?.previewOpen }),
+    },
+    { id: "add-project", value: "action add project", label: "Add project", icon: <Plus className="size-4" />, permission: PermissionKeys.PROJECTS_CREATE, run: () => openProjectDialog(null) },
+    { id: "imported", value: "action set up imported projects", label: "Set up imported projects", icon: <FolderGit2 className="size-4" />, run: () => navigate(Routes.workspace.imported) },
+    { id: "integrations", value: "action integrations", label: "Integrations", icon: <Plug className="size-4" />, permission: PermissionKeys.INTEGRATIONS_VIEW, run: () => navigate(Routes.workspace.integrations) },
+    {
+      id: "organization",
+      value: "action organization members roles",
+      label: "Organization",
+      icon: <Building2 className="size-4" />,
+      permission: { any: [PermissionKeys.ORG_MANAGE_MEMBERS, PermissionKeys.ORG_MANAGE_ROLES, PermissionKeys.ORG_MANAGE_SETTINGS] },
+      run: () => navigate(Routes.workspace.settings_section(SettingsSections.ORGANIZATION)),
+    },
+    { id: "settings", value: "action settings", label: "Settings", icon: <Settings className="size-4" />, run: () => navigate(Routes.workspace.settings) },
+  ];
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
@@ -62,7 +99,7 @@ export function CommandPalette() {
             </CommandItem>
           ))}
         </CommandGroup>
-        {!!sessions?.data.length && (
+        {!!sessions?.data.length && can(PermissionKeys.AI_USE_AGENTS) && (
           <CommandGroup heading="AI sessions">
             {sessions.data.slice(0, 12).map((s) => (
               <CommandItem
@@ -83,7 +120,7 @@ export function CommandPalette() {
             ))}
           </CommandGroup>
         )}
-        {!!issues?.length && activeProject && (
+        {!!issues?.length && !!activeProject && (
           <CommandGroup heading={`Linear — ${activeProject.name}`}>
             {issues.slice(0, 10).map((i) => (
               <CommandItem
@@ -100,32 +137,11 @@ export function CommandPalette() {
         )}
         <CommandSeparator />
         <CommandGroup heading="Actions">
-          <CommandItem value="action new ai session" onSelect={() => run(() => openNewSession({ project_id: activeProjectId }))}>
-            <Bot className="size-4" /> New AI session
-          </CommandItem>
-          {activeProjectId && isDesktop() && (
-            <CommandItem
-              value="action toggle preview"
-              onSelect={() => run(() => setProjectPreview(activeProjectId, { previewOpen: !previews[activeProjectId]?.previewOpen }))}
-            >
-              <PanelRight className="size-4" /> Toggle preview
+          {filterByAccess(actions.filter((a) => a.visible ?? true), can).map((a) => (
+            <CommandItem key={a.id} value={a.value} onSelect={() => run(a.run)}>
+              {a.icon} {a.label}
             </CommandItem>
-          )}
-          <CommandItem value="action add project" onSelect={() => run(() => openProjectDialog(null))}>
-            <Plus className="size-4" /> Add project
-          </CommandItem>
-          <CommandItem value="action set up imported projects" onSelect={() => run(() => navigate(Routes.workspace.imported))}>
-            <FolderGit2 className="size-4" /> Set up imported projects
-          </CommandItem>
-          <CommandItem value="action integrations" onSelect={() => run(() => navigate(Routes.workspace.integrations))}>
-            <Plug className="size-4" /> Integrations
-          </CommandItem>
-          <CommandItem value="action organization members roles" onSelect={() => run(() => navigate(Routes.workspace.settings_section(SettingsSections.ORGANIZATION)))}>
-            <Building2 className="size-4" /> Organization
-          </CommandItem>
-          <CommandItem value="action settings" onSelect={() => run(() => navigate(Routes.workspace.settings))}>
-            <Settings className="size-4" /> Settings
-          </CommandItem>
+          ))}
         </CommandGroup>
       </CommandList>
     </CommandDialog>

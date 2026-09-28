@@ -3,6 +3,9 @@ import { NavLink, useParams } from "react-router-dom";
 import { Bot, Building2, GitBranch, Palette, Plug, Settings, UserRound } from "lucide-react";
 import { SettingsSectionOptions, SettingsSections, type SettingsSection } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { Routes } from "@/routes/routes";
+import { RequirePermission } from "@/components/access/require-permission";
+import { filterByAccess } from "@/lib/access.utils";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { cn } from "@/lib/utils";
 import { GeneralSettings } from "./components/general-settings";
 import { ThemeSettings } from "./components/theme-settings";
@@ -37,12 +40,14 @@ const SettingsPage: FC = () => {
   const { section } = useParams();
   const current = (SettingsSectionOptions.some((s) => s.id === section) ? section : SettingsSections.GENERAL) as SettingsSection;
   const Section = SECTION_PAGES[current];
+  const { can } = usePermissions();
+  const permission = SettingsSectionOptions.find((s) => s.id === current)?.permission;
 
   return (
     <div className="flex h-full min-h-0 gap-6 p-6">
       <nav className="flex w-44 shrink-0 flex-col gap-0.5" aria-label="Settings sections">
         <div className="mb-2 text-lg font-medium">Settings</div>
-        {SettingsSectionOptions.map((s) => {
+        {filterByAccess(SettingsSectionOptions, can).map((s) => {
           const Icon = SECTION_ICONS[s.id];
           return (
             <NavLink
@@ -56,7 +61,13 @@ const SettingsPage: FC = () => {
         })}
       </nav>
       <div className="min-w-0 max-w-3xl flex-1 overflow-y-auto pb-8">
-        <Section />
+        {permission ? (
+          <RequirePermission permission={permission} redirectTo={Routes.workspace.settings}>
+            <Section />
+          </RequirePermission>
+        ) : (
+          <Section />
+        )}
       </div>
     </div>
   );
