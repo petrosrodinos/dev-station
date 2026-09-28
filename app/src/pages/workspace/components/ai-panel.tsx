@@ -33,6 +33,7 @@ import { AiPanelModes, useWorkspaceStore, type AiPanelMode } from "@/stores/work
 import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
 import { Routes } from "@/routes/routes";
+import { SessionContextMenu } from "./session-context-menu";
 import { cn } from "@/lib/utils";
 
 /** Right-hand panel: the active session's embedded agent terminal, or the list of all sessions. */
@@ -205,20 +206,21 @@ function SessionList() {
         const project = projectById.get(s.project_id);
         const status = runtimeAgents[s.id]?.status ?? s.status;
         return (
-          <button
-            key={s.id}
-            onClick={() => open(s)}
-            className={cn("flex w-full items-center gap-2.5 border-b border-hairline-soft px-4 py-2.5 text-left hover:bg-surface-elevated", s.id === activeId && "bg-surface-card")}
-          >
-            <StatusDot status={agentStatusDot(status)} />
-            <div className="min-w-0 flex-1">
-              <div className={cn("truncate text-[0.8125rem] font-medium", attention.includes(s.id) && "text-foreground")}>{s.name}</div>
-              <div className="truncate text-[0.7188rem] text-muted-foreground">
-                {project?.name ?? "—"} · {getAgentTypeLabel(s.agent_type)} · {getDropdownOptionLabel(AgentStatusOptions, status)} · {formatRelative(s.started_at)}
+          <SessionContextMenu key={s.id} session={s}>
+            <button
+              onClick={() => open(s)}
+              className={cn("flex w-full items-center gap-2.5 border-b border-hairline-soft px-4 py-2.5 text-left hover:bg-surface-elevated", s.id === activeId && "bg-surface-card")}
+            >
+              <StatusDot status={agentStatusDot(status)} />
+              <div className="min-w-0 flex-1">
+                <div className={cn("truncate text-[0.8125rem] font-medium", attention.includes(s.id) && "text-foreground")}>{s.name}</div>
+                <div className="truncate text-[0.7188rem] text-muted-foreground">
+                  {project?.name ?? "—"} · {getAgentTypeLabel(s.agent_type)} · {getDropdownOptionLabel(AgentStatusOptions, status)} · {formatRelative(s.started_at)}
+                </div>
               </div>
-            </div>
-            {project && <ProjectFlag color={project.color} className="h-[22px]" />}
-          </button>
+              {project && <ProjectFlag color={project.color} className="h-[22px]" />}
+            </button>
+          </SessionContextMenu>
         );
       })}
     </div>

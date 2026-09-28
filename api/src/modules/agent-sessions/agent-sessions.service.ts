@@ -172,4 +172,10 @@ export class AgentSessionsService {
 
     return updated;
   }
+
+  async remove(organizationId: string, id: string) {
+    await this.findOne(organizationId, id);
+    await this.prisma.agentSession.delete({ where: { id } });
+    return { id };
+  }
 }

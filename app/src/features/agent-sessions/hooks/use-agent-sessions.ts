@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createAgentSession, getAgentCatalog, getAgentSessions, updateAgentSession } from "../services/agent-sessions.services";
+import { createAgentSession, deleteAgentSession, getAgentCatalog, getAgentSessions, updateAgentSession } from "../services/agent-sessions.services";
 import { forgetAgentProcess, getAgentAdapters, openAgentExternally, restartAgentProcess, startAgentProcess, stopAgentProcess } from "../services/agent-runtime.services";
 import type { AgentSession, AgentSessionsQuery, CreateAgentSessionDto } from "../interfaces/agent-sessions.interfaces";
 import { linkProjectIssue } from "@/features/projects/services/projects.services";
@@ -122,6 +122,28 @@ export const useOpenAgentExternally = () =>
         onSuccess: () => toast({ title: "Opened in external terminal", duration: 1500 }),
         onError: (error: Error) => toast({ title: "Could not open external terminal", description: error.message, variant: "error" }),
     });
+
+/** Deletes the session record, stopping its local CLI process and closing its tab first. */
+export const useDeleteAgentSession = () => {
+    const queryClient = useQueryClient();
+    const closeSessionTab = useWorkspaceStore((s) => s.closeSessionTab);
+    const removeAgent = useRuntimeStore((s) => s.removeAgent);
+    return useMutation({
+        mutationFn: async (id: string) => {
+            if (isDesktop()) await forgetAgentProcess(id).catch(() => undefined);
+            await deleteAgentSession(id);
+            return id;
+        },
+        onSuccess: (id) => {
+            closeSessionTab(id);
+            removeAgent(id);
+            queryClient.invalidateQueries({ queryKey: ["agent-sessions"] });
+            queryClient.invalidateQueries({ queryKey: ["activities"] });
+            toast({ title: "Session deleted", duration: 1500 });
+        },
+        onError: (error: Error) => toast({ title: "Could not delete session", description: error.message, variant: "error" }),
+    });
+};
 
 export const useRenameAgentSession = () => {
     const queryClient = useQueryClient();
