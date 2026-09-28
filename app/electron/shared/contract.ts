@@ -337,6 +337,10 @@ export interface OsNotificationClick {
 }
 
 export interface DevStationBridge {
+  access: {
+    /** Pushes the signed-in user's permission keys to the main process (defense-in-depth). */
+    sync(permissions: string[]): Promise<void>;
+  };
   app: {
     info(): Promise<AppInfo>;
     openUrl(url: string): Promise<void>;
@@ -437,6 +441,7 @@ export interface DevStationBridge {
 }
 
 export const IpcChannels = {
+  ACCESS_SYNC: "access:sync",
   APP_INFO: "app:info",
   APP_OPEN_URL: "app:open-url",
   SECURE_GET: "secure:get",
@@ -518,6 +523,7 @@ export const IpcErrorCodes = {
   PROJECT_NOT_LOCAL: "PROJECT_NOT_LOCAL",
   PATH_OUTSIDE_PROJECT: "PATH_OUTSIDE_PROJECT",
   VALIDATION: "VALIDATION",
+  FORBIDDEN: "FORBIDDEN",
   AGENT_NOT_FOUND: "AGENT_NOT_FOUND",
   GIT_FAILED: "GIT_FAILED",
   PREVIEW_URL_NOT_ALLOWED: "PREVIEW_URL_NOT_ALLOWED",

@@ -10,15 +10,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
-import { useCreateInvitation, useGetInvitations, useGetRoles, useRevokeInvitation } from "@/features/organizations/hooks/use-organizations";
+import { useCreateInvitation, useGetInvitations, useGetRoles, usePermissions, useRevokeInvitation } from "@/features/organizations/hooks/use-organizations";
 import { SystemRoleKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { formatRelative } from "@/lib/date";
+import { canAssignRole } from "@/lib/access.utils";
 import { toast } from "@/hooks/use-toast";
 import { inviteMemberSchema, type InviteMemberFormData } from "../validation-schemas/organization.schema";
 
 export function InvitationsCard() {
   const { data: invitations, isPending } = useGetInvitations();
-  const { data: roles } = useGetRoles();
+  const { data: allRoles } = useGetRoles();
+  const { actor } = usePermissions();
+  const roles = allRoles?.filter((r) => actor && canAssignRole(actor, r));
   const create = useCreateInvitation();
   const revoke = useRevokeInvitation();
   const [open, setOpen] = useState(false);
@@ -114,8 +117,7 @@ export function InvitationsCard() {
                         </FormControl>
                         <SelectContent>
                           {roles
-                            ?.filter((r) => r.key !== SystemRoleKeys.OWNER)
-                            .map((r) => (
+                            ?.map((r) => (
                               <SelectItem key={r.id} value={r.id}>
                                 {r.name}
                               </SelectItem>

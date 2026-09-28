@@ -4,26 +4,35 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { MemberStatus, PermissionKey } from 'generated/prisma';
-import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { PERMISSIONS_KEY } from '../decorators/require-permissions.decorator';
 import { ORGANIZATION_HEADER } from '../constants/headers';
-import { OrganizationMembership } from '../interfaces/membership.interface';
+import { readAccessRequirement } from '../decorators/access.decorator';
+import { MembershipService } from '../services/access/membership.service';
+import {
+  isProtected,
+  satisfies,
+  toActor,
+} from '../utils/access/access.utils';
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Resolves the caller's membership in the organization named by the `x-organization-id` header
- * and enforces @RequirePermissions(). Must run after JwtGuard.
+ * and enforces the route's access requirement. Must run after JwtGuard.
+ *
+ * Fails closed: a route behind this guard that declares no requirement is rejected, so an
+ * endpoint can never be exposed by forgetting a decorator (use @OrgMemberOnly() on purpose).
  */
 @Injectable()
 export class OrganizationGuard implements CanActivate {
+  private readonly logger = new Logger(OrganizationGuard.name);
+
   constructor(
     private readonly reflector: Reflector,
-    private readonly prisma: PrismaService,
+    private readonly memberships: MembershipService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -39,45 +48,33 @@ export class OrganizationGuard implements CanActivate {
       );
     }
 
-    const member = await this.prisma.organizationMember.findUnique({
-      where: {
-        organization_id_user_id: {
-          organization_id: organizationId,
-          user_id: request.user?.id,
-        },
-      },
-      include: { role: { include: { permissions: true } } },
-    });
-
-    if (!member || member.status !== MemberStatus.ACTIVE) {
+    const membership = await this.memberships.findActive(
+      organizationId,
+      request.user?.id,
+    );
+    if (!membership) {
       throw new ForbiddenException('You are not a member of this organization');
     }
-
-    const membership: OrganizationMembership = {
-      organization_id: organizationId,
-      member_id: member.id,
-      role_id: member.role_id,
-      role_key: member.role.key,
-      permissions: member.role.permissions.map((p) => p.permission),
-    };
     request.membership = membership;
 
-    const required = this.reflector.getAllAndOverride<PermissionKey[]>(
-      PERMISSIONS_KEY,
-      [context.getHandler(), context.getClass()],
-    );
-
-    if (required?.length) {
-      const missing = required.filter(
-        (p) => !membership.permissions.includes(p),
+    const requirement = readAccessRequirement(this.reflector, context);
+    if (!isProtected(requirement)) {
+      this.logger.error(
+        `Route ${request.method} ${request.route?.path} declares no access requirement`,
       );
-      if (missing.length) {
-        throw new ForbiddenException(
-          `Missing permission: ${missing.join(', ')}`,
-        );
-      }
+      throw new ForbiddenException('This route declares no access requirement');
     }
 
+    const decision = satisfies(toActor(membership), requirement);
+    if (!decision.allowed) {
+      this.logger.warn(
+        `Denied ${request.method} ${request.route?.path} for user ${request.user?.id} in org ${organizationId}: ${decision.code}`,
+      );
+      throw new ForbiddenException({
+        message: decision.reason,
+        code: decision.code,
+      });
+    }
     return true;
   }
 }

@@ -23,6 +23,7 @@ export class RoleEntity {
   @ApiProperty({ enum: SystemRoleKey }) key: SystemRoleKey;
   @ApiProperty({ nullable: true }) description: string | null;
   @ApiProperty() is_system: boolean;
+  @ApiProperty() rank: number;
   @ApiProperty({ enum: PermissionKey, isArray: true })
   permissions: PermissionKey[];
   @ApiProperty() member_count: number;

@@ -96,6 +96,8 @@ export const PermissionCatalog: {
   },
 ];
 
+export const DEFAULT_CUSTOM_ROLE_RANK = 50;
+
 const ALL_PERMISSIONS = Object.values(PermissionKey) as PermissionKey[];
 
 const GIT_ALL: PermissionKey[] = [
@@ -115,24 +117,28 @@ export const SystemRoles: {
   key: SystemRoleKey;
   name: string;
   description: string;
+  rank: number;
   permissions: PermissionKey[];
 }[] = [
   {
     key: SystemRoleKey.OWNER,
     name: 'Owner',
     description: 'Full access, including deleting the organization',
+    rank: 100,
     permissions: ALL_PERMISSIONS,
   },
   {
     key: SystemRoleKey.ADMIN,
     name: 'Admin',
     description: 'Full access to projects, integrations, members and settings',
+    rank: 80,
     permissions: ALL_PERMISSIONS,
   },
   {
     key: SystemRoleKey.MANAGER,
     name: 'Manager',
     description: 'Manages projects and connects integrations',
+    rank: 60,
     permissions: [
       PermissionKey.PROJECTS_VIEW,
       PermissionKey.PROJECTS_CREATE,
@@ -147,6 +153,7 @@ export const SystemRoles: {
     key: SystemRoleKey.DEVELOPER,
     name: 'Developer',
     description: 'Works on projects with Git and AI agents',
+    rank: 40,
     permissions: [
       PermissionKey.PROJECTS_VIEW,
       ...GIT_ALL,
@@ -158,6 +165,7 @@ export const SystemRoles: {
     key: SystemRoleKey.VIEWER,
     name: 'Viewer',
     description: 'Read-only access',
+    rank: 20,
     permissions: [
       PermissionKey.PROJECTS_VIEW,
       PermissionKey.GIT_VIEW_CHANGES,

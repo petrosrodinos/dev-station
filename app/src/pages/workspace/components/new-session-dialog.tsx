@@ -17,6 +17,8 @@ import { useGetPreferences } from "@/features/users/hooks/use-users";
 import { IntegrationProviders } from "@/features/integrations/interfaces/integrations.interfaces";
 import { AgentTypeFormOptions, getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
 import { useDialogsStore } from "@/stores/dialogs";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { isDesktop } from "@/lib/desktop";
 import { AgentTypes, ProjectLocalStates, type AgentType } from "@shared/contract";
 import { newSessionSchema, type NewSessionFormData } from "../validation-schemas/workspace.schema";
@@ -25,6 +27,8 @@ import { newSessionSchema, type NewSessionFormData } from "../validation-schemas
 export function NewSessionDialog() {
   const state = useDialogsStore((s) => s.new_session);
   const close = useDialogsStore((s) => s.closeNewSession);
+  const { can } = usePermissions();
+  const allowed = can(PermissionKeys.AI_START_AGENTS);
   const { data: projects } = useGetProjects();
   const { data: localStates } = useProjectLocalStates();
   const { data: adapters } = useAgentAdapters();
@@ -74,7 +78,7 @@ export function NewSessionDialog() {
   };
 
   return (
-    <Dialog open={state.open} onOpenChange={(o) => !o && !start.isPending && close()}>
+    <Dialog open={state.open && allowed} onOpenChange={(o) => !o && !start.isPending && close()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{issue ? "Work on issue with AI" : "New AI session"}</DialogTitle>

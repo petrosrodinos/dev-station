@@ -109,9 +109,11 @@ export function IntegrationCard({ integration }: { integration: Integration }) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem className="gap-2" onSelect={() => refresh.mutate(c.id)}>
-                    <RefreshCw className="size-3.5" /> Check status
-                  </DropdownMenuItem>
+                  {can(PermissionKeys.INTEGRATIONS_VIEW) && (
+                    <DropdownMenuItem className="gap-2" onSelect={() => refresh.mutate(c.id)}>
+                      <RefreshCw className="size-3.5" /> Check status
+                    </DropdownMenuItem>
+                  )}
                   {can(PermissionKeys.INTEGRATIONS_MANAGE) && !c.is_default && c.status === ConnectionStatuses.ACTIVE && (
                     <DropdownMenuItem className="gap-2" onSelect={() => update.mutate({ id: c.id, is_default: true })}>
                       <Star className="size-3.5" /> Make default

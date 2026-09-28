@@ -63,9 +63,11 @@ const OverviewTab: FC = () => {
               <ArrowUp className="size-3.5" /> Push {git?.ahead ? `(${git.ahead})` : ""}
             </Button>
           )}
-          <Button variant="outline" size="sm" className="gap-1.5" loading={pull.isPending} onClick={() => pull.mutate({ projectId: project.id })}>
-            <ArrowDown className="size-3.5" /> Pull {git?.behind ? `(${git.behind})` : ""}
-          </Button>
+          {can(PermissionKeys.GIT_COMMIT) && (
+            <Button variant="outline" size="sm" className="gap-1.5" loading={pull.isPending} onClick={() => pull.mutate({ projectId: project.id })}>
+              <ArrowDown className="size-3.5" /> Pull {git?.behind ? `(${git.behind})` : ""}
+            </Button>
+          )}
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => openInEditor.mutate({ projectId: project.id, editor: EditorTargets.CURSOR })}>
             <ExternalLink className="size-3.5" /> Open in Cursor
           </Button>

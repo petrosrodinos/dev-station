@@ -131,7 +131,7 @@ function ActiveSessionTerminal() {
             <FileDiff className="size-3.5" />
           </PanelIconButton>
         )}
-        {runtime && (
+        {runtime && can(PermissionKeys.AI_USE_AGENTS) && (
           <>
             <PanelIconButton label="Restart" onClick={() => restart.mutate(runtime.id)} disabled={restart.isPending}>
               <RotateCw className="size-3.5" />
@@ -147,7 +147,7 @@ function ActiveSessionTerminal() {
       </div>
       <div className="min-h-0 flex-1 bg-terminal">
         {source && ranOnThisDevice ? (
-          <XtermTerminal key={activeId} source={source} sourceKey={activeId} readOnly={!runtime?.alive} className="h-full" />
+          <XtermTerminal key={activeId} source={source} sourceKey={activeId} readOnly={!runtime?.alive || !can(PermissionKeys.AI_USE_AGENTS)} className="h-full" />
         ) : (
           <EmptyState
             className="h-full"

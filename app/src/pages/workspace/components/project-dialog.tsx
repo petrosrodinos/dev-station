@@ -22,6 +22,8 @@ import { useCancelClone, useCloneProgress, useCloneProject, useLinkProjectFolder
 import { suggestProjectPath } from "@/features/local-workspace/services/local-workspace.services";
 import { ProjectColorOptions } from "@/config/constants/dropdowns/projects/project-color.options";
 import { useDialogsStore } from "@/stores/dialogs";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { Routes } from "@/routes/routes";
 import { baseName, repoFullNameFromUrl, repoNameFromUrl } from "@/lib/path";
@@ -57,6 +59,8 @@ export function ProjectDialog() {
   const { data: projects } = useGetProjects();
   const { connections: githubConnections } = useProviderConnections(IntegrationProviders.GITHUB);
   const editing = projects?.find((p) => p.id === state.project_id) ?? null;
+  const { can } = usePermissions();
+  const allowed = can(state.project_id ? PermissionKeys.PROJECTS_EDIT : PermissionKeys.PROJECTS_CREATE);
   const createProject = useCreateProject();
   const updateProject = useUpdateProject();
   const cloneProject = useCloneProject();
@@ -183,7 +187,7 @@ export function ProjectDialog() {
   };
 
   return (
-    <Dialog open={state.open} onOpenChange={(o) => !o && !busy && close()}>
+    <Dialog open={state.open && allowed} onOpenChange={(o) => !o && !busy && close()}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{editing ? `Edit ${editing.name}` : "Add project"}</DialogTitle>

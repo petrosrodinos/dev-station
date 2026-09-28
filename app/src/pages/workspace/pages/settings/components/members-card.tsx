@@ -11,6 +11,7 @@ import { useCurrentOrganization, useGetMembers, useGetRoles, usePermissions, use
 import { PermissionKeys, SystemRoleKeys, type OrganizationMember, type SystemRoleKey } from "@/features/organizations/interfaces/organizations.interfaces";
 import { generateInitials } from "@/features/auth/utils/auth.utils";
 import { formatRelative } from "@/lib/date";
+import { canAssignRole, canModifyMember } from "@/lib/access.utils";
 import { cn } from "@/lib/utils";
 
 const ROLE_BADGE: Record<SystemRoleKey, string> = {
@@ -26,7 +27,7 @@ export function MembersCard() {
   const { data: members, isPending } = useGetMembers();
   const { data: roles } = useGetRoles();
   const { me } = useCurrentOrganization();
-  const { can } = usePermissions();
+  const { can, actor } = usePermissions();
   const updateRole = useUpdateMemberRole();
   const remove = useRemoveMember();
   const [removing, setRemoving] = useState<OrganizationMember | null>(null);
@@ -40,6 +41,7 @@ export function MembersCard() {
       ) : (
         members?.map((m) => {
           const isMe = m.user.id === me?.id;
+          const editable = canManage && !!actor && canModifyMember(actor, { user_id: m.user.id, rank: m.role.rank });
           return (
             <div key={m.id} className="flex items-center gap-3 border-b border-hairline-soft px-4 py-3 last:border-b-0">
               <div className="flex size-8 items-center justify-center rounded-full border bg-surface-card text-[0.6875rem] font-semibold">{generateInitials(m.user.full_name || m.user.email)}</div>
@@ -51,13 +53,13 @@ export function MembersCard() {
                   {m.user.email} · joined {formatRelative(m.joined_at)}
                 </div>
               </div>
-              {canManage && !isMe ? (
+              {editable ? (
                 <Select value={m.role.id} onValueChange={(role_id) => updateRole.mutate({ memberId: m.id, role_id })}>
                   <SelectTrigger className="h-8 w-40" aria-label={`Role for ${m.user.email}`}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {roles?.map((r) => (
+                    {roles?.filter((r) => r.id === m.role.id || (actor && canAssignRole(actor, r))).map((r) => (
                       <SelectItem key={r.id} value={r.id}>
                         {r.name}
                       </SelectItem>
@@ -69,7 +71,7 @@ export function MembersCard() {
                   {m.role.name}
                 </Badge>
               )}
-              {canManage && !isMe ? (
+              {editable ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="Member actions">

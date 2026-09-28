@@ -17,6 +17,8 @@ import { agentStatusDot, isAgentActive } from "@/lib/status";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
 import { CloseSessionDialog } from "./close-session-dialog";
@@ -47,6 +49,8 @@ export function SessionTabStrip() {
   const { data: sessions } = useAgentSessions();
   const { data: projects } = useGetProjects();
   const closeTab = useCloseSessionTab();
+  const { can } = usePermissions();
+  const canUseAgents = can(PermissionKeys.AI_USE_AGENTS);
   const [closing, setClosing] = useState<TabModel | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
@@ -96,25 +100,27 @@ export function SessionTabStrip() {
                   needsAttention={attention.includes(tab.id)}
                   runtimeStatus={runtimeAgents[tab.id]?.status}
                   onFocus={() => focusTab(tab)}
-                  onClose={() => requestClose(tab)}
+                  onClose={canUseAgents ? () => requestClose(tab) : undefined}
                 />
               ))}
             </SortableContext>
           </DndContext>
         )}
       </div>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => openNewSession({ project_id: activeProjectId })}
-            className="flex w-9 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
-            aria-label="New AI session"
-          >
-            <Plus className="size-4" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>New AI session (Ctrl T)</TooltipContent>
-      </Tooltip>
+      {can(PermissionKeys.AI_START_AGENTS) && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => openNewSession({ project_id: activeProjectId })}
+              className="flex w-9 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
+              aria-label="New AI session"
+            >
+              <Plus className="size-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>New AI session (Ctrl T)</TooltipContent>
+        </Tooltip>
+      )}
       <CloseSessionDialog
         sessionName={closing?.session?.name ?? "This session"}
         open={!!closing}
@@ -132,7 +138,7 @@ interface SessionTabProps {
   needsAttention: boolean;
   runtimeStatus: AgentSession["status"] | undefined;
   onFocus: () => void;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 function SessionTab({ tab, active, needsAttention, runtimeStatus, onFocus, onClose }: SessionTabProps) {
@@ -147,7 +153,7 @@ function SessionTab({ tab, active, needsAttention, runtimeStatus, onFocus, onClo
       {...attributes}
       {...listeners}
       onClick={onFocus}
-      onAuxClick={(e) => e.button === 1 && onClose()}
+      onAuxClick={(e) => e.button === 1 && onClose?.()}
       title={`${tab.session?.name ?? "Session"} · ${tab.projectName} · ${tab.session ? getAgentTypeLabel(tab.session.agent_type) : ""} · ${statusLabel}`}
       className={cn(
         "group relative flex h-full min-w-36 max-w-56 cursor-pointer select-none items-center gap-1.5 border-r pl-2 pr-1.5 text-xs text-body hover:bg-surface-elevated",
@@ -158,18 +164,20 @@ function SessionTab({ tab, active, needsAttention, runtimeStatus, onFocus, onClo
       <ProjectFlag color={tab.color} />
       <StatusDot status={agentStatusDot(status)} title={statusLabel} />
       <span className={cn("flex-1 truncate", needsAttention && "font-semibold text-foreground")}>{tab.session?.name ?? "Loading…"}</span>
-      <button
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => {
-          e.stopPropagation();
-          onClose();
-        }}
-        className="flex size-4 shrink-0 items-center justify-center rounded-xs text-ash opacity-0 hover:bg-surface-card hover:text-foreground group-hover:opacity-100 data-[active=true]:opacity-100"
-        data-active={active}
-        aria-label="Close tab"
-      >
-        <X className="size-3" />
-      </button>
+      {onClose && (
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          className="flex size-4 shrink-0 items-center justify-center rounded-xs text-ash opacity-0 hover:bg-surface-card hover:text-foreground group-hover:opacity-100 data-[active=true]:opacity-100"
+          data-active={active}
+          aria-label="Close tab"
+        >
+          <X className="size-3" />
+        </button>
+      )}
     </div>
   );
 }

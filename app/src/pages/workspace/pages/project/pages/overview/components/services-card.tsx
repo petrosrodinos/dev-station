@@ -36,6 +36,7 @@ export function ServicesCard({ project }: { project: Project }) {
   const restart = useRestartService();
   const stop = useStopService();
   const { can } = usePermissions();
+  const canEdit = can(PermissionKeys.PROJECTS_EDIT);
   const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
 
   const run = (service: ProjectService, isRestart = false) => {
@@ -51,7 +52,7 @@ export function ServicesCard({ project }: { project: Project }) {
   };
 
   const confirmApproval = () => {
-    if (!pendingApproval) return;
+    if (!pendingApproval || !canEdit) return;
     const { service, command, restart: isRestart } = pendingApproval;
     approve.mutate(
       { projectId: project.id, command },
@@ -73,7 +74,7 @@ export function ServicesCard({ project }: { project: Project }) {
           </>
         }
         actions={
-          can(PermissionKeys.PROJECTS_EDIT) && (
+          canEdit && (
             <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-muted-foreground" onClick={() => setEditing(true)}>
               <Pencil className="size-3.5" /> Edit
             </Button>
@@ -119,18 +120,21 @@ export function ServicesCard({ project }: { project: Project }) {
                     <IconAction label="View logs" onClick={() => setLogsFor(service)}>
                       <ScrollText className="size-3.5" />
                     </IconAction>
-                    {running ? (
-                      <IconAction label="Stop" onClick={() => stop.mutate(processKey(project.id, service.id))}>
-                        <Square className="size-3.5" />
-                      </IconAction>
-                    ) : (
-                      <IconAction label="Start" onClick={() => run(service)}>
-                        <Play className="size-3.5" />
+                    {canEdit &&
+                      (running ? (
+                        <IconAction label="Stop" onClick={() => stop.mutate(processKey(project.id, service.id))}>
+                          <Square className="size-3.5" />
+                        </IconAction>
+                      ) : (
+                        <IconAction label="Start" onClick={() => run(service)}>
+                          <Play className="size-3.5" />
+                        </IconAction>
+                      ))}
+                    {canEdit && (
+                      <IconAction label="Restart" onClick={() => run(service, true)}>
+                        <RotateCw className="size-3.5" />
                       </IconAction>
                     )}
-                    <IconAction label="Restart" onClick={() => run(service, true)}>
-                      <RotateCw className="size-3.5" />
-                    </IconAction>
                   </div>
                 )}
               </div>

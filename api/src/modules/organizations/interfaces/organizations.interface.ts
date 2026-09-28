@@ -4,6 +4,7 @@ export interface RoleRef {
   id: string;
   name: string;
   key: SystemRoleKey;
+  rank: number;
 }
 
 export interface OrganizationMemberView {

@@ -12,19 +12,21 @@ import { ListSkeleton } from "@/components/ui/list-skeleton";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import { useCreateRole, useDeleteRole, useGetPermissionCatalog, useGetRoles, usePermissions, useUpdateRole } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys, SystemRoleKeys, type PermissionKey, type Role } from "@/features/organizations/interfaces/organizations.interfaces";
+import { canEditRole, canGrantPermission } from "@/lib/access.utils";
 import { roleSchema, type RoleFormData } from "../validation-schemas/organization.schema";
 
 /** Permission matrix: rows are permissions (grouped), columns are roles. Owner is immutable. */
 export function RolesCard() {
   const { data: roles, isPending } = useGetRoles();
   const { data: catalog } = useGetPermissionCatalog();
-  const { can } = usePermissions();
+  const { can, actor } = usePermissions();
   const update = useUpdateRole();
   const create = useCreateRole();
   const remove = useDeleteRole();
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<Role | null>(null);
   const canEdit = can(PermissionKeys.ORG_MANAGE_ROLES);
+  const canEditThis = (role: Role) => canEdit && !!actor && canEditRole(actor, role, SystemRoleKeys.OWNER);
   const form = useForm<RoleFormData>({ resolver: zodResolver(roleSchema), defaultValues: { name: "", description: "" } });
 
   const groups = useMemo(() => {
@@ -70,7 +72,7 @@ export function RolesCard() {
                   <th key={r.id} className="px-2 py-2.5 text-center text-[0.7188rem] font-medium uppercase tracking-[0.4px] text-muted-foreground">
                     <div className="flex items-center justify-center gap-1">
                       {r.name}
-                      {canEdit && !r.is_system && (
+                      {canEditThis(r) && !r.is_system && (
                         <button onClick={() => setDeleting(r)} className="text-ash hover:text-danger" aria-label={`Delete role ${r.name}`}>
                           <Trash2 className="size-3" />
                         </button>
@@ -94,7 +96,7 @@ export function RolesCard() {
                       <td className="px-4 py-2">{perm.label}</td>
                       {roles?.map((r) => {
                         const allowed = r.permissions.includes(perm.key);
-                        const editable = canEdit && r.key !== SystemRoleKeys.OWNER;
+                        const editable = canEditThis(r) && !!actor && (allowed || canGrantPermission(actor, perm.key));
                         return (
                           <td key={r.id} className="px-2 py-2 text-center">
                             {editable ? (
@@ -131,7 +133,10 @@ export function RolesCard() {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((d) =>
-                create.mutate({ ...d, permissions: [PermissionKeys.PROJECTS_VIEW, PermissionKeys.GIT_VIEW_CHANGES, PermissionKeys.INTEGRATIONS_VIEW] }, { onSuccess: () => setCreating(false) }),
+                create.mutate(
+                  { ...d, permissions: [PermissionKeys.PROJECTS_VIEW, PermissionKeys.GIT_VIEW_CHANGES, PermissionKeys.INTEGRATIONS_VIEW].filter((p) => actor && canGrantPermission(actor, p)) },
+                  { onSuccess: () => setCreating(false) },
+                ),
               )}
               className="space-y-4"
             >

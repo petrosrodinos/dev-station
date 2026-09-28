@@ -37,15 +37,23 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
   const { can } = usePermissions();
   const dirty = status.files.length > 0;
   const projectId = project.id;
+  const canCommit = can(PermissionKeys.GIT_COMMIT);
+  const canBranch = can(PermissionKeys.GIT_MANAGE_BRANCHES);
 
   const local = branches?.filter((b) => !b.remote) ?? [];
   const remote = branches?.filter((b) => b.remote && !local.some((l) => b.name.endsWith(`/${l.name}`))) ?? [];
 
   return (
     <div className="flex flex-wrap items-center gap-2">
+      {!canBranch && (
+        <Badge variant="secondary" className="h-[30px] gap-1.5 font-mono">
+          <GitBranch className="size-3.5" /> {status.branch ?? "detached HEAD"}
+        </Badge>
+      )}
+      {canBranch && (
       <DropdownMenu open={branchMenuOpen} onOpenChange={setBranchMenuOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="h-[30px] gap-1.5 font-mono" disabled={!can(PermissionKeys.GIT_MANAGE_BRANCHES)}>
+          <Button variant="outline" size="sm" className="h-[30px] gap-1.5 font-mono">
             <GitBranch className="size-3.5" /> {status.branch ?? "detached HEAD"} <ChevronDown className="size-3" />
           </Button>
         </DropdownMenuTrigger>
@@ -63,9 +71,11 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <DropdownMenuItem onSelect={() => checkout.mutate({ projectId, branch: b.name })}>Switch to branch</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => setMergeTarget(b.name)} className="gap-2">
-                  <GitMerge className="size-3.5" /> Merge into {status.branch}
-                </DropdownMenuItem>
+                {canCommit && (
+                  <DropdownMenuItem onSelect={() => setMergeTarget(b.name)} className="gap-2">
+                    <GitMerge className="size-3.5" /> Merge into {status.branch}
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuSubContent>
             </DropdownMenuSub>
           ))}
@@ -82,14 +92,19 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+      )}
 
-      <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={fetch.isPending} onClick={() => fetch.mutate({ projectId })}>
-        {!fetch.isPending && <RefreshCw className="size-3.5" />} Fetch
-      </Button>
-      <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={pull.isPending} onClick={() => pull.mutate({ projectId })}>
-        {!pull.isPending && <ArrowDown className="size-3.5" />} Pull
-        {status.behind > 0 && <span className="rounded-xs bg-info-soft px-1.5 text-[0.6875rem] text-info">{status.behind}</span>}
-      </Button>
+      {canCommit && (
+        <>
+          <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={fetch.isPending} onClick={() => fetch.mutate({ projectId })}>
+            {!fetch.isPending && <RefreshCw className="size-3.5" />} Fetch
+          </Button>
+          <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={pull.isPending} onClick={() => pull.mutate({ projectId })}>
+            {!pull.isPending && <ArrowDown className="size-3.5" />} Pull
+            {status.behind > 0 && <span className="rounded-xs bg-info-soft px-1.5 text-[0.6875rem] text-info">{status.behind}</span>}
+          </Button>
+        </>
+      )}
       {can(PermissionKeys.GIT_PUSH) && (
         <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={push.isPending} onClick={() => push.mutate({ projectId })}>
           {!push.isPending && <ArrowUp className="size-3.5" />} Push
@@ -99,6 +114,7 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
       )}
 
       <div className="ml-auto flex items-center gap-2">
+        {canCommit && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-[30px] gap-1.5">
@@ -118,14 +134,15 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        {can(PermissionKeys.GIT_COMMIT) && (
+        )}
+        {canCommit && (
           <Button variant="destructive" size="sm" className="h-[30px] gap-1.5" disabled={!dirty} onClick={onDiscardAll}>
             <Trash2 className="size-3.5" /> Discard all
           </Button>
         )}
       </div>
 
-      <CreateBranchDialog projectId={projectId} open={creating} onOpenChange={setCreating} />
+      <CreateBranchDialog projectId={projectId} open={creating && canBranch} onOpenChange={setCreating} />
       <ConfirmationDialog
         isOpen={!!mergeTarget}
         onClose={() => setMergeTarget(null)}

@@ -7,15 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { useGitCreateBranch } from "@/features/git/hooks/use-git";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { branchSchema, type BranchFormData } from "../../../validation-schemas/project.schema";
 
 export function CreateBranchDialog({ projectId, open, onOpenChange }: { projectId: string; open: boolean; onOpenChange: (open: boolean) => void }) {
   const create = useGitCreateBranch();
+  const { can } = usePermissions();
   const form = useForm<BranchFormData>({ resolver: zodResolver(branchSchema), defaultValues: { name: "", checkout: true } });
 
   useEffect(() => {
     if (open) form.reset({ name: "", checkout: true });
   }, [open, form]);
+
+  if (!can(PermissionKeys.GIT_MANAGE_BRANCHES)) return null;
 
   const onSubmit = (data: BranchFormData) => create.mutate({ projectId, name: data.name, checkout: data.checkout }, { onSuccess: () => onOpenChange(false) });
 
