@@ -24,6 +24,7 @@ import { useDialogsStore } from "@/stores/dialogs";
 import { Routes } from "@/routes/routes";
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { isDesktop } from "@/lib/desktop";
+import { projectRouteKeepingTab } from "@/lib/project-route.utils";
 import { cn } from "@/lib/utils";
 import { EditorTargets, ProjectLocalStates, type ProjectLocalState } from "@shared/contract";
 
@@ -62,7 +63,8 @@ export function ProjectRail() {
 
   const importedCount = Object.values(localStates ?? {}).filter((s) => s === ProjectLocalStates.IMPORTED).length;
 
-  const onHome = useLocation().pathname === Routes.workspace.root;
+  const { pathname } = useLocation();
+  const onHome = pathname === Routes.workspace.root;
   const goHome = () => {
     setActiveProject(null);
     navigate(Routes.workspace.root);
@@ -70,7 +72,7 @@ export function ProjectRail() {
 
   const selectProject = (project: Project) => {
     setActiveProject(project.id);
-    navigate(Routes.workspace.project(project.id));
+    navigate(projectRouteKeepingTab(project.id, pathname));
   };
 
   const openAttention = (project: Project) => {

@@ -80,8 +80,13 @@ class TerminalManager {
   kill(id: string) {
     const t = this.terms.get(id);
     if (!t) return;
-    if (t.info.alive) t.pty.kill();
     this.terms.delete(id);
+    if (!t.info.alive) return;
+    try {
+      t.pty.kill();
+    } catch {
+      /* already exited or ConPTY teardown failed — nothing left to clean up */
+    }
   }
 
   killAll() {

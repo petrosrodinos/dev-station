@@ -17,6 +17,7 @@ const DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 const RENDERER_DIST = path.join(__dirname, "../dist");
 const APP_SCHEME = "app";
 const APP_ORIGIN = `${APP_SCHEME}://devstation`;
+const SHUTDOWN_TIMEOUT_MS = 5000;
 
 protocol.registerSchemesAsPrivileged([{ scheme: APP_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }]);
 
@@ -127,13 +128,27 @@ app.on("before-quit", (event) => {
   if (shuttingDown) return;
   shuttingDown = true;
   event.preventDefault();
-  previewManager.destroyAll();
-  agentManager.stopAll();
-  terminalManager.killAll();
+
+  // A hung or throwing child must never leave a windowless zombie holding the single-instance lock.
+  const forceExit = setTimeout(() => app.exit(0), SHUTDOWN_TIMEOUT_MS);
+  const attempt = (label: string, fn: () => void) => {
+    try {
+      fn();
+    } catch (e) {
+      logger.error(`Error during shutdown (${label})`, e);
+    }
+  };
+
+  attempt("previews", () => previewManager.destroyAll());
+  attempt("agents", () => agentManager.stopAll());
+  attempt("terminals", () => terminalManager.killAll());
   processManager
     .stopAll()
     .catch((e) => logger.error("Error stopping processes", e))
-    .finally(() => app.exit(0));
+    .finally(() => {
+      clearTimeout(forceExit);
+      app.exit(0);
+    });
 });
 
 app.on("window-all-closed", () => {

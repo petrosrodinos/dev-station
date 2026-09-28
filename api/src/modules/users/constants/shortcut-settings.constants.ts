@@ -1,6 +1,7 @@
 export const SHORTCUT_ACTION_IDS = [
   'command_palette',
   'new_session',
+  'new_terminal',
   'toggle_ai_panel',
   'next_session_tab',
   'prev_session_tab',

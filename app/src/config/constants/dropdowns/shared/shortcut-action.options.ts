@@ -3,6 +3,7 @@ import { CustomShortcutTypes, type CustomShortcutType } from "@/features/users/i
 export const ShortcutActions = {
   COMMAND_PALETTE: "command_palette",
   NEW_SESSION: "new_session",
+  NEW_TERMINAL: "new_terminal",
   TOGGLE_AI_PANEL: "toggle_ai_panel",
   NEXT_SESSION_TAB: "next_session_tab",
   PREV_SESSION_TAB: "prev_session_tab",
@@ -62,7 +63,8 @@ export const ShortcutActionOptions: ShortcutActionOption[] = [
   { id: ShortcutActions.OPEN_SETTINGS, label: "Open settings", group: ShortcutGroups.NAVIGATION, default_combo: null, rebindable: true },
   { id: ShortcutActions.OPEN_INTEGRATIONS, label: "Open integrations", group: ShortcutGroups.NAVIGATION, default_combo: null, rebindable: true },
   { id: ShortcutActions.TOGGLE_SIDEBAR, label: "Toggle sidebar", group: ShortcutGroups.NAVIGATION, default_combo: "mod+b", rebindable: false },
-  { id: ShortcutActions.NEW_SESSION, label: "New AI session", group: ShortcutGroups.SESSIONS, default_combo: "mod+t", rebindable: true },
+  { id: ShortcutActions.NEW_SESSION, label: "New AI session", group: ShortcutGroups.SESSIONS, default_combo: "mod+shift+t", rebindable: true },
+  { id: ShortcutActions.NEW_TERMINAL, label: "New terminal", group: ShortcutGroups.PROJECT, default_combo: "mod+t", rebindable: true },
   { id: ShortcutActions.TOGGLE_AI_PANEL, label: "Toggle AI panel", group: ShortcutGroups.SESSIONS, default_combo: "mod+j", rebindable: true },
   { id: ShortcutActions.NEXT_SESSION_TAB, label: "Next session tab", group: ShortcutGroups.SESSIONS, default_combo: "mod+tab", rebindable: true },
   { id: ShortcutActions.PREV_SESSION_TAB, label: "Previous session tab", group: ShortcutGroups.SESSIONS, default_combo: "mod+shift+tab", rebindable: true },

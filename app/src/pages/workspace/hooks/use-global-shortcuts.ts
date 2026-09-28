@@ -12,6 +12,12 @@ import { CustomShortcutTypes } from "@/features/users/interfaces/users.interface
 import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { buildComboIndex, eventToCombo } from "@/lib/shortcuts.utils";
+import { projectRouteKeepingTab } from "@/lib/project-route.utils";
+import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
+import { createTerminal } from "@/features/terminals/services/terminals.services";
+import { useRuntimeStore } from "@/stores/runtime";
+import { toast } from "@/hooks/use-toast";
+import { isDesktop } from "@/lib/desktop";
 import { Routes } from "@/routes/routes";
 
 interface ActionContext {
@@ -36,6 +42,19 @@ const openNewSession = (ctx: ActionContext, initialPrompt: string | null = null)
   return true;
 };
 
+/** Opens a shell in the active project and shows the terminal tab. */
+const openNewTerminal = (ctx: ActionContext): boolean => {
+  const projectId = useWorkspaceStore.getState().active_project_id;
+  if (!projectId || !isDesktop() || !ctx.can(PermissionKeys.PROJECTS_EDIT)) return false;
+  createTerminal({ projectId })
+    .then((info) => {
+      useRuntimeStore.getState().upsertTerminal(info);
+      ctx.navigate(Routes.workspace.project_tab(projectId, ProjectTabs.TERMINAL));
+    })
+    .catch((error: Error) => toast({ title: "Could not open terminal", description: error.message, variant: "error" }));
+  return true;
+};
+
 /** Runs a built-in action. Returns false when it does not apply right now, so the key press is left alone. */
 const runShortcutAction = (actionId: string, ctx: ActionContext): boolean => {
   const dialogs = useDialogsStore.getState();
@@ -47,6 +66,8 @@ const runShortcutAction = (actionId: string, ctx: ActionContext): boolean => {
       return true;
     case ShortcutActions.NEW_SESSION:
       return openNewSession(ctx);
+    case ShortcutActions.NEW_TERMINAL:
+      return openNewTerminal(ctx);
     case ShortcutActions.TOGGLE_AI_PANEL:
       if (ctx.can(PermissionKeys.AI_USE_AGENTS)) ws.setAiPanelOpen(!ws.ai_panel_open);
       return true;
@@ -74,7 +95,7 @@ const runShortcutAction = (actionId: string, ctx: ActionContext): boolean => {
       const project = match ? ctx.projects?.[Number(match[1]) - 1] : undefined;
       if (!project) return false;
       ws.setActiveProject(project.id);
-      ctx.navigate(Routes.workspace.project(project.id));
+      ctx.navigate(projectRouteKeepingTab(project.id, window.location.pathname));
       return true;
     }
   }

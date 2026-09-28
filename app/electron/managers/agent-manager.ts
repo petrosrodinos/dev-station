@@ -351,7 +351,11 @@ class AgentManager {
     for (const s of this.sessions.values()) {
       if (s.pty) {
         s.stopping = true;
-        s.pty.kill();
+        try {
+          s.pty.kill();
+        } catch (error) {
+          logger.warn(`Could not kill agent session ${s.info.id}`, error);
+        }
       }
       if (s.titleTimer) clearInterval(s.titleTimer);
       this.persistScrollback(s);
