@@ -129,6 +129,7 @@ class GitManager {
       upstream: null,
       ahead: 0,
       behind: 0,
+      commits: 0,
       detached: false,
       files: [],
       counts: { modified: 0, added: 0, deleted: 0, untracked: 0, conflicted: 0, renamed: 0 },
@@ -180,6 +181,7 @@ class GitManager {
     const hasHead = (await run(cwd, ["rev-parse", "--verify", "-q", "HEAD"], { allowExitCodes: [1] })).code === 0;
     const numstat = hasHead ? await run(cwd, ["diff", "HEAD", "--numstat", "-M"]) : await run(cwd, ["diff", "--cached", "--numstat"]);
     const stats = parseNumstat(numstat.stdout);
+    if (hasHead) result.commits = Number((await run(cwd, ["rev-list", "--count", "HEAD"], { allowExitCodes: [1] })).stdout.trim()) || 0;
 
     await Promise.all(
       files.map(async (f) => {

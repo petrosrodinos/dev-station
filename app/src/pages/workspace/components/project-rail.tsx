@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { AlertTriangle, Building2, CloudDownload, FolderOpen, FolderSearch, Link2, Pencil, Plug, Plus, Settings, Trash2 } from "lucide-react";
+import { AlertTriangle, Building2, CloudDownload, FolderOpen, FolderSearch, LayoutGrid, Link2, Pencil, Plug, Plus, Settings, Trash2 } from "lucide-react";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -77,6 +77,12 @@ export function ProjectRail() {
 
   const importedCount = Object.values(localStates ?? {}).filter((s) => s === ProjectLocalStates.IMPORTED).length;
 
+  const onHome = useLocation().pathname === Routes.workspace.root;
+  const goHome = () => {
+    setActiveProject(null);
+    navigate(Routes.workspace.root);
+  };
+
   const selectProject = (project: Project) => {
     setActiveProject(project.id);
     navigate(Routes.workspace.project(project.id));
@@ -103,6 +109,13 @@ export function ProjectRail() {
 
   return (
     <aside className="flex w-16 shrink-0 flex-col items-center border-r bg-canvas py-2" aria-label="Projects">
+      <div className="flex flex-col items-center gap-1 pb-1">
+        <RailButton label="Home" onClick={goHome} active={onHome}>
+          <LayoutGrid className="size-4" />
+        </RailButton>
+        <div className="mt-1 h-px w-7 bg-border" />
+      </div>
+
       <div className="flex w-full flex-1 flex-col items-center gap-1 overflow-y-auto overflow-x-hidden pb-2">
         {isPending &&
           Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="size-10 shrink-0 rounded-full" />)}
@@ -188,11 +201,16 @@ export function ProjectRail() {
   );
 }
 
-function RailButton({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
+function RailButton({ label, onClick, active, children }: { label: string; onClick: () => void; active?: boolean; children: React.ReactNode }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button onClick={onClick} aria-label={label} className="relative flex size-10 items-center justify-center rounded-lg bg-surface-elevated text-muted-foreground hover:text-foreground">
+        <button
+          onClick={onClick}
+          aria-label={label}
+          aria-current={active ? "page" : undefined}
+          className={cn("relative flex size-10 items-center justify-center rounded-lg bg-surface-elevated text-muted-foreground hover:text-foreground", active && "text-foreground ring-1 ring-hairline-strong")}
+        >
           {children}
         </button>
       </TooltipTrigger>

@@ -90,10 +90,14 @@ export function TopBar() {
 
   return (
     <header className="app-drag flex h-12 shrink-0 items-center gap-3 border-b bg-canvas px-3">
-      <div className="flex items-center gap-2 text-[13px] font-semibold tracking-[0.2px]">
+      <button
+        onClick={() => navigate(Routes.workspace.root)}
+        className="app-no-drag flex items-center gap-2 text-[13px] font-semibold tracking-[0.2px]"
+        aria-label="Go to workspace home"
+      >
         <span className="size-[18px] rounded-[5px] bg-gradient-to-br from-[#ff5757] to-[#a1131a]" aria-hidden />
         {environments.APP_NAME}
-      </div>
+      </button>
 
       <div className="app-no-drag flex items-center gap-0.5">
         <Tooltip>
