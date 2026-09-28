@@ -4,7 +4,8 @@ import type { ProjectService } from "@/features/projects/interfaces/projects.int
 
 // Development processes are spawned and owned by the Electron main process (Process Manager).
 
-export const toServiceSpec = (service: ProjectService): ServiceSpec => ({
+/** `siblings` is every service of the project (including `service`) so `{{other.port}}` references can resolve. */
+export const toServiceSpec = (service: ProjectService, siblings: ProjectService[]): ServiceSpec => ({
     service_id: service.id,
     name: service.name,
     cwd: service.cwd || ".",
@@ -13,6 +14,8 @@ export const toServiceSpec = (service: ProjectService): ServiceSpec => ({
     command: service.command,
     url: service.url,
     env: service.env,
+    port: service.port,
+    siblings: siblings.map((s) => ({ service_id: s.id, name: s.name, port: s.port })),
 });
 
 export const processKey = (projectId: string, serviceId: string) => `${projectId}:${serviceId}`;
@@ -25,9 +28,15 @@ export const listProcesses = async (): Promise<ProcessInfo[]> => {
     }
 };
 
-export const startService = async ({ projectId, service }: { projectId: string; service: ProjectService }): Promise<ProcessInfo> => {
+export interface ServiceRunVars {
+    projectId: string;
+    service: ProjectService;
+    siblings: ProjectService[];
+}
+
+export const startService = async ({ projectId, service, siblings }: ServiceRunVars): Promise<ProcessInfo> => {
     // Errors keep their bridge `code` (e.g. COMMAND_NOT_APPROVED) so the UI can offer approval.
-    return getBridge().processes.start(projectId, toServiceSpec(service));
+    return getBridge().processes.start(projectId, toServiceSpec(service, siblings));
 };
 
 export const stopService = async (key: string): Promise<void> => {
@@ -38,8 +47,8 @@ export const stopService = async (key: string): Promise<void> => {
     }
 };
 
-export const restartService = async ({ projectId, service }: { projectId: string; service: ProjectService }): Promise<ProcessInfo> => {
-    return getBridge().processes.restart(projectId, toServiceSpec(service));
+export const restartService = async ({ projectId, service, siblings }: ServiceRunVars): Promise<ProcessInfo> => {
+    return getBridge().processes.restart(projectId, toServiceSpec(service, siblings));
 };
 
 export const getProcessLogs = async (key: string): Promise<LogLine[]> => {

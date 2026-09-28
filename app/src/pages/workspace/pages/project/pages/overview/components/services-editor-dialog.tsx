@@ -15,7 +15,9 @@ import { ServiceKindFormOptions } from "@/config/constants/dropdowns/projects/se
 import { PackageManagerFormOptions } from "@/config/constants/dropdowns/projects/package-manager-form.options";
 import { isDesktop } from "@/lib/desktop";
 import type { DetectedService } from "@shared/contract";
+import { assignServiceSlugs } from "@shared/service-refs";
 import { servicesFormSchema, type ServiceFormValue, type ServicesFormData } from "../../../validation-schemas/project.schema";
+import { ServiceEnvEditor, type ServiceReferenceTarget } from "./service-env-editor";
 
 const toFormValue = (s: {
   name: string;
@@ -25,6 +27,7 @@ const toFormValue = (s: {
   script: string | null;
   command: string | null;
   port: number | null;
+  env?: Record<string, string> | null;
   auto_detected?: boolean;
 }): ServiceFormValue => ({
   name: s.name,
@@ -35,11 +38,13 @@ const toFormValue = (s: {
   script: s.script ?? "",
   command: s.command ?? "",
   port: s.port ? String(s.port) : "",
+  env: Object.entries(s.env ?? {}).map(([key, value]) => ({ key, value: String(value) })),
   auto_detected: s.auto_detected ?? false,
 });
 
 const toInput = (v: ServiceFormValue): ServiceInput => {
   const port = v.port ? Number(v.port) : null;
+  const env = Object.fromEntries(v.env.filter((row) => row.key).map((row) => [row.key, row.value]));
   return {
     name: v.name,
     kind: v.kind,
@@ -49,6 +54,7 @@ const toInput = (v: ServiceFormValue): ServiceInput => {
     command: v.mode === "command" ? v.command || null : null,
     port,
     url: port ? `http://localhost:${port}` : null,
+    env: Object.keys(env).length ? env : null,
     auto_detected: v.auto_detected ?? false,
   };
 };
@@ -59,6 +65,9 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
   const detection = useInspectProject(project.id, open && isDesktop());
   const form = useForm<ServicesFormData>({ resolver: zodResolver(servicesFormSchema), defaultValues: { services: [] } });
   const { fields, append, remove, replace } = useFieldArray({ control: form.control, name: "services" });
+  const watched = form.watch("services");
+  // The name other services use to reference each one (`{{api.url}}`); kept in sync with the live form.
+  const slugs = assignServiceSlugs(watched.map((s) => s?.name || "service"));
 
   useEffect(() => {
     if (open) form.reset({ services: project.services.map(toFormValue) });
@@ -75,7 +84,8 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
         <DialogHeader>
           <DialogTitle>Services</DialogTitle>
           <DialogDescription>
-            Processes you can start from Dev Station. Scripts come from package.json and use the project's package manager; custom commands need approval on each device.
+            Processes you can start from Dev Station. Scripts come from package.json and use the project's package manager; custom commands need approval on each device. If a port is already
+            taken, Dev Station starts the service on the next free one and passes it as PORT — use {"{{name.url}}"} in another service's environment to follow it.
           </DialogDescription>
         </DialogHeader>
 
@@ -107,14 +117,17 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
               const mode = form.watch(`services.${index}.mode`);
               const cwd = form.watch(`services.${index}.cwd`);
               const scripts = detection.data?.packages.find((p) => p.path === (cwd || "."))?.scripts ?? {};
+              const targets: ServiceReferenceTarget[] = watched.map((s, n) => ({ slug: slugs[n], name: s?.name || slugs[n], hasPort: /^\d+$/.test(s?.port ?? ""), isSelf: n === index }));
               return (
                 <div key={field.id} className="relative grid grid-cols-12 gap-x-3 gap-y-3 rounded-md border p-4 pt-9">
-                  <span className="absolute left-4 top-2.5 text-[0.6875rem] font-medium uppercase tracking-wide text-muted-foreground">Service {index + 1}</span>
+                  <span className="absolute left-4 top-2.5 text-[0.6875rem] font-medium uppercase tracking-wide text-muted-foreground">
+                    Service {index + 1} <span className="ml-1 font-mono normal-case tracking-normal text-ash">ref: {slugs[index]}</span>
+                  </span>
                   <FormField
                     control={form.control}
                     name={`services.${index}.name`}
                     render={({ field: f }) => (
-                      <FormItem className="col-span-4">
+                      <FormItem className="col-span-12 sm:col-span-4">
                         <FormLabel className="text-xs">Name</FormLabel>
                         <FormControl>
                           <Input {...f} />
@@ -127,7 +140,7 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
                     control={form.control}
                     name={`services.${index}.kind`}
                     render={({ field: f }) => (
-                      <FormItem className="col-span-3">
+                      <FormItem className="col-span-12 sm:col-span-3">
                         <FormLabel className="text-xs">Type</FormLabel>
                         <Select value={f.value} onValueChange={f.onChange}>
                           <FormControl>
@@ -150,7 +163,7 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
                     control={form.control}
                     name={`services.${index}.cwd`}
                     render={({ field: f }) => (
-                      <FormItem className="col-span-3">
+                      <FormItem className="col-span-12 sm:col-span-3">
                         <FormLabel className="text-xs">Folder</FormLabel>
                         <FormControl>
                           <Input className="font-mono text-xs" placeholder="." {...f} />
@@ -163,8 +176,10 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
                     control={form.control}
                     name={`services.${index}.port`}
                     render={({ field: f }) => (
-                      <FormItem className="col-span-2">
-                        <FormLabel className="text-xs">Port</FormLabel>
+                      <FormItem className="col-span-12 sm:col-span-2">
+                        <FormLabel className="text-xs" title="Preferred port. If it is taken, the next free one is used.">
+                          Port
+                        </FormLabel>
                         <FormControl>
                           <Input className="font-mono text-xs" placeholder="5173" {...f} value={f.value ?? ""} />
                         </FormControl>
@@ -176,7 +191,7 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
                     control={form.control}
                     name={`services.${index}.mode`}
                     render={({ field: f }) => (
-                      <FormItem className="col-span-4">
+                      <FormItem className="col-span-12 sm:col-span-4">
                         <FormLabel className="text-xs">Runs</FormLabel>
                         <Select value={f.value} onValueChange={f.onChange}>
                           <FormControl>
@@ -198,7 +213,7 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
                         control={form.control}
                         name={`services.${index}.package_manager`}
                         render={({ field: f }) => (
-                          <FormItem className="col-span-3">
+                          <FormItem className="col-span-12 sm:col-span-3">
                             <FormLabel className="text-xs">Package manager</FormLabel>
                             <Select value={f.value ?? "npm"} onValueChange={f.onChange}>
                               <FormControl>
@@ -221,7 +236,7 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
                         control={form.control}
                         name={`services.${index}.script`}
                         render={({ field: f }) => (
-                          <FormItem className="col-span-5">
+                          <FormItem className="col-span-12 sm:col-span-5">
                             <FormLabel className="text-xs">Script</FormLabel>
                             {Object.keys(scripts).length ? (
                               <Select value={f.value ?? ""} onValueChange={f.onChange}>
@@ -253,7 +268,7 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
                       control={form.control}
                       name={`services.${index}.command`}
                       render={({ field: f }) => (
-                        <FormItem className="col-span-8">
+                        <FormItem className="col-span-12 sm:col-span-8">
                           <FormLabel className="text-xs">Command</FormLabel>
                           <FormControl>
                             <Input className="font-mono text-xs" placeholder="docker compose up db" {...f} value={f.value ?? ""} />
@@ -263,6 +278,7 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
                       )}
                     />
                   )}
+                  <ServiceEnvEditor form={form} index={index} targets={targets} />
                   <Button
                     type="button"
                     variant="ghost"
@@ -282,7 +298,7 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
               variant="outline"
               size="sm"
               className="gap-1.5"
-              onClick={() => append({ name: "", kind: "OTHER", cwd: ".", mode: "script", package_manager: detection.data?.package_manager ?? "npm", script: "", command: "", port: "" })}
+              onClick={() => append({ name: "", kind: "OTHER", cwd: ".", mode: "script", package_manager: detection.data?.package_manager ?? "npm", script: "", command: "", port: "", env: [] })}
             >
               <Plus className="size-3.5" /> Add service
             </Button>

@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { DetectedPackage, DetectedService, DetectionResult, PackageManager } from "../shared/contract";
+import { assignServiceSlugs } from "../shared/service-refs";
 import { toPosix } from "../utils/platform";
 import { gitManager } from "./git-manager";
 
@@ -149,6 +150,59 @@ function pickServiceScripts(scripts: Record<string, string>): string[] {
   return picked;
 }
 
+const ENV_FILES = [".env", ".env.development", ".env.local", ".env.development.local"];
+const LOCAL_REF_RE = /(https?:\/\/)?(?:localhost|127\.0\.0\.1):(\d{2,5})/g;
+const MAX_SUGGESTED_ENV = 20;
+
+function readEnvFile(file: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  let text = "";
+  try {
+    text = fs.readFileSync(file, "utf8");
+  } catch {
+    return out;
+  }
+  for (const line of text.split(/\r?\n/)) {
+    const m = line.match(/^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);
+    if (!m) continue;
+    let value = m[2];
+    const quote = value[0];
+    if ((quote === '"' || quote === "'") && value.endsWith(quote) && value.length > 1) value = value.slice(1, -1);
+    else value = value.replace(/\s+#.*$/, "");
+    out[m[1]] = value;
+  }
+  return out;
+}
+
+/**
+ * Finds `.env` values that point at a sibling service (`VITE_API_URL=http://localhost:3000`) and suggests the
+ * reference form (`{{api.url}}`), so the value follows that service if its port has to change.
+ */
+function suggestEnvReferences(root: string, services: DetectedService[]) {
+  const slugs = assignServiceSlugs(services.map((s) => s.name));
+  services.forEach((svc, index) => {
+    if (!svc.script && !svc.command) return;
+    const values: Record<string, string> = {};
+    for (const f of ENV_FILES) Object.assign(values, readEnvFile(path.join(root, svc.cwd, f)));
+
+    const suggestions: Record<string, string> = {};
+    for (const [key, value] of Object.entries(values)) {
+      if (key === "PORT") continue;
+      const replaced = value.replace(LOCAL_REF_RE, (whole, proto: string | undefined, portStr: string) => {
+        if (proto && proto !== "http://") return whole;
+        const port = Number(portStr);
+        const candidates = services.map((other, i) => ({ other, i })).filter(({ other, i }) => i !== index && other.port === port);
+        const target = candidates.find(({ other }) => other.kind === "API") ?? candidates[0];
+        if (!target) return whole;
+        return `{{${slugs[target.i]}.${proto ? "url" : "host"}}}`;
+      });
+      if (replaced !== value) suggestions[key] = replaced;
+    }
+    const keys = Object.keys(suggestions).slice(0, MAX_SUGGESTED_ENV);
+    svc.env = keys.length ? Object.fromEntries(keys.map((k) => [k, suggestions[k]])) : null;
+  });
+}
+
 function titleCase(s: string) {
   return s.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -228,6 +282,8 @@ export async function inspect(root: string): Promise<DetectionResult> {
   if (isPython && exists(root, "manage.py")) {
     services.push({ name: "Django", kind: "API", cwd: ".", package_manager: null, script: null, command: "python manage.py runserver", port: 8000, url: "http://localhost:8000" });
   }
+
+  suggestEnvReferences(root, services);
 
   const gitInfo = await gitManager.quickInfo(root);
 

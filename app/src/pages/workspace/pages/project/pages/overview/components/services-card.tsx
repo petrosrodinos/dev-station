@@ -41,7 +41,7 @@ export function ServicesCard({ project }: { project: Project }) {
 
   const run = (service: ProjectService, isRestart = false) => {
     const onNeedsApproval = (command: string) => setPendingApproval({ service, command, restart: isRestart });
-    const vars = { projectId: project.id, service };
+    const vars = { projectId: project.id, service, siblings: project.services };
     const handlers = {
       onError: (error: Error) => {
         if (getBridgeErrorCode(error) === IpcErrorCodes.COMMAND_NOT_APPROVED && service.command) onNeedsApproval(service.command);
@@ -97,6 +97,24 @@ export function ServicesCard({ project }: { project: Project }) {
                     <span className="truncate text-[0.8125rem] font-medium">{service.name}</span>
                     {running && url && <span className="truncate font-mono text-xs text-muted-foreground">{url.replace(/^https?:\/\//, "")}</span>}
                     {proc?.status === ProcessStatuses.CRASHED && <span className="text-xs text-danger">crashed ({proc.exit_code})</span>}
+                    {running && proc?.port && proc.requested_port && proc.port !== proc.requested_port && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="shrink-0 rounded bg-warning-soft px-1.5 py-0.5 font-mono text-[0.6875rem] text-warning">
+                            :{proc.requested_port} → :{proc.port}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>Port {proc.requested_port} was taken, so this runs on {proc.port}. Services that reference it (e.g. {"{{name.url}}"}) use the new port.</TooltipContent>
+                      </Tooltip>
+                    )}
+                    {running && proc?.needs_restart && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="shrink-0 rounded bg-warning-soft px-1.5 py-0.5 text-[0.6875rem] text-warning">restart needed</span>
+                        </TooltipTrigger>
+                        <TooltipContent>A service this one references changed port after it started. Restart it to pick up the new port.</TooltipContent>
+                      </Tooltip>
+                    )}
                   </div>
                   <div className="truncate font-mono text-[0.6875rem] text-ash" title={describeServiceCommand(service)}>
                     {service.cwd !== "." ? `${service.cwd} · ` : ""}

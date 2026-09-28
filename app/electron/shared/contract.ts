@@ -1,6 +1,8 @@
 // Types shared by the Electron main process, the preload bridge and the React renderer.
 // Only plain data crosses the bridge — never functions, handles or secrets.
 
+import type { ServiceRef } from "./service-refs";
+
 export const ProjectLocalStates = {
   LOCAL: "LOCAL",
   IMPORTED: "IMPORTED",
@@ -162,6 +164,8 @@ export interface DetectedService {
   command: string | null;
   port: number | null;
   url: string | null;
+  /** Suggested env, e.g. `VITE_API_URL` -> `{{api.url}}`, found by matching `.env` values to sibling ports. */
+  env?: Record<string, string> | null;
 }
 
 export interface DetectedPackage {
@@ -271,6 +275,10 @@ export interface ServiceSpec {
   command: string | null;
   url: string | null;
   env: Record<string, string> | null;
+  /** The port this service asks for; the process manager may run it on another one if that is taken. */
+  port: number | null;
+  /** Every service of the project (including this one), so `{{other.port}}` references can be resolved. */
+  siblings: ServiceRef[];
 }
 
 export interface ProcessInfo {
@@ -287,6 +295,11 @@ export interface ProcessInfo {
   exit_code: number | null;
   url: string | null;
   env_keys: string[];
+  /** The port the process actually runs on (may differ from `requested_port`). */
+  port: number | null;
+  requested_port: number | null;
+  /** A service this one references moved to another port after this one started. */
+  needs_restart: boolean;
 }
 
 export interface LogLine {

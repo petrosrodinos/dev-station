@@ -12,6 +12,7 @@ export const detectedToServiceInputs = (services: DetectedService[]): ServiceInp
         command: s.command,
         port: s.port,
         url: s.url,
+        env: s.env ?? null,
         auto_detected: true,
     }));
 

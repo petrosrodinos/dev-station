@@ -34,6 +34,8 @@ const zServiceSpec = z.object({
   command: z.string().max(2000).nullable(),
   url: z.string().max(500).nullable(),
   env: zEnv,
+  port: z.number().int().min(1).max(65535).nullable(),
+  siblings: z.array(z.object({ service_id: zId, name: z.string().min(1).max(120), port: z.number().int().min(1).max(65535).nullable() })).max(60),
 });
 const zSettings = z
   .object({
