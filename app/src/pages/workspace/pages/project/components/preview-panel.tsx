@@ -63,9 +63,6 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
     return { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
   }, []);
 
-  const showRef = useRef(visible);
-  showRef.current = visible;
-
   // Show/hide the native view; `show` is idempotent for an unchanged URL.
   useLayoutEffect(() => {
     const bounds = measure();
@@ -79,31 +76,24 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
 
   useEffect(() => () => void actions.hide(), [actions]);
 
-  // Keep bounds in sync (ResizeObserver + window resize), throttled to one message per frame.
+  // Keep bounds in sync. Polled once per frame while visible: the panel can move without resizing
+  // (e.g. another sidebar is dragged), which ResizeObserver and window resize events never report.
+  // Only sends a message when the bounds actually changed.
   useEffect(() => {
+    if (!visible) return;
     let frame = 0;
     const sync = () => {
-      frame = 0;
       const b = measure();
       const p = lastBounds.current;
-      if (!b || !showRef.current) return;
-      if (p && p.x === b.x && p.y === b.y && p.width === b.width && p.height === b.height) return;
-      lastBounds.current = b;
-      void actions.setBounds(b);
+      if (b && (!p || p.x !== b.x || p.y !== b.y || p.width !== b.width || p.height !== b.height)) {
+        lastBounds.current = b;
+        void actions.setBounds(b);
+      }
+      frame = requestAnimationFrame(sync);
     };
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(sync);
-    };
-    const ro = new ResizeObserver(schedule);
-    if (bodyRef.current) ro.observe(bodyRef.current);
-    ro.observe(document.documentElement);
-    window.addEventListener("resize", schedule);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", schedule);
-      if (frame) cancelAnimationFrame(frame);
-    };
-  }, [actions, measure]);
+    frame = requestAnimationFrame(sync);
+    return () => cancelAnimationFrame(frame);
+  }, [visible, actions, measure]);
 
   const clampWidth = (w: number) => Math.round(Math.max(MIN_WIDTH, Math.min(w, window.innerWidth * MAX_WIDTH_RATIO)));
 
