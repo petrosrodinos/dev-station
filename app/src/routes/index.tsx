@@ -17,7 +17,6 @@ import { useAuthStore } from "@/stores/auth";
 
 // Secondary screens are split out of the main bundle.
 const SettingsPage = lazy(() => import("@/pages/workspace/pages/settings"));
-const OrganizationPage = lazy(() => import("@/pages/workspace/pages/organization"));
 const ImportedProjectsPage = lazy(() => import("@/pages/workspace/pages/imported"));
 const AcceptInvitationPage = lazy(() => import("@/pages/invite"));
 
@@ -88,7 +87,6 @@ export default function AppRoutes() {
                     <Route path={RoutePatterns.imported} element={<ImportedProjectsPage />} />
                     <Route path={RoutePatterns.settings} element={<SettingsPage />} />
                     <Route path={RoutePatterns.settings_section} element={<SettingsPage />} />
-                    <Route path={RoutePatterns.organization} element={<OrganizationPage />} />
                 </Route>
 
                 <Route path={Routes.root} element={<RootRoute />} />

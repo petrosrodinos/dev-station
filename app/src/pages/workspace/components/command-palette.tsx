@@ -10,6 +10,7 @@ import { useAgentSessions } from "@/features/agent-sessions/hooks/use-agent-sess
 import { useDialogsStore } from "@/stores/dialogs";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { Routes } from "@/routes/routes";
+import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 
 /** Ctrl/⌘+K: jump to projects, sessions and Linear issues, or run common actions. */
 export function CommandPalette() {
@@ -119,7 +120,7 @@ export function CommandPalette() {
           <CommandItem value="action integrations" onSelect={() => run(() => navigate(Routes.workspace.integrations))}>
             <Plug className="size-4" /> Integrations
           </CommandItem>
-          <CommandItem value="action organization members roles" onSelect={() => run(() => navigate(Routes.workspace.organization))}>
+          <CommandItem value="action organization members roles" onSelect={() => run(() => navigate(Routes.workspace.settings_section(SettingsSections.ORGANIZATION)))}>
             <Building2 className="size-4" /> Organization
           </CommandItem>
           <CommandItem value="action settings" onSelect={() => run(() => navigate(Routes.workspace.settings))}>

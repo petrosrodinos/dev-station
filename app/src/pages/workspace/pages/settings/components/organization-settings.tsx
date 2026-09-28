@@ -1,29 +1,23 @@
-import { useNavigate } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useCurrentOrganization } from "@/features/organizations/hooks/use-organizations";
-import { RoleKeyOptions } from "@/config/constants/dropdowns/users/role-key.options";
-import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
-import { Routes } from "@/routes/routes";
-import { SettingsRow, SettingsSectionHeader } from "./settings-row";
+import { useCurrentOrganization, usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
+import { SettingsSectionHeader } from "./settings-row";
+import { OrganizationNameCard } from "./organization-name-card";
+import { MembersCard } from "./members-card";
+import { InvitationsCard } from "./invitations-card";
+import { RolesCard } from "./roles-card";
+import { JoinOrganizationCard } from "./join-organization-card";
 
 export function OrganizationSettings() {
-  const navigate = useNavigate();
   const { organization } = useCurrentOrganization();
+  const { can } = usePermissions();
   return (
-    <div>
-      <SettingsSectionHeader title="Organization" description="Members, roles and permissions are managed per organization." />
-      <SettingsRow label="Current organization">
-        <span className="text-[13px]">{organization?.name}</span>
-      </SettingsRow>
-      <SettingsRow label="Your role">
-        <span className="text-[13px]">{organization ? getDropdownOptionLabel(RoleKeyOptions, organization.role.key) : "—"}</span>
-      </SettingsRow>
-      <SettingsRow label="Your permissions" description={organization?.permissions.length ? `${organization.permissions.length} permissions granted by your role` : undefined}>
-        <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate(Routes.workspace.organization)}>
-          Members & roles <ChevronRight className="size-3.5" />
-        </Button>
-      </SettingsRow>
+    <div className="space-y-4">
+      <SettingsSectionHeader title={organization?.name ?? "Organization"} description="Members, roles and organization-level permissions." />
+      {can(PermissionKeys.ORG_MANAGE_SETTINGS) && <OrganizationNameCard />}
+      <MembersCard />
+      {can(PermissionKeys.ORG_MANAGE_MEMBERS) && <InvitationsCard />}
+      <RolesCard />
+      <JoinOrganizationCard />
     </div>
   );
 }

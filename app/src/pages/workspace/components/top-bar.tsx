@@ -140,7 +140,7 @@ export function TopBar() {
           <DropdownMenuItem onSelect={() => setCreateOrgOpen(true)} className="gap-2">
             <Plus className="size-3.5" /> New organization
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => navigate(Routes.workspace.organization)} className="gap-2">
+          <DropdownMenuItem onSelect={() => navigate(Routes.workspace.settings_section(SettingsSections.ORGANIZATION))} className="gap-2">
             <Settings className="size-3.5" /> Manage organization
           </DropdownMenuItem>
         </DropdownMenuContent>
