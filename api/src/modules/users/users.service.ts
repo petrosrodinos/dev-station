@@ -20,6 +20,10 @@ import {
   assertValidNotificationSettingsPatch,
   resolveNotificationSettings,
 } from './utils/notification-settings.utils';
+import {
+  assertValidShortcutSettings,
+  resolveShortcutSettings,
+} from './utils/shortcut-settings.utils';
 
 @Injectable()
 export class UsersService {
@@ -90,12 +94,22 @@ export class UsersService {
       update: {},
       create: { user_id: userId },
     });
-    return withResolvedNotifications(preferences);
+    return withResolvedSettings(preferences);
   }
 
   async updatePreferences(userId: string, dto: UpdatePreferencesDto) {
-    const { notification_settings: notificationPatch, ...rest } = dto;
+    const {
+      notification_settings: notificationPatch,
+      shortcut_settings: shortcutSettings,
+      ...rest
+    } = dto;
     const data: Prisma.UserPreferenceUncheckedUpdateInput = { ...rest };
+
+    if (shortcutSettings !== undefined) {
+      data.shortcut_settings = assertValidShortcutSettings(
+        shortcutSettings,
+      ) as unknown as Prisma.InputJsonValue;
+    }
 
     if (notificationPatch !== undefined) {
       assertValidNotificationSettingsPatch(notificationPatch);
@@ -141,17 +155,18 @@ export class UsersService {
         ...(data as Prisma.UserPreferenceUncheckedCreateInput),
       },
     });
-    return withResolvedNotifications(preferences);
+    return withResolvedSettings(preferences);
   }
 }
 
-function withResolvedNotifications<
-  T extends { notification_settings: unknown },
+function withResolvedSettings<
+  T extends { notification_settings: unknown; shortcut_settings: unknown },
 >(preferences: T) {
   return {
     ...preferences,
     notification_settings: resolveNotificationSettings(
       preferences.notification_settings,
     ),
+    shortcut_settings: resolveShortcutSettings(preferences.shortcut_settings),
   };
 }

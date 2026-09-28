@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { NavLink, useParams } from "react-router-dom";
-import { Bot, Building2, GitBranch, Palette, Plug, Settings, UserRound } from "lucide-react";
+import { Bell, Bot, Building2, GitBranch, Keyboard, Palette, Plug, Settings, UserRound } from "lucide-react";
 import { SettingsSectionOptions, SettingsSections, type SettingsSection } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { Routes } from "@/routes/routes";
 import { RequirePermission } from "@/components/access/require-permission";
@@ -9,6 +9,8 @@ import { usePermissions } from "@/features/organizations/hooks/use-organizations
 import { cn } from "@/lib/utils";
 import { GeneralSettings } from "./components/general-settings";
 import { ThemeSettings } from "./components/theme-settings";
+import { NotificationSettings } from "./components/notification-settings";
+import { ShortcutsSettings } from "./components/shortcuts-settings";
 import { GitSettings } from "./components/git-settings";
 import { AiSettings } from "./components/ai-settings";
 import { IntegrationsSettings } from "./components/integrations-settings";
@@ -18,6 +20,8 @@ import { AccountSettings } from "./components/account-settings";
 const SECTION_ICONS: Record<SettingsSection, typeof Settings> = {
   [SettingsSections.GENERAL]: Settings,
   [SettingsSections.THEME]: Palette,
+  [SettingsSections.NOTIFICATIONS]: Bell,
+  [SettingsSections.SHORTCUTS]: Keyboard,
   [SettingsSections.GIT]: GitBranch,
   [SettingsSections.AI]: Bot,
   [SettingsSections.INTEGRATIONS]: Plug,
@@ -28,6 +32,8 @@ const SECTION_ICONS: Record<SettingsSection, typeof Settings> = {
 const SECTION_PAGES: Record<SettingsSection, FC> = {
   [SettingsSections.GENERAL]: GeneralSettings,
   [SettingsSections.THEME]: ThemeSettings,
+  [SettingsSections.NOTIFICATIONS]: NotificationSettings,
+  [SettingsSections.SHORTCUTS]: ShortcutsSettings,
   [SettingsSections.GIT]: GitSettings,
   [SettingsSections.AI]: AiSettings,
   [SettingsSections.INTEGRATIONS]: IntegrationsSettings,

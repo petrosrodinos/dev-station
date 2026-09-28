@@ -23,6 +23,7 @@ interface DialogsState {
     new_session: NewSessionDialogState;
     project: ProjectDialogState;
     command_palette: boolean;
+    shortcuts_practice: boolean;
 }
 
 interface DialogsActions {
@@ -31,6 +32,7 @@ interface DialogsActions {
     openProjectDialog(projectId?: string | null): void;
     closeProjectDialog(): void;
     setCommandPalette(open: boolean): void;
+    setShortcutsPractice(open: boolean): void;
 }
 
 const STORE_KEY = "dialogs";
@@ -42,12 +44,14 @@ export const useDialogsStore = create<DialogsState & DialogsActions>()(
                 new_session: { open: false, project_id: null, issue: null, initial_prompt: null },
                 project: { open: false, project_id: null },
                 command_palette: false,
+                shortcuts_practice: false,
                 openNewSession: (input) =>
                     set({ new_session: { open: true, project_id: input?.project_id ?? null, issue: input?.issue ?? null, initial_prompt: input?.initial_prompt ?? null } }),
                 closeNewSession: () => set((s) => ({ new_session: { ...s.new_session, open: false } })),
                 openProjectDialog: (projectId) => set({ project: { open: true, project_id: projectId ?? null } }),
                 closeProjectDialog: () => set((s) => ({ project: { ...s.project, open: false } })),
                 setCommandPalette: (open) => set({ command_palette: open }),
+                setShortcutsPractice: (open) => set({ shortcuts_practice: open }),
             }),
             { name: STORE_KEY, partialize: () => ({}) },
         ),

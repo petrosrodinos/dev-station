@@ -5,14 +5,19 @@ import { OrganizationBootstrap } from "@/components/providers/organization-boots
 import { DesktopEventsProvider } from "@/components/providers/desktop-events-provider";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { useAppearanceHydration } from "@/features/users/hooks/use-appearance";
+import { useShortcutsHydration } from "@/features/users/hooks/use-shortcuts";
+import { useAccessSync } from "@/hooks/use-access-sync";
 import { TopBar } from "./components/top-bar";
 import { SessionTabStrip } from "./components/session-tab-strip";
 import { ProjectRail } from "./components/project-rail";
 import { AiPanel } from "./components/ai-panel";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { StatusBar } from "./components/status-bar";
 import { CommandPalette } from "./components/command-palette";
 import { NewSessionDialog } from "./components/new-session-dialog";
 import { ProjectDialog } from "./components/project-dialog";
+import { ShortcutsPracticeDialog } from "./components/shortcuts-practice-dialog";
 import { useGlobalShortcuts } from "./hooks/use-global-shortcuts";
 
 /**
@@ -20,9 +25,12 @@ import { useGlobalShortcuts } from "./hooks/use-global-shortcuts";
  * top bar · global AI session tabs · project rail | project workspace | AI/terminal panel · status bar.
  */
 const WorkspaceLayout: FC = () => {
-  const aiPanelOpen = useWorkspaceStore((s) => s.ai_panel_open);
+  useAccessSync();
+  const { can } = usePermissions();
+  const aiPanelOpen = useWorkspaceStore((s) => s.ai_panel_open) && can(PermissionKeys.AI_USE_AGENTS);
   useGlobalShortcuts();
   useAppearanceHydration();
+  useShortcutsHydration();
 
   return (
     <OrganizationBootstrap>
@@ -53,6 +61,7 @@ const WorkspaceLayout: FC = () => {
       <CommandPalette />
       <NewSessionDialog />
       <ProjectDialog />
+      <ShortcutsPracticeDialog />
     </OrganizationBootstrap>
   );
 };

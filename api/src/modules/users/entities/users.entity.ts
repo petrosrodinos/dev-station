@@ -6,6 +6,7 @@ import {
   SystemRoleKey,
 } from 'generated/prisma';
 import { NotificationSettings } from '../constants/notification-settings.constants';
+import { ShortcutSettings } from '../constants/shortcut-settings.constants';
 
 export class OrganizationRoleRef {
   @ApiProperty() id: string;
@@ -52,4 +53,9 @@ export class UserPreferenceEntity {
       'Resolved notification settings: { enabled, events: { [EVENT_TYPE]: { badge, feed, os } } }',
   })
   notification_settings: NotificationSettings;
+  @ApiProperty({
+    description:
+      'Resolved shortcut settings: { bindings: { [ACTION_ID]: combo }, custom: [...] }',
+  })
+  shortcut_settings: ShortcutSettings;
 }

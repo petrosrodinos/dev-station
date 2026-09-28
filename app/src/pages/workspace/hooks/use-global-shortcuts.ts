@@ -1,56 +1,114 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useRef } from "react";
+import { useNavigate, type NavigateFunction } from "react-router-dom";
 import { useDialogsStore } from "@/stores/dialogs";
 import { useWorkspaceStore } from "@/stores/workspace";
+import { useShortcutsStore } from "@/stores/shortcuts";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
+import type { Project } from "@/features/projects/interfaces/projects.interfaces";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
+import { useResolvedShortcuts } from "@/features/users/hooks/use-shortcuts";
+import { CustomShortcutTypes } from "@/features/users/interfaces/users.interfaces";
+import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
+import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
+import { buildComboIndex, eventToCombo } from "@/lib/shortcuts.utils";
 import { Routes } from "@/routes/routes";
 
-/**
- * Keyboard shortcuts (Spec §34 Phase 7):
- * Ctrl/⌘+K command palette · Ctrl/⌘+1…9 switch project · Ctrl/⌘+T new AI session ·
- * Ctrl/⌘+J toggle AI panel · Ctrl/⌘+Tab / Shift+Ctrl/⌘+Tab cycle session tabs.
- */
+interface ActionContext {
+  navigate: NavigateFunction;
+  projects: Project[] | undefined;
+  can: ReturnType<typeof usePermissions>["can"];
+}
+
+const cycleSessionTab = (direction: 1 | -1): boolean => {
+  const ws = useWorkspaceStore.getState();
+  const tabs = ws.open_session_tabs;
+  if (!tabs.length) return false;
+  const idx = Math.max(0, tabs.indexOf(ws.active_session_id ?? ""));
+  ws.openSessionTab(tabs[(idx + direction + tabs.length) % tabs.length]);
+  return true;
+};
+
+const openNewSession = (ctx: ActionContext, initialPrompt: string | null = null): boolean => {
+  if (ctx.can(PermissionKeys.AI_START_AGENTS)) {
+    useDialogsStore.getState().openNewSession({ project_id: useWorkspaceStore.getState().active_project_id, initial_prompt: initialPrompt });
+  }
+  return true;
+};
+
+/** Runs a built-in action. Returns false when it does not apply right now, so the key press is left alone. */
+const runShortcutAction = (actionId: string, ctx: ActionContext): boolean => {
+  const dialogs = useDialogsStore.getState();
+  const ws = useWorkspaceStore.getState();
+
+  switch (actionId) {
+    case ShortcutActions.COMMAND_PALETTE:
+      dialogs.setCommandPalette(!dialogs.command_palette);
+      return true;
+    case ShortcutActions.NEW_SESSION:
+      return openNewSession(ctx);
+    case ShortcutActions.TOGGLE_AI_PANEL:
+      if (ctx.can(PermissionKeys.AI_USE_AGENTS)) ws.setAiPanelOpen(!ws.ai_panel_open);
+      return true;
+    case ShortcutActions.NEXT_SESSION_TAB:
+      return cycleSessionTab(1);
+    case ShortcutActions.PREV_SESSION_TAB:
+      return cycleSessionTab(-1);
+    case ShortcutActions.TOGGLE_PREVIEW: {
+      const id = ws.active_project_id;
+      if (!id) return false;
+      ws.setProjectPreview(id, { previewOpen: !ws.preview_by_project[id]?.previewOpen });
+      return true;
+    }
+    case ShortcutActions.OPEN_SETTINGS:
+      ctx.navigate(Routes.workspace.settings_section(SettingsSections.GENERAL));
+      return true;
+    case ShortcutActions.OPEN_INTEGRATIONS:
+      ctx.navigate(Routes.workspace.integrations);
+      return true;
+    case ShortcutActions.ADD_PROJECT:
+      dialogs.openProjectDialog(null);
+      return true;
+    default: {
+      const match = /^switch_project_([1-9])$/.exec(actionId);
+      const project = match ? ctx.projects?.[Number(match[1]) - 1] : undefined;
+      if (!project) return false;
+      ws.setActiveProject(project.id);
+      ctx.navigate(Routes.workspace.project(project.id));
+      return true;
+    }
+  }
+};
+
+/** Dispatches the user's effective shortcuts (defaults, overrides and custom ones) on Ctrl/⌘ key presses. */
 export const useGlobalShortcuts = () => {
   const navigate = useNavigate();
   const { data: projects } = useGetProjects();
+  const { can } = usePermissions();
+  const canRef = useRef(can);
+  canRef.current = can;
+  const shortcuts = useResolvedShortcuts();
+  const index = useMemo(() => buildComboIndex(shortcuts), [shortcuts]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      const mod = e.metaKey || e.ctrlKey;
-      if (!mod) return;
-      const dialogs = useDialogsStore.getState();
-      const ws = useWorkspaceStore.getState();
-      const key = e.key.toLowerCase();
+      if (useShortcutsStore.getState().suspended > 0) return;
+      const combo = eventToCombo(e);
+      const shortcut = combo ? index.get(combo) : undefined;
+      if (!shortcut) return;
 
-      if (key === "p" && e.shiftKey && ws.active_project_id) {
-        e.preventDefault();
-        const id = ws.active_project_id;
-        ws.setProjectPreview(id, { previewOpen: !ws.preview_by_project[id]?.previewOpen });
-      } else if (key === "k") {
-        e.preventDefault();
-        dialogs.setCommandPalette(!dialogs.command_palette);
-      } else if (key === "t" && !e.shiftKey) {
-        e.preventDefault();
-        dialogs.openNewSession({ project_id: ws.active_project_id });
-      } else if (key === "j") {
-        e.preventDefault();
-        ws.setAiPanelOpen(!ws.ai_panel_open);
-      } else if (e.key === "Tab" && ws.open_session_tabs.length) {
-        e.preventDefault();
-        const tabs = ws.open_session_tabs;
-        const idx = Math.max(0, tabs.indexOf(ws.active_session_id ?? ""));
-        const next = tabs[(idx + (e.shiftKey ? -1 : 1) + tabs.length) % tabs.length];
-        ws.openSessionTab(next);
-      } else if (/^[1-9]$/.test(e.key) && projects?.length) {
-        const project = projects[Number(e.key) - 1];
-        if (project) {
-          e.preventDefault();
-          ws.setActiveProject(project.id);
-          navigate(Routes.workspace.project(project.id));
-        }
+      const ctx: ActionContext = { navigate, projects, can: canRef.current };
+      let handled = false;
+      if (shortcut.kind === "custom" && shortcut.custom) {
+        const { custom } = shortcut;
+        if (custom.type === CustomShortcutTypes.AI_PROMPT) handled = openNewSession(ctx, custom.prompt ?? null);
+        else if (custom.action_id) handled = runShortcutAction(custom.action_id, ctx);
+      } else if (shortcut.action_id && shortcut.rebindable) {
+        handled = runShortcutAction(shortcut.action_id, ctx);
       }
+      if (handled) e.preventDefault();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [navigate, projects]);
+  }, [index, navigate, projects]);
 };

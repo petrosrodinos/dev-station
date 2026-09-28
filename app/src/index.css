@@ -255,6 +255,37 @@
   }
 }
 
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(-16px) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(360px) rotate(600deg);
+  }
+}
+@keyframes shortcut-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .animate-confetti {
+    animation: confetti-fall 2.4s ease-in both;
+  }
+  .animate-shortcut-shake {
+    animation: shortcut-shake 0.3s ease-in-out;
+  }
+}
+
 /* xterm fills its container */
 .xterm {
   height: 100%;
