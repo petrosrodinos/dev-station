@@ -13,6 +13,12 @@ import type { AgentSession } from "@/features/agent-sessions/interfaces/agent-se
 import { createActivity } from "@/features/activities/services/activities.services";
 import { ActivityTypes } from "@/features/activities/interfaces/activities.interfaces";
 import { isDesktop } from "@/lib/desktop";
+import { toast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import { useResolvedShortcuts } from "@/features/users/hooks/use-shortcuts";
+import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
+import { formatComboParts } from "@/lib/shortcuts.utils";
+import { jumpToSession } from "@/lib/session-navigation.utils";
 import { AgentRuntimeStatuses, ProcessStatuses, type AgentSessionInfo, type AgentStatusEvent, type OsNotificationClick, type ProcessEvent } from "@shared/contract";
 
 const ATTENTION_EVENTS: Partial<Record<string, { type: NotificationEventType; verb: string }>> = {
@@ -34,6 +40,8 @@ export function DesktopEventsProvider() {
   const navigate = useNavigate();
   const changeTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   const appliedNames = useRef(new Map<string, string>());
+  const goToFinishedComboRef = useRef<string | null>(null);
+  goToFinishedComboRef.current = useResolvedShortcuts().find((s) => s.action_id === ShortcutActions.GO_TO_FINISHED_SESSION)?.combo ?? null;
 
   useEffect(() => {
     if (!isDesktop()) return;
@@ -90,7 +98,23 @@ export function DesktopEventsProvider() {
       const attention = ATTENTION_EVENTS[session.status];
       if (attention) {
         const settings = getSettings();
-        if (!viewing && shouldNotify(settings, attention.type, NotificationChannels.BADGE)) workspace.markAttention(session.id);
+        if (!viewing && shouldNotify(settings, attention.type, NotificationChannels.BADGE)) {
+          workspace.markAttention(session.id);
+          // Unfocused windows get the OS notification instead; this is the in-app equivalent.
+          if (document.hasFocus()) {
+            const combo = goToFinishedComboRef.current;
+            toast({
+              title: `${session.name} ${attention.verb}`,
+              description: combo ? `Press ${formatComboParts(combo).join("+")} to jump to it.` : undefined,
+              variant: "info",
+              action: (
+                <ToastAction altText="View session" onClick={() => jumpToSession(session.id, navigate, session.project_id)}>
+                  View session
+                </ToastAction>
+              ),
+            });
+          }
+        }
         // Skip only when the user is looking right at this session in a focused window.
         if ((!viewing || !document.hasFocus()) && shouldNotify(settings, attention.type, NotificationChannels.OS)) {
           void showOsNotification({ title: `${session.name} ${attention.verb}`, body: getNotificationEventLabel(attention.type), project_id: session.project_id, session_id: session.id }).catch(() => undefined);

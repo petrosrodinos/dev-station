@@ -12,6 +12,7 @@ import { CustomShortcutTypes } from "@/features/users/interfaces/users.interface
 import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { buildComboIndex, eventToCombo } from "@/lib/shortcuts.utils";
+import { jumpToAttentionSession } from "@/lib/session-navigation.utils";
 import { projectRouteKeepingTab } from "@/lib/project-route.utils";
 import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { createTerminal } from "@/features/terminals/services/terminals.services";
@@ -75,6 +76,8 @@ const runShortcutAction = (actionId: string, ctx: ActionContext): boolean => {
       return cycleSessionTab(1);
     case ShortcutActions.PREV_SESSION_TAB:
       return cycleSessionTab(-1);
+    case ShortcutActions.GO_TO_FINISHED_SESSION:
+      return jumpToAttentionSession(ctx.navigate);
     case ShortcutActions.TOGGLE_PREVIEW: {
       const id = ws.active_project_id;
       if (!id) return false;

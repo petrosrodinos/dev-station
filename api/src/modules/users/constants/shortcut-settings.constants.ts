@@ -5,6 +5,7 @@ export const SHORTCUT_ACTION_IDS = [
   'toggle_ai_panel',
   'next_session_tab',
   'prev_session_tab',
+  'go_to_finished_session',
   'toggle_preview',
   'open_settings',
   'open_integrations',
