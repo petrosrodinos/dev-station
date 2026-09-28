@@ -7,6 +7,7 @@ import { agentManager } from "../managers/agent-manager";
 import { inspect } from "../managers/detection-manager";
 import { filesystemManager } from "../managers/filesystem-manager";
 import { gitManager } from "../managers/git-manager";
+import { notificationManager } from "../managers/notification-manager";
 import { previewManager } from "../managers/preview-manager";
 import { processManager } from "../managers/process-manager";
 import { SECURE_KEYS, secureStore } from "../managers/secure-store";
@@ -61,6 +62,13 @@ export function registerIpc() {
   agentManager.setEmitters(
     (e) => broadcast(IpcChannels.AGENT_DATA, e),
     (e) => broadcast(IpcChannels.AGENT_STATUS, e),
+  );
+
+  // Notifications -------------------------------------------------------------
+  handle(
+    IpcChannels.NOTIF_SHOW,
+    args(z.object({ title: z.string().max(200), body: z.string().max(500), project_id: zId.optional(), session_id: zId.optional() })),
+    ([input]) => notificationManager.show(input),
   );
 
   // App ----------------------------------------------------------------------

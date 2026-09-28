@@ -15,6 +15,31 @@ export interface UpdateMeDto {
     avatar_url?: string | null;
 }
 
+export const NotificationEventTypes = {
+    AGENT_FINISHED: "AGENT_FINISHED",
+    AGENT_AWAITING_INPUT: "AGENT_AWAITING_INPUT",
+    AGENT_CRASHED: "AGENT_CRASHED",
+    SERVICE_CRASHED: "SERVICE_CRASHED",
+    GIT_COMMIT: "GIT_COMMIT",
+    GIT_PUSH: "GIT_PUSH",
+    GIT_PULL: "GIT_PULL",
+} as const;
+export type NotificationEventType = (typeof NotificationEventTypes)[keyof typeof NotificationEventTypes];
+
+export const NotificationChannels = {
+    BADGE: "badge",
+    FEED: "feed",
+    OS: "os",
+} as const;
+export type NotificationChannel = (typeof NotificationChannels)[keyof typeof NotificationChannels];
+
+export type NotificationChannelFlags = Record<NotificationChannel, boolean>;
+
+export interface NotificationSettings {
+    enabled: boolean;
+    events: Record<NotificationEventType, NotificationChannelFlags>;
+}
+
 export interface UserPreference {
     id: string;
     user_id: string;
@@ -29,6 +54,14 @@ export interface UserPreference {
     font_size: number;
     font_family: string;
     mono_font_family: string;
+    notification_settings: NotificationSettings;
 }
 
-export type UpdatePreferenceDto = Partial<Omit<UserPreference, "id" | "user_id">>;
+export interface UpdateNotificationSettingsDto {
+    enabled?: boolean;
+    events?: Partial<Record<NotificationEventType, Partial<NotificationChannelFlags>>>;
+}
+
+export type UpdatePreferenceDto = Partial<Omit<UserPreference, "id" | "user_id" | "notification_settings">> & {
+    notification_settings?: UpdateNotificationSettingsDto;
+};

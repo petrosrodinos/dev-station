@@ -6,6 +6,7 @@ import {
   IsHexColor,
   IsIn,
   IsInt,
+  IsObject,
   IsOptional,
   IsString,
   IsUUID,
@@ -88,4 +89,17 @@ export class UpdatePreferencesDto {
   @MaxLength(40)
   @Matches(/^[a-z0-9-]+$/)
   mono_font_family?: string;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Partial notification settings: { enabled?, events?: { [EVENT_TYPE]: { badge?, feed?, os? } } }',
+    example: { enabled: true, events: { AGENT_FINISHED: { os: true } } },
+  })
+  @IsOptional()
+  @IsObject()
+  notification_settings?: {
+    enabled?: boolean;
+    events?: Record<string, Partial<Record<string, boolean>>>;
+  };
 }

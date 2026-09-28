@@ -9,6 +9,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useGetActivities } from "@/features/activities/hooks/use-activities";
 import type { Activity } from "@/features/activities/interfaces/activities.interfaces";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
+import { useGetPreferences } from "@/features/users/hooks/use-users";
+import { NotificationChannels } from "@/features/users/interfaces/users.interfaces";
+import { shouldNotify } from "@/features/users/utils/notification-settings.utils";
 import { useGitStatus } from "@/features/git/hooks/use-git";
 import { useRunningProcessCount } from "@/features/processes/hooks/use-processes";
 import { useRuntimeStore } from "@/stores/runtime";
@@ -36,11 +39,18 @@ export function StatusBar() {
   const [open, setOpen] = useState(false);
   const [scope, setScope] = useState<Scope>(Scopes.PROJECT);
   const projectScoped = scope === Scopes.PROJECT && !!activeProjectId;
-  const { data: latest } = useGetActivities({ limit: 1, project_id: activeProjectId ?? undefined }, !!activeProjectId);
-  const { data: feed, isPending } = useGetActivities({ limit: 40, project_id: projectScoped ? activeProjectId! : undefined }, open);
+  const { data: preferences } = useGetPreferences();
+  // Over-fetch so hiding muted event types still leaves a full list.
+  const { data: latest } = useGetActivities({ limit: 20, project_id: activeProjectId ?? undefined }, !!activeProjectId);
+  const { data: feed, isPending } = useGetActivities({ limit: 100, project_id: projectScoped ? activeProjectId! : undefined }, open);
   const projectById = useMemo(() => new Map((projects ?? []).map((p) => [p.id, p])), [projects]);
+  const notificationSettings = preferences?.notification_settings;
+  const feedItems = useMemo(
+    () => (feed?.data ?? []).filter((a) => shouldNotify(notificationSettings, a.type, NotificationChannels.FEED)).slice(0, 40),
+    [feed, notificationSettings],
+  );
 
-  const latestItem = latest?.data[0];
+  const latestItem = latest?.data.find((a) => shouldNotify(notificationSettings, a.type, NotificationChannels.FEED));
 
   const copyPath = async () => {
     await navigator.clipboard.writeText(location.pathname + location.search);
@@ -94,10 +104,10 @@ export function StatusBar() {
           <div className="max-h-96 overflow-y-auto">
             {isPending ? (
               <ListSkeleton rows={6} withIcon={false} />
-            ) : !feed?.data.length ? (
+            ) : !feedItems.length ? (
               <EmptyState title="No activity yet" description="Agent sessions, Git operations and service events show up here." />
             ) : (
-              feed.data.map((a) => {
+              feedItems.map((a) => {
                 const project = a.project_id ? projectById.get(a.project_id) : undefined;
                 return (
                   <button key={a.id} onClick={() => openActivity(a)} className="flex w-full gap-2.5 border-b border-hairline-soft px-3 py-2 text-left text-[0.7813rem] last:border-b-0 hover:bg-surface-elevated">

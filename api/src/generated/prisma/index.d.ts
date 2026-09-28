@@ -7474,10 +7474,12 @@ export namespace Prisma {
 
   export type UserPreferenceAvgAggregateOutputType = {
     idle_threshold_seconds: number | null
+    font_size: number | null
   }
 
   export type UserPreferenceSumAggregateOutputType = {
     idle_threshold_seconds: number | null
+    font_size: number | null
   }
 
   export type UserPreferenceMinAggregateOutputType = {
@@ -7491,6 +7493,11 @@ export namespace Prisma {
     idle_threshold_seconds: number | null
     confirm_destructive: boolean | null
     theme: string | null
+    theme_preset: string | null
+    accent_color: string | null
+    font_size: number | null
+    font_family: string | null
+    mono_font_family: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -7506,6 +7513,11 @@ export namespace Prisma {
     idle_threshold_seconds: number | null
     confirm_destructive: boolean | null
     theme: string | null
+    theme_preset: string | null
+    accent_color: string | null
+    font_size: number | null
+    font_family: string | null
+    mono_font_family: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -7521,6 +7533,12 @@ export namespace Prisma {
     idle_threshold_seconds: number
     confirm_destructive: number
     theme: number
+    theme_preset: number
+    accent_color: number
+    font_size: number
+    font_family: number
+    mono_font_family: number
+    notification_settings: number
     created_at: number
     updated_at: number
     _all: number
@@ -7529,10 +7547,12 @@ export namespace Prisma {
 
   export type UserPreferenceAvgAggregateInputType = {
     idle_threshold_seconds?: true
+    font_size?: true
   }
 
   export type UserPreferenceSumAggregateInputType = {
     idle_threshold_seconds?: true
+    font_size?: true
   }
 
   export type UserPreferenceMinAggregateInputType = {
@@ -7546,6 +7566,11 @@ export namespace Prisma {
     idle_threshold_seconds?: true
     confirm_destructive?: true
     theme?: true
+    theme_preset?: true
+    accent_color?: true
+    font_size?: true
+    font_family?: true
+    mono_font_family?: true
     created_at?: true
     updated_at?: true
   }
@@ -7561,6 +7586,11 @@ export namespace Prisma {
     idle_threshold_seconds?: true
     confirm_destructive?: true
     theme?: true
+    theme_preset?: true
+    accent_color?: true
+    font_size?: true
+    font_family?: true
+    mono_font_family?: true
     created_at?: true
     updated_at?: true
   }
@@ -7576,6 +7606,12 @@ export namespace Prisma {
     idle_threshold_seconds?: true
     confirm_destructive?: true
     theme?: true
+    theme_preset?: true
+    accent_color?: true
+    font_size?: true
+    font_family?: true
+    mono_font_family?: true
+    notification_settings?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -7678,6 +7714,12 @@ export namespace Prisma {
     idle_threshold_seconds: number
     confirm_destructive: boolean
     theme: string
+    theme_preset: string
+    accent_color: string | null
+    font_size: number
+    font_family: string
+    mono_font_family: string
+    notification_settings: JsonValue | null
     created_at: Date
     updated_at: Date
     _count: UserPreferenceCountAggregateOutputType | null
@@ -7712,6 +7754,12 @@ export namespace Prisma {
     idle_threshold_seconds?: boolean
     confirm_destructive?: boolean
     theme?: boolean
+    theme_preset?: boolean
+    accent_color?: boolean
+    font_size?: boolean
+    font_family?: boolean
+    mono_font_family?: boolean
+    notification_settings?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -7728,6 +7776,12 @@ export namespace Prisma {
     idle_threshold_seconds?: boolean
     confirm_destructive?: boolean
     theme?: boolean
+    theme_preset?: boolean
+    accent_color?: boolean
+    font_size?: boolean
+    font_family?: boolean
+    mono_font_family?: boolean
+    notification_settings?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -7744,6 +7798,12 @@ export namespace Prisma {
     idle_threshold_seconds?: boolean
     confirm_destructive?: boolean
     theme?: boolean
+    theme_preset?: boolean
+    accent_color?: boolean
+    font_size?: boolean
+    font_family?: boolean
+    mono_font_family?: boolean
+    notification_settings?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -7760,11 +7820,17 @@ export namespace Prisma {
     idle_threshold_seconds?: boolean
     confirm_destructive?: boolean
     theme?: boolean
+    theme_preset?: boolean
+    accent_color?: boolean
+    font_size?: boolean
+    font_family?: boolean
+    mono_font_family?: boolean
+    notification_settings?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type UserPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "active_organization_id" | "git_name" | "git_email" | "preferred_agent" | "default_branch" | "idle_threshold_seconds" | "confirm_destructive" | "theme" | "created_at" | "updated_at", ExtArgs["result"]["userPreference"]>
+  export type UserPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "active_organization_id" | "git_name" | "git_email" | "preferred_agent" | "default_branch" | "idle_threshold_seconds" | "confirm_destructive" | "theme" | "theme_preset" | "accent_color" | "font_size" | "font_family" | "mono_font_family" | "notification_settings" | "created_at" | "updated_at", ExtArgs["result"]["userPreference"]>
   export type UserPreferenceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -7791,6 +7857,15 @@ export namespace Prisma {
       idle_threshold_seconds: number
       confirm_destructive: boolean
       theme: string
+      theme_preset: string
+      accent_color: string | null
+      font_size: number
+      font_family: string
+      mono_font_family: string
+      /**
+       * Partial override of the notification defaults (see users/constants/notification-settings.constants.ts); null = defaults
+       */
+      notification_settings: Prisma.JsonValue | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["userPreference"]>
@@ -8227,6 +8302,12 @@ export namespace Prisma {
     readonly idle_threshold_seconds: FieldRef<"UserPreference", 'Int'>
     readonly confirm_destructive: FieldRef<"UserPreference", 'Boolean'>
     readonly theme: FieldRef<"UserPreference", 'String'>
+    readonly theme_preset: FieldRef<"UserPreference", 'String'>
+    readonly accent_color: FieldRef<"UserPreference", 'String'>
+    readonly font_size: FieldRef<"UserPreference", 'Int'>
+    readonly font_family: FieldRef<"UserPreference", 'String'>
+    readonly mono_font_family: FieldRef<"UserPreference", 'String'>
+    readonly notification_settings: FieldRef<"UserPreference", 'Json'>
     readonly created_at: FieldRef<"UserPreference", 'DateTime'>
     readonly updated_at: FieldRef<"UserPreference", 'DateTime'>
   }
@@ -23260,6 +23341,12 @@ export namespace Prisma {
     idle_threshold_seconds: 'idle_threshold_seconds',
     confirm_destructive: 'confirm_destructive',
     theme: 'theme',
+    theme_preset: 'theme_preset',
+    accent_color: 'accent_color',
+    font_size: 'font_size',
+    font_family: 'font_family',
+    mono_font_family: 'mono_font_family',
+    notification_settings: 'notification_settings',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -23605,6 +23692,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
    * Reference to a field of type 'SystemRoleKey'
    */
   export type EnumSystemRoleKeyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SystemRoleKey'>
@@ -23671,20 +23772,6 @@ export namespace Prisma {
    * Reference to a field of type 'ServiceKind[]'
    */
   export type ListEnumServiceKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServiceKind[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Json'
-   */
-  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
-    
-
-
-  /**
-   * Reference to a field of type 'QueryMode'
-   */
-  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -24073,6 +24160,12 @@ export namespace Prisma {
     idle_threshold_seconds?: IntFilter<"UserPreference"> | number
     confirm_destructive?: BoolFilter<"UserPreference"> | boolean
     theme?: StringFilter<"UserPreference"> | string
+    theme_preset?: StringFilter<"UserPreference"> | string
+    accent_color?: StringNullableFilter<"UserPreference"> | string | null
+    font_size?: IntFilter<"UserPreference"> | number
+    font_family?: StringFilter<"UserPreference"> | string
+    mono_font_family?: StringFilter<"UserPreference"> | string
+    notification_settings?: JsonNullableFilter<"UserPreference">
     created_at?: DateTimeFilter<"UserPreference"> | Date | string
     updated_at?: DateTimeFilter<"UserPreference"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -24089,6 +24182,12 @@ export namespace Prisma {
     idle_threshold_seconds?: SortOrder
     confirm_destructive?: SortOrder
     theme?: SortOrder
+    theme_preset?: SortOrder
+    accent_color?: SortOrderInput | SortOrder
+    font_size?: SortOrder
+    font_family?: SortOrder
+    mono_font_family?: SortOrder
+    notification_settings?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -24108,6 +24207,12 @@ export namespace Prisma {
     idle_threshold_seconds?: IntFilter<"UserPreference"> | number
     confirm_destructive?: BoolFilter<"UserPreference"> | boolean
     theme?: StringFilter<"UserPreference"> | string
+    theme_preset?: StringFilter<"UserPreference"> | string
+    accent_color?: StringNullableFilter<"UserPreference"> | string | null
+    font_size?: IntFilter<"UserPreference"> | number
+    font_family?: StringFilter<"UserPreference"> | string
+    mono_font_family?: StringFilter<"UserPreference"> | string
+    notification_settings?: JsonNullableFilter<"UserPreference">
     created_at?: DateTimeFilter<"UserPreference"> | Date | string
     updated_at?: DateTimeFilter<"UserPreference"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -24124,6 +24229,12 @@ export namespace Prisma {
     idle_threshold_seconds?: SortOrder
     confirm_destructive?: SortOrder
     theme?: SortOrder
+    theme_preset?: SortOrder
+    accent_color?: SortOrderInput | SortOrder
+    font_size?: SortOrder
+    font_family?: SortOrder
+    mono_font_family?: SortOrder
+    notification_settings?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: UserPreferenceCountOrderByAggregateInput
@@ -24147,6 +24258,12 @@ export namespace Prisma {
     idle_threshold_seconds?: IntWithAggregatesFilter<"UserPreference"> | number
     confirm_destructive?: BoolWithAggregatesFilter<"UserPreference"> | boolean
     theme?: StringWithAggregatesFilter<"UserPreference"> | string
+    theme_preset?: StringWithAggregatesFilter<"UserPreference"> | string
+    accent_color?: StringNullableWithAggregatesFilter<"UserPreference"> | string | null
+    font_size?: IntWithAggregatesFilter<"UserPreference"> | number
+    font_family?: StringWithAggregatesFilter<"UserPreference"> | string
+    mono_font_family?: StringWithAggregatesFilter<"UserPreference"> | string
+    notification_settings?: JsonNullableWithAggregatesFilter<"UserPreference">
     created_at?: DateTimeWithAggregatesFilter<"UserPreference"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserPreference"> | Date | string
   }
@@ -25608,6 +25725,12 @@ export namespace Prisma {
     idle_threshold_seconds?: number
     confirm_destructive?: boolean
     theme?: string
+    theme_preset?: string
+    accent_color?: string | null
+    font_size?: number
+    font_family?: string
+    mono_font_family?: string
+    notification_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutPreferenceInput
@@ -25624,6 +25747,12 @@ export namespace Prisma {
     idle_threshold_seconds?: number
     confirm_destructive?: boolean
     theme?: string
+    theme_preset?: string
+    accent_color?: string | null
+    font_size?: number
+    font_family?: string
+    mono_font_family?: string
+    notification_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -25638,6 +25767,12 @@ export namespace Prisma {
     idle_threshold_seconds?: IntFieldUpdateOperationsInput | number
     confirm_destructive?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
+    theme_preset?: StringFieldUpdateOperationsInput | string
+    accent_color?: NullableStringFieldUpdateOperationsInput | string | null
+    font_size?: IntFieldUpdateOperationsInput | number
+    font_family?: StringFieldUpdateOperationsInput | string
+    mono_font_family?: StringFieldUpdateOperationsInput | string
+    notification_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPreferenceNestedInput
@@ -25654,6 +25789,12 @@ export namespace Prisma {
     idle_threshold_seconds?: IntFieldUpdateOperationsInput | number
     confirm_destructive?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
+    theme_preset?: StringFieldUpdateOperationsInput | string
+    accent_color?: NullableStringFieldUpdateOperationsInput | string | null
+    font_size?: IntFieldUpdateOperationsInput | number
+    font_family?: StringFieldUpdateOperationsInput | string
+    mono_font_family?: StringFieldUpdateOperationsInput | string
+    notification_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -25669,6 +25810,12 @@ export namespace Prisma {
     idle_threshold_seconds?: number
     confirm_destructive?: boolean
     theme?: string
+    theme_preset?: string
+    accent_color?: string | null
+    font_size?: number
+    font_family?: string
+    mono_font_family?: string
+    notification_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -25683,6 +25830,12 @@ export namespace Prisma {
     idle_threshold_seconds?: IntFieldUpdateOperationsInput | number
     confirm_destructive?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
+    theme_preset?: StringFieldUpdateOperationsInput | string
+    accent_color?: NullableStringFieldUpdateOperationsInput | string | null
+    font_size?: IntFieldUpdateOperationsInput | number
+    font_family?: StringFieldUpdateOperationsInput | string
+    mono_font_family?: StringFieldUpdateOperationsInput | string
+    notification_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -25698,6 +25851,12 @@ export namespace Prisma {
     idle_threshold_seconds?: IntFieldUpdateOperationsInput | number
     confirm_destructive?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
+    theme_preset?: StringFieldUpdateOperationsInput | string
+    accent_color?: NullableStringFieldUpdateOperationsInput | string | null
+    font_size?: IntFieldUpdateOperationsInput | number
+    font_family?: StringFieldUpdateOperationsInput | string
+    mono_font_family?: StringFieldUpdateOperationsInput | string
+    notification_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -27325,6 +27484,29 @@ export namespace Prisma {
     notIn?: $Enums.AgentType[] | ListEnumAgentTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumAgentTypeFilter<$PrismaModel> | $Enums.AgentType
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type UserPreferenceCountOrderByAggregateInput = {
     id?: SortOrder
@@ -27337,12 +27519,19 @@ export namespace Prisma {
     idle_threshold_seconds?: SortOrder
     confirm_destructive?: SortOrder
     theme?: SortOrder
+    theme_preset?: SortOrder
+    accent_color?: SortOrder
+    font_size?: SortOrder
+    font_family?: SortOrder
+    mono_font_family?: SortOrder
+    notification_settings?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
 
   export type UserPreferenceAvgOrderByAggregateInput = {
     idle_threshold_seconds?: SortOrder
+    font_size?: SortOrder
   }
 
   export type UserPreferenceMaxOrderByAggregateInput = {
@@ -27356,6 +27545,11 @@ export namespace Prisma {
     idle_threshold_seconds?: SortOrder
     confirm_destructive?: SortOrder
     theme?: SortOrder
+    theme_preset?: SortOrder
+    accent_color?: SortOrder
+    font_size?: SortOrder
+    font_family?: SortOrder
+    mono_font_family?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -27371,12 +27565,18 @@ export namespace Prisma {
     idle_threshold_seconds?: SortOrder
     confirm_destructive?: SortOrder
     theme?: SortOrder
+    theme_preset?: SortOrder
+    accent_color?: SortOrder
+    font_size?: SortOrder
+    font_family?: SortOrder
+    mono_font_family?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
 
   export type UserPreferenceSumOrderByAggregateInput = {
     idle_threshold_seconds?: SortOrder
+    font_size?: SortOrder
   }
 
   export type EnumAgentTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -27387,6 +27587,32 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumAgentTypeFilter<$PrismaModel>
     _max?: NestedEnumAgentTypeFilter<$PrismaModel>
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type RoleListRelationFilter = {
@@ -27861,29 +28087,6 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type ProjectScalarRelationFilter = {
     is?: ProjectWhereInput
@@ -27976,32 +28179,6 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type EnumIntegrationProviderFilter<$PrismaModel = never> = {
@@ -30198,6 +30375,29 @@ export namespace Prisma {
     _min?: NestedEnumAgentTypeFilter<$PrismaModel>
     _max?: NestedEnumAgentTypeFilter<$PrismaModel>
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedEnumSystemRoleKeyFilter<$PrismaModel = never> = {
     equals?: $Enums.SystemRoleKey | EnumSystemRoleKeyFieldRefInput<$PrismaModel>
@@ -30326,29 +30526,6 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type NestedEnumIntegrationProviderFilter<$PrismaModel = never> = {
@@ -30500,6 +30677,12 @@ export namespace Prisma {
     idle_threshold_seconds?: number
     confirm_destructive?: boolean
     theme?: string
+    theme_preset?: string
+    accent_color?: string | null
+    font_size?: number
+    font_family?: string
+    mono_font_family?: string
+    notification_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -30514,6 +30697,12 @@ export namespace Prisma {
     idle_threshold_seconds?: number
     confirm_destructive?: boolean
     theme?: string
+    theme_preset?: string
+    accent_color?: string | null
+    font_size?: number
+    font_family?: string
+    mono_font_family?: string
+    notification_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -30769,6 +30958,12 @@ export namespace Prisma {
     idle_threshold_seconds?: IntFieldUpdateOperationsInput | number
     confirm_destructive?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
+    theme_preset?: StringFieldUpdateOperationsInput | string
+    accent_color?: NullableStringFieldUpdateOperationsInput | string | null
+    font_size?: IntFieldUpdateOperationsInput | number
+    font_family?: StringFieldUpdateOperationsInput | string
+    mono_font_family?: StringFieldUpdateOperationsInput | string
+    notification_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -30783,6 +30978,12 @@ export namespace Prisma {
     idle_threshold_seconds?: IntFieldUpdateOperationsInput | number
     confirm_destructive?: BoolFieldUpdateOperationsInput | boolean
     theme?: StringFieldUpdateOperationsInput | string
+    theme_preset?: StringFieldUpdateOperationsInput | string
+    accent_color?: NullableStringFieldUpdateOperationsInput | string | null
+    font_size?: IntFieldUpdateOperationsInput | number
+    font_family?: StringFieldUpdateOperationsInput | string
+    mono_font_family?: StringFieldUpdateOperationsInput | string
+    notification_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
