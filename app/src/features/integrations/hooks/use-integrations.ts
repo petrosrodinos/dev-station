@@ -6,12 +6,15 @@ import {
     getLinearIssue,
     getLinearIssues,
     getLinearProjects,
+    getLinearTeamMembers,
     getLinearTeams,
+    getLinearTeamStates,
     getNotionPage,
     getNotionPages,
     initiateConnection,
     refreshConnection,
     updateConnection,
+    updateLinearIssue,
 } from "../services/integrations.services";
 import type { IntegrationProvider, LinearIssuesQuery } from "../interfaces/integrations.interfaces";
 import { ConnectionStatuses } from "../interfaces/integrations.interfaces";
@@ -125,6 +128,35 @@ export const useGetLinearIssue = (connectionId: string | null, issueId: string |
         enabled: !!connectionId && !!issueId,
         staleTime: 30_000,
     });
+
+export const useGetLinearTeamStates = (connectionId: string | null, teamId: string | null | undefined) =>
+    useQuery({
+        queryKey: ["linear-team-states", connectionId, teamId],
+        queryFn: () => getLinearTeamStates(connectionId!, teamId!),
+        enabled: !!connectionId && !!teamId,
+        staleTime: 5 * 60_000,
+    });
+
+export const useGetLinearTeamMembers = (connectionId: string | null, teamId: string | null | undefined) =>
+    useQuery({
+        queryKey: ["linear-team-members", connectionId, teamId],
+        queryFn: () => getLinearTeamMembers(connectionId!, teamId!),
+        enabled: !!connectionId && !!teamId,
+        staleTime: 5 * 60_000,
+    });
+
+export const useUpdateLinearIssue = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: updateLinearIssue,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["linear-issues"] });
+            queryClient.invalidateQueries({ queryKey: ["linear-issue"] });
+            toast({ title: "Issue updated", duration: 1500 });
+        },
+        onError: (error: Error) => toast({ title: "Could not update issue", description: error.message, variant: "error" }),
+    });
+};
 
 export const useGetNotionPages = (connectionId: string | null, search: string) =>
     useQuery({
