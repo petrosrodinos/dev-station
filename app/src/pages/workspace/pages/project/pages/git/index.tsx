@@ -71,6 +71,8 @@ const GitTab: FC = () => {
     <div className="space-y-4 p-4">
       <GitToolbar project={project} status={status} onDiscardAll={() => setDiscardTarget("all")} />
 
+      {files.length > 0 && can(PermissionKeys.GIT_COMMIT) && <CommitBox project={project} selectedPaths={selectedPaths} totalFiles={files.length} />}
+
       <div className="grid grid-cols-1 items-start gap-4 2xl:grid-cols-[minmax(320px,2fr)_3fr]">
         <Panel className="overflow-hidden">
           <PanelHeader
@@ -155,8 +157,6 @@ const GitTab: FC = () => {
           </PanelBody>
         </Panel>
       </div>
-
-      {files.length > 0 && can(PermissionKeys.GIT_COMMIT) && <CommitBox project={project} selectedPaths={selectedPaths} totalFiles={files.length} />}
 
       <RecentCommits projectId={project.id} />
 
