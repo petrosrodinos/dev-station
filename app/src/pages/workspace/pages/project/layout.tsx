@@ -76,9 +76,8 @@ const ProjectLayout: FC = () => {
           <div className="min-w-0">
             <div className="truncate text-lg font-medium leading-tight">{project.name}</div>
             <div className="truncate text-[12.5px] text-muted-foreground">
-              {project.client?.name ?? "Internal"}
-              {project.repository && <> · {project.repository.full_name ?? project.repository.clone_url}</>}
-              {project.sub_path && <> · {project.sub_path}</>}
+              {project.repository && <>{project.repository.full_name ?? project.repository.clone_url}</>}
+              {project.sub_path && <>{project.repository ? " · " : ""}{project.sub_path}</>}
             </div>
           </div>
           <div className="ml-auto flex items-center gap-2">

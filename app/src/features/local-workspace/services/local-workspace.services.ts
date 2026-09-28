@@ -35,9 +35,9 @@ export const getProjectLocalStates = async (projectIds: string[]): Promise<Recor
     }
 };
 
-export const suggestProjectPath = async (clientName: string | null, projectName: string): Promise<string> => {
+export const suggestProjectPath = async (projectName: string): Promise<string> => {
     try {
-        return await getBridge().workspace.suggestPath(clientName, projectName);
+        return await getBridge().workspace.suggestPath(projectName);
     } catch (error) {
         throw new Error(getErrorMessage(error, "Failed to suggest a destination folder."));
     }

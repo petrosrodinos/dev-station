@@ -339,7 +339,7 @@ export interface DevStationBridge {
     updateSettings(settings: Partial<DeviceSettings>): Promise<WorkspaceConfig>;
     setProjectPath(projectId: string, path: string | null): Promise<WorkspaceConfig>;
     projectStates(projectIds: string[]): Promise<Record<string, ProjectLocalState>>;
-    suggestPath(clientName: string | null, projectName: string): Promise<string>;
+    suggestPath(projectName: string): Promise<string>;
     pickDirectory(defaultPath?: string): Promise<string | null>;
   };
   detect: {

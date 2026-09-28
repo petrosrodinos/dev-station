@@ -1,4 +1,4 @@
-/** "Client Platform — API" → "CP". */
+/** "Web App" → "WA". */
 export const projectInitials = (name: string): string =>
     name
         .split(/[\s\-_/.]+/)

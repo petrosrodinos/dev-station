@@ -77,7 +77,7 @@ export function GeneralSettings() {
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-              <SettingsRow label="Workspace directory" description="New projects are cloned to <workspace>/<Client>/<Project>.">
+              <SettingsRow label="Workspace directory" description="New projects are cloned to <workspace>/<Project>.">
                 <FormField
                   control={form.control}
                   name="workspace_dir"

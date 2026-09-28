@@ -37,7 +37,7 @@ const ImportedProjectsPage: FC = () => {
   useEffect(() => {
     for (const p of imported) {
       if (destinations[p.id]) continue;
-      void suggestProjectPath(p.client?.name ?? null, p.name).then((d) => setDestinations((prev) => ({ ...prev, [p.id]: prev[p.id] ?? d })));
+      void suggestProjectPath(p.name).then((d) => setDestinations((prev) => ({ ...prev, [p.id]: prev[p.id] ?? d })));
     }
   }, [imported, destinations]);
 
@@ -134,7 +134,7 @@ const ImportedProjectsPage: FC = () => {
                   <ProjectAvatar name={p.name} color={p.color} size="sm" />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[13px] font-medium">
-                      {p.client?.name ?? "Internal"} — {p.name}
+                      {p.name}
                     </div>
                     <div className="truncate font-mono text-[11.5px] text-ash">{p.repository ? `${p.repository.clone_url} → ${destinations[p.id] ?? "…"}` : "No repository — choose a local path"}</div>
                   </div>

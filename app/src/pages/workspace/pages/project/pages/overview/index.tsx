@@ -71,7 +71,6 @@ const OverviewTab: FC = () => {
         <Panel>
           <PanelHeader title="Project" />
           <PanelBody className="py-2">
-            <StatRow label="Client" value={project.client?.name ?? "Internal"} />
             <StatRow label="Repository" value={<span className="font-mono text-[12.5px]">{project.repository?.full_name ?? project.repository?.clone_url ?? "—"}</span>} />
             <StatRow label="Branch" value={<span className="font-mono text-[12.5px]">{git?.branch ?? "—"}</span>} />
             <StatRow label="Local path" value={<span className="font-mono text-[12px]" title={localPath}>{localPath ?? "Not on this device"}</span>} />

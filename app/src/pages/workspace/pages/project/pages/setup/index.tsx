@@ -36,8 +36,8 @@ const ProjectSetupPage: FC = () => {
   const [operationId, setOperationId] = useState<string | null>(null);
 
   useEffect(() => {
-    void suggestProjectPath(project.client?.name ?? null, project.name).then(setDestination).catch(() => undefined);
-  }, [project.client?.name, project.name]);
+    void suggestProjectPath(project.name).then(setDestination).catch(() => undefined);
+  }, [project.name]);
 
   // Another project backed by the same repository already cloned here → reuse that clone (monorepos).
   const siblingClone = useMemo(() => {
