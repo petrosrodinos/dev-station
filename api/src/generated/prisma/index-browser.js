@@ -181,6 +181,7 @@ exports.Prisma.UserPreferenceScalarFieldEnum = {
   font_family: 'font_family',
   mono_font_family: 'mono_font_family',
   notification_settings: 'notification_settings',
+  shortcut_settings: 'shortcut_settings',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };
@@ -201,6 +202,7 @@ exports.Prisma.RoleScalarFieldEnum = {
   key: 'key',
   description: 'description',
   is_system: 'is_system',
+  rank: 'rank',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };

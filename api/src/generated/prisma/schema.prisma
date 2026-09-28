@@ -224,6 +224,8 @@ model UserPreference {
   mono_font_family       String    @default("jetbrains-mono")
   /// Partial override of the notification defaults (see users/constants/notification-settings.constants.ts); null = defaults
   notification_settings  Json?
+  /// Keyboard shortcut overrides + custom shortcuts (see users/constants/shortcut-settings.constants.ts); null = defaults
+  shortcut_settings      Json?
   created_at             DateTime  @default(now())
   updated_at             DateTime  @updatedAt
 
@@ -259,6 +261,7 @@ model Role {
   key             SystemRoleKey @default(CUSTOM)
   description     String?
   is_system       Boolean       @default(false)
+  rank            Int           @default(10)
   created_at      DateTime      @default(now())
   updated_at      DateTime      @updatedAt
 

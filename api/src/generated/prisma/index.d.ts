@@ -7539,6 +7539,7 @@ export namespace Prisma {
     font_family: number
     mono_font_family: number
     notification_settings: number
+    shortcut_settings: number
     created_at: number
     updated_at: number
     _all: number
@@ -7612,6 +7613,7 @@ export namespace Prisma {
     font_family?: true
     mono_font_family?: true
     notification_settings?: true
+    shortcut_settings?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -7720,6 +7722,7 @@ export namespace Prisma {
     font_family: string
     mono_font_family: string
     notification_settings: JsonValue | null
+    shortcut_settings: JsonValue | null
     created_at: Date
     updated_at: Date
     _count: UserPreferenceCountAggregateOutputType | null
@@ -7760,6 +7763,7 @@ export namespace Prisma {
     font_family?: boolean
     mono_font_family?: boolean
     notification_settings?: boolean
+    shortcut_settings?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -7782,6 +7786,7 @@ export namespace Prisma {
     font_family?: boolean
     mono_font_family?: boolean
     notification_settings?: boolean
+    shortcut_settings?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -7804,6 +7809,7 @@ export namespace Prisma {
     font_family?: boolean
     mono_font_family?: boolean
     notification_settings?: boolean
+    shortcut_settings?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -7826,11 +7832,12 @@ export namespace Prisma {
     font_family?: boolean
     mono_font_family?: boolean
     notification_settings?: boolean
+    shortcut_settings?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type UserPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "active_organization_id" | "git_name" | "git_email" | "preferred_agent" | "default_branch" | "idle_threshold_seconds" | "confirm_destructive" | "theme" | "theme_preset" | "accent_color" | "font_size" | "font_family" | "mono_font_family" | "notification_settings" | "created_at" | "updated_at", ExtArgs["result"]["userPreference"]>
+  export type UserPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "active_organization_id" | "git_name" | "git_email" | "preferred_agent" | "default_branch" | "idle_threshold_seconds" | "confirm_destructive" | "theme" | "theme_preset" | "accent_color" | "font_size" | "font_family" | "mono_font_family" | "notification_settings" | "shortcut_settings" | "created_at" | "updated_at", ExtArgs["result"]["userPreference"]>
   export type UserPreferenceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -7866,6 +7873,10 @@ export namespace Prisma {
        * Partial override of the notification defaults (see users/constants/notification-settings.constants.ts); null = defaults
        */
       notification_settings: Prisma.JsonValue | null
+      /**
+       * Keyboard shortcut overrides + custom shortcuts (see users/constants/shortcut-settings.constants.ts); null = defaults
+       */
+      shortcut_settings: Prisma.JsonValue | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["userPreference"]>
@@ -8308,6 +8319,7 @@ export namespace Prisma {
     readonly font_family: FieldRef<"UserPreference", 'String'>
     readonly mono_font_family: FieldRef<"UserPreference", 'String'>
     readonly notification_settings: FieldRef<"UserPreference", 'Json'>
+    readonly shortcut_settings: FieldRef<"UserPreference", 'Json'>
     readonly created_at: FieldRef<"UserPreference", 'DateTime'>
     readonly updated_at: FieldRef<"UserPreference", 'DateTime'>
   }
@@ -10009,8 +10021,18 @@ export namespace Prisma {
 
   export type AggregateRole = {
     _count: RoleCountAggregateOutputType | null
+    _avg: RoleAvgAggregateOutputType | null
+    _sum: RoleSumAggregateOutputType | null
     _min: RoleMinAggregateOutputType | null
     _max: RoleMaxAggregateOutputType | null
+  }
+
+  export type RoleAvgAggregateOutputType = {
+    rank: number | null
+  }
+
+  export type RoleSumAggregateOutputType = {
+    rank: number | null
   }
 
   export type RoleMinAggregateOutputType = {
@@ -10020,6 +10042,7 @@ export namespace Prisma {
     key: $Enums.SystemRoleKey | null
     description: string | null
     is_system: boolean | null
+    rank: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -10031,6 +10054,7 @@ export namespace Prisma {
     key: $Enums.SystemRoleKey | null
     description: string | null
     is_system: boolean | null
+    rank: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -10042,11 +10066,20 @@ export namespace Prisma {
     key: number
     description: number
     is_system: number
+    rank: number
     created_at: number
     updated_at: number
     _all: number
   }
 
+
+  export type RoleAvgAggregateInputType = {
+    rank?: true
+  }
+
+  export type RoleSumAggregateInputType = {
+    rank?: true
+  }
 
   export type RoleMinAggregateInputType = {
     id?: true
@@ -10055,6 +10088,7 @@ export namespace Prisma {
     key?: true
     description?: true
     is_system?: true
+    rank?: true
     created_at?: true
     updated_at?: true
   }
@@ -10066,6 +10100,7 @@ export namespace Prisma {
     key?: true
     description?: true
     is_system?: true
+    rank?: true
     created_at?: true
     updated_at?: true
   }
@@ -10077,6 +10112,7 @@ export namespace Prisma {
     key?: true
     description?: true
     is_system?: true
+    rank?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -10120,6 +10156,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: RoleAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: RoleSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: RoleMinAggregateInputType
@@ -10150,6 +10198,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: RoleCountAggregateInputType | true
+    _avg?: RoleAvgAggregateInputType
+    _sum?: RoleSumAggregateInputType
     _min?: RoleMinAggregateInputType
     _max?: RoleMaxAggregateInputType
   }
@@ -10161,9 +10211,12 @@ export namespace Prisma {
     key: $Enums.SystemRoleKey
     description: string | null
     is_system: boolean
+    rank: number
     created_at: Date
     updated_at: Date
     _count: RoleCountAggregateOutputType | null
+    _avg: RoleAvgAggregateOutputType | null
+    _sum: RoleSumAggregateOutputType | null
     _min: RoleMinAggregateOutputType | null
     _max: RoleMaxAggregateOutputType | null
   }
@@ -10189,6 +10242,7 @@ export namespace Prisma {
     key?: boolean
     description?: boolean
     is_system?: boolean
+    rank?: boolean
     created_at?: boolean
     updated_at?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
@@ -10205,6 +10259,7 @@ export namespace Prisma {
     key?: boolean
     description?: boolean
     is_system?: boolean
+    rank?: boolean
     created_at?: boolean
     updated_at?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
@@ -10217,6 +10272,7 @@ export namespace Prisma {
     key?: boolean
     description?: boolean
     is_system?: boolean
+    rank?: boolean
     created_at?: boolean
     updated_at?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
@@ -10229,11 +10285,12 @@ export namespace Prisma {
     key?: boolean
     description?: boolean
     is_system?: boolean
+    rank?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type RoleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organization_id" | "name" | "key" | "description" | "is_system" | "created_at" | "updated_at", ExtArgs["result"]["role"]>
+  export type RoleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organization_id" | "name" | "key" | "description" | "is_system" | "rank" | "created_at" | "updated_at", ExtArgs["result"]["role"]>
   export type RoleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     permissions?: boolean | Role$permissionsArgs<ExtArgs>
@@ -10263,6 +10320,7 @@ export namespace Prisma {
       key: $Enums.SystemRoleKey
       description: string | null
       is_system: boolean
+      rank: number
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["role"]>
@@ -10698,6 +10756,7 @@ export namespace Prisma {
     readonly key: FieldRef<"Role", 'SystemRoleKey'>
     readonly description: FieldRef<"Role", 'String'>
     readonly is_system: FieldRef<"Role", 'Boolean'>
+    readonly rank: FieldRef<"Role", 'Int'>
     readonly created_at: FieldRef<"Role", 'DateTime'>
     readonly updated_at: FieldRef<"Role", 'DateTime'>
   }
@@ -23347,6 +23406,7 @@ export namespace Prisma {
     font_family: 'font_family',
     mono_font_family: 'mono_font_family',
     notification_settings: 'notification_settings',
+    shortcut_settings: 'shortcut_settings',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -23373,6 +23433,7 @@ export namespace Prisma {
     key: 'key',
     description: 'description',
     is_system: 'is_system',
+    rank: 'rank',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -24166,6 +24227,7 @@ export namespace Prisma {
     font_family?: StringFilter<"UserPreference"> | string
     mono_font_family?: StringFilter<"UserPreference"> | string
     notification_settings?: JsonNullableFilter<"UserPreference">
+    shortcut_settings?: JsonNullableFilter<"UserPreference">
     created_at?: DateTimeFilter<"UserPreference"> | Date | string
     updated_at?: DateTimeFilter<"UserPreference"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -24188,6 +24250,7 @@ export namespace Prisma {
     font_family?: SortOrder
     mono_font_family?: SortOrder
     notification_settings?: SortOrderInput | SortOrder
+    shortcut_settings?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -24213,6 +24276,7 @@ export namespace Prisma {
     font_family?: StringFilter<"UserPreference"> | string
     mono_font_family?: StringFilter<"UserPreference"> | string
     notification_settings?: JsonNullableFilter<"UserPreference">
+    shortcut_settings?: JsonNullableFilter<"UserPreference">
     created_at?: DateTimeFilter<"UserPreference"> | Date | string
     updated_at?: DateTimeFilter<"UserPreference"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -24235,6 +24299,7 @@ export namespace Prisma {
     font_family?: SortOrder
     mono_font_family?: SortOrder
     notification_settings?: SortOrderInput | SortOrder
+    shortcut_settings?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: UserPreferenceCountOrderByAggregateInput
@@ -24264,6 +24329,7 @@ export namespace Prisma {
     font_family?: StringWithAggregatesFilter<"UserPreference"> | string
     mono_font_family?: StringWithAggregatesFilter<"UserPreference"> | string
     notification_settings?: JsonNullableWithAggregatesFilter<"UserPreference">
+    shortcut_settings?: JsonNullableWithAggregatesFilter<"UserPreference">
     created_at?: DateTimeWithAggregatesFilter<"UserPreference"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserPreference"> | Date | string
   }
@@ -24359,6 +24425,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFilter<"Role"> | $Enums.SystemRoleKey
     description?: StringNullableFilter<"Role"> | string | null
     is_system?: BoolFilter<"Role"> | boolean
+    rank?: IntFilter<"Role"> | number
     created_at?: DateTimeFilter<"Role"> | Date | string
     updated_at?: DateTimeFilter<"Role"> | Date | string
     organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
@@ -24374,6 +24441,7 @@ export namespace Prisma {
     key?: SortOrder
     description?: SortOrderInput | SortOrder
     is_system?: SortOrder
+    rank?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     organization?: OrganizationOrderByWithRelationInput
@@ -24393,6 +24461,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFilter<"Role"> | $Enums.SystemRoleKey
     description?: StringNullableFilter<"Role"> | string | null
     is_system?: BoolFilter<"Role"> | boolean
+    rank?: IntFilter<"Role"> | number
     created_at?: DateTimeFilter<"Role"> | Date | string
     updated_at?: DateTimeFilter<"Role"> | Date | string
     organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
@@ -24408,11 +24477,14 @@ export namespace Prisma {
     key?: SortOrder
     description?: SortOrderInput | SortOrder
     is_system?: SortOrder
+    rank?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: RoleCountOrderByAggregateInput
+    _avg?: RoleAvgOrderByAggregateInput
     _max?: RoleMaxOrderByAggregateInput
     _min?: RoleMinOrderByAggregateInput
+    _sum?: RoleSumOrderByAggregateInput
   }
 
   export type RoleScalarWhereWithAggregatesInput = {
@@ -24425,6 +24497,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyWithAggregatesFilter<"Role"> | $Enums.SystemRoleKey
     description?: StringNullableWithAggregatesFilter<"Role"> | string | null
     is_system?: BoolWithAggregatesFilter<"Role"> | boolean
+    rank?: IntWithAggregatesFilter<"Role"> | number
     created_at?: DateTimeWithAggregatesFilter<"Role"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"Role"> | Date | string
   }
@@ -25731,6 +25804,7 @@ export namespace Prisma {
     font_family?: string
     mono_font_family?: string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
+    shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutPreferenceInput
@@ -25753,6 +25827,7 @@ export namespace Prisma {
     font_family?: string
     mono_font_family?: string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
+    shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -25773,6 +25848,7 @@ export namespace Prisma {
     font_family?: StringFieldUpdateOperationsInput | string
     mono_font_family?: StringFieldUpdateOperationsInput | string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
+    shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPreferenceNestedInput
@@ -25795,6 +25871,7 @@ export namespace Prisma {
     font_family?: StringFieldUpdateOperationsInput | string
     mono_font_family?: StringFieldUpdateOperationsInput | string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
+    shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -25816,6 +25893,7 @@ export namespace Prisma {
     font_family?: string
     mono_font_family?: string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
+    shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -25836,6 +25914,7 @@ export namespace Prisma {
     font_family?: StringFieldUpdateOperationsInput | string
     mono_font_family?: StringFieldUpdateOperationsInput | string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
+    shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -25857,6 +25936,7 @@ export namespace Prisma {
     font_family?: StringFieldUpdateOperationsInput | string
     mono_font_family?: StringFieldUpdateOperationsInput | string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
+    shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -25962,6 +26042,7 @@ export namespace Prisma {
     key?: $Enums.SystemRoleKey
     description?: string | null
     is_system?: boolean
+    rank?: number
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutRolesInput
@@ -25977,6 +26058,7 @@ export namespace Prisma {
     key?: $Enums.SystemRoleKey
     description?: string | null
     is_system?: boolean
+    rank?: number
     created_at?: Date | string
     updated_at?: Date | string
     permissions?: RolePermissionUncheckedCreateNestedManyWithoutRoleInput
@@ -25990,6 +26072,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutRolesNestedInput
@@ -26005,6 +26088,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     permissions?: RolePermissionUncheckedUpdateManyWithoutRoleNestedInput
@@ -26019,6 +26103,7 @@ export namespace Prisma {
     key?: $Enums.SystemRoleKey
     description?: string | null
     is_system?: boolean
+    rank?: number
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -26029,6 +26114,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26040,6 +26126,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -27525,6 +27612,7 @@ export namespace Prisma {
     font_family?: SortOrder
     mono_font_family?: SortOrder
     notification_settings?: SortOrder
+    shortcut_settings?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -27716,8 +27804,13 @@ export namespace Prisma {
     key?: SortOrder
     description?: SortOrder
     is_system?: SortOrder
+    rank?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+  }
+
+  export type RoleAvgOrderByAggregateInput = {
+    rank?: SortOrder
   }
 
   export type RoleMaxOrderByAggregateInput = {
@@ -27727,6 +27820,7 @@ export namespace Prisma {
     key?: SortOrder
     description?: SortOrder
     is_system?: SortOrder
+    rank?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -27738,8 +27832,13 @@ export namespace Prisma {
     key?: SortOrder
     description?: SortOrder
     is_system?: SortOrder
+    rank?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+  }
+
+  export type RoleSumOrderByAggregateInput = {
+    rank?: SortOrder
   }
 
   export type EnumSystemRoleKeyWithAggregatesFilter<$PrismaModel = never> = {
@@ -30683,6 +30782,7 @@ export namespace Prisma {
     font_family?: string
     mono_font_family?: string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
+    shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -30703,6 +30803,7 @@ export namespace Prisma {
     font_family?: string
     mono_font_family?: string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
+    shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -30964,6 +31065,7 @@ export namespace Prisma {
     font_family?: StringFieldUpdateOperationsInput | string
     mono_font_family?: StringFieldUpdateOperationsInput | string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
+    shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -30984,6 +31086,7 @@ export namespace Prisma {
     font_family?: StringFieldUpdateOperationsInput | string
     mono_font_family?: StringFieldUpdateOperationsInput | string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
+    shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31425,6 +31528,7 @@ export namespace Prisma {
     key?: $Enums.SystemRoleKey
     description?: string | null
     is_system?: boolean
+    rank?: number
     created_at?: Date | string
     updated_at?: Date | string
     permissions?: RolePermissionCreateNestedManyWithoutRoleInput
@@ -31438,6 +31542,7 @@ export namespace Prisma {
     key?: $Enums.SystemRoleKey
     description?: string | null
     is_system?: boolean
+    rank?: number
     created_at?: Date | string
     updated_at?: Date | string
     permissions?: RolePermissionUncheckedCreateNestedManyWithoutRoleInput
@@ -31765,6 +31870,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFilter<"Role"> | $Enums.SystemRoleKey
     description?: StringNullableFilter<"Role"> | string | null
     is_system?: BoolFilter<"Role"> | boolean
+    rank?: IntFilter<"Role"> | number
     created_at?: DateTimeFilter<"Role"> | Date | string
     updated_at?: DateTimeFilter<"Role"> | Date | string
   }
@@ -32147,6 +32253,7 @@ export namespace Prisma {
     key?: $Enums.SystemRoleKey
     description?: string | null
     is_system?: boolean
+    rank?: number
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutRolesInput
@@ -32161,6 +32268,7 @@ export namespace Prisma {
     key?: $Enums.SystemRoleKey
     description?: string | null
     is_system?: boolean
+    rank?: number
     created_at?: Date | string
     updated_at?: Date | string
     members?: OrganizationMemberUncheckedCreateNestedManyWithoutRoleInput
@@ -32189,6 +32297,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutRolesNestedInput
@@ -32203,6 +32312,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: OrganizationMemberUncheckedUpdateManyWithoutRoleNestedInput
@@ -32293,6 +32403,7 @@ export namespace Prisma {
     key?: $Enums.SystemRoleKey
     description?: string | null
     is_system?: boolean
+    rank?: number
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutRolesInput
@@ -32307,6 +32418,7 @@ export namespace Prisma {
     key?: $Enums.SystemRoleKey
     description?: string | null
     is_system?: boolean
+    rank?: number
     created_at?: Date | string
     updated_at?: Date | string
     permissions?: RolePermissionUncheckedCreateNestedManyWithoutRoleInput
@@ -32425,6 +32537,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutRolesNestedInput
@@ -32439,6 +32552,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     permissions?: RolePermissionUncheckedUpdateManyWithoutRoleNestedInput
@@ -32488,6 +32602,7 @@ export namespace Prisma {
     key?: $Enums.SystemRoleKey
     description?: string | null
     is_system?: boolean
+    rank?: number
     created_at?: Date | string
     updated_at?: Date | string
     organization: OrganizationCreateNestedOneWithoutRolesInput
@@ -32502,6 +32617,7 @@ export namespace Prisma {
     key?: $Enums.SystemRoleKey
     description?: string | null
     is_system?: boolean
+    rank?: number
     created_at?: Date | string
     updated_at?: Date | string
     permissions?: RolePermissionUncheckedCreateNestedManyWithoutRoleInput
@@ -32573,6 +32689,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutRolesNestedInput
@@ -32587,6 +32704,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     permissions?: RolePermissionUncheckedUpdateManyWithoutRoleNestedInput
@@ -35262,6 +35380,7 @@ export namespace Prisma {
     key?: $Enums.SystemRoleKey
     description?: string | null
     is_system?: boolean
+    rank?: number
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -35393,6 +35512,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     permissions?: RolePermissionUpdateManyWithoutRoleNestedInput
@@ -35406,6 +35526,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     permissions?: RolePermissionUncheckedUpdateManyWithoutRoleNestedInput
@@ -35419,6 +35540,7 @@ export namespace Prisma {
     key?: EnumSystemRoleKeyFieldUpdateOperationsInput | $Enums.SystemRoleKey
     description?: NullableStringFieldUpdateOperationsInput | string | null
     is_system?: BoolFieldUpdateOperationsInput | boolean
+    rank?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
