@@ -125,15 +125,12 @@ class WorkspaceConfigManager {
     return result;
   }
 
-  /** `<workspace>/<Client>/<Project>` — the default destination convention (Spec §25/§26). */
-  suggestPath(clientName: string | null, projectName: string): string {
+  /** `<workspace>/<Project>` — the default destination convention (Spec §25/§26). */
+  suggestPath(projectName: string): string {
     // Strip characters that are invalid in Windows/macOS/Linux folder names (incl. control chars).
     // eslint-disable-next-line no-control-regex
     const clean = (s: string) => s.replace(/[<>:"/\\|?*\x00-\x1f]/g, "").trim() || "Project";
-    const parts = [this.load().settings.workspace_dir];
-    if (clientName) parts.push(clean(clientName));
-    parts.push(clean(projectName));
-    return path.join(...parts);
+    return path.join(this.load().settings.workspace_dir, clean(projectName));
   }
 
   /** Absolute root of a project on this device, or a clear error for the recovery flow. */

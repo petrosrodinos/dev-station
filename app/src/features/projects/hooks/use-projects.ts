@@ -30,7 +30,6 @@ export const useCreateProject = () => {
         mutationFn: createProject,
         onSuccess: (project) => {
             queryClient.invalidateQueries({ queryKey: ["projects"] });
-            queryClient.invalidateQueries({ queryKey: ["clients"] });
             toast({ title: "Project created", description: project.name, duration: 2000 });
         },
         onError: (error: Error) => toast({ title: "Could not create project", description: error.message, variant: "error" }),
@@ -43,7 +42,6 @@ export const useUpdateProject = () => {
         mutationFn: updateProject,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["projects"] });
-            queryClient.invalidateQueries({ queryKey: ["clients"] });
             toast({ title: "Project updated", duration: 1500 });
         },
         onError: (error: Error) => toast({ title: "Could not update project", description: error.message, variant: "error" }),

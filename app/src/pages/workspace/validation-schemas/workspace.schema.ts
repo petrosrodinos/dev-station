@@ -30,8 +30,6 @@ export const projectFormSchema = z
     .object({
         source: z.enum(["github", "url", "folder", "none"]),
         name: z.string().trim().min(1, "Project name is required").max(120),
-        client_id: z.string().optional(),
-        client_name: z.string().trim().max(120).optional(),
         color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
         description: z.string().max(1000).optional(),
         github_connection_id: z.string().optional(),

@@ -20,7 +20,6 @@ import { IntegrationProviders } from "@/features/integrations/interfaces/integra
 import { useInspectPath } from "@/features/local-workspace/hooks/use-local-workspace";
 import { useCancelClone, useCloneProgress, useCloneProject, useLinkProjectFolder } from "@/features/local-workspace/hooks/use-project-setup";
 import { suggestProjectPath } from "@/features/local-workspace/services/local-workspace.services";
-import { useGetClients } from "@/features/clients/hooks/use-clients";
 import { ProjectColorOptions } from "@/config/constants/dropdowns/projects/project-color.options";
 import { useDialogsStore } from "@/stores/dialogs";
 import { useWorkspaceStore } from "@/stores/workspace";
@@ -30,7 +29,6 @@ import { isDesktop } from "@/lib/desktop";
 import { cn } from "@/lib/utils";
 import type { DetectionResult } from "@shared/contract";
 import { projectFormSchema, ProjectSources, type ProjectFormData, type ProjectSource } from "../validation-schemas/workspace.schema";
-import { ClientPicker } from "./project-form/client-picker";
 import { ColorSwatches } from "./project-form/color-swatches";
 import { DirectoryField } from "./project-form/directory-field";
 import { GithubRepoPicker } from "./project-form/github-repo-picker";
@@ -57,7 +55,6 @@ export function ProjectDialog() {
   const close = useDialogsStore((s) => s.closeProjectDialog);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
   const { data: projects } = useGetProjects();
-  const { data: clients } = useGetClients();
   const { connections: githubConnections } = useProviderConnections(IntegrationProviders.GITHUB);
   const editing = projects?.find((p) => p.id === state.project_id) ?? null;
   const createProject = useCreateProject();
@@ -85,7 +82,6 @@ export function ProjectDialog() {
       form.reset({
         source: ProjectSources.NONE,
         name: editing.name,
-        client_id: editing.client?.id,
         color: editing.color,
         description: editing.description ?? "",
         sub_path: editing.sub_path ?? "",
@@ -105,19 +101,16 @@ export function ProjectDialog() {
 
   const source = form.watch("source");
   const name = form.watch("name");
-  const clientId = form.watch("client_id");
-  const clientName = form.watch("client_name");
 
-  // Suggest <workspace>/<Client>/<Project> as the clone destination until the user edits it (Spec §25).
+  // Suggest <workspace>/<Project> as the clone destination until the user edits it (Spec §25).
   useEffect(() => {
     if (editing || destinationTouched.current || !isDesktop() || !name.trim()) return;
     if (source !== ProjectSources.GITHUB && source !== ProjectSources.URL) return;
-    const client = clients?.find((c) => c.id === clientId)?.name ?? clientName ?? null;
     const t = setTimeout(() => {
-      void suggestProjectPath(client, name.trim()).then((p) => !destinationTouched.current && form.setValue("destination", p));
+      void suggestProjectPath(name.trim()).then((p) => !destinationTouched.current && form.setValue("destination", p));
     }, 200);
     return () => clearTimeout(t);
-  }, [name, clientId, clientName, source, editing, clients, form]);
+  }, [name, source, editing, form]);
 
   const busy = createProject.isPending || updateProject.isPending || cloneProject.isPending || linkFolder.isPending;
   const cloneEvent = operationId ? progress[operationId] : undefined;
@@ -134,8 +127,6 @@ export function ProjectDialog() {
         {
           id: editing.id,
           name: data.name,
-          client_id: data.client_id ?? null,
-          client_name: data.client_name ?? null,
           color: data.color,
           description: data.description || null,
           sub_path: data.sub_path || null,
@@ -149,8 +140,6 @@ export function ProjectDialog() {
     const project = await createProject
       .mutateAsync({
         name: data.name,
-        client_id: data.client_id ?? null,
-        client_name: data.client_name ?? null,
         color: data.color,
         description: data.description || null,
         sub_path: data.sub_path || null,
@@ -338,7 +327,7 @@ export function ProjectDialog() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Project folder</FormLabel>
-                        <DirectoryField value={field.value ?? ""} onChange={field.onChange} onPicked={onFolderPicked} placeholder="C:\Users\you\Development\Client\Project" />
+                        <DirectoryField value={field.value ?? ""} onChange={field.onChange} onPicked={onFolderPicked} placeholder="C:\Users\you\Development\Project" />
                         {detection && (
                           <FormDescription>
                             {detection.git.is_repo ? `Git repo${detection.git.remote_url ? ` · ${detection.git.remote_url}` : ""}` : "Not a Git repository"} ·{" "}
@@ -354,32 +343,19 @@ export function ProjectDialog() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Project name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Client Platform — API" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormItem>
-                <FormLabel>Client</FormLabel>
-                <ClientPicker
-                  clientId={clientId}
-                  clientName={clientName}
-                  onChange={(v) => {
-                    form.setValue("client_id", v.client_id);
-                    form.setValue("client_name", v.client_name);
-                  }}
-                />
-              </FormItem>
-            </div>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Platform — API" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {!editing && (source === ProjectSources.GITHUB || source === ProjectSources.URL) && (
               <div className={cn(!isDesktop() && "pointer-events-none select-none opacity-50")} aria-disabled={!isDesktop()} inert={!isDesktop()}>

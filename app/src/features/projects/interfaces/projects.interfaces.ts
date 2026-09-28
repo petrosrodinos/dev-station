@@ -53,7 +53,6 @@ export interface Project {
     sort_order: number;
     sub_path: string | null;
     preferred_agent: AgentType | null;
-    client: { id: string; name: string } | null;
     repository: Repository | null;
     github_connection_id: string | null;
     linear_connection_id: string | null;
@@ -91,8 +90,6 @@ export interface RepositoryInput {
 
 export interface CreateProjectDto {
     name: string;
-    client_id?: string | null;
-    client_name?: string | null;
     color?: string;
     description?: string | null;
     sub_path?: string | null;

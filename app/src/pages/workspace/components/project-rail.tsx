@@ -26,12 +26,6 @@ import { isDesktop } from "@/lib/desktop";
 import { cn } from "@/lib/utils";
 import { EditorTargets, ProjectLocalStates, type ProjectLocalState } from "@shared/contract";
 
-interface RailGroup {
-  id: string;
-  label: string;
-  projects: Project[];
-}
-
 /** Slack-style project rail (Spec §5) with attention badges (Spec §13/§27) and local-state treatment (Spec §26). */
 export function ProjectRail() {
   const navigate = useNavigate();
@@ -52,16 +46,6 @@ export function ProjectRail() {
   const [removing, setRemoving] = useState<Project | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
-
-  const groups: RailGroup[] = useMemo(() => {
-    const map = new Map<string, RailGroup>();
-    for (const p of projects ?? []) {
-      const id = p.client?.id ?? "__none";
-      if (!map.has(id)) map.set(id, { id, label: p.client?.name ?? "Internal", projects: [] });
-      map.get(id)!.projects.push(p);
-    }
-    return [...map.values()];
-  }, [projects]);
 
   // Sessions needing attention, per project (runtime knows the project even for sessions not yet listed).
   const attentionByProject = useMemo(() => {
@@ -95,16 +79,10 @@ export function ProjectRail() {
     if (first) openSessionTab(first);
   };
 
-  const onDragEnd = (group: RailGroup) => ({ active, over }: DragEndEvent) => {
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id || !projects) return;
-    const ids = group.projects.map((p) => p.id);
-    const reordered = arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id)));
-    // Keep other groups in place; replace this group's slice in the global order.
-    const all = projects.map((p) => p.id);
-    const positions = all.map((id, i) => (ids.includes(id) ? i : -1)).filter((i) => i >= 0);
-    const next = [...all];
-    positions.forEach((pos, i) => (next[pos] = reordered[i]));
-    reorder.mutate(next);
+    const ids = projects.map((p) => p.id);
+    reorder.mutate(arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id))));
   };
 
   return (
@@ -120,36 +98,28 @@ export function ProjectRail() {
         {isPending &&
           Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="size-10 shrink-0 rounded-full" />)}
 
-        {groups.map((group, gi) => (
-          <div key={group.id} className="flex w-full flex-col items-center gap-1.5">
-            {gi > 0 && <div className="my-1 h-px w-7 bg-border" />}
-            <div className="w-full truncate px-1 text-center text-[9px] uppercase tracking-[0.6px] text-stone" title={group.label}>
-              {group.label}
-            </div>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd(group)}>
-              <SortableContext items={group.projects.map((p) => p.id)} strategy={verticalListSortingStrategy}>
-                {group.projects.map((project) => (
-                  <RailItem
-                    key={project.id}
-                    project={project}
-                    active={project.id === activeProjectId}
-                    localState={isDesktop() ? localStates?.[project.id] ?? null : null}
-                    attention={attentionByProject.get(project.id)?.length ?? 0}
-                    canEdit={can(PermissionKeys.PROJECTS_EDIT)}
-                    canDelete={can(PermissionKeys.PROJECTS_DELETE)}
-                    onSelect={() => selectProject(project)}
-                    onBadge={() => openAttention(project)}
-                    onEdit={() => openProjectDialog(project.id)}
-                    onSetup={() => navigate(Routes.workspace.project_setup(project.id))}
-                    onReveal={() => reveal.mutate({ projectId: project.id, path: "." })}
-                    onOpenEditor={() => openInEditor.mutate({ projectId: project.id, editor: EditorTargets.CURSOR })}
-                    onRemove={() => setRemoving(project)}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
-          </div>
-        ))}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext items={(projects ?? []).map((p) => p.id)} strategy={verticalListSortingStrategy}>
+            {(projects ?? []).map((project) => (
+              <RailItem
+                key={project.id}
+                project={project}
+                active={project.id === activeProjectId}
+                localState={isDesktop() ? localStates?.[project.id] ?? null : null}
+                attention={attentionByProject.get(project.id)?.length ?? 0}
+                canEdit={can(PermissionKeys.PROJECTS_EDIT)}
+                canDelete={can(PermissionKeys.PROJECTS_DELETE)}
+                onSelect={() => selectProject(project)}
+                onBadge={() => openAttention(project)}
+                onEdit={() => openProjectDialog(project.id)}
+                onSetup={() => navigate(Routes.workspace.project_setup(project.id))}
+                onReveal={() => reveal.mutate({ projectId: project.id, path: "." })}
+                onOpenEditor={() => openInEditor.mutate({ projectId: project.id, editor: EditorTargets.CURSOR })}
+                onRemove={() => setRemoving(project)}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
 
         {can(PermissionKeys.PROJECTS_CREATE) && (
           <Tooltip>
@@ -281,10 +251,9 @@ function RailItem({ project, active, localState, attention, canEdit, canDelete, 
         </ContextMenuTrigger>
         <TooltipContent side="right" className="max-w-60">
           <div className="font-medium">{project.name}</div>
-          <div className="text-[11px] opacity-70">
-            {project.client?.name ?? "Internal"}
-            {localState && localState !== ProjectLocalStates.LOCAL ? ` · ${getDropdownOptionLabel(ProjectLocalStateOptions, localState)}` : ""}
-          </div>
+          {localState && localState !== ProjectLocalStates.LOCAL && (
+            <div className="text-[11px] opacity-70">{getDropdownOptionLabel(ProjectLocalStateOptions, localState)}</div>
+          )}
         </TooltipContent>
       </Tooltip>
       <ContextMenuContent className="w-56">

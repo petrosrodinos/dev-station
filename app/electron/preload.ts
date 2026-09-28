@@ -35,7 +35,7 @@ const bridge: DevStationBridge = {
     updateSettings: (settings) => call(C.WS_UPDATE_SETTINGS, settings),
     setProjectPath: (projectId, path) => call(C.WS_SET_PROJECT_PATH, projectId, path),
     projectStates: (ids) => call(C.WS_PROJECT_STATES, ids),
-    suggestPath: (client, name) => call(C.WS_SUGGEST_PATH, client, name),
+    suggestPath: (name) => call(C.WS_SUGGEST_PATH, name),
     pickDirectory: (defaultPath) => call(C.WS_PICK_DIRECTORY, defaultPath),
   },
   detect: {

@@ -29,10 +29,6 @@ export const ApiRoutes = {
         role: (id: string) => `/organizations/current/roles/${id}`,
         permissions: "/organizations/permissions",
     },
-    clients: {
-        prefix: "/clients",
-        by_id: (id: string) => `/clients/${id}`,
-    },
     projects: {
         prefix: "/projects",
         by_id: (id: string) => `/projects/${id}`,

@@ -48,7 +48,7 @@ export function CommandPalette() {
           {projects?.map((p) => (
             <CommandItem
               key={p.id}
-              value={`project ${p.name} ${p.client?.name ?? ""}`}
+              value={`project ${p.name}`}
               onSelect={() =>
                 run(() => {
                   setActiveProject(p.id);
@@ -58,7 +58,6 @@ export function CommandPalette() {
             >
               <ProjectAvatar name={p.name} color={p.color} size="xs" />
               <span>{p.name}</span>
-              <span className="ml-auto text-[11.5px] text-ash">{p.client?.name ?? "Internal"}</span>
             </CommandItem>
           ))}
         </CommandGroup>

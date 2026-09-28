@@ -91,7 +91,7 @@ export function registerIpc() {
   });
   handle(IpcChannels.WS_SET_PROJECT_PATH, args(zId, zAbsPath.nullable()), ([id, dir]) => workspaceConfig.setProjectPath(id, dir));
   handle(IpcChannels.WS_PROJECT_STATES, args(z.array(zId).max(1000)), ([ids]) => workspaceConfig.projectStates(ids));
-  handle(IpcChannels.WS_SUGGEST_PATH, args(z.string().max(200).nullable(), z.string().min(1).max(200)), ([client, name]) => workspaceConfig.suggestPath(client, name));
+  handle(IpcChannels.WS_SUGGEST_PATH, args(z.string().min(1).max(200)), ([name]) => workspaceConfig.suggestPath(name));
   handle(IpcChannels.WS_PICK_DIRECTORY, args(zAbsPath.optional()), async ([defaultPath]) => {
     const win = BrowserWindow.getFocusedWindow();
     const opts: Electron.OpenDialogOptions = { properties: ["openDirectory", "createDirectory"], defaultPath };
