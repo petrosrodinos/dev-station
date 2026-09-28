@@ -1,6 +1,6 @@
 import { useEffect, type FC } from "react";
 import { Navigate, NavLink, Outlet, useLocation, useParams } from "react-router-dom";
-import { Bot, ChevronDown, ExternalLink, Files, GitBranch, Home, PanelRight, Plug, SquareTerminal } from "lucide-react";
+import { Bot, BookOpen, ChevronDown, ExternalLink, Files, GitBranch, Home, PanelRight, Plug, SquareTerminal } from "lucide-react";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +27,7 @@ const TAB_ICONS: Record<ProjectTab, typeof Home> = {
   [ProjectTabs.FILES]: Files,
   [ProjectTabs.TERMINAL]: SquareTerminal,
   [ProjectTabs.SESSIONS]: Bot,
+  [ProjectTabs.SKILLS]: BookOpen,
   [ProjectTabs.INTEGRATIONS]: Plug,
 };
 

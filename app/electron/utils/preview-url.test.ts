@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-// Node's type-stripping runner needs the explicit extension; tsc does not allow it.
-// @ts-expect-error TS5097
+// Node's type-stripping runner needs the explicit extension.
 import { isPreviewUrlAllowed } from "./preview-url.ts";
 
 test("allows localhost and 127.0.0.1 over http(s) with any port", () => {

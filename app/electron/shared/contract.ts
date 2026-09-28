@@ -58,6 +58,8 @@ export interface DeviceSettings {
   default_shell: string | null;
   agent_executables: Record<AgentType, string | null>;
   editor_executables: { cursor: string | null; vscode: string | null };
+  /** Extra absolute folders scanned for agent skills (in addition to the built-in provider locations). */
+  skill_folders: string[];
 }
 
 export interface WorkspaceConfig {
@@ -72,6 +74,77 @@ export interface AppInfo {
   device_id: string;
   home_dir: string;
   default_shell: string;
+}
+
+// ---------------------------------------------------------------------------
+// Agent skills (read from disk, in every provider's format)
+// ---------------------------------------------------------------------------
+
+export const SkillProviders = {
+  CLAUDE: "claude",
+  CURSOR: "cursor",
+  CODEX: "codex",
+  GEMINI: "gemini",
+  COPILOT: "copilot",
+  GENERIC: "generic",
+} as const;
+export type SkillProvider = (typeof SkillProviders)[keyof typeof SkillProviders];
+
+export const SkillScopes = {
+  USER: "user",
+  PROJECT: "project",
+  CUSTOM: "custom",
+} as const;
+export type SkillScope = (typeof SkillScopes)[keyof typeof SkillScopes];
+
+export const SkillKinds = {
+  SKILL: "skill",
+  COMMAND: "command",
+  RULE: "rule",
+  CONTEXT: "context",
+  DOC: "doc",
+} as const;
+export type SkillKind = (typeof SkillKinds)[keyof typeof SkillKinds];
+
+export const SkillSendModes = {
+  CONTENT: "content",
+  REFERENCE: "reference",
+} as const;
+export type SkillSendMode = (typeof SkillSendModes)[keyof typeof SkillSendModes];
+
+export interface SkillSummary {
+  id: string;
+  name: string;
+  description: string;
+  provider: SkillProvider;
+  scope: SkillScope;
+  kind: SkillKind;
+  /** Absolute path of the file that defines the skill. */
+  path: string;
+  size_bytes: number;
+  /** Frontmatter fields (globs, allowed-tools, ...), flattened to strings. */
+  meta: Record<string, string>;
+}
+
+export interface SkillDetail extends SkillSummary {
+  /** File content without the frontmatter block. */
+  body: string;
+  /** True when the file was larger than the read limit and the body was cut. */
+  truncated: boolean;
+}
+
+export interface SkillListResult {
+  skills: SkillSummary[];
+  /** Absolute paths that were scanned, so the UI can explain where skills come from. */
+  scanned: string[];
+}
+
+export interface SendSkillInput {
+  session_id: string;
+  skill_id: string;
+  mode: SkillSendMode;
+  /** Press Enter after pasting. Off by default so the user can review first. */
+  submit?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -439,6 +512,12 @@ export interface DevStationBridge {
     onData(cb: (e: PtyDataEvent) => void): Unsubscribe;
     onStatus(cb: (e: AgentStatusEvent) => void): Unsubscribe;
   };
+  skills: {
+    /** Skills visible to `projectId` (user-level + that project's + custom folders); user-level only when null. */
+    list(projectId: string | null): Promise<SkillListResult>;
+    read(skillId: string): Promise<SkillDetail>;
+    send(input: SendSkillInput): Promise<void>;
+  };
   preview: {
     show(input: { projectId: string; url: string; bounds: PreviewBounds }): Promise<void>;
     hide(input: { projectId: string }): Promise<void>;
@@ -528,6 +607,9 @@ export const IpcChannels = {
   AGENT_SET_IDLE: "agent:set-idle",
   AGENT_DATA: "agent:data",
   AGENT_STATUS: "agent:status",
+  SKILLS_LIST: "skills:list",
+  SKILLS_READ: "skills:read",
+  SKILLS_SEND: "skills:send",
   PREVIEW_SHOW: "preview:show",
   PREVIEW_HIDE: "preview:hide",
   PREVIEW_SET_BOUNDS: "preview:set-bounds",

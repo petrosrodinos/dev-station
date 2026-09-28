@@ -113,6 +113,11 @@ const bridge: DevStationBridge = {
     onData: (cb) => on(C.AGENT_DATA, cb),
     onStatus: (cb) => on(C.AGENT_STATUS, cb),
   },
+  skills: {
+    list: (projectId) => call(C.SKILLS_LIST, projectId),
+    read: (skillId) => call(C.SKILLS_READ, skillId),
+    send: (input) => call(C.SKILLS_SEND, input),
+  },
   preview: {
     show: (input) => call(C.PREVIEW_SHOW, input),
     hide: (input) => call(C.PREVIEW_HIDE, input),

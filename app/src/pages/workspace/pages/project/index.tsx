@@ -9,6 +9,7 @@ import GitTab from "./pages/git";
 import FilesTab from "./pages/files";
 import TerminalTab from "./pages/terminal";
 import SessionsTab from "./pages/sessions";
+import SkillsTab from "./pages/skills";
 import IntegrationsTab from "./pages/integrations";
 
 const TAB_PAGES: Record<ProjectTab, FC> = {
@@ -17,6 +18,7 @@ const TAB_PAGES: Record<ProjectTab, FC> = {
   [ProjectTabs.FILES]: FilesTab,
   [ProjectTabs.TERMINAL]: TerminalTab,
   [ProjectTabs.SESSIONS]: SessionsTab,
+  [ProjectTabs.SKILLS]: SkillsTab,
   [ProjectTabs.INTEGRATIONS]: IntegrationsTab,
 };
 
