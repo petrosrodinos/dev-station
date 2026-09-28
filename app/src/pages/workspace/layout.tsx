@@ -4,6 +4,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { OrganizationBootstrap } from "@/components/providers/organization-bootstrap";
 import { DesktopEventsProvider } from "@/components/providers/desktop-events-provider";
 import { useWorkspaceStore } from "@/stores/workspace";
+import { useAppearanceHydration } from "@/features/users/hooks/use-appearance";
 import { TopBar } from "./components/top-bar";
 import { SessionTabStrip } from "./components/session-tab-strip";
 import { ProjectRail } from "./components/project-rail";
@@ -21,6 +22,7 @@ import { useGlobalShortcuts } from "./hooks/use-global-shortcuts";
 const WorkspaceLayout: FC = () => {
   const aiPanelOpen = useWorkspaceStore((s) => s.ai_panel_open);
   useGlobalShortcuts();
+  useAppearanceHydration();
 
   return (
     <OrganizationBootstrap>

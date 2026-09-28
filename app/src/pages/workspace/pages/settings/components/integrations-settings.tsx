@@ -26,7 +26,7 @@ export function IntegrationsSettings() {
         ) : (
           <>
             {data?.some((i) => !i.available) && (
-              <div className="rounded-lg border border-warning/40 bg-warning-soft px-4 py-3 text-[12.5px] text-warning">
+              <div className="rounded-lg border border-warning/40 bg-warning-soft px-4 py-3 text-[0.7813rem] text-warning">
                 Composio isn't configured on the server yet (set{" "}
                 <span className="font-mono">COMPOSIO_API_KEY</span> in the API
                 environment). Connections are unavailable until then.

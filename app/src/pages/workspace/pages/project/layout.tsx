@@ -75,7 +75,7 @@ const ProjectLayout: FC = () => {
           <ProjectAvatar name={project.name} color={project.color} size="md" />
           <div className="min-w-0">
             <div className="truncate text-lg font-medium leading-tight">{project.name}</div>
-            <div className="truncate text-[12.5px] text-muted-foreground">
+            <div className="truncate text-[0.7813rem] text-muted-foreground">
               {project.repository && <>{project.repository.full_name ?? project.repository.clone_url}</>}
               {project.sub_path && <>{project.repository ? " · " : ""}{project.sub_path}</>}
             </div>
@@ -84,7 +84,7 @@ const ProjectLayout: FC = () => {
             {git?.branch && (
               <NavLink
                 to={Routes.workspace.project_tab(project.id, ProjectTabs.GIT)}
-                className="inline-flex h-[30px] items-center gap-1.5 rounded-md border bg-surface-elevated px-2.5 font-mono text-[12.5px] font-medium hover:border-hairline-strong"
+                className="inline-flex h-[30px] items-center gap-1.5 rounded-md border bg-surface-elevated px-2.5 font-mono text-[0.7813rem] font-medium hover:border-hairline-strong"
               >
                 <GitBranch className="size-3.5" /> {git.branch}
               </NavLink>
@@ -130,7 +130,7 @@ const ProjectLayout: FC = () => {
                   end
                   className={({ isActive }) =>
                     cn(
-                      "-mb-px inline-flex h-10 items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent px-2 text-[13px] font-medium text-muted-foreground hover:text-foreground",
+                      "-mb-px inline-flex h-10 items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent px-2 text-[0.8125rem] font-medium text-muted-foreground hover:text-foreground",
                       (isActive || (tab.id === ProjectTabs.OVERVIEW && location.pathname === Routes.workspace.project(project.id))) && "border-foreground text-foreground",
                     )
                   }

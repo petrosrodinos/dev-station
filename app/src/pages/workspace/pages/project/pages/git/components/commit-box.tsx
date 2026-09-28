@@ -70,7 +70,7 @@ export function CommitBox({ project, selectedPaths, totalFiles }: { project: Pro
                     <Textarea
                       rows={2}
                       placeholder="Commit message"
-                      className="font-mono text-[12.5px]"
+                      className="font-mono text-[0.7813rem]"
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                           e.preventDefault();

@@ -218,7 +218,7 @@ export function ProjectDialog() {
                 {!isDesktop() && <DesktopOnlyNotice />}
                 <div className={cn("space-y-3", !isDesktop() && "pointer-events-none select-none opacity-50")} aria-disabled={!isDesktop()} inert={!isDesktop()}>
                   {isDesktop() && githubConnections.length === 0 ? (
-                    <div className="rounded-md border border-dashed p-4 text-center text-[13px] text-muted-foreground">
+                    <div className="rounded-md border border-dashed p-4 text-center text-[0.8125rem] text-muted-foreground">
                       No GitHub account is connected.{" "}
                       <button
                         type="button"
@@ -297,7 +297,7 @@ export function ProjectDialog() {
                         <FormControl>
                           <Input
                             placeholder="https://github.com/company/project.git"
-                            className="font-mono text-[12.5px]"
+                            className="font-mono text-[0.7813rem]"
                             disabled={!isDesktop()}
                             {...field}
                             value={field.value ?? ""}
@@ -386,7 +386,7 @@ export function ProjectDialog() {
                 <FormItem>
                   <FormLabel>Folder inside the repository (monorepos)</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. apps/api — leave empty for the repository root" className="font-mono text-[12.5px]" {...field} value={field.value ?? ""} />
+                    <Input placeholder="e.g. apps/api — leave empty for the repository root" className="font-mono text-[0.7813rem]" {...field} value={field.value ?? ""} />
                   </FormControl>
                   <FormDescription>One repository can hold several projects — each project can point at its own sub-folder.</FormDescription>
                   <FormMessage />

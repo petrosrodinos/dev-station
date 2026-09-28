@@ -40,7 +40,7 @@ export function IssueDetail({ project, issueId }: { project: Project; issueId: s
         )}
       </div>
 
-      <div className="my-4 grid grid-cols-[100px_1fr] gap-x-3 gap-y-2 text-[12.5px]">
+      <div className="my-4 grid grid-cols-[100px_1fr] gap-x-3 gap-y-2 text-[0.7813rem]">
         <span className="text-muted-foreground">Status</span>
         <span>{issue.state?.name ?? "—"}</span>
         <span className="text-muted-foreground">Priority</span>
@@ -59,7 +59,7 @@ export function IssueDetail({ project, issueId }: { project: Project; issueId: s
         <span className="flex flex-wrap gap-1.5">
           {issue.labels.length
             ? issue.labels.map((l) => (
-                <span key={l.id} className="inline-flex h-5 items-center gap-1 rounded-xs bg-surface-elevated px-2 text-[11.5px]">
+                <span key={l.id} className="inline-flex h-5 items-center gap-1 rounded-xs bg-surface-elevated px-2 text-[0.7188rem]">
                   <span className="size-1.5 rounded-full" style={{ backgroundColor: l.color ?? "#6a6b6c" }} />
                   {l.name}
                 </span>
@@ -74,7 +74,7 @@ export function IssueDetail({ project, issueId }: { project: Project; issueId: s
         </Button>
       )}
 
-      <div className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-md border bg-surface-elevated p-3 text-[13px] leading-relaxed text-body">
+      <div className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-md border bg-surface-elevated p-3 text-[0.8125rem] leading-relaxed text-body">
         {issue.description?.trim() || <span className="text-ash">No description.</span>}
       </div>
 
@@ -82,8 +82,8 @@ export function IssueDetail({ project, issueId }: { project: Project; issueId: s
         <div className="mt-4 space-y-2">
           <div className="text-xs font-medium uppercase tracking-[0.4px] text-muted-foreground">Comments</div>
           {issue.comments.map((c) => (
-            <div key={c.id} className="rounded-md border p-2.5 text-[12.5px]">
-              <div className="mb-1 flex justify-between text-[11.5px] text-muted-foreground">
+            <div key={c.id} className="rounded-md border p-2.5 text-[0.7813rem]">
+              <div className="mb-1 flex justify-between text-[0.7188rem] text-muted-foreground">
                 <span>{c.user?.name ?? "Someone"}</span>
                 <span>{formatRelative(c.created_at)}</span>
               </div>

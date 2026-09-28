@@ -1,5 +1,6 @@
 export const SettingsSections = {
     GENERAL: "general",
+    THEME: "theme",
     GIT: "git",
     AI: "ai",
     INTEGRATIONS: "integrations",
@@ -10,6 +11,7 @@ export type SettingsSection = (typeof SettingsSections)[keyof typeof SettingsSec
 
 export const SettingsSectionOptions: { id: SettingsSection; label: string }[] = [
     { id: SettingsSections.GENERAL, label: "General" },
+    { id: SettingsSections.THEME, label: "Theme" },
     { id: SettingsSections.GIT, label: "Git" },
     { id: SettingsSections.AI, label: "AI" },
     { id: SettingsSections.INTEGRATIONS, label: "Integrations" },

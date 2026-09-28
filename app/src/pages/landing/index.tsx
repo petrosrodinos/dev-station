@@ -30,7 +30,7 @@ export default function LandingPage() {
   return (
     <div className="h-screen overflow-y-auto bg-canvas text-foreground">
       <header className="flex h-14 items-center justify-between border-b bg-canvas px-6">
-        <div className="flex items-center gap-2 text-[14px] font-semibold">
+        <div className="flex items-center gap-2 text-[0.875rem] font-semibold">
           <span className="size-[18px] rounded-[5px] bg-gradient-to-br from-[#ff5757] to-[#a1131a]" aria-hidden />
           {environments.APP_NAME}
         </div>
@@ -43,7 +43,7 @@ export default function LandingPage() {
         <section className="px-6 pt-24 pb-16">
           <div className="landing-fade-up mx-auto flex max-w-xl flex-col items-center gap-6 text-center" style={{ animationDelay: "0ms" }}>
             <span className="size-16 rounded-lg bg-gradient-to-br from-[#ff5757] to-[#a1131a]" aria-hidden />
-            <h1 className="text-[44px] font-semibold leading-[1.1] sm:text-[56px]">One workspace for every client project.</h1>
+            <h1 className="text-[2.75rem] font-semibold leading-[1.1] sm:text-[3.5rem]">One workspace for every client project.</h1>
             <p className="max-w-md text-lg text-body">
               Switch projects, start dev servers, work with AI agents, and review Git diffs — without juggling a dozen windows.
             </p>
@@ -68,9 +68,9 @@ export default function LandingPage() {
             <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {WORKFLOW_STEPS.map((step, i) => (
                 <div key={step.title} className="flex gap-3 border-t pt-4">
-                  <span className="font-mono text-[13px] text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="font-mono text-[0.8125rem] text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
                   <div>
-                    <div className="text-[15px] font-medium">{step.title}</div>
+                    <div className="text-[0.9375rem] font-medium">{step.title}</div>
                     <p className="mt-1 text-sm text-body">{step.body}</p>
                   </div>
                 </div>
@@ -86,7 +86,7 @@ export default function LandingPage() {
               {FEATURES.map((feature) => (
                 <div key={feature.title} className="rounded-lg border bg-surface p-6">
                   <feature.icon className="size-5 text-muted-foreground" />
-                  <div className="mt-4 text-[15px] font-medium">{feature.title}</div>
+                  <div className="mt-4 text-[0.9375rem] font-medium">{feature.title}</div>
                   <p className="mt-1.5 text-sm text-body">{feature.body}</p>
                 </div>
               ))}
@@ -97,7 +97,7 @@ export default function LandingPage() {
 
       <footer className="border-t px-6 py-12">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 text-center">
-          <div className="flex items-center gap-2 text-[13px] font-semibold">
+          <div className="flex items-center gap-2 text-[0.8125rem] font-semibold">
             <span className="size-[16px] rounded-[4px] bg-gradient-to-br from-[#ff5757] to-[#a1131a]" aria-hidden />
             {environments.APP_NAME}
           </div>

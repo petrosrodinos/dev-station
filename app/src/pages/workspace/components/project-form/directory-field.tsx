@@ -27,7 +27,7 @@ export function DirectoryField({ value, onChange, placeholder, onPicked }: Direc
         onChange={(e) => onChange(e.target.value)}
         onBlur={() => value.trim() && onPicked?.(value.trim())}
         placeholder={placeholder}
-        className="font-mono text-[12.5px]"
+        className="font-mono text-[0.7813rem]"
       />
       <Button type="button" variant="outline" onClick={browse} className="shrink-0 gap-1.5">
         <FolderOpen className="size-4" /> Browse…

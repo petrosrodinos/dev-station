@@ -79,7 +79,7 @@ export function StatusBar() {
         </PopoverTrigger>
         <PopoverContent side="top" align="start" className="w-[420px] p-0">
           <div className="flex items-center justify-between border-b px-3 py-2">
-            <span className="text-[13px] font-medium">Activity</span>
+            <span className="text-[0.8125rem] font-medium">Activity</span>
             <Tabs value={scope} onValueChange={(v) => setScope(v as Scope)}>
               <TabsList className="h-7 p-0.5">
                 <TabsTrigger value={Scopes.PROJECT} className="h-6 px-2 text-xs" disabled={!activeProjectId}>
@@ -100,8 +100,8 @@ export function StatusBar() {
               feed.data.map((a) => {
                 const project = a.project_id ? projectById.get(a.project_id) : undefined;
                 return (
-                  <button key={a.id} onClick={() => openActivity(a)} className="flex w-full gap-2.5 border-b border-hairline-soft px-3 py-2 text-left text-[12.5px] last:border-b-0 hover:bg-surface-elevated">
-                    <span className="w-16 shrink-0 pt-px font-mono text-[11px] text-ash">{formatTimelineTime(a.created_at)}</span>
+                  <button key={a.id} onClick={() => openActivity(a)} className="flex w-full gap-2.5 border-b border-hairline-soft px-3 py-2 text-left text-[0.7813rem] last:border-b-0 hover:bg-surface-elevated">
+                    <span className="w-16 shrink-0 pt-px font-mono text-[0.6875rem] text-ash">{formatTimelineTime(a.created_at)}</span>
                     <span className="mt-[5px] size-1.5 shrink-0 rounded-full" style={{ backgroundColor: project?.color ?? "#6a6b6c" }} />
                     <span className="min-w-0 text-body">
                       {a.message}

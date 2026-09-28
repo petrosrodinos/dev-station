@@ -62,12 +62,12 @@ export function RolesCard() {
         <ListSkeleton rows={8} />
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-[12.5px]">
+          <table className="w-full text-[0.7813rem]">
             <thead>
               <tr className="border-b">
-                <th className="px-4 py-2.5 text-left text-[11.5px] font-medium uppercase tracking-[0.4px] text-muted-foreground">Capability</th>
+                <th className="px-4 py-2.5 text-left text-[0.7188rem] font-medium uppercase tracking-[0.4px] text-muted-foreground">Capability</th>
                 {roles?.map((r) => (
-                  <th key={r.id} className="px-2 py-2.5 text-center text-[11.5px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                  <th key={r.id} className="px-2 py-2.5 text-center text-[0.7188rem] font-medium uppercase tracking-[0.4px] text-muted-foreground">
                     <div className="flex items-center justify-center gap-1">
                       {r.name}
                       {canEdit && !r.is_system && (
@@ -76,7 +76,7 @@ export function RolesCard() {
                         </button>
                       )}
                     </div>
-                    <div className="text-[10px] font-normal normal-case tracking-normal text-ash">{r.member_count} member{r.member_count === 1 ? "" : "s"}</div>
+                    <div className="text-[0.625rem] font-normal normal-case tracking-normal text-ash">{r.member_count} member{r.member_count === 1 ? "" : "s"}</div>
                   </th>
                 ))}
               </tr>
@@ -85,7 +85,7 @@ export function RolesCard() {
               {groups.map(([group, items]) => (
                 <Fragment key={group}>
                   <tr className="bg-surface-elevated/60">
-                    <td colSpan={(roles?.length ?? 0) + 1} className="px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                    <td colSpan={(roles?.length ?? 0) + 1} className="px-4 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.4px] text-muted-foreground">
                       {group}
                     </td>
                   </tr>

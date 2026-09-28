@@ -3,11 +3,13 @@ import { AgentType } from 'generated/prisma';
 import {
   IsBoolean,
   IsEnum,
+  IsHexColor,
   IsIn,
   IsInt,
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   Max,
   MaxLength,
   Min,
@@ -53,4 +55,37 @@ export class UpdatePreferencesDto {
   @IsOptional()
   @IsIn(['dark', 'light', 'system'])
   theme?: string;
+
+  @ApiProperty({ required: false, example: 'default' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  @Matches(/^[a-z0-9-]+$/)
+  theme_preset?: string;
+
+  @ApiProperty({ required: false, nullable: true, example: '#5b8def' })
+  @IsOptional()
+  @IsHexColor()
+  accent_color?: string | null;
+
+  @ApiProperty({ required: false, example: 14 })
+  @IsOptional()
+  @IsInt()
+  @Min(12)
+  @Max(20)
+  font_size?: number;
+
+  @ApiProperty({ required: false, example: 'inter' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  @Matches(/^[a-z0-9-]+$/)
+  font_family?: string;
+
+  @ApiProperty({ required: false, example: 'jetbrains-mono' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  @Matches(/^[a-z0-9-]+$/)
+  mono_font_family?: string;
 }

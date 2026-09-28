@@ -63,7 +63,7 @@ export function ServiceLogsSheet({ project, service, onClose }: { project: Proje
         <div
           ref={scrollRef}
           onWheel={() => setFollow(false)}
-          className="min-h-0 flex-1 overflow-auto bg-terminal p-3 font-mono text-[12px] leading-relaxed"
+          className="min-h-0 flex-1 overflow-auto bg-terminal p-3 font-mono text-[0.75rem] leading-relaxed"
         >
           {lines.length === 0 ? (
             <div className="text-ash">No output yet.</div>

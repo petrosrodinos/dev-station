@@ -79,7 +79,7 @@ const OverviewTab: FC = () => {
         <Panel className="border-warning/60">
           <PanelBody className="flex items-center gap-2.5 py-3">
             <AlertCircle className="size-4 text-warning" />
-            <span className="text-[13px]">
+            <span className="text-[0.8125rem]">
               {needsAttention.length} session{needsAttention.length > 1 ? "s need" : " needs"} your attention in this project —{" "}
               {needsAttention
                 .map((s) => `${s.name} (${getDropdownOptionLabel(AgentStatusOptions, runtimeAgents[s.id]?.status ?? s.status).toLowerCase()})`)
@@ -96,9 +96,9 @@ const OverviewTab: FC = () => {
         <Panel>
           <PanelHeader title="Project" />
           <PanelBody className="py-2">
-            <StatRow label="Repository" value={<span className="font-mono text-[12.5px]">{project.repository?.full_name ?? project.repository?.clone_url ?? "—"}</span>} />
-            <StatRow label="Branch" value={<span className="font-mono text-[12.5px]">{git?.branch ?? "—"}</span>} />
-            <StatRow label="Local path" value={<span className="font-mono text-[12px]" title={localPath}>{localPath ?? "Not on this device"}</span>} />
+            <StatRow label="Repository" value={<span className="font-mono text-[0.7813rem]">{project.repository?.full_name ?? project.repository?.clone_url ?? "—"}</span>} />
+            <StatRow label="Branch" value={<span className="font-mono text-[0.7813rem]">{git?.branch ?? "—"}</span>} />
+            <StatRow label="Local path" value={<span className="font-mono text-[0.75rem]" title={localPath}>{localPath ?? "Not on this device"}</span>} />
             <StatRow label="GitHub account" value={githubAccount ?? "—"} />
             <StatRow label="Last activity" value={formatRelative(project.last_activity_at)} />
           </PanelBody>
@@ -117,7 +117,7 @@ const OverviewTab: FC = () => {
             {gitPending ? (
               Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="my-2.5 h-3.5 w-full" />)
             ) : !git?.is_repo ? (
-              <div className="py-6 text-center text-[13px] text-muted-foreground">This folder is not a Git repository.</div>
+              <div className="py-6 text-center text-[0.8125rem] text-muted-foreground">This folder is not a Git repository.</div>
             ) : (
               <>
                 <StatRow label="Modified" value={git.counts.modified + git.counts.renamed} />
@@ -152,21 +152,21 @@ const OverviewTab: FC = () => {
           />
           <PanelBody className="py-1">
             {projectSessions.length === 0 ? (
-              <div className="py-6 text-center text-[13px] text-ash">No AI sessions yet</div>
+              <div className="py-6 text-center text-[0.8125rem] text-ash">No AI sessions yet</div>
             ) : (
               projectSessions.slice(0, 6).map((s) => {
                 const status = runtimeAgents[s.id]?.status ?? s.status;
                 return (
                   <button key={s.id} onClick={() => openSessionTab(s.id)} className="flex w-full items-center gap-2 border-b border-hairline-soft py-2 text-left last:border-b-0 hover:opacity-90">
                     <StatusDot status={agentStatusDot(status)} />
-                    <span className="flex-1 truncate text-[13px] font-medium">{s.name}</span>
+                    <span className="flex-1 truncate text-[0.8125rem] font-medium">{s.name}</span>
                     {s.files_changed > 0 && (
-                      <span className="font-mono text-[11.5px]">
+                      <span className="font-mono text-[0.7188rem]">
                         <span className="text-success">+{s.additions}</span> <span className="text-danger">-{s.deletions}</span>
                       </span>
                     )}
-                    <span className="font-mono text-[11.5px] text-muted-foreground">{getAgentTypeLabel(s.agent_type)}</span>
-                    {status === AgentRuntimeStatuses.FINISHED && <span className="text-[11px] text-info">review</span>}
+                    <span className="font-mono text-[0.7188rem] text-muted-foreground">{getAgentTypeLabel(s.agent_type)}</span>
+                    {status === AgentRuntimeStatuses.FINISHED && <span className="text-[0.6875rem] text-info">review</span>}
                   </button>
                 );
               })

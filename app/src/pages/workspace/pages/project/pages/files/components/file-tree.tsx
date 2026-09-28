@@ -69,7 +69,7 @@ function DirRow({ projectId, entry, depth, gitStates }: { projectId: string; ent
         role="treeitem"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="group flex h-[26px] cursor-pointer items-center gap-1.5 rounded-sm pr-1 text-[13px] text-body hover:bg-surface-elevated"
+        className="group flex h-[26px] cursor-pointer items-center gap-1.5 rounded-sm pr-1 text-[0.8125rem] text-body hover:bg-surface-elevated"
         style={{ paddingLeft: depth * 16 + 6 }}
       >
         <ChevronRight className={cn("size-3.5 text-ash transition-transform", open && "rotate-90")} />
@@ -95,7 +95,7 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false }:
   return (
     <div
       onDoubleClick={() => openInEditor.mutate({ projectId, editor: EditorTargets.CURSOR, path: entry.path })}
-      className="group flex h-[26px] items-center gap-1.5 rounded-sm pr-1 text-[13px] text-body hover:bg-surface-elevated"
+      className="group flex h-[26px] items-center gap-1.5 rounded-sm pr-1 text-[0.8125rem] text-body hover:bg-surface-elevated"
       style={{ paddingLeft: depth * 16 + 26 }}
       title="Double-click to open in Cursor"
     >

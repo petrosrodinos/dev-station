@@ -55,7 +55,7 @@ const NotionTab: FC = () => {
     return (
       <div className="p-4">
         <Panel className="max-w-xl p-4">
-          <div className="mb-3 text-[13px] font-medium">Choose the Notion workspace for this project</div>
+          <div className="mb-3 text-[0.8125rem] font-medium">Choose the Notion workspace for this project</div>
           <Select onValueChange={(v) => update.mutate({ id: project.id, notion_connection_id: v })} disabled={!can(PermissionKeys.PROJECTS_EDIT)}>
             <SelectTrigger aria-label="Notion account">
               <SelectValue placeholder="Choose a Notion account" />
@@ -85,7 +85,7 @@ const NotionTab: FC = () => {
 
   return (
     <div className="space-y-4 p-4">
-      <div className="flex items-center gap-2.5 rounded-lg border bg-card px-4 py-3 text-[12.5px] text-body">
+      <div className="flex items-center gap-2.5 rounded-lg border bg-card px-4 py-3 text-[0.7813rem] text-body">
         <Info className="size-4 shrink-0 text-muted-foreground" />
         Open a page and use it as context when starting a Claude Code or Cursor CLI session in this project.
       </div>
@@ -108,7 +108,7 @@ const NotionTab: FC = () => {
                 <button
                   key={p.id}
                   onClick={() => setSelectedId(p.id)}
-                  className={cn("flex w-full items-center gap-2 border-b border-hairline-soft px-3 py-2 text-left text-[13px] last:border-b-0 hover:bg-surface-elevated", selectedId === p.id && "bg-surface-card")}
+                  className={cn("flex w-full items-center gap-2 border-b border-hairline-soft px-3 py-2 text-left text-[0.8125rem] last:border-b-0 hover:bg-surface-elevated", selectedId === p.id && "bg-surface-card")}
                 >
                   <FileText className="size-3.5 shrink-0 text-muted-foreground" />
                   <span className="min-w-0 flex-1 truncate">{p.title || "Untitled"}</span>
@@ -152,7 +152,7 @@ const NotionTab: FC = () => {
                   </>
                 }
               />
-              <div className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap p-4 text-[13px] leading-relaxed text-body">{page.markdown || <span className="text-ash">This page is empty.</span>}</div>
+              <div className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap p-4 text-[0.8125rem] leading-relaxed text-body">{page.markdown || <span className="text-ash">This page is empty.</span>}</div>
             </>
           ) : (
             <EmptyState title="Could not load the page" />

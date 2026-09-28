@@ -75,7 +75,7 @@ export function GitSettings() {
       <section>
         <SettingsSectionHeader title="Git accounts" description="GitHub accounts connected through Composio. Each project chooses which one it uses." />
         {connections.map((c) => (
-          <div key={c.id} className="flex items-center gap-2 border-b border-hairline-soft py-2 text-[13px]">
+          <div key={c.id} className="flex items-center gap-2 border-b border-hairline-soft py-2 text-[0.8125rem]">
             <Github className="size-4 text-muted-foreground" />
             {c.label}
             {c.external_account && <span className="text-muted-foreground">({c.external_account})</span>}

@@ -92,7 +92,7 @@ export function TopBar() {
     <header className="app-drag flex h-12 shrink-0 items-center gap-3 border-b bg-canvas px-3">
       <button
         onClick={() => navigate(Routes.workspace.root)}
-        className="app-no-drag flex items-center gap-2 text-[13px] font-semibold tracking-[0.2px]"
+        className="app-no-drag flex items-center gap-2 text-[0.8125rem] font-semibold tracking-[0.2px]"
         aria-label="Go to workspace home"
       >
         <span className="size-[18px] rounded-[5px] bg-gradient-to-br from-[#ff5757] to-[#a1131a]" aria-hidden />
@@ -120,7 +120,7 @@ export function TopBar() {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="app-no-drag flex h-7 items-center gap-1.5 rounded-sm px-2 text-[12.5px] font-medium text-body hover:bg-surface-elevated">
+          <button className="app-no-drag flex h-7 items-center gap-1.5 rounded-sm px-2 text-[0.7813rem] font-medium text-body hover:bg-surface-elevated">
             <Building2 className="size-3.5 text-muted-foreground" />
             <span className="max-w-48 truncate">{organization?.name ?? "Select organization"}</span>
             <ChevronDown className="size-3 text-muted-foreground" />
@@ -132,7 +132,7 @@ export function TopBar() {
             <DropdownMenuItem key={org.id} onSelect={() => switchOrganization(org.id)} className="gap-2">
               <Building2 className="size-3.5" />
               <span className="flex-1 truncate">{org.name}</span>
-              <span className="text-[11px] text-muted-foreground">{getDropdownOptionLabel(RoleKeyOptions, org.role.key)}</span>
+              <span className="text-[0.6875rem] text-muted-foreground">{getDropdownOptionLabel(RoleKeyOptions, org.role.key)}</span>
               {org.id === organization?.id && <Check className="size-3.5" />}
             </DropdownMenuItem>
           ))}
@@ -150,7 +150,7 @@ export function TopBar() {
 
       <button
         onClick={() => setCommandPalette(true)}
-        className="app-no-drag flex h-7 w-64 items-center gap-2 rounded-md border bg-surface-elevated px-2.5 text-[12.5px] text-ash hover:border-hairline-strong"
+        className="app-no-drag flex h-7 w-64 items-center gap-2 rounded-md border bg-surface-elevated px-2.5 text-[0.7813rem] text-ash hover:border-hairline-strong"
       >
         <Search className="size-3.5" />
         <span className="flex-1 text-left">Search projects, issues…</span>
@@ -168,7 +168,7 @@ export function TopBar() {
         </Tooltip>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="ml-1 flex size-7 items-center justify-center rounded-full border bg-surface-card text-[11px] font-semibold" aria-label="Account">
+            <button className="ml-1 flex size-7 items-center justify-center rounded-full border bg-surface-card text-[0.6875rem] font-semibold" aria-label="Account">
               {generateInitials(me?.full_name || me?.email)}
             </button>
           </DropdownMenuTrigger>

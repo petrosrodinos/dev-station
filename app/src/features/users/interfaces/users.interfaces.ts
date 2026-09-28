@@ -24,6 +24,11 @@ export interface UserPreference {
     idle_threshold_seconds: number;
     confirm_destructive: boolean;
     theme: string;
+    theme_preset: string;
+    accent_color: string | null;
+    font_size: number;
+    font_family: string;
+    mono_font_family: string;
 }
 
 export type UpdatePreferenceDto = Partial<Omit<UserPreference, "id" | "user_id">>;

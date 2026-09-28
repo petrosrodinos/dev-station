@@ -62,7 +62,7 @@ const ProjectSetupPage: FC = () => {
   const missingPath = config?.project_paths[project.id];
 
   if (!isDesktop()) {
-    return <div className="p-4 text-[13px] text-muted-foreground">Local setup is available in the Dev Station desktop app.</div>;
+    return <div className="p-4 text-[0.8125rem] text-muted-foreground">Local setup is available in the Dev Station desktop app.</div>;
   }
 
   return (
@@ -72,7 +72,7 @@ const ProjectSetupPage: FC = () => {
           {localState === ProjectLocalStates.MISSING ? <AlertTriangle className="mt-0.5 size-5 text-warning" /> : <CloudDownload className="mt-0.5 size-5 text-info" />}
           <div>
             <div className="text-sm font-medium">{localState ? getDropdownOptionLabel(ProjectLocalStateOptions, localState) : "Set up locally"}</div>
-            <div className="text-[13px] text-muted-foreground">
+            <div className="text-[0.8125rem] text-muted-foreground">
               {localState ? getProjectLocalStateDescription(localState) : ""}
               {localState === ProjectLocalStates.MISSING && missingPath && (
                 <>
@@ -89,7 +89,7 @@ const ProjectSetupPage: FC = () => {
         <Panel>
           <PanelHeader title={<><GitFork className="size-3.5" /> Use existing clone</>} />
           <PanelBody className="flex items-center gap-3">
-            <div className="min-w-0 flex-1 text-[13px]">
+            <div className="min-w-0 flex-1 text-[0.8125rem]">
               The repository is already cloned for <b>{siblingClone.name}</b>. Point this project at <span className="font-mono text-xs">{siblingClone.path}</span>.
             </div>
             <Button onClick={() => link.mutate({ project, path: siblingClone.path }, { onSuccess: done })} loading={link.isPending}>
@@ -104,7 +104,7 @@ const ProjectSetupPage: FC = () => {
         <PanelBody className="space-y-3">
           {project.repository ? (
             <>
-              <div className="text-[13px] text-muted-foreground">
+              <div className="text-[0.8125rem] text-muted-foreground">
                 Clones <span className="font-mono text-foreground">{project.repository.clone_url}</span>
                 {project.sub_path && (
                   <>
@@ -136,7 +136,7 @@ const ProjectSetupPage: FC = () => {
               </div>
             </>
           ) : (
-            <div className="text-[13px] text-muted-foreground">This project has no repository URL. Edit the project to add one, or choose an existing folder below.</div>
+            <div className="text-[0.8125rem] text-muted-foreground">This project has no repository URL. Edit the project to add one, or choose an existing folder below.</div>
           )}
         </PanelBody>
       </Panel>
@@ -144,7 +144,7 @@ const ProjectSetupPage: FC = () => {
       <Panel>
         <PanelHeader title={<><FolderInput className="size-3.5" /> Choose local path</>} />
         <PanelBody className="space-y-3">
-          <div className="text-[13px] text-muted-foreground">Already have the repository on this machine (restored from a backup or cloned outside Dev Station)? Point the project at it.</div>
+          <div className="text-[0.8125rem] text-muted-foreground">Already have the repository on this machine (restored from a backup or cloned outside Dev Station)? Point the project at it.</div>
           <DirectoryField value={folder} onChange={setFolder} placeholder="Project folder" />
           <div className="flex justify-end">
             <Button variant="secondary" onClick={() => link.mutate({ project, path: folder }, { onSuccess: done })} loading={link.isPending} disabled={!folder}>

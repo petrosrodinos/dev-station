@@ -42,7 +42,7 @@ export function WorkspacePreview({ className }: { className?: string }) {
           <div
             key={tab.name}
             className={cn(
-              "flex h-7 shrink-0 items-center gap-2 rounded-md px-2.5 text-[12px]",
+              "flex h-7 shrink-0 items-center gap-2 rounded-md px-2.5 text-[0.75rem]",
               i === 0 ? "bg-surface-elevated text-foreground" : "text-muted-foreground",
             )}
           >
@@ -61,20 +61,20 @@ export function WorkspacePreview({ className }: { className?: string }) {
         </div>
 
         <div className="hidden w-44 shrink-0 flex-col gap-0.5 border-r p-2 sm:flex">
-          <div className="flex items-center gap-1.5 px-1 pb-2 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 px-1 pb-2 text-[0.6875rem] text-muted-foreground">
             <GitBranch className="size-3" />
             <span>feature/checkout-fix</span>
           </div>
           {FILE_LINES.map((file, i) => (
-            <div key={file} className={cn("truncate rounded-sm px-1.5 py-1 font-mono text-[11px]", i === 1 ? "bg-surface-elevated text-foreground" : "text-muted-foreground")}>
+            <div key={file} className={cn("truncate rounded-sm px-1.5 py-1 font-mono text-[0.6875rem]", i === 1 ? "bg-surface-elevated text-foreground" : "text-muted-foreground")}>
               {file}
             </div>
           ))}
         </div>
 
         <div className="flex-1 overflow-hidden bg-terminal/[0.02] p-3">
-          <div className="mb-2 font-mono text-[11px] text-muted-foreground">src/lib/pricing.ts</div>
-          <div className="space-y-0.5 font-mono text-[12px] leading-relaxed">
+          <div className="mb-2 font-mono text-[0.6875rem] text-muted-foreground">src/lib/pricing.ts</div>
+          <div className="space-y-0.5 font-mono text-[0.75rem] leading-relaxed">
             {DIFF_LINES.map((line, i) => (
               <div
                 key={i}

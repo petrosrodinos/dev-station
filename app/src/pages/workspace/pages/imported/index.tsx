@@ -75,7 +75,7 @@ const ImportedProjectsPage: FC = () => {
     <div className="mx-auto w-full max-w-4xl space-y-4 overflow-y-auto p-6">
       <div>
         <h1 className="text-lg font-medium">Imported projects</h1>
-        <p className="text-[13px] text-muted-foreground">
+        <p className="text-[0.8125rem] text-muted-foreground">
           These projects exist in your organization but aren't on this device yet. Clone them into your workspace folder, point them at existing folders, or leave them for later.
         </p>
       </div>
@@ -133,10 +133,10 @@ const ImportedProjectsPage: FC = () => {
                   />
                   <ProjectAvatar name={p.name} color={p.color} size="sm" />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[13px] font-medium">
+                    <div className="truncate text-[0.8125rem] font-medium">
                       {p.name}
                     </div>
-                    <div className="truncate font-mono text-[11.5px] text-ash">{p.repository ? `${p.repository.clone_url} → ${destinations[p.id] ?? "…"}` : "No repository — choose a local path"}</div>
+                    <div className="truncate font-mono text-[0.7188rem] text-ash">{p.repository ? `${p.repository.clone_url} → ${destinations[p.id] ?? "…"}` : "No repository — choose a local path"}</div>
                   </div>
                   {row?.state === "done" && <CheckCircle2 className="size-4 text-success" />}
                   {row?.state === "error" && (
@@ -160,7 +160,7 @@ const ImportedProjectsPage: FC = () => {
                 </div>
                 {row?.state === "cloning" && (
                   <div className="mt-2 space-y-1 pl-[68px]">
-                    <div className="truncate font-mono text-[11px] text-muted-foreground">{event?.line ?? "Starting…"}</div>
+                    <div className="truncate font-mono text-[0.6875rem] text-muted-foreground">{event?.line ?? "Starting…"}</div>
                     <Progress value={event?.percent ?? 5} className="h-1" />
                   </div>
                 )}

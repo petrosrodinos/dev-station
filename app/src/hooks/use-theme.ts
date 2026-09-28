@@ -1,45 +1,15 @@
-import { useEffect, useState } from "react";
+import { resolveMode } from "@/lib/appearance/apply-appearance";
+import { useAppearanceStore, type ThemeMode } from "@/stores/appearance";
 
-export type Theme = "light" | "dark" | "system";
+export type Theme = ThemeMode;
 
-const STORAGE_KEY = "theme";
-
-const readTheme = (): Theme => {
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-        return stored === "light" || stored === "dark" || stored === "system" ? stored : "dark";
-    } catch {
-        return "dark";
-    }
-};
-
-const systemTheme = () => (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-
-/** Applies the theme class on <html>. Dark is the primary/default theme (Spec §1). */
-export const applyTheme = (theme: Theme) => {
-    const root = document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(theme === "system" ? systemTheme() : theme);
-};
-
+/** Light/dark/system mode, backed by the shared appearance store so every caller stays in sync. */
 export const useTheme = () => {
-    const [theme, setTheme] = useState<Theme>(readTheme);
+    const theme = useAppearanceStore((s) => s.mode);
+    const update = useAppearanceStore((s) => s.update);
+    const setTheme = (mode: Theme) => update({ mode });
 
-    useEffect(() => {
-        applyTheme(theme);
-        try {
-            localStorage.setItem(STORAGE_KEY, theme);
-        } catch {
-            /* storage unavailable */
-        }
-        if (theme !== "system") return;
-        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-        const handleChange = () => applyTheme("system");
-        mediaQuery.addEventListener("change", handleChange);
-        return () => mediaQuery.removeEventListener("change", handleChange);
-    }, [theme]);
-
-    const resolved = theme === "system" ? systemTheme() : theme;
+    const resolved = resolveMode(theme);
     return {
         theme,
         setTheme,
@@ -48,6 +18,3 @@ export const useTheme = () => {
         getThemeIconType: () => (resolved === "dark" ? "sun" : "moon"),
     };
 };
-
-/** Call once at startup so the first paint uses the stored theme. */
-export const initTheme = () => applyTheme(readTheme());

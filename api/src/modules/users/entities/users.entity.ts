@@ -39,4 +39,9 @@ export class UserPreferenceEntity {
   @ApiProperty() idle_threshold_seconds: number;
   @ApiProperty() confirm_destructive: boolean;
   @ApiProperty() theme: string;
+  @ApiProperty() theme_preset: string;
+  @ApiProperty({ nullable: true }) accent_color: string | null;
+  @ApiProperty() font_size: number;
+  @ApiProperty() font_family: string;
+  @ApiProperty() mono_font_family: string;
 }

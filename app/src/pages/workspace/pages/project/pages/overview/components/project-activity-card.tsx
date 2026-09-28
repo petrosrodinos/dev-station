@@ -16,16 +16,16 @@ export function ProjectActivityCard({ projectId }: { projectId: string }) {
         {isPending ? (
           <ListSkeleton rows={5} withIcon={false} className="px-0" />
         ) : !data?.data.length ? (
-          <div className="py-6 text-center text-[13px] text-ash">No activity yet</div>
+          <div className="py-6 text-center text-[0.8125rem] text-ash">No activity yet</div>
         ) : (
           data.data.map((a) => (
             <button
               key={a.id}
               disabled={!a.agent_session_id}
               onClick={() => a.agent_session_id && openSessionTab(a.agent_session_id)}
-              className="flex w-full gap-3 border-b border-hairline-soft py-1.5 text-left text-[12.5px] last:border-b-0 enabled:hover:text-foreground"
+              className="flex w-full gap-3 border-b border-hairline-soft py-1.5 text-left text-[0.7813rem] last:border-b-0 enabled:hover:text-foreground"
             >
-              <span className="w-24 shrink-0 font-mono text-[11px] leading-5 text-ash">{formatTimelineTime(a.created_at)}</span>
+              <span className="w-24 shrink-0 font-mono text-[0.6875rem] leading-5 text-ash">{formatTimelineTime(a.created_at)}</span>
               <span className="min-w-0 text-body">
                 {a.message}
                 {a.user?.full_name && <span className="text-ash"> · {a.user.full_name}</span>}

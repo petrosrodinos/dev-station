@@ -78,7 +78,7 @@ export function CommandPalette() {
               >
                 <Bot className="size-4" />
                 <span className="truncate">{s.name}</span>
-                <span className="ml-auto text-[11.5px] text-ash">{projects?.find((p) => p.id === s.project_id)?.name}</span>
+                <span className="ml-auto text-[0.7188rem] text-ash">{projects?.find((p) => p.id === s.project_id)?.name}</span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -93,7 +93,7 @@ export function CommandPalette() {
               >
                 <CircleDot className="size-4" />
                 <span className="truncate">{i.title}</span>
-                <span className="ml-auto font-mono text-[11.5px] text-ash">{i.identifier}</span>
+                <span className="ml-auto font-mono text-[0.7188rem] text-ash">{i.identifier}</span>
               </CommandItem>
             ))}
           </CommandGroup>

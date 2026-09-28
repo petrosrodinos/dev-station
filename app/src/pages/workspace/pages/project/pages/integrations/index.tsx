@@ -34,7 +34,7 @@ const IntegrationsTab: FC = () => {
               onClick={() => setParams({ integration: option.id }, { replace: true })}
               aria-current={active === option.id ? "page" : undefined}
               className={cn(
-                "flex h-8 w-full items-center gap-2 rounded-md px-2.5 text-left text-[13px] font-medium text-muted-foreground hover:bg-surface-elevated hover:text-foreground",
+                "flex h-8 w-full items-center gap-2 rounded-md px-2.5 text-left text-[0.8125rem] font-medium text-muted-foreground hover:bg-surface-elevated hover:text-foreground",
                 active === option.id && "bg-surface-elevated text-foreground",
               )}
             >
