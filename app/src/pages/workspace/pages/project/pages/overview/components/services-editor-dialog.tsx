@@ -71,7 +71,7 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
 
   return (
     <Dialog open={open} onOpenChange={(o) => !save.isPending && onOpenChange(o)}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Services</DialogTitle>
           <DialogDescription>
@@ -108,7 +108,8 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
               const cwd = form.watch(`services.${index}.cwd`);
               const scripts = detection.data?.packages.find((p) => p.path === (cwd || "."))?.scripts ?? {};
               return (
-                <div key={field.id} className="grid grid-cols-12 gap-2 rounded-md border p-3">
+                <div key={field.id} className="relative grid grid-cols-12 gap-x-3 gap-y-3 rounded-md border p-4 pt-9">
+                  <span className="absolute left-4 top-2.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Service {index + 1}</span>
                   <FormField
                     control={form.control}
                     name={`services.${index}.name`}
@@ -175,7 +176,7 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
                     control={form.control}
                     name={`services.${index}.mode`}
                     render={({ field: f }) => (
-                      <FormItem className="col-span-3">
+                      <FormItem className="col-span-4">
                         <FormLabel className="text-xs">Runs</FormLabel>
                         <Select value={f.value} onValueChange={f.onChange}>
                           <FormControl>
@@ -262,11 +263,16 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
                       )}
                     />
                   )}
-                  <div className="col-span-1 flex items-end justify-end">
-                    <Button type="button" variant="ghost" size="icon" className="size-9 text-muted-foreground hover:text-danger" onClick={() => remove(index)} aria-label="Remove service">
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1.5 top-1.5 size-7 text-muted-foreground hover:text-danger"
+                    onClick={() => remove(index)}
+                    aria-label="Remove service"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
                 </div>
               );
             })}
