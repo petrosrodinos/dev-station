@@ -102,14 +102,14 @@ export function ServicesEditorDialog({ project, open, onOpenChange }: { project:
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-            {fields.length === 0 && <div className="rounded-md border border-dashed py-8 text-center text-[13px] text-muted-foreground">No services defined.</div>}
+            {fields.length === 0 && <div className="rounded-md border border-dashed py-8 text-center text-[0.8125rem] text-muted-foreground">No services defined.</div>}
             {fields.map((field, index) => {
               const mode = form.watch(`services.${index}.mode`);
               const cwd = form.watch(`services.${index}.cwd`);
               const scripts = detection.data?.packages.find((p) => p.path === (cwd || "."))?.scripts ?? {};
               return (
                 <div key={field.id} className="relative grid grid-cols-12 gap-x-3 gap-y-3 rounded-md border p-4 pt-9">
-                  <span className="absolute left-4 top-2.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Service {index + 1}</span>
+                  <span className="absolute left-4 top-2.5 text-[0.6875rem] font-medium uppercase tracking-wide text-muted-foreground">Service {index + 1}</span>
                   <FormField
                     control={form.control}
                     name={`services.${index}.name`}

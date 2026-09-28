@@ -96,16 +96,16 @@ const GitTab: FC = () => {
                 <div
                   key={f.path}
                   onClick={() => setParams((p) => (p.set("file", f.path), p), { replace: true })}
-                  className={cn("group flex cursor-pointer items-center gap-2 border-b border-hairline-soft px-3 py-2 text-[13px] last:border-b-0 hover:bg-surface-elevated", activeFile === f.path && "bg-surface-card")}
+                  className={cn("group flex cursor-pointer items-center gap-2 border-b border-hairline-soft px-3 py-2 text-[0.8125rem] last:border-b-0 hover:bg-surface-elevated", activeFile === f.path && "bg-surface-card")}
                 >
                   {can(PermissionKeys.GIT_COMMIT) && <Checkbox checked={selected.has(f.path)} onCheckedChange={() => toggle(f.path)} onClick={(e) => e.stopPropagation()} aria-label={`Select ${f.path}`} />}
-                  <span title={getDropdownOptionLabel(GitFileStateOptions, f.state)} className={cn("flex size-4 shrink-0 items-center justify-center rounded-xs text-[10px] font-bold", STATE_TAG[f.state])}>
+                  <span title={getDropdownOptionLabel(GitFileStateOptions, f.state)} className={cn("flex size-4 shrink-0 items-center justify-center rounded-xs text-[0.625rem] font-bold", STATE_TAG[f.state])}>
                     {f.state}
                   </span>
-                  <span className="min-w-0 flex-1 truncate font-mono text-[12.5px]" title={f.orig_path ? `${f.orig_path} → ${f.path}` : f.path}>
+                  <span className="min-w-0 flex-1 truncate font-mono text-[0.7813rem]" title={f.orig_path ? `${f.orig_path} → ${f.path}` : f.path}>
                     {f.path}
                   </span>
-                  <span className="shrink-0 font-mono text-[11.5px]">
+                  <span className="shrink-0 font-mono text-[0.7188rem]">
                     {f.binary ? (
                       <span className="text-ash">binary</span>
                     ) : (

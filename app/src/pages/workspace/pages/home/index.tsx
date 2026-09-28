@@ -68,7 +68,7 @@ const WorkspaceHomePage: FC = () => {
       <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="text-lg font-medium">{organization?.name}</h1>
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-[0.8125rem] text-muted-foreground">
             {projects.length} project{projects.length === 1 ? "" : "s"} — pick one from the rail or below.
           </p>
         </div>
@@ -111,12 +111,12 @@ function ProjectCard({ project, localState }: { project: Project; localState: Pr
           </div>
         </div>
         {localState && localState !== ProjectLocalStates.LOCAL && (
-          <span className="rounded-xs bg-surface-elevated px-2 py-0.5 text-[11px] text-muted-foreground">{getDropdownOptionLabel(ProjectLocalStateOptions, localState)}</span>
+          <span className="rounded-xs bg-surface-elevated px-2 py-0.5 text-[0.6875rem] text-muted-foreground">{getDropdownOptionLabel(ProjectLocalStateOptions, localState)}</span>
         )}
       </div>
-      {project.description && <p className="mt-2 line-clamp-2 text-[12.5px] text-muted-foreground">{project.description}</p>}
+      {project.description && <p className="mt-2 line-clamp-2 text-[0.7813rem] text-muted-foreground">{project.description}</p>}
       {localState === ProjectLocalStates.LOCAL && (
-        <div className="mt-3 space-y-1.5 text-[12.5px]">
+        <div className="mt-3 space-y-1.5 text-[0.7813rem]">
           <div className="flex items-center gap-2 text-body">
             <GitBranch className="size-3.5 text-muted-foreground" />
             <span className="font-mono">{git?.branch ?? "—"}</span>

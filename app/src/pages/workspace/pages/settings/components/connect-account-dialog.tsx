@@ -48,7 +48,7 @@ export function ConnectAccountDialog({ provider, providerName, existingCount, op
           <DialogDescription>You can connect several accounts (e.g. personal, company, client) and pick one per project.</DialogDescription>
         </DialogHeader>
         {redirectUrl ? (
-          <div className="space-y-3 text-[13px]">
+          <div className="space-y-3 text-[0.8125rem]">
             <p className="text-body">Finish authorizing in your browser. This window updates automatically once {providerName} confirms the connection.</p>
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => void openUrl(redirectUrl)}>
               <ExternalLink className="size-3.5" /> Open authorization page again

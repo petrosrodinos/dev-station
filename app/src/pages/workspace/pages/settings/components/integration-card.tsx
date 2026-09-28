@@ -67,7 +67,7 @@ export function IntegrationCard({ integration }: { integration: Integration }) {
                 </Badge>
               )}
             </div>
-            <div className="mt-0.5 text-[12.5px] text-muted-foreground">{integration.description || getIntegrationProviderDescription(integration.provider)}</div>
+            <div className="mt-0.5 text-[0.7813rem] text-muted-foreground">{integration.description || getIntegrationProviderDescription(integration.provider)}</div>
           </div>
         </div>
         {can(PermissionKeys.INTEGRATIONS_CONNECT) && supported && (
@@ -88,17 +88,17 @@ export function IntegrationCard({ integration }: { integration: Integration }) {
               />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="truncate text-[13px] font-medium">{c.label}</span>
+                  <span className="truncate text-[0.8125rem] font-medium">{c.label}</span>
                   {c.is_default && (
-                    <Badge variant="secondary" className="h-5 shrink-0 px-1.5 text-[11px]">
+                    <Badge variant="secondary" className="h-5 shrink-0 px-1.5 text-[0.6875rem]">
                       Default
                     </Badge>
                   )}
                   {c.status !== ConnectionStatuses.ACTIVE && (
-                    <span className="shrink-0 text-[11px] font-medium text-warning">{getDropdownOptionLabel(ConnectionStatusOptions, c.status)}</span>
+                    <span className="shrink-0 text-[0.6875rem] font-medium text-warning">{getDropdownOptionLabel(ConnectionStatusOptions, c.status)}</span>
                   )}
                 </div>
-                <div className="truncate text-[12px] text-muted-foreground">
+                <div className="truncate text-[0.75rem] text-muted-foreground">
                   {[c.external_account, c.user?.full_name ?? c.user?.email, formatRelative(c.created_at)].filter(Boolean).join(" · ")}
                 </div>
               </div>

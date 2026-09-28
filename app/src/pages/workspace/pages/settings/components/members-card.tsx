@@ -42,9 +42,9 @@ export function MembersCard() {
           const isMe = m.user.id === me?.id;
           return (
             <div key={m.id} className="flex items-center gap-3 border-b border-hairline-soft px-4 py-3 last:border-b-0">
-              <div className="flex size-8 items-center justify-center rounded-full border bg-surface-card text-[11px] font-semibold">{generateInitials(m.user.full_name || m.user.email)}</div>
+              <div className="flex size-8 items-center justify-center rounded-full border bg-surface-card text-[0.6875rem] font-semibold">{generateInitials(m.user.full_name || m.user.email)}</div>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[13px] font-medium">
+                <div className="truncate text-[0.8125rem] font-medium">
                   {m.user.full_name ?? m.user.email} {isMe && <span className="text-muted-foreground">(you)</span>}
                 </div>
                 <div className="truncate text-xs text-muted-foreground">

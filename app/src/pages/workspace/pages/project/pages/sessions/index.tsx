@@ -65,9 +65,9 @@ const SessionsTab: FC = () => {
         ) : !data?.data.length ? (
           <EmptyState icon={<Bot />} title="No sessions" description="Sessions you start in this project are listed here, including finished ones." />
         ) : (
-          <table className="w-full text-[13px]">
+          <table className="w-full text-[0.8125rem]">
             <thead>
-              <tr className="border-b text-left text-[11.5px] uppercase tracking-[0.4px] text-muted-foreground">
+              <tr className="border-b text-left text-[0.7188rem] uppercase tracking-[0.4px] text-muted-foreground">
                 <th className="px-4 py-2 font-medium">Session</th>
                 <th className="px-2 py-2 font-medium">Agent</th>
                 <th className="px-2 py-2 font-medium">Issue</th>

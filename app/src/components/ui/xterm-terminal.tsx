@@ -3,6 +3,8 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebLinksAddon } from "@xterm/addon-web-links";
 import { cn } from "@/lib/utils";
+import { getAppearanceValues, useAppearanceStore } from "@/stores/appearance";
+import { buildTerminalFont, buildTerminalTheme } from "@/lib/appearance/terminal-theme";
 
 export interface XtermSource {
   /** History to replay when the view (re)attaches. */
@@ -24,30 +26,6 @@ interface XtermTerminalProps {
   autoFocus?: boolean;
 }
 
-const theme = {
-  background: "#050505",
-  foreground: "#d7f7dd",
-  cursor: "#d7f7dd",
-  cursorAccent: "#050505",
-  selectionBackground: "rgba(87,193,255,0.3)",
-  black: "#1a1a1b",
-  red: "#ff6161",
-  green: "#59d499",
-  yellow: "#ffc533",
-  blue: "#57c1ff",
-  magenta: "#c49bff",
-  cyan: "#4fd1c5",
-  white: "#cdcdcd",
-  brightBlack: "#6a6b6c",
-  brightRed: "#ff8a8a",
-  brightGreen: "#8be3b8",
-  brightYellow: "#ffd76a",
-  brightBlue: "#8fd6ff",
-  brightMagenta: "#d7b8ff",
-  brightCyan: "#7fe3da",
-  brightWhite: "#ffffff",
-};
-
 /**
  * Embedded terminal attached to a real PTY in the main process (agent CLI or shell).
  * Presentational: all IO goes through the `source` callbacks.
@@ -61,10 +39,10 @@ export function XtermTerminal({ source, sourceKey, readOnly = false, className, 
     const container = containerRef.current;
     if (!container) return;
 
+    const appearance = getAppearanceValues();
     const term = new Terminal({
-      theme,
-      fontFamily: '"JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace',
-      fontSize: 12.5,
+      theme: buildTerminalTheme(appearance),
+      ...buildTerminalFont(appearance),
       lineHeight: 1.25,
       cursorBlink: !readOnly,
       disableStdin: readOnly,
@@ -114,6 +92,15 @@ export function XtermTerminal({ source, sourceKey, readOnly = false, className, 
         /* container not measurable yet */
       }
     };
+    // Live theme/font changes from Settings → Theme; refit because glyph metrics change.
+    const unsubscribeAppearance = useAppearanceStore.subscribe(() => {
+      const next = getAppearanceValues();
+      term.options.theme = buildTerminalTheme(next);
+      const font = buildTerminalFont(next);
+      term.options.fontFamily = font.fontFamily;
+      term.options.fontSize = font.fontSize;
+      requestAnimationFrame(doFit);
+    });
     const observer = new ResizeObserver(() => requestAnimationFrame(doFit));
     observer.observe(container);
     requestAnimationFrame(() => {
@@ -124,6 +111,7 @@ export function XtermTerminal({ source, sourceKey, readOnly = false, className, 
     return () => {
       disposed = true;
       observer.disconnect();
+      unsubscribeAppearance();
       inputDisposable.dispose();
       unsubscribe();
       term.dispose();

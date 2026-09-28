@@ -2,22 +2,16 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUpdateDeviceSettings, useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
-import { useUpdatePreferences } from "@/features/users/hooks/use-users";
-import { ThemeOptions } from "@/config/constants/dropdowns/settings/theme.options";
-import { useTheme, type Theme } from "@/hooks/use-theme";
 import { isDesktop } from "@/lib/desktop";
 import { DirectoryField } from "@/pages/workspace/components/project-form/directory-field";
 import { deviceSettingsSchema, type DeviceSettingsFormData } from "../validation-schemas/settings.schema";
 import { SettingsRow, SettingsSectionHeader } from "./settings-row";
 
 export function GeneralSettings() {
-  const { theme, setTheme } = useTheme();
-  const savePreferences = useUpdatePreferences();
   const { data: config, isPending } = useWorkspaceConfig();
   const save = useUpdateDeviceSettings();
   const form = useForm<DeviceSettingsFormData>({ resolver: zodResolver(deviceSettingsSchema), defaultValues: { workspace_dir: "" } });
@@ -42,27 +36,7 @@ export function GeneralSettings() {
   return (
     <div className="space-y-8">
       <section>
-        <SettingsSectionHeader title="Appearance" description="Dark is the primary theme." />
-        <SettingsRow label="Theme">
-          <Select
-            value={theme}
-            onValueChange={(v) => {
-              setTheme(v as Theme);
-              savePreferences.mutate({ theme: v });
-            }}
-          >
-            <SelectTrigger className="w-40" aria-label="Theme">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ThemeOptions.map((o) => (
-                <SelectItem key={o.id} value={o.id}>
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </SettingsRow>
+        <SettingsSectionHeader title="Notifications" description="Theme and fonts live in the Theme section." />
         <SettingsRow label="Notifications" description="Finished or waiting AI sessions show a badge on the project in the rail and an entry in the activity feed — no pop-ups.">
           <span className="text-xs text-muted-foreground">Rail badges + activity feed</span>
         </SettingsRow>
@@ -71,7 +45,7 @@ export function GeneralSettings() {
       <section>
         <SettingsSectionHeader title="This device" description="Stored only on this computer — never synced to your organization." />
         {!isDesktop() ? (
-          <div className="text-[13px] text-muted-foreground">Available in the desktop app.</div>
+          <div className="text-[0.8125rem] text-muted-foreground">Available in the desktop app.</div>
         ) : isPending ? (
           <Skeleton className="h-40 w-full" />
         ) : (

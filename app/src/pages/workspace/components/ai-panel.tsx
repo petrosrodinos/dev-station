@@ -48,10 +48,10 @@ export function AiPanel() {
       <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b px-3">
         <Tabs value={mode} onValueChange={(v) => setMode(v as AiPanelMode)}>
           <TabsList className="h-8 rounded-full border bg-surface p-[3px]">
-            <TabsTrigger value={AiPanelModes.TERMINAL} className="h-6 gap-1.5 rounded-full px-3 text-[12.5px] data-[state=active]:bg-surface-elevated data-[state=active]:shadow-none">
+            <TabsTrigger value={AiPanelModes.TERMINAL} className="h-6 gap-1.5 rounded-full px-3 text-[0.7813rem] data-[state=active]:bg-surface-elevated data-[state=active]:shadow-none">
               <Terminal className="size-3.5" /> Terminal
             </TabsTrigger>
-            <TabsTrigger value={AiPanelModes.SESSIONS} className="h-6 gap-1.5 rounded-full px-3 text-[12.5px] data-[state=active]:bg-surface-elevated data-[state=active]:shadow-none">
+            <TabsTrigger value={AiPanelModes.SESSIONS} className="h-6 gap-1.5 rounded-full px-3 text-[0.7813rem] data-[state=active]:bg-surface-elevated data-[state=active]:shadow-none">
               <Bot className="size-3.5" /> Sessions
             </TabsTrigger>
           </TabsList>
@@ -114,7 +114,7 @@ function ActiveSessionTerminal() {
         {project && <ProjectFlag color={project.color} className="h-[18px]" />}
         <div className="min-w-0 flex-1">
           <div className="truncate text-xs font-medium">{session?.name ?? runtime?.name ?? "Session"}</div>
-          <div className="truncate text-[11px] text-muted-foreground">
+          <div className="truncate text-[0.6875rem] text-muted-foreground">
             {project?.name} · {getAgentTypeLabel(runtime?.agent_type ?? session?.agent_type)}
             {changes && changes.files_changed > 0 && (
               <>
@@ -125,7 +125,7 @@ function ActiveSessionTerminal() {
           </div>
         </div>
         <StatusDot status={agentStatusDot(status)} title={statusLabel} />
-        <span className="text-[11.5px] text-muted-foreground">{statusLabel}</span>
+        <span className="text-[0.7188rem] text-muted-foreground">{statusLabel}</span>
         {changes && changes.files_changed > 0 && project && (
           <PanelIconButton label="Review changes" onClick={() => navigate(Routes.workspace.project_tab(project.id, ProjectTabs.GIT))}>
             <FileDiff className="size-3.5" />
@@ -158,7 +158,7 @@ function ActiveSessionTerminal() {
         )}
       </div>
       {runtime && !runtime.alive && (
-        <div className="shrink-0 border-t bg-surface px-3 py-2 text-[11.5px] text-muted-foreground">
+        <div className="shrink-0 border-t bg-surface px-3 py-2 text-[0.7188rem] text-muted-foreground">
           Process exited ({runtime.exit_code ?? 0}). Restart to continue in this terminal, or review the changes in Git.
         </div>
       )}
@@ -212,8 +212,8 @@ function SessionList() {
           >
             <StatusDot status={agentStatusDot(status)} />
             <div className="min-w-0 flex-1">
-              <div className={cn("truncate text-[13px] font-medium", attention.includes(s.id) && "text-foreground")}>{s.name}</div>
-              <div className="truncate text-[11.5px] text-muted-foreground">
+              <div className={cn("truncate text-[0.8125rem] font-medium", attention.includes(s.id) && "text-foreground")}>{s.name}</div>
+              <div className="truncate text-[0.7188rem] text-muted-foreground">
                 {project?.name ?? "—"} · {getAgentTypeLabel(s.agent_type)} · {getDropdownOptionLabel(AgentStatusOptions, status)} · {formatRelative(s.started_at)}
               </div>
             </div>

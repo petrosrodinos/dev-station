@@ -88,13 +88,13 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
       </Button>
       <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={pull.isPending} onClick={() => pull.mutate({ projectId })}>
         {!pull.isPending && <ArrowDown className="size-3.5" />} Pull
-        {status.behind > 0 && <span className="rounded-xs bg-info-soft px-1.5 text-[11px] text-info">{status.behind}</span>}
+        {status.behind > 0 && <span className="rounded-xs bg-info-soft px-1.5 text-[0.6875rem] text-info">{status.behind}</span>}
       </Button>
       {can(PermissionKeys.GIT_PUSH) && (
         <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={push.isPending} onClick={() => push.mutate({ projectId })}>
           {!push.isPending && <ArrowUp className="size-3.5" />} Push
-          {status.ahead > 0 && <span className="rounded-xs bg-success-soft px-1.5 text-[11px] text-success">{status.ahead}</span>}
-          {!status.upstream && status.branch && <span className="text-[11px] text-ash">(publish)</span>}
+          {status.ahead > 0 && <span className="rounded-xs bg-success-soft px-1.5 text-[0.6875rem] text-success">{status.ahead}</span>}
+          {!status.upstream && status.branch && <span className="text-[0.6875rem] text-ash">(publish)</span>}
         </Button>
       )}
 
@@ -112,7 +112,7 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
             {!!stashes?.length && <DropdownMenuSeparator />}
             {stashes?.map((s) => (
               <DropdownMenuItem key={s.ref} onSelect={() => stashPop.mutate({ projectId, ref: s.ref })} className="flex-col items-start gap-0">
-                <span className="font-mono text-[11px] text-muted-foreground">Apply & drop {s.ref}</span>
+                <span className="font-mono text-[0.6875rem] text-muted-foreground">Apply & drop {s.ref}</span>
                 <span className="w-full truncate text-xs">{s.message}</span>
               </DropdownMenuItem>
             ))}

@@ -12,7 +12,7 @@ const lineClass: Record<DiffLine["type"], string> = {
 /** Lightweight unified diff renderer (Spec §20) — not a full review UI. */
 export function DiffViewer({ lines, className }: { lines: DiffLine[]; className?: string }) {
   return (
-    <div className={cn("overflow-auto rounded-md bg-canvas font-mono text-[12.5px] leading-[1.65]", className)}>
+    <div className={cn("overflow-auto rounded-md bg-canvas font-mono text-[0.7813rem] leading-[1.65]", className)}>
       <div className="min-w-fit">
         {lines.map((line, i) => (
           <div key={i} className={cn("flex whitespace-pre pr-3", lineClass[line.type])}>

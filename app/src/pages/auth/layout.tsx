@@ -11,7 +11,7 @@ export default function AuthLayout() {
             <span className="size-10 rounded-[10px] bg-gradient-to-br from-[#ff5757] to-[#a1131a]" aria-hidden />
             <div>
               <h1 className="text-xl font-semibold">{environments.APP_NAME}</h1>
-              <p className="text-[13px] text-muted-foreground">Projects, processes, AI agents and Git — one workspace.</p>
+              <p className="text-[0.8125rem] text-muted-foreground">Projects, processes, AI agents and Git — one workspace.</p>
             </div>
           </div>
           <Outlet />

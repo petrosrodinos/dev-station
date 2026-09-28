@@ -85,10 +85,10 @@ const LinearTab: FC = () => {
               >
                 <span className="w-[70px] shrink-0 font-mono text-xs text-muted-foreground">{issue.identifier}</span>
                 <PriorityIcon priority={issue.priority} />
-                <span className="min-w-0 flex-1 truncate text-[13px]">{issue.title}</span>
-                {issue.assignee && <span className="hidden shrink-0 text-[11.5px] text-ash xl:inline">{issue.assignee.name}</span>}
+                <span className="min-w-0 flex-1 truncate text-[0.8125rem]">{issue.title}</span>
+                {issue.assignee && <span className="hidden shrink-0 text-[0.7188rem] text-ash xl:inline">{issue.assignee.name}</span>}
                 {issue.state && (
-                  <span className="inline-flex h-5 shrink-0 items-center gap-1 rounded-xs bg-surface-elevated px-2 text-[11.5px] text-body">
+                  <span className="inline-flex h-5 shrink-0 items-center gap-1 rounded-xs bg-surface-elevated px-2 text-[0.7188rem] text-body">
                     <span className="size-1.5 rounded-full" style={{ backgroundColor: issue.state.color ?? "#6a6b6c" }} />
                     {issue.state.name}
                   </span>

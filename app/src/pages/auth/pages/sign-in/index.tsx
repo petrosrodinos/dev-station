@@ -9,10 +9,10 @@ const SignInPage: FC = () => {
     <Panel className="p-6">
       <div className="mb-5 space-y-1">
         <h2 className="text-lg font-medium">Sign in</h2>
-        <p className="text-[13px] text-muted-foreground">Your projects and organizations sync across devices.</p>
+        <p className="text-[0.8125rem] text-muted-foreground">Your projects and organizations sync across devices.</p>
       </div>
       <SignInForm />
-      <div className="mt-4 text-center text-[13px] text-muted-foreground">
+      <div className="mt-4 text-center text-[0.8125rem] text-muted-foreground">
         Don&apos;t have an account?{" "}
         <Link to={Routes.auth.sign_up} className="text-foreground underline underline-offset-4">
           Create one

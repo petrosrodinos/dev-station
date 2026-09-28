@@ -50,10 +50,10 @@ export function InvitationsCard() {
       {isPending ? (
         <ListSkeleton rows={2} />
       ) : !invitations?.length ? (
-        <PanelBody className="text-[13px] text-ash">No pending invitations.</PanelBody>
+        <PanelBody className="text-[0.8125rem] text-ash">No pending invitations.</PanelBody>
       ) : (
         invitations.map((inv) => (
-          <div key={inv.id} className="flex items-center gap-3 border-b border-hairline-soft px-4 py-2.5 text-[13px] last:border-b-0">
+          <div key={inv.id} className="flex items-center gap-3 border-b border-hairline-soft px-4 py-2.5 text-[0.8125rem] last:border-b-0">
             <span className="flex-1 truncate">{inv.email}</span>
             <span className="text-xs text-muted-foreground">{inv.role.name}</span>
             <span className="text-xs text-ash">sent {formatRelative(inv.created_at)}</span>

@@ -82,7 +82,7 @@ export function NewSessionDialog() {
         </DialogHeader>
 
         {!isDesktop() ? (
-          <div className="rounded-md border border-warning/40 bg-warning-soft p-3 text-[13px] text-warning">Agent sessions run locally — open the Dev Station desktop app to start one.</div>
+          <div className="rounded-md border border-warning/40 bg-warning-soft p-3 text-[0.8125rem] text-warning">Agent sessions run locally — open the Dev Station desktop app to start one.</div>
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -92,8 +92,8 @@ export function NewSessionDialog() {
                     <CircleDot className="size-3.5" /> <span className="font-mono">{issue.identifier}</span>
                     {issue.state && <span>· {issue.state.name}</span>}
                   </div>
-                  <div className="mt-1 text-[13px] font-medium">{issue.title}</div>
-                  <div className="mt-1 text-[11.5px] text-muted-foreground">Title, description, labels and recent comments are passed to the agent as its initial prompt.</div>
+                  <div className="mt-1 text-[0.8125rem] font-medium">{issue.title}</div>
+                  <div className="mt-1 text-[0.7188rem] text-muted-foreground">Title, description, labels and recent comments are passed to the agent as its initial prompt.</div>
                 </div>
               )}
 
@@ -184,7 +184,7 @@ export function NewSessionDialog() {
                   <FormItem>
                     <FormLabel>{issue ? "Additional instructions (optional)" : "Initial prompt (optional)"}</FormLabel>
                     <FormControl>
-                      <Textarea rows={4} className="font-mono text-[12.5px]" placeholder={issue ? "e.g. Keep the public API unchanged; add tests." : "e.g. Fix the failing tests in apps/api/auth"} {...field} />
+                      <Textarea rows={4} className="font-mono text-[0.7813rem]" placeholder={issue ? "e.g. Keep the public API unchanged; add tests." : "e.g. Fix the failing tests in apps/api/auth"} {...field} />
                     </FormControl>
                     <FormDescription>Leave empty to start an interactive session.</FormDescription>
                     <FormMessage />

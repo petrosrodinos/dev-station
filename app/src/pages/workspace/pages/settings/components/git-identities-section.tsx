@@ -91,7 +91,7 @@ export function GitIdentitiesSection() {
         <Skeleton className="h-16 w-full" />
       ) : (
         identities?.map((i) => (
-          <div key={i.id} className="flex items-center gap-2 border-b border-hairline-soft py-2 text-[13px]">
+          <div key={i.id} className="flex items-center gap-2 border-b border-hairline-soft py-2 text-[0.8125rem]">
             <span className="font-medium">{i.label}</span>
             <span className="truncate text-muted-foreground">
               {i.name} &lt;{i.email}&gt;

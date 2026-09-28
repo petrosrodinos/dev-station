@@ -48,13 +48,13 @@ export function GithubRepoPicker({ connectionId, selected, onSelect }: GithubRep
               )}
             >
               <div className="min-w-0 flex-1 overflow-hidden">
-                <div className="flex min-w-0 items-center gap-1.5 font-mono text-[12.5px]">
+                <div className="flex min-w-0 items-center gap-1.5 font-mono text-[0.7813rem]">
                   <span className="min-w-0 truncate">{repo.full_name}</span>
                   {repo.private && <Lock className="size-3 shrink-0 text-ash" />}
                 </div>
-                {repo.description && <div className="min-w-0 truncate text-[11.5px] text-muted-foreground">{repo.description}</div>}
+                {repo.description && <div className="min-w-0 truncate text-[0.7188rem] text-muted-foreground">{repo.description}</div>}
               </div>
-              {repo.updated_at && <span className="shrink-0 text-[11px] text-ash">{formatRelative(repo.updated_at)}</span>}
+              {repo.updated_at && <span className="shrink-0 text-[0.6875rem] text-ash">{formatRelative(repo.updated_at)}</span>}
             </button>
           ))
         )}

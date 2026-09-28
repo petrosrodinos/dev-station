@@ -82,7 +82,7 @@ export function ServicesCard({ project }: { project: Project }) {
       />
       <PanelBody className="py-1">
         {project.services.length === 0 ? (
-          <div className="py-6 text-center text-[13px] text-ash">No services detected — use Edit to detect or add them.</div>
+          <div className="py-6 text-center text-[0.8125rem] text-ash">No services detected — use Edit to detect or add them.</div>
         ) : (
           project.services.map((service) => {
             const proc = processes[service.id];
@@ -93,11 +93,11 @@ export function ServicesCard({ project }: { project: Project }) {
                 <StatusDot status={processStatusDot(proc?.status)} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="truncate text-[13px] font-medium">{service.name}</span>
+                    <span className="truncate text-[0.8125rem] font-medium">{service.name}</span>
                     {running && url && <span className="truncate font-mono text-xs text-muted-foreground">{url.replace(/^https?:\/\//, "")}</span>}
                     {proc?.status === ProcessStatuses.CRASHED && <span className="text-xs text-danger">crashed ({proc.exit_code})</span>}
                   </div>
-                  <div className="truncate font-mono text-[11px] text-ash" title={describeServiceCommand(service)}>
+                  <div className="truncate font-mono text-[0.6875rem] text-ash" title={describeServiceCommand(service)}>
                     {service.cwd !== "." ? `${service.cwd} · ` : ""}
                     {describeServiceCommand(service)}
                     {running && proc?.started_at ? ` · started ${formatRelative(proc.started_at)}` : ""}

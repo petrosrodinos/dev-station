@@ -33,13 +33,13 @@ export function LinearSummaryCard({ project }: { project: Project }) {
       />
       <PanelBody className="py-1">
         {!connected ? (
-          <div className="py-6 text-center text-[13px] text-ash">Linear isn't linked to this project.</div>
+          <div className="py-6 text-center text-[0.8125rem] text-ash">Linear isn't linked to this project.</div>
         ) : isPending ? (
           <ListSkeleton rows={4} withIcon={false} className="px-0" />
         ) : isError ? (
-          <div className="py-6 text-center text-[13px] text-danger">Could not load issues.</div>
+          <div className="py-6 text-center text-[0.8125rem] text-danger">Could not load issues.</div>
         ) : !issues?.length ? (
-          <div className="py-6 text-center text-[13px] text-ash">No open issues.</div>
+          <div className="py-6 text-center text-[0.8125rem] text-ash">No open issues.</div>
         ) : (
           issues.slice(0, 5).map((issue) => (
             <button
@@ -48,8 +48,8 @@ export function LinearSummaryCard({ project }: { project: Project }) {
               className="flex w-full items-center gap-2 border-b border-hairline-soft py-2 text-left last:border-b-0"
             >
               <span className="w-16 shrink-0 font-mono text-xs text-muted-foreground">{issue.identifier}</span>
-              <span className="flex-1 truncate text-[13px]">{issue.title}</span>
-              <span className="shrink-0 text-[11px] text-ash">{getLinearPriorityLabel(issue.priority)}</span>
+              <span className="flex-1 truncate text-[0.8125rem]">{issue.title}</span>
+              <span className="shrink-0 text-[0.6875rem] text-ash">{getLinearPriorityLabel(issue.priority)}</span>
             </button>
           ))
         )}

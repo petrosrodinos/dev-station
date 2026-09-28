@@ -143,7 +143,7 @@ export function ProjectRail() {
         {importedCount > 0 && (
           <RailButton label={`Set up imported projects (${importedCount})`} onClick={() => navigate(Routes.workspace.imported)}>
             <CloudDownload className="size-4" />
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-info px-1 text-[10px] font-bold text-[#04121b]">{importedCount}</span>
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-info px-1 text-[0.625rem] font-bold text-[#04121b]">{importedCount}</span>
           </RailButton>
         )}
         <RailButton label="Integrations" onClick={() => navigate(Routes.workspace.integrations)}>
@@ -236,7 +236,7 @@ function RailItem({ project, active, localState, attention, canEdit, canDelete, 
               {attention > 0 && (
                 <button
                   onClick={onBadge}
-                  className="absolute -top-0.5 right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-[#1a0505] ring-2 ring-canvas"
+                  className="absolute -top-0.5 right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[0.625rem] font-bold text-[#1a0505] ring-2 ring-canvas"
                   aria-label={`${attention} session${attention > 1 ? "s need" : " needs"} attention`}
                 >
                   {attention}
@@ -253,7 +253,7 @@ function RailItem({ project, active, localState, attention, canEdit, canDelete, 
         <TooltipContent side="right" className="max-w-60">
           <div className="font-medium">{project.name}</div>
           {localState && localState !== ProjectLocalStates.LOCAL && (
-            <div className="text-[11px] opacity-70">{getDropdownOptionLabel(ProjectLocalStateOptions, localState)}</div>
+            <div className="text-[0.6875rem] opacity-70">{getDropdownOptionLabel(ProjectLocalStateOptions, localState)}</div>
           )}
         </TooltipContent>
       </Tooltip>
