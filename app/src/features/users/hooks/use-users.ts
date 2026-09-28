@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getMe, getPreferences, updateMe, updatePreferences } from "../services/users.services";
+import { changePassword, getMe, getPreferences, updateMe, updatePreferences } from "../services/users.services";
 import { useAuthStore } from "@/stores/auth";
 import { toast } from "@/hooks/use-toast";
 
@@ -21,6 +21,13 @@ export const useUpdateMe = () => {
         onError: (error: Error) => toast({ title: "Could not update profile", description: error.message, variant: "error" }),
     });
 };
+
+export const useChangePassword = () =>
+    useMutation({
+        mutationFn: changePassword,
+        onSuccess: () => toast({ title: "Password changed", duration: 2000 }),
+        onError: (error: Error) => toast({ title: "Could not change password", description: error.message, variant: "error" }),
+    });
 
 export const useGetPreferences = () => {
     const isLoggedIn = useAuthStore((s) => s.isLoggedIn);

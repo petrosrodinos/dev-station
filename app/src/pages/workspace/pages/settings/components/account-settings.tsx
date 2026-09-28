@@ -9,6 +9,7 @@ import { useGetMe, useUpdateMe } from "@/features/users/hooks/use-users";
 import { useSignOut } from "@/features/auth/hooks/use-auth";
 import { environments } from "@/config/environments";
 import { accountSchema, type AccountFormData } from "../validation-schemas/settings.schema";
+import { ChangePasswordSection } from "./change-password-section";
 import { SettingsRow, SettingsSectionHeader } from "./settings-row";
 
 export function AccountSettings() {
@@ -50,6 +51,7 @@ export function AccountSettings() {
           </div>
         </form>
       </Form>
+      <ChangePasswordSection />
       <section>
         <SettingsSectionHeader title="Session" description={`${environments.APP_NAME} v${environments.APP_VERSION} · API ${environments.API_URL}`} />
         <Button variant="outline" className="gap-1.5 text-danger" onClick={signOut}>

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -10,6 +18,7 @@ import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePreferencesDto } from './dto/update-preferences.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { MeEntity, UserPreferenceEntity } from './entities/users.entity';
 
 @ApiTags('Users')
@@ -31,6 +40,18 @@ export class UsersController {
   @ApiResponse({ status: 200, type: MeEntity })
   updateMe(@CurrentUser('id') userId: string, @Body() dto: UpdateUserDto) {
     return this.usersService.updateMe(userId, dto);
+  }
+
+  @Post('me/password')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Change the current user password' })
+  @ApiResponse({ status: 200, description: 'Password changed' })
+  @ApiResponse({ status: 400, description: 'Current password is incorrect' })
+  changePassword(
+    @CurrentUser('id') userId: string,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.usersService.changePassword(userId, dto);
   }
 
   @Get('me/preferences')

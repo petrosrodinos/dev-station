@@ -34,3 +34,13 @@ export const accountSchema = z.object({
     full_name: z.string().trim().min(1, "Name is required").max(120),
 });
 export type AccountFormData = z.infer<typeof accountSchema>;
+
+export const changePasswordSchema = z
+    .object({
+        current_password: z.string().min(1, "Enter your current password"),
+        new_password: z.string().min(8, "Password must be at least 8 characters long").max(72, "Password is too long"),
+        confirm_password: z.string(),
+    })
+    .refine((d) => d.new_password === d.confirm_password, { message: "Passwords don't match.", path: ["confirm_password"] })
+    .refine((d) => d.new_password !== d.current_password, { message: "New password must differ from the current one.", path: ["new_password"] });
+export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;

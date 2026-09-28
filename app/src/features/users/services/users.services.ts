@@ -1,6 +1,6 @@
 import axiosInstance, { getApiErrorMessage } from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
-import type { Me, UpdateMeDto, UpdatePreferenceDto, UserPreference } from "../interfaces/users.interfaces";
+import type { ChangePasswordDto, Me, UpdateMeDto, UpdatePreferenceDto, UserPreference } from "../interfaces/users.interfaces";
 
 export const getMe = async (): Promise<Me> => {
     try {
@@ -17,6 +17,14 @@ export const updateMe = async (dto: UpdateMeDto): Promise<Me> => {
         return response.data;
     } catch (error) {
         throw new Error(getApiErrorMessage(error, "Failed to update your profile."));
+    }
+};
+
+export const changePassword = async (dto: ChangePasswordDto): Promise<void> => {
+    try {
+        await axiosInstance.post(ApiRoutes.users.password, dto);
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to change your password."));
     }
 };
 
