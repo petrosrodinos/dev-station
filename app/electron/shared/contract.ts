@@ -377,6 +377,13 @@ export interface DevStationBridge {
     copyPath(projectId: string, relPath: string): Promise<string>;
     readFile(projectId: string, relPath: string): Promise<FileContent>;
     writeFile(projectId: string, relPath: string, content: string): Promise<void>;
+    /** Returns the created project-relative path. `relPath` may contain "/" to create intermediate folders. */
+    createFile(projectId: string, relPath: string): Promise<string>;
+    createFolder(projectId: string, relPath: string): Promise<string>;
+    /** Renames within the same folder; returns the new project-relative path. */
+    rename(projectId: string, relPath: string, newName: string): Promise<string>;
+    /** Moves to the OS trash rather than deleting permanently. */
+    delete(projectId: string, relPath: string): Promise<void>;
   };
   git: {
     status(projectId: string): Promise<GitStatus>;
@@ -471,6 +478,10 @@ export const IpcChannels = {
   FILES_COPY_PATH: "files:copy-path",
   FILES_READ: "files:read",
   FILES_WRITE: "files:write",
+  FILES_CREATE_FILE: "files:create-file",
+  FILES_CREATE_FOLDER: "files:create-folder",
+  FILES_RENAME: "files:rename",
+  FILES_DELETE: "files:delete",
   GIT_STATUS: "git:status",
   GIT_FILE_DIFF: "git:file-diff",
   GIT_BRANCHES: "git:branches",

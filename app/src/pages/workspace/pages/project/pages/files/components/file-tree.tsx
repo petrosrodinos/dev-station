@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ChevronRight, Copy, File, Folder, FolderOpen, FolderSearch, SquarePen } from "lucide-react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { ChevronRight, Copy, File, Folder, FolderOpen, FilePlus, FolderPlus, FolderSearch, Pencil, SquarePen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -21,6 +21,23 @@ const GIT_DOT: Record<GitFileState, string> = {
 };
 
 const HEAVY_DIRS = new Set(["node_modules", ".git", "dist", "build", ".next", ".turbo"]);
+
+/** Bulk expand/collapse: bumping `id` tells every mounted (and newly mounted) folder row to follow `open`. */
+export interface TreeCommand {
+  id: number;
+  open: boolean;
+}
+export const TreeCommandContext = createContext<TreeCommand>({ id: 0, open: false });
+
+export type CreateKind = "file" | "folder";
+
+/** Row-level mutations are handled by the tab (dialogs + state); rows only request them. */
+export interface TreeActions {
+  onCreate: (dir: string, kind: CreateKind) => void;
+  onRename: (entry: FileEntry) => void;
+  onDelete: (entry: FileEntry) => void;
+}
+export const TreeActionsContext = createContext<TreeActions | null>(null);
 
 interface TreeProps {
   projectId: string;
@@ -61,7 +78,13 @@ export function FileTreeNode({ projectId, dir, depth, gitStates, activePath, onS
 }
 
 function DirRow({ projectId, entry, depth, gitStates, activePath, onSelect }: { projectId: string; entry: FileEntry; depth: number; gitStates: Map<string, GitFileState>; activePath?: string | null; onSelect?: (path: string) => void }) {
-  const [open, setOpen] = useState(false);
+  const command = useContext(TreeCommandContext);
+  const actions = useContext(TreeActionsContext);
+  const followsCommand = command.open && !HEAVY_DIRS.has(entry.name);
+  const [open, setOpen] = useState(command.id > 0 && followsCommand);
+  useEffect(() => {
+    if (command.id > 0) setOpen(followsCommand);
+  }, [command.id, followsCommand]);
   const reveal = useRevealFile();
   const changed = [...gitStates.keys()].some((p) => p.startsWith(`${entry.path}/`));
 
@@ -79,6 +102,22 @@ function DirRow({ projectId, entry, depth, gitStates, activePath, onSelect }: { 
         <span className={cn("truncate", HEAVY_DIRS.has(entry.name) && "text-ash")}>{entry.name}</span>
         {changed && <span className="size-1.5 rounded-full bg-warning" />}
         <div className="ml-auto hidden gap-0.5 group-hover:flex">
+          {actions && (
+            <>
+              <RowAction label="New file" onClick={() => { setOpen(true); actions.onCreate(entry.path, "file"); }}>
+                <FilePlus className="size-3" />
+              </RowAction>
+              <RowAction label="New folder" onClick={() => { setOpen(true); actions.onCreate(entry.path, "folder"); }}>
+                <FolderPlus className="size-3" />
+              </RowAction>
+              <RowAction label="Rename" onClick={() => actions.onRename(entry)}>
+                <Pencil className="size-3" />
+              </RowAction>
+              <RowAction label="Move to trash" onClick={() => actions.onDelete(entry)}>
+                <Trash2 className="size-3" />
+              </RowAction>
+            </>
+          )}
           <RowAction label="Reveal in file manager" onClick={() => reveal.mutate({ projectId, path: entry.path })}>
             <FolderSearch className="size-3" />
           </RowAction>
@@ -93,6 +132,7 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
   const openInEditor = useOpenInEditor();
   const reveal = useRevealFile();
   const copyPath = useCopyFilePath();
+  const actions = useContext(TreeActionsContext);
 
   return (
     <div
@@ -125,6 +165,16 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+        {actions && (
+          <>
+            <RowAction label="Rename" onClick={() => actions.onRename(entry)}>
+              <Pencil className="size-3" />
+            </RowAction>
+            <RowAction label="Move to trash" onClick={() => actions.onDelete(entry)}>
+              <Trash2 className="size-3" />
+            </RowAction>
+          </>
+        )}
         <RowAction label="Copy path" onClick={() => copyPath.mutate({ projectId, path: entry.path })}>
           <Copy className="size-3" />
         </RowAction>

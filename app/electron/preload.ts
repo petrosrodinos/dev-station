@@ -54,6 +54,10 @@ const bridge: DevStationBridge = {
     copyPath: (id, rel) => call(C.FILES_COPY_PATH, id, rel),
     readFile: (id, rel) => call(C.FILES_READ, id, rel),
     writeFile: (id, rel, content) => call(C.FILES_WRITE, id, rel, content),
+    createFile: (id, rel) => call(C.FILES_CREATE_FILE, id, rel),
+    createFolder: (id, rel) => call(C.FILES_CREATE_FOLDER, id, rel),
+    rename: (id, rel, name) => call(C.FILES_RENAME, id, rel, name),
+    delete: (id, rel) => call(C.FILES_DELETE, id, rel),
   },
   git: {
     status: (id) => call(C.GIT_STATUS, id),
