@@ -256,6 +256,7 @@ exports.Prisma.ProjectScalarFieldEnum = {
   name: 'name',
   description: 'description',
   color: 'color',
+  avatar_seed: 'avatar_seed',
   sort_order: 'sort_order',
   sub_path: 'sub_path',
   preferred_agent: 'preferred_agent',

@@ -131,7 +131,7 @@ const ImportedProjectsPage: FC = () => {
                     }
                     aria-label={`Select ${p.name}`}
                   />
-                  <ProjectAvatar name={p.name} color={p.color} size="sm" />
+                  <ProjectAvatar name={p.name} color={p.color} seed={p.avatar_seed} size="sm" />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[0.8125rem] font-medium">
                       {p.name}

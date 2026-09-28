@@ -353,6 +353,7 @@ model Project {
   name                   String
   description            String?
   color                  String
+  avatar_seed            String?
   sort_order             Int        @default(0)
   sub_path               String?
   preferred_agent        AgentType?

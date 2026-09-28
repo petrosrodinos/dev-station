@@ -38,6 +38,7 @@ export class ProjectEntity {
   @ApiProperty() name: string;
   @ApiProperty({ nullable: true }) description: string | null;
   @ApiProperty() color: string;
+  @ApiProperty({ nullable: true }) avatar_seed: string | null;
   @ApiProperty() sort_order: number;
   @ApiProperty({ nullable: true }) sub_path: string | null;
   @ApiProperty({ nullable: true, enum: AgentType })

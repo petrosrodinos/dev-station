@@ -117,7 +117,7 @@ export function NewSessionDialog() {
                         {localProjects.map((p) => (
                           <SelectItem key={p.id} value={p.id}>
                             <span className="flex items-center gap-2">
-                              <ProjectAvatar name={p.name} color={p.color} size="xs" /> {p.name}
+                              <ProjectAvatar name={p.name} color={p.color} seed={p.avatar_seed} size="xs" /> {p.name}
                             </span>
                           </SelectItem>
                         ))}

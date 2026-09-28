@@ -95,7 +95,7 @@ export function CommandPalette() {
                 })
               }
             >
-              <ProjectAvatar name={p.name} color={p.color} size="xs" />
+              <ProjectAvatar name={p.name} color={p.color} seed={p.avatar_seed} size="xs" />
               <span>{p.name}</span>
             </CommandItem>
           ))}

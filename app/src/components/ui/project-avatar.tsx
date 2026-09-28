@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { projectInitials } from "@/lib/project";
+import { IDENTICON_GRID, identiconCells } from "@/lib/identicon";
 
 const projectAvatarVariants = cva("relative flex shrink-0 select-none items-center justify-center font-semibold text-[#0a0a0a] transition-[border-radius] duration-150", {
   variants: {
@@ -21,14 +22,24 @@ const projectAvatarVariants = cva("relative flex shrink-0 select-none items-cent
 interface ProjectAvatarProps extends VariantProps<typeof projectAvatarVariants> {
   name: string;
   color: string;
+  /** When set, a generated identicon replaces the initials. */
+  seed?: string | null;
   className?: string;
 }
 
 /** Colored project icon — the project's color is reused everywhere the project is referenced (Spec §5). */
-export function ProjectAvatar({ name, color, size, muted, className }: ProjectAvatarProps) {
+export function ProjectAvatar({ name, color, seed, size, muted, className }: ProjectAvatarProps) {
   return (
     <span className={cn(projectAvatarVariants({ size, muted }), className)} style={{ backgroundColor: color }} aria-hidden>
-      {projectInitials(name)}
+      {seed ? (
+        <svg viewBox={`0 0 ${IDENTICON_GRID} ${IDENTICON_GRID}`} className="size-[60%] fill-[#0a0a0a]/80" shapeRendering="crispEdges">
+          {identiconCells(seed).map(([x, y]) => (
+            <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} />
+          ))}
+        </svg>
+      ) : (
+        projectInitials(name)
+      )}
     </span>
   );
 }

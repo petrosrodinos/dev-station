@@ -50,6 +50,7 @@ export interface Project {
     name: string;
     description: string | null;
     color: string;
+    avatar_seed: string | null;
     sort_order: number;
     sub_path: string | null;
     preferred_agent: AgentType | null;
@@ -91,6 +92,7 @@ export interface RepositoryInput {
 export interface CreateProjectDto {
     name: string;
     color?: string;
+    avatar_seed?: string | null;
     description?: string | null;
     sub_path?: string | null;
     repository?: RepositoryInput | null;

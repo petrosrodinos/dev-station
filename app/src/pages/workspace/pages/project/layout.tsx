@@ -76,7 +76,7 @@ const ProjectLayout: FC = () => {
     <div className="flex h-full min-h-0 flex-col">
       <div className="shrink-0 px-4 pt-4">
         <div className="mb-3 flex items-center gap-3">
-          <ProjectAvatar name={project.name} color={project.color} size="md" />
+          <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="md" />
           <div className="min-w-0">
             <div className="truncate text-lg font-medium leading-tight">{project.name}</div>
             <div className="truncate text-[0.7813rem] text-muted-foreground">

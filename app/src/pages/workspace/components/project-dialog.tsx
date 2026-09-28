@@ -31,6 +31,7 @@ import { isDesktop } from "@/lib/desktop";
 import { cn } from "@/lib/utils";
 import type { DetectionResult } from "@shared/contract";
 import { projectFormSchema, ProjectSources, type ProjectFormData, type ProjectSource } from "../validation-schemas/workspace.schema";
+import { AvatarPicker } from "./project-form/avatar-picker";
 import { ColorSwatches } from "./project-form/color-swatches";
 import { DirectoryField } from "./project-form/directory-field";
 import { GithubRepoPicker } from "./project-form/github-repo-picker";
@@ -87,6 +88,7 @@ export function ProjectDialog() {
         source: ProjectSources.NONE,
         name: editing.name,
         color: editing.color,
+        avatar_seed: editing.avatar_seed,
         description: editing.description ?? "",
         sub_path: editing.sub_path ?? "",
       });
@@ -95,6 +97,7 @@ export function ProjectDialog() {
         source: isDesktop() ? (githubConnections.length ? ProjectSources.GITHUB : ProjectSources.URL) : ProjectSources.NONE,
         name: "",
         color: defaultColor(projects?.length ?? 0),
+        avatar_seed: null,
         github_connection_id: githubConnections[0]?.id,
         description: "",
         sub_path: "",
@@ -132,6 +135,7 @@ export function ProjectDialog() {
           id: editing.id,
           name: data.name,
           color: data.color,
+          avatar_seed: data.avatar_seed ?? null,
           description: data.description || null,
           sub_path: data.sub_path || null,
         },
@@ -145,6 +149,7 @@ export function ProjectDialog() {
       .mutateAsync({
         name: data.name,
         color: data.color,
+        avatar_seed: data.avatar_seed ?? null,
         description: data.description || null,
         sub_path: data.sub_path || null,
         github_connection_id: data.source === ProjectSources.GITHUB ? data.github_connection_id ?? null : null,
@@ -406,6 +411,18 @@ export function ProjectDialog() {
                   <FormLabel>Color</FormLabel>
                   <ColorSwatches value={field.value} onChange={field.onChange} />
                   <FormDescription>Used for the project's icon and its AI session tabs.</FormDescription>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="avatar_seed"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Avatar (optional)</FormLabel>
+                  <AvatarPicker name={name} color={form.watch("color")} value={field.value ?? null} onChange={field.onChange} />
+                  <FormDescription>Generate a random identicon, or keep the project's initials.</FormDescription>
                 </FormItem>
               )}
             />

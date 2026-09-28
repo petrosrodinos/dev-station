@@ -28,6 +28,17 @@ export class CreateProjectDto {
   @IsHexColor()
   color?: string;
 
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      'Seed for a generated identicon avatar; null/absent shows the initials',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  avatar_seed?: string | null;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()

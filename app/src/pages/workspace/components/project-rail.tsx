@@ -233,7 +233,7 @@ function RailItem({ project, active, localState, attention, canEdit, canDelete, 
                 aria-current={active ? "page" : undefined}
                 className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
-                <ProjectAvatar name={project.name} color={project.color} size="lg" muted={imported} className={cn(active && "rounded-lg")} />
+                <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="lg" muted={imported} className={cn(active && "rounded-lg")} />
               </button>
               {attention > 0 && (
                 <button
