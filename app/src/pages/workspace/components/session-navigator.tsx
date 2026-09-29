@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import type { SessionGroups, SessionItem } from "../hooks/use-session-groups";
 import { CloseSessionDialog } from "./close-session-dialog";
 import { SessionContextMenu } from "./session-context-menu";
-import { PlacementMenu } from "./placement-menu";
+import { PlacementMenu, PlacementTargets } from "./placement-menu";
 
 interface SessionNavigatorProps {
   groups: SessionGroups;
@@ -67,7 +67,7 @@ export function SessionNavigator({ groups, activeId, onOpen }: SessionNavigatorP
 
   return (
     <nav className="shrink-0 border-b" aria-label="Open AI sessions">
-      <PlacementMenu>
+      <PlacementMenu target={PlacementTargets.AI_PANEL}>
       <div ref={scroller} onWheel={onWheel} className="flex h-9 items-stretch overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {groups.groups.map((group) => (
           <div key={group.project.id} className="group/project flex shrink-0 items-stretch border-r">
