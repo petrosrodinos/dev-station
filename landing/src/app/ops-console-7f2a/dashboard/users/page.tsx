@@ -1,4 +1,6 @@
-import { useState, type FC } from "react";
+"use client";
+
+import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,8 +13,8 @@ import { formatDateTime } from "@/lib/date";
 
 const LIMIT = 30;
 
-/** Searchable, paginated list of every user (Spec: admin console). */
-const AdminUsersPage: FC = () => {
+/** Searchable, paginated list of every user. */
+export default function AdminUsersPage() {
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
     const debouncedSearch = useDebouncedValue(search, 300);
@@ -76,6 +78,4 @@ const AdminUsersPage: FC = () => {
             )}
         </div>
     );
-};
-
-export default AdminUsersPage;
+}
