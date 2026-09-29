@@ -87,6 +87,13 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
   );
 }
 
+interface SessionListGroup {
+  id: string;
+  name: string;
+  color: string;
+  sessions: AgentSession[];
+}
+
 function SessionList() {
   const navigate = useNavigate();
   const { data, isPending } = useAgentSessions();
@@ -96,7 +103,21 @@ function SessionList() {
   const attention = useWorkspaceStore((s) => s.attention_session_ids);
   const openSessionTab = useWorkspaceStore((s) => s.openSessionTab);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
-  const projectById = useMemo(() => new Map((projects ?? []).map((p) => [p.id, p])), [projects]);
+
+  // Same "grouped by project, in rail order" shape as the open-tabs row (`use-session-groups.ts`),
+  // just built straight from every session instead of only the ones open in this workspace — a
+  // session whose project no longer exists (deleted since) still needs somewhere to land.
+  const groups = useMemo<SessionListGroup[]>(() => {
+    const byProject = new Map<string, AgentSession[]>();
+    for (const s of data?.data ?? []) byProject.set(s.project_id, [...(byProject.get(s.project_id) ?? []), s]);
+    const known = new Set((projects ?? []).map((p) => p.id));
+    const result: SessionListGroup[] = (projects ?? [])
+      .filter((p) => byProject.has(p.id))
+      .map((p) => ({ id: p.id, name: p.name, color: p.color, sessions: byProject.get(p.id)! }));
+    const orphaned = [...byProject.keys()].filter((id) => !known.has(id)).flatMap((id) => byProject.get(id)!);
+    if (orphaned.length) result.push({ id: "unknown", name: "Unknown project", color: "#8a8a8e", sessions: orphaned });
+    return result;
+  }, [data, projects]);
 
   if (isPending) return <ListSkeleton rows={8} />;
   if (!data?.data.length) return <EmptyState className="flex-1" icon={<Bot />} title="No AI sessions yet" description="Sessions from every project appear here." />;
@@ -109,27 +130,33 @@ function SessionList() {
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      {data.data.map((s) => {
-        const project = projectById.get(s.project_id);
-        const status = runtimeAgents[s.id]?.status ?? s.status;
-        return (
-          <SessionContextMenu key={s.id} session={s}>
-            <button
-              onClick={() => open(s)}
-              className={cn("flex w-full items-center gap-2.5 border-b border-hairline-soft px-4 py-2.5 text-left hover:bg-surface-elevated", s.id === activeId && "bg-surface-card")}
-            >
-              <StatusDot status={agentStatusDot(status)} />
-              <div className="min-w-0 flex-1">
-                <div className={cn("truncate text-[0.8125rem] font-medium", attention.includes(s.id) && "text-foreground")}>{s.name}</div>
-                <div className="truncate text-[0.7188rem] text-muted-foreground">
-                  {project?.name ?? "—"} · {getAgentTypeLabel(s.agent_type)} · {getDropdownOptionLabel(AgentStatusOptions, status)} · {formatRelative(s.started_at)}
-                </div>
-              </div>
-              {project && <ProjectFlag color={project.color} className="h-[22px]" />}
-            </button>
-          </SessionContextMenu>
-        );
-      })}
+      {groups.map((group) => (
+        <div key={group.id}>
+          <div className="sticky top-0 z-10 flex items-center gap-1.5 border-b bg-surface px-4 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.4px] text-muted-foreground">
+            <ProjectFlag color={group.color} className="h-3.5" />
+            <span className="truncate">{group.name}</span>
+          </div>
+          {group.sessions.map((s) => {
+            const status = runtimeAgents[s.id]?.status ?? s.status;
+            return (
+              <SessionContextMenu key={s.id} session={s}>
+                <button
+                  onClick={() => open(s)}
+                  className={cn("flex w-full items-center gap-2.5 border-b border-hairline-soft px-4 py-2.5 text-left hover:bg-surface-elevated", s.id === activeId && "bg-surface-card")}
+                >
+                  <StatusDot status={agentStatusDot(status)} />
+                  <div className="min-w-0 flex-1">
+                    <div className={cn("truncate text-[0.8125rem] font-medium", attention.includes(s.id) && "text-foreground")}>{s.name}</div>
+                    <div className="truncate text-[0.7188rem] text-muted-foreground">
+                      {getAgentTypeLabel(s.agent_type)} · {getDropdownOptionLabel(AgentStatusOptions, status)} · {formatRelative(s.started_at)}
+                    </div>
+                  </div>
+                </button>
+              </SessionContextMenu>
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }

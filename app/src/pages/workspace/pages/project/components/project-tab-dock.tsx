@@ -9,6 +9,7 @@ import {
   type IDockviewPanelHeaderProps,
   type IDockviewPanelProps,
   type IDockviewReactProps,
+  type SerializedDockview,
 } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 import { RequirePermission } from "@/components/access/require-permission";
@@ -86,6 +87,14 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   const storedOpenTabs = useWorkspaceStore((s) => s.open_project_tabs[projectId]);
   const openProjectTab = useWorkspaceStore((s) => s.openProjectTab);
   const closeProjectTab = useWorkspaceStore((s) => s.closeProjectTab);
+  // Read once — captured by `onReady`'s first (and only) call below, not meant to re-apply mid-session.
+  const savedLayout = useWorkspaceStore((s) => s.project_dock_layout[projectId]);
+  const saveProjectDockLayout = useWorkspaceStore((s) => s.saveProjectDockLayout);
+  // Suppresses the URL-sync/close listeners below while we're programmatically rebuilding the tree
+  // from a saved layout — otherwise restoring fires the same events a user action would (a batch of
+  // `onDidActivePanelChange`s mid-restore would spuriously `navigate()` away from the deep-linked tab).
+  const restoringRef = useRef(false);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Every permitted tab starts open (matches the old always-visible nav); once the user closes one
   // the store remembers an explicit list instead. Either way, stay within what's actually permitted.
@@ -157,6 +166,7 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   const onReady = useCallback((event: DockviewReadyEvent) => {
     apiRef.current = event.api;
     event.api.onDidRemovePanel((panel) => {
+      if (restoringRef.current) return;
       if (!panel.id.startsWith("project-tab:")) return;
       const tab = panel.id.slice("project-tab:".length);
       closeProjectTab(projectId, tab);
@@ -166,10 +176,38 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
     // Clicking a tab (or a drag landing it active) navigates the URL to match, so deep-linking,
     // refresh, and the drawer/preview logic (which read `routeTab`) all stay correct.
     event.api.onDidActivePanelChange(({ panel }) => {
+      if (restoringRef.current) return;
       if (!panel?.id.startsWith("project-tab:")) return;
       const tab = panel.id.slice("project-tab:".length) as ProjectTab;
       if (tab !== routeTabRef.current) navigateRef.current(Routes.workspace.project_tab(projectId, tab));
     });
+    // Debounce-save the dock arrangement (splits/groups/sizes) itself — the store's `open_project_tabs`
+    // already remembers *which* tabs are open, but not how they were split/arranged, which is what
+    // actually gets lost when rearranging panels without this.
+    event.api.onDidLayoutChange(() => {
+      if (restoringRef.current) return;
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        try {
+          saveProjectDockLayout(projectId, event.api.toJSON() as unknown as Record<string, unknown>);
+        } catch (error) {
+          console.error("Failed to save the project dock layout", error);
+        }
+      }, 500);
+    });
+    // Restore the saved arrangement once, before the tab-reconciliation effect below seeds any
+    // panels itself — a corrupt/stale save is swallowed (falls through to the normal seeding path)
+    // rather than breaking the dock.
+    if (savedLayout && Object.keys(savedLayout).length) {
+      restoringRef.current = true;
+      try {
+        event.api.fromJSON(savedLayout as unknown as SerializedDockview);
+      } catch (error) {
+        console.error("Couldn't restore the saved project dock layout — seeding it fresh instead", error);
+      } finally {
+        restoringRef.current = false;
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -215,6 +253,22 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
     api.getPanel(tabPanelId(routeTab))?.api.setActive();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, routeTab]);
+
+  // Flush the last, still-debounced layout change on unmount (e.g. navigating to another project
+  // right after a drag) instead of dropping it on the floor.
+  useEffect(() => {
+    return () => {
+      clearTimeout(saveTimerRef.current);
+      const api = apiRef.current;
+      if (!api) return;
+      try {
+        saveProjectDockLayout(projectId, api.toJSON() as unknown as Record<string, unknown>);
+      } catch (error) {
+        console.error("Failed to flush the project dock layout on unmount", error);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!TAB_PAGES[routeTab]) return <Navigate to={Routes.workspace.project(projectId)} replace />;
 

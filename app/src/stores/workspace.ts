@@ -42,6 +42,8 @@ interface WorkspaceState {
     preview_by_project: Record<string, ProjectPreviewPrefs>;
     /** Which project tabs are open as dock panels, per project (Phase 2 of the docking system: project tab pages became dockable). */
     open_project_tabs: Record<string, string[]>;
+    /** Each project's dock arrangement (splits/groups/sizes) as `DockviewApi.toJSON()`, per project — restored on revisit so a split layout survives navigating away/reloading, not just which tabs are open. */
+    project_dock_layout: Record<string, Record<string, unknown>>;
 }
 
 interface WorkspaceActions {
@@ -60,6 +62,7 @@ interface WorkspaceActions {
     setProjectPreview(projectId: string, patch: Partial<ProjectPreviewPrefs>): void;
     openProjectTab(projectId: string, tab: string): void;
     closeProjectTab(projectId: string, tab: string): void;
+    saveProjectDockLayout(projectId: string, layout: Record<string, unknown>): void;
     reset(): void;
 }
 
@@ -75,6 +78,7 @@ const initialValues: WorkspaceState = {
     session_by_project: {},
     preview_by_project: {},
     open_project_tabs: {},
+    project_dock_layout: {},
 };
 
 const STORE_KEY = "workspace";
@@ -141,6 +145,8 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                         const open = s.open_project_tabs[projectId] ?? ALL_PROJECT_TAB_IDS;
                         return { open_project_tabs: { ...s.open_project_tabs, [projectId]: open.filter((t) => t !== tab) } };
                     }),
+                saveProjectDockLayout: (projectId, layout) =>
+                    set((s) => ({ project_dock_layout: { ...s.project_dock_layout, [projectId]: layout } })),
                 reset: () => set(initialValues),
             }),
             { name: STORE_KEY },
