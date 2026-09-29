@@ -166,14 +166,16 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  password_reset_tokens PasswordResetToken[]
-  memberships           OrganizationMember[]
-  preference            UserPreference?
-  connections           IntegrationConnection[]
-  agent_sessions        AgentSession[]
-  activities            Activity[]
-  git_identities        GitIdentity[]
-  skill_favorites       SkillFavorite[]
+  password_reset_tokens  PasswordResetToken[]
+  memberships            OrganizationMember[]
+  preference             UserPreference?
+  connections            IntegrationConnection[]
+  agent_sessions         AgentSession[]
+  activities             Activity[]
+  git_identities         GitIdentity[]
+  skill_favorites        SkillFavorite[]
+  workspace_layouts      WorkspaceLayoutPreset[]
+  workspace_layout_state WorkspaceLayoutState?
 
   @@index([email])
   @@index([phone])
@@ -255,6 +257,52 @@ model UserPreference {
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("user_preferences")
+}
+
+/// A user's saved dock/workspace layout (named preset). Only the serialized layout tree +
+/// naming metadata is synced; local-only runtime state (which panel currently has focus)
+/// stays in the renderer — mirrors UserPreference's JSON-blob-for-open-ended-data pattern.
+model WorkspaceLayoutPreset {
+  id             String   @id @default(uuid())
+  user_id        String
+  name           String
+  /// Seeded once per user, cannot be deleted — only reset/overwritten.
+  is_default     Boolean  @default(false)
+  /// Bumped whenever the view-type registry changes shape; lets the client run migrations
+  /// before calling dockview's fromJSON().
+  layout_version Int      @default(1)
+  /// Opaque serialized dockview tree (DockviewApi.toJSON() shape): groups, splits, panel
+  /// ids/params, sizes. Structurally open-ended and library-owned, so untyped here.
+  layout         Json
+  /// Floating-window bounds array (panels floated as real OS windows) — not part of dockview's own tree.
+  floating       Json     @default("[]")
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  user  User                   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  state WorkspaceLayoutState[]
+
+  @@unique([user_id, name])
+  @@index([user_id])
+  @@map("workspace_layout_presets")
+}
+
+/// One row per user: which preset auto-applies per project, and which preset was last active
+/// with no project open. Separate from UserPreference (changes far more often than the rest of
+/// that row) and from WorkspaceLayoutPreset (this isn't a preset itself).
+model WorkspaceLayoutState {
+  id                String   @id @default(uuid())
+  user_id           String   @unique
+  active_preset_id  String?
+  /// Record<projectId, presetId> — mirrors the existing preview_by_project/session_by_project
+  /// client-side shape exactly, so no translation layer is needed.
+  preset_by_project Json     @default("{}")
+  updated_at        DateTime @updatedAt
+
+  user          User                   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  active_preset WorkspaceLayoutPreset? @relation(fields: [active_preset_id], references: [id], onDelete: SetNull)
+
+  @@map("workspace_layout_state")
 }
 
 model Organization {
@@ -569,4 +617,36 @@ model SkillFavorite {
   @@unique([user_id, target_kind, ref_id])
   @@index([organization_id])
   @@map("skill_favorites")
+}
+
+/// The latest published desktop app build per platform. Upserted by CI right after
+/// electron-builder publishes a release (Spec: docs/superpowers/specs/2026-09-29-app-distribution-and-updates-design.md).
+/// Not organization/user scoped — this is app-wide release metadata.
+model AppRelease {
+  id             String   @id @default(uuid())
+  platform       String
+  version        String
+  download_url   String
+  min_version    String?
+  release_notes  String?
+  download_count Int      @default(0)
+  published_at   DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@unique([platform])
+  @@map("app_releases")
+}
+
+/// One row per device that has ever pinged in, for adoption tracking (not tied to a user/org —
+/// a device may run the app before anyone signs in).
+model AppInstall {
+  id            String   @id @default(uuid())
+  device_id     String   @unique
+  platform      String
+  arch          String
+  app_version   String
+  first_seen_at DateTime @default(now())
+  last_seen_at  DateTime @updatedAt
+
+  @@map("app_installs")
 }

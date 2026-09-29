@@ -7,6 +7,7 @@ import { accessManager } from "../managers/access-manager";
 import { agentManager } from "../managers/agent-manager";
 import { inspect } from "../managers/detection-manager";
 import { filesystemManager } from "../managers/filesystem-manager";
+import { floatingPanelManager } from "../managers/floating-panel-manager";
 import { gitManager } from "../managers/git-manager";
 import { notificationManager } from "../managers/notification-manager";
 import { previewManager } from "../managers/preview-manager";
@@ -14,6 +15,7 @@ import { processManager } from "../managers/process-manager";
 import { skillManager } from "../managers/skill-manager";
 import { SECURE_KEYS, secureStore } from "../managers/secure-store";
 import { terminalManager } from "../managers/terminal-manager";
+import { updateManager } from "../managers/update-manager";
 import { workspaceConfig } from "../managers/workspace-config";
 import { clearWhichCache, defaultShell } from "../utils/platform";
 import { handle, zAbsPath, zCols, zId, zRelPath, zRows } from "./handle";
@@ -68,6 +70,7 @@ export function registerIpc() {
     (e) => broadcast(IpcChannels.AGENT_DATA, e),
     (e) => broadcast(IpcChannels.AGENT_STATUS, e),
   );
+  updateManager.init((status) => broadcast(IpcChannels.APP_UPDATE_STATUS, status));
 
   // Access snapshot (defense-in-depth only; the API is the real enforcement point) ----
   handle(IpcChannels.ACCESS_SYNC, args(z.array(z.string().max(64)).max(100)), ([permissions]) => accessManager.sync(permissions));
@@ -83,6 +86,7 @@ export function registerIpc() {
   handle(IpcChannels.APP_INFO, none, () => ({
     version: app.getVersion(),
     platform: process.platform,
+    arch: process.arch,
     device_id: workspaceConfig.deviceId,
     home_dir: os.homedir(),
     default_shell: defaultShell(),
@@ -99,6 +103,11 @@ export function registerIpc() {
     win.setFullScreen(next);
     return next;
   });
+
+  // Auto-update ----------------------------------------------------------------
+  handle(IpcChannels.APP_UPDATE_CHECK, none, () => updateManager.check());
+  handle(IpcChannels.APP_UPDATE_DOWNLOAD, none, () => updateManager.download());
+  handle(IpcChannels.APP_UPDATE_INSTALL, none, () => updateManager.install());
 
   // Secure storage -------------------------------------------------------------
   const zSecureKey = z.enum(SECURE_KEYS);
@@ -256,4 +265,21 @@ export function registerIpc() {
   handle(IpcChannels.PREVIEW_LOAD, args(z.object({ projectId: zId, url: zPreviewUrl })), ([i]) => previewManager.load(i.projectId, i.url));
   handle(IpcChannels.PREVIEW_DESTROY, args(z.object({ projectId: zId })), ([i]) => previewManager.destroy(i.projectId));
   handle(IpcChannels.PREVIEW_TOGGLE_DEVTOOLS, args(z.object({ projectId: zId })), ([i]) => previewManager.toggleDevTools(i.projectId));
+
+  // Floating panels (docking system §C) -----------------------------------------------------
+  const zFloatingBounds = z.object({ x: z.number().finite(), y: z.number().finite(), width: z.number().finite(), height: z.number().finite(), displayId: z.number().optional() }).partial();
+  handle(
+    IpcChannels.LAYOUT_OPEN_FLOATING,
+    args(
+      z.object({
+        panelId: z.string().min(1).max(200),
+        componentType: z.string().min(1).max(100),
+        params: z.record(z.string(), z.unknown()),
+        title: z.string().max(200),
+        bounds: zFloatingBounds.optional(),
+      }),
+    ),
+    ([input]) => floatingPanelManager.open(input),
+  );
+  handle(IpcChannels.LAYOUT_CLOSE_FLOATING, args(z.string().min(1).max(200)), ([panelId]) => floatingPanelManager.close(panelId));
 }
