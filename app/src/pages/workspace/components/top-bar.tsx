@@ -1,5 +1,5 @@
 import { useNavigate, useNavigationType } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Building2, Check, ChevronDown, Keyboard, LogOut, Maximize, Minimize, Moon, PanelRight, Plus, Search, Settings, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, Keyboard, LogOut, Maximize, Minimize, Moon, PanelRight, Search, Settings, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShortcutKeys } from "@/components/ui/shortcut-keys";
 import { Switch } from "@/components/ui/switch";
@@ -20,9 +20,7 @@ import { useResolvedShortcuts } from "@/features/users/hooks/use-shortcuts";
 import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
 import { formatComboParts } from "@/lib/shortcuts.utils";
 import { generateInitials } from "@/features/auth/utils/auth.utils";
-import { RoleKeyOptions } from "@/config/constants/dropdowns/users/role-key.options";
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
-import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { useDialogsStore } from "@/stores/dialogs";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { useTheme } from "@/hooks/use-theme";
@@ -31,7 +29,6 @@ import { isDesktop } from "@/lib/desktop";
 import { environments } from "@/config/environments";
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
-import { CreateOrganizationDialog } from "./create-organization-dialog";
 import { ShortcutsDialog } from "./shortcuts-dialog";
 import { LayoutMenu } from "./layout-menu";
 import { useEffect, useRef, useState } from "react";
@@ -74,14 +71,12 @@ function useHistoryNav() {
 export function TopBar() {
   const navigate = useNavigate();
   const { canGoBack, canGoForward, goBack, goForward } = useHistoryNav();
-  const { organization, me } = useCurrentOrganization();
+  const { me } = useCurrentOrganization();
   const { can } = usePermissions();
-  const setActiveOrganization = useWorkspaceStore((s) => s.setActiveOrganization);
   const aiPanelOpen = useWorkspaceStore((s) => s.ai_panel_open);
   const setAiPanelOpen = useWorkspaceStore((s) => s.setAiPanelOpen);
   const setCommandPalette = useDialogsStore((s) => s.setCommandPalette);
   const signOut = useSignOut();
-  const [createOrgOpen, setCreateOrgOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const shortcuts = useResolvedShortcuts();
   const paletteCombo = shortcuts.find((s) => s.id === ShortcutActions.COMMAND_PALETTE)?.combo;
@@ -95,11 +90,6 @@ export function TopBar() {
     const next = checked ? "dark" : "light";
     setTheme(next);
     savePreferences.mutate({ theme: next });
-  };
-
-  const switchOrganization = (id: string) => {
-    setActiveOrganization(id);
-    navigate(Routes.workspace.root);
   };
 
   return (
@@ -135,38 +125,6 @@ export function TopBar() {
           <TooltipContent>Forward</TooltipContent>
         </Tooltip>
       </div>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <button className="app-no-drag flex h-7 min-w-0 items-center gap-1.5 rounded-sm px-2 text-[0.7813rem] font-medium text-body hover:bg-surface-elevated">
-              <Building2 className="size-3.5 text-muted-foreground" />
-              <span className="max-w-24 truncate sm:max-w-48">{organization?.name ?? "Select organization"}</span>
-              <ChevronDown className="size-3 text-muted-foreground" />
-            </button>
-          }
-        />
-        <DropdownMenuContent align="start" className="w-64">
-          <DropdownMenuLabel className="text-xs text-muted-foreground">Organizations</DropdownMenuLabel>
-          {me?.organizations.map((org) => (
-            <DropdownMenuItem key={org.id} onSelect={() => switchOrganization(org.id)} className="gap-2">
-              <Building2 className="size-3.5" />
-              <span className="flex-1 truncate">{org.name}</span>
-              <span className="text-[0.6875rem] text-muted-foreground">{getDropdownOptionLabel(RoleKeyOptions, org.role.key)}</span>
-              {org.id === organization?.id && <Check className="size-3.5" />}
-            </DropdownMenuItem>
-          ))}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => setCreateOrgOpen(true)} className="gap-2">
-            <Plus className="size-3.5" /> New organization
-          </DropdownMenuItem>
-          {can({ any: [PermissionKeys.ORG_MANAGE_MEMBERS, PermissionKeys.ORG_MANAGE_ROLES, PermissionKeys.ORG_MANAGE_SETTINGS] }) && (
-            <DropdownMenuItem onSelect={() => navigate(Routes.workspace.settings_section(SettingsSections.ORGANIZATION))} className="gap-2">
-              <Settings className="size-3.5" /> Manage organization
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
 
       <div className="app-drag min-w-0 flex-1" />
 
@@ -250,7 +208,6 @@ export function TopBar() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <CreateOrganizationDialog open={createOrgOpen} onOpenChange={setCreateOrgOpen} />
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
     </header>
   );

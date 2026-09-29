@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { AlertTriangle, Building2, CloudDownload, FolderOpen, FolderSearch, LayoutGrid, Link2, Pencil, Plug, Plus, Settings, Trash2 } from "lucide-react";
+import { AlertTriangle, CloudDownload, FolderOpen, FolderSearch, LayoutGrid, Link2, Pencil, Plug, Plus, Settings, Trash2 } from "lucide-react";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -20,12 +20,12 @@ import { ProjectLocalStateOptions } from "@/config/constants/dropdowns/projects/
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { isHorizontalRail, type RailPosition } from "@/config/constants/dropdowns/settings/rail-position.options";
-import { PlacementMenu } from "./placement-menu";
+import { OrganizationMenu } from "./organization-menu";
+import { PlacementMenu, PlacementTargets } from "./placement-menu";
 import { useRailPosition } from "@/features/users/hooks/use-rail-position";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
 import { Routes } from "@/routes/routes";
-import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { isDesktop } from "@/lib/desktop";
 import { projectRouteKeepingTab } from "@/lib/project-route.utils";
 import { jumpToSession } from "@/lib/session-navigation.utils";
@@ -112,7 +112,7 @@ export function ProjectRail() {
   };
 
   return (
-    <PlacementMenu>
+    <PlacementMenu target={PlacementTargets.SIDEBAR}>
     <aside
       className={cn("flex shrink-0 items-center bg-canvas", RAIL_EDGE_BORDER[position], horizontal ? "h-16 w-full flex-row px-2" : "w-16 flex-col py-2")}
       aria-label="Projects"
@@ -189,9 +189,7 @@ export function ProjectRail() {
         <RailButton label="Integrations" onClick={() => navigate(Routes.workspace.integrations)} tipSide={tipSide}>
           <Plug className="size-4" />
         </RailButton>
-        <RailButton label="Organization" onClick={() => navigate(Routes.workspace.settings_section(SettingsSections.ORGANIZATION))} tipSide={tipSide}>
-          <Building2 className="size-4" />
-        </RailButton>
+        <OrganizationMenu side={tipSide} />
         <RailButton label="Settings" onClick={() => navigate(Routes.workspace.settings)} tipSide={tipSide}>
           <Settings className="size-4" />
         </RailButton>
