@@ -8,6 +8,7 @@ import { playNotificationSound, showOsNotification } from "@/features/users/serv
 import { getNotificationEventLabel } from "@/config/constants/dropdowns/notifications/notification-event.options";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useWorkspaceStore } from "@/stores/workspace";
+import { useAppUpdateStore } from "@/stores/app-update";
 import { updateAgentSession } from "@/features/agent-sessions/services/agent-sessions.services";
 import type { AgentSession } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 import { createActivity } from "@/features/activities/services/activities.services";
@@ -194,6 +195,7 @@ export function DesktopEventsProvider() {
         const t = useRuntimeStore.getState().terminals[id];
         if (t) useRuntimeStore.getState().upsertTerminal({ ...t, alive: false });
       }),
+      bridge.appUpdates.onStatus((status) => useAppUpdateStore.getState().setStatus(status)),
     ];
 
     const timers = changeTimers.current;

@@ -73,9 +73,32 @@ export interface WorkspaceConfig {
 export interface AppInfo {
   version: string;
   platform: NodeJS.Platform;
+  arch: string;
   device_id: string;
   home_dir: string;
   default_shell: string;
+}
+
+// ---------------------------------------------------------------------------
+// Auto-update (electron-updater)
+// ---------------------------------------------------------------------------
+
+export const AppUpdateStates = {
+  IDLE: "idle",
+  CHECKING: "checking",
+  AVAILABLE: "available",
+  NOT_AVAILABLE: "not-available",
+  DOWNLOADING: "downloading",
+  DOWNLOADED: "downloaded",
+  ERROR: "error",
+} as const;
+export type AppUpdateState = (typeof AppUpdateStates)[keyof typeof AppUpdateStates];
+
+export interface AppUpdateStatus {
+  state: AppUpdateState;
+  version?: string;
+  percent?: number;
+  error?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -420,6 +443,34 @@ export interface PreviewState {
 }
 
 // ---------------------------------------------------------------------------
+// Floating panels (docking system §C): a dock panel popped out into its own real OS window.
+// ---------------------------------------------------------------------------
+
+/** Window bounds in screen (CSS pixel) coordinates, plus which display it was last on. */
+export interface FloatingWindowBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  displayId?: number;
+}
+
+export interface OpenFloatingPanelInput {
+  panelId: string;
+  /** Dock component type (e.g. "session-terminal") — resolved to a React component renderer-side. */
+  componentType: string;
+  params: Record<string, unknown>;
+  title: string;
+  bounds?: Partial<FloatingWindowBounds>;
+}
+
+/** Fired when a floating panel's window is closed, so the renderer can re-dock or drop it. */
+export interface FloatingPanelClosedEvent {
+  panelId: string;
+  bounds: FloatingWindowBounds;
+}
+
+// ---------------------------------------------------------------------------
 // Bridge surface exposed on window.devStation
 // ---------------------------------------------------------------------------
 
@@ -448,6 +499,15 @@ export interface DevStationBridge {
     /** Toggles the window's native full-screen state; returns the new state. */
     toggleFullScreen(): Promise<boolean>;
     onFullScreenChange(cb: (isFullScreen: boolean) => void): Unsubscribe;
+  };
+  appUpdates: {
+    /** Triggers a manual electron-updater check (no-ops outside a packaged build). */
+    check(): Promise<void>;
+    /** Starts downloading an already-detected update. */
+    download(): Promise<void>;
+    /** Quits and installs a downloaded update. Only ever call this on explicit user action. */
+    install(): Promise<void>;
+    onStatus(cb: (status: AppUpdateStatus) => void): Unsubscribe;
   };
   secure: {
     get(key: string): Promise<string | null>;
@@ -556,6 +616,13 @@ export interface DevStationBridge {
     toggleDevTools(input: { projectId: string }): Promise<boolean>;
     onState(cb: (e: PreviewState) => void): Unsubscribe;
   };
+  layout: {
+    /** Pops a panel out into its own OS window, loading this same renderer at a bare `/floating` route. */
+    openFloatingPanel(input: OpenFloatingPanelInput): Promise<void>;
+    /** Closes a floating panel's window programmatically (e.g. "Dock back"). */
+    closeFloatingPanel(panelId: string): Promise<void>;
+    onFloatingPanelClosed(cb: (e: FloatingPanelClosedEvent) => void): Unsubscribe;
+  };
   notifications: {
     /** Resolves to false when the OS does not support notifications. */
     show(input: OsNotificationInput): Promise<boolean>;
@@ -569,6 +636,10 @@ export const IpcChannels = {
   APP_OPEN_URL: "app:open-url",
   APP_TOGGLE_FULLSCREEN: "app:toggle-fullscreen",
   APP_FULLSCREEN_CHANGE: "app:fullscreen-change",
+  APP_UPDATE_CHECK: "app:update-check",
+  APP_UPDATE_DOWNLOAD: "app:update-download",
+  APP_UPDATE_INSTALL: "app:update-install",
+  APP_UPDATE_STATUS: "app:update-status",
   SECURE_GET: "secure:get",
   SECURE_SET: "secure:set",
   SECURE_REMOVE: "secure:remove",
@@ -650,6 +721,9 @@ export const IpcChannels = {
   PREVIEW_DESTROY: "preview:destroy",
   PREVIEW_TOGGLE_DEVTOOLS: "preview:toggle-devtools",
   PREVIEW_STATE: "preview:state",
+  LAYOUT_OPEN_FLOATING: "layout:open-floating",
+  LAYOUT_CLOSE_FLOATING: "layout:close-floating",
+  LAYOUT_FLOATING_CLOSED: "layout:floating-closed",
   NOTIF_SHOW: "notification:show",
   NOTIF_CLICK: "notification:click",
 } as const;
