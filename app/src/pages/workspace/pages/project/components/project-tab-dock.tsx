@@ -168,17 +168,27 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
     for (const panel of api.panels) {
       if (!wantedIds.has(panel.id)) panel.api.close();
     }
-    const anchor = api.panels.find((p) => wantedIds.has(p.id));
-    for (const tab of wantedTabs) {
+    let anchor = api.panels.find((p) => wantedIds.has(p.id));
+    // Every permitted tab opens at once on first visit (see `openTabs` above). Without `inactive`,
+    // each `addPanel` call activates its own panel and fires `onDidActivePanelChange`, which the
+    // handler below turns into a `navigate()` — bulk-adding 7 tabs fired a cascade of spurious
+    // navigations, visible as the whole tab strip/content flickering ("shaking") on every project
+    // visit. `inactive` is only honored once a group already has a panel, so process the tab
+    // matching the current URL first — it naturally becomes the group's initial active panel, and
+    // every other tab added afterward is correctly inactive from the start.
+    const orderedTabs = [routeTab, ...wantedTabs.filter((t) => t !== routeTab)];
+    for (const tab of orderedTabs) {
       const id = tabPanelId(tab);
-      if (existingIds.has(id)) continue;
-      api.addPanel({
+      if (existingIds.has(id) || !wantedIds.has(id)) continue;
+      const panel = api.addPanel({
         id,
         component: TAB_PANEL_COMPONENT,
         title: TAB_LABEL.get(tab as ProjectTab) ?? tab,
         params: { tab: tab as ProjectTab },
         position: anchor ? { referencePanel: anchor.id, direction: "within" } : undefined,
+        inactive: tab !== routeTabRef.current,
       });
+      anchor ??= panel;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wantedTabs.join("|")]);
