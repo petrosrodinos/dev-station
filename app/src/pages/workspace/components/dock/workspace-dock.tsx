@@ -4,6 +4,7 @@ import {
   DockviewReact,
   type DockviewApi,
   type DockviewReadyEvent,
+  type IDockviewPanelHeaderProps,
   type IDockviewPanelProps,
   type IDockviewReactProps,
 } from "dockview-react";
@@ -28,6 +29,16 @@ const MainContentPanel: FC<IDockviewPanelProps> = () => (
   </main>
 );
 
+/**
+ * No close button: this is the app's routed content, not a closable document. Closing it used to
+ * leave the dock (and, once saved, every future launch) without an anchor panel at all, which
+ * crashed the whole app on restore — see the `ensureMainContent` self-heal below for the other
+ * half of that fix.
+ */
+const MainContentTab: FC<IDockviewPanelHeaderProps> = () => (
+  <div className="flex h-9 items-center px-3 text-[0.7813rem] font-medium text-muted-foreground">Workspace</div>
+);
+
 /** Thin adapter: resolves the session groups the existing AiPanel component expects. */
 const AiPanelDockPanel: FC<IDockviewPanelProps> = () => {
   const groups = useSessionGroups();
@@ -37,6 +48,10 @@ const AiPanelDockPanel: FC<IDockviewPanelProps> = () => {
 const components: IDockviewReactProps["components"] = {
   [MAIN_CONTENT_PANEL_ID]: MainContentPanel,
   [AI_PANEL_ID]: AiPanelDockPanel,
+};
+
+const tabComponents: IDockviewReactProps["tabComponents"] = {
+  [MAIN_CONTENT_PANEL_ID]: MainContentTab,
 };
 
 /**
@@ -54,24 +69,50 @@ export const WorkspaceDock: FC = () => {
   aiPanelOpenRef.current = aiPanelOpen;
   useLayoutPersistence(api);
 
-  const addAiPanel = useCallback((api: DockviewApi) => {
-    api.addPanel({
-      id: AI_PANEL_ID,
-      component: AI_PANEL_ID,
-      position: { referencePanel: MAIN_CONTENT_PANEL_ID, direction: "right" },
-      initialWidth: AI_PANEL_DEFAULT_WIDTH,
-      minimumWidth: AI_PANEL_MIN_WIDTH,
-    });
+  /** Re-adds the routed-content panel if it's ever missing (user closed it, or a saved/corrupted layout lacked it). */
+  const ensureMainContent = useCallback((api: DockviewApi) => {
+    if (api.getPanel(MAIN_CONTENT_PANEL_ID)) return;
+    try {
+      api.addPanel({ id: MAIN_CONTENT_PANEL_ID, component: MAIN_CONTENT_PANEL_ID });
+    } catch (error) {
+      console.error("Failed to restore the main content panel", error);
+    }
   }, []);
+
+  const addAiPanel = useCallback(
+    (api: DockviewApi) => {
+      if (api.getPanel(AI_PANEL_ID)) return;
+      ensureMainContent(api); // the reference panel below must exist first
+      try {
+        api.addPanel({
+          id: AI_PANEL_ID,
+          component: AI_PANEL_ID,
+          position: api.getPanel(MAIN_CONTENT_PANEL_ID) ? { referencePanel: MAIN_CONTENT_PANEL_ID, direction: "right" } : undefined,
+          initialWidth: AI_PANEL_DEFAULT_WIDTH,
+          minimumWidth: AI_PANEL_MIN_WIDTH,
+        });
+      } catch (error) {
+        console.error("Failed to open the AI panel", error);
+      }
+    },
+    [ensureMainContent],
+  );
 
   const onReady = useCallback(
     (event: DockviewReadyEvent) => {
       apiRef.current = event.api;
-      event.api.addPanel({ id: MAIN_CONTENT_PANEL_ID, component: MAIN_CONTENT_PANEL_ID });
+      ensureMainContent(event.api);
       if (aiPanelOpenRef.current) addAiPanel(event.api);
+      // Self-heal: whatever changed the layout (user closing a panel, a restored/corrupted saved
+      // preset, a future bug) can never leave the dock without its anchor panel — this is what
+      // actually fixes a previously-saved broken layout, not just prevents a new one.
+      event.api.onDidLayoutChange(() => {
+        ensureMainContent(event.api);
+        if (aiPanelOpenRef.current && !event.api.getPanel(AI_PANEL_ID)) addAiPanel(event.api);
+      });
       setApi(event.api);
     },
-    [addAiPanel, setApi],
+    [addAiPanel, ensureMainContent, setApi],
   );
 
   // Keep the AI panel's dock presence in sync with the existing `ai_panel_open` toggle/permission gate.
@@ -83,5 +124,5 @@ export const WorkspaceDock: FC = () => {
     else if (!aiPanelOpen && existing) existing.api.close();
   }, [aiPanelOpen, addAiPanel]);
 
-  return <DockviewReact className="dockview-theme-abyss min-w-0 flex-1" components={components} onReady={onReady} />;
+  return <DockviewReact className="dockview-theme-abyss min-w-0 flex-1" components={components} tabComponents={tabComponents} onReady={onReady} />;
 };

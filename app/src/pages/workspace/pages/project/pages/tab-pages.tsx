@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import { Bot, BookOpen, Files, GitBranch, Home, Plug, SquareTerminal, type LucideIcon } from "lucide-react";
 import { ProjectTabOptions, ProjectTabs, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
 import OverviewTab from "./overview";
 import GitTab from "./git";
@@ -17,6 +18,17 @@ export const TAB_PAGES: Record<ProjectTab, FC> = {
   [ProjectTabs.SESSIONS]: SessionsTab,
   [ProjectTabs.SKILLS]: SkillsTab,
   [ProjectTabs.INTEGRATIONS]: IntegrationsTab,
+};
+
+/** Shared with `ProjectTabDock`'s custom tab renderer so the dock's own tab strip looks like the rest of the app. */
+export const TAB_ICONS: Record<ProjectTab, LucideIcon> = {
+  [ProjectTabs.OVERVIEW]: Home,
+  [ProjectTabs.GIT]: GitBranch,
+  [ProjectTabs.FILES]: Files,
+  [ProjectTabs.TERMINAL]: SquareTerminal,
+  [ProjectTabs.SESSIONS]: Bot,
+  [ProjectTabs.SKILLS]: BookOpen,
+  [ProjectTabs.INTEGRATIONS]: Plug,
 };
 
 export const tabPermission = (id: ProjectTab) => ProjectTabOptions.find((t) => t.id === id)?.permission;
