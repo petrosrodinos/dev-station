@@ -107,6 +107,28 @@ enum AgentSessionStatus {
   CRASHED
 }
 
+enum SkillProvider {
+  CLAUDE
+  CURSOR
+  CODEX
+  GEMINI
+  COPILOT
+  GENERIC
+}
+
+enum SkillKind {
+  SKILL
+  COMMAND
+  RULE
+  CONTEXT
+  DOC
+}
+
+enum SkillFavoriteKind {
+  SYSTEM
+  CUSTOM
+}
+
 enum ActivityType {
   PROJECT_CREATED
   PROJECT_UPDATED
@@ -151,6 +173,7 @@ model User {
   agent_sessions        AgentSession[]
   activities            Activity[]
   git_identities        GitIdentity[]
+  skill_favorites       SkillFavorite[]
 
   @@index([email])
   @@index([phone])
@@ -242,14 +265,16 @@ model Organization {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  members      OrganizationMember[]
-  roles        Role[]
-  invitations  OrganizationInvitation[]
-  projects     Project[]
-  repositories Repository[]
-  connections  IntegrationConnection[]
-  sessions     AgentSession[]
-  activities   Activity[]
+  members         OrganizationMember[]
+  roles           Role[]
+  invitations     OrganizationInvitation[]
+  projects        Project[]
+  repositories    Repository[]
+  connections     IntegrationConnection[]
+  sessions        AgentSession[]
+  activities      Activity[]
+  skills          Skill[]
+  skill_favorites SkillFavorite[]
 
   @@map("organizations")
 }
@@ -503,4 +528,45 @@ model Activity {
   @@index([organization_id, created_at])
   @@index([project_id, created_at])
   @@map("activities")
+}
+
+/// A user-authored skill/command/rule. Public ones are visible to the whole organization, in every
+/// project; private ones are visible only to their creator (still org-scoped, still deletable by any
+/// member per current policy, but never listed for anyone else).
+model Skill {
+  id              String        @id @default(uuid())
+  organization_id String
+  name            String
+  description     String?
+  body            String
+  provider        SkillProvider @default(GENERIC)
+  kind            SkillKind     @default(SKILL)
+  is_public       Boolean       @default(true)
+  created_by      String
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+
+  @@index([organization_id])
+  @@map("skills")
+}
+
+/// A user's favorite skill, either a DB-backed Skill (target_kind CUSTOM, ref_id = Skill.id) or a
+/// filesystem-scanned skill (target_kind SYSTEM, ref_id = its stable scan id). ref_id is polymorphic
+/// on purpose, so there is no FK to Skill; SkillsService deletes orphaned favorites explicitly.
+model SkillFavorite {
+  id              String            @id @default(uuid())
+  user_id         String
+  organization_id String
+  target_kind     SkillFavoriteKind
+  ref_id          String
+  created_at      DateTime          @default(now())
+
+  user         User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, target_kind, ref_id])
+  @@index([organization_id])
+  @@map("skill_favorites")
 }

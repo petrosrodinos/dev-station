@@ -352,6 +352,29 @@ exports.Prisma.ActivityScalarFieldEnum = {
   created_at: 'created_at'
 };
 
+exports.Prisma.SkillScalarFieldEnum = {
+  id: 'id',
+  organization_id: 'organization_id',
+  name: 'name',
+  description: 'description',
+  body: 'body',
+  provider: 'provider',
+  kind: 'kind',
+  is_public: 'is_public',
+  created_by: 'created_by',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.SkillFavoriteScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  organization_id: 'organization_id',
+  target_kind: 'target_kind',
+  ref_id: 'ref_id',
+  created_at: 'created_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -499,6 +522,28 @@ exports.ActivityType = exports.$Enums.ActivityType = {
   OTHER: 'OTHER'
 };
 
+exports.SkillProvider = exports.$Enums.SkillProvider = {
+  CLAUDE: 'CLAUDE',
+  CURSOR: 'CURSOR',
+  CODEX: 'CODEX',
+  GEMINI: 'GEMINI',
+  COPILOT: 'COPILOT',
+  GENERIC: 'GENERIC'
+};
+
+exports.SkillKind = exports.$Enums.SkillKind = {
+  SKILL: 'SKILL',
+  COMMAND: 'COMMAND',
+  RULE: 'RULE',
+  CONTEXT: 'CONTEXT',
+  DOC: 'DOC'
+};
+
+exports.SkillFavoriteKind = exports.$Enums.SkillFavoriteKind = {
+  SYSTEM: 'SYSTEM',
+  CUSTOM: 'CUSTOM'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   PasswordResetToken: 'PasswordResetToken',
@@ -516,7 +561,9 @@ exports.Prisma.ModelName = {
   ProjectIssue: 'ProjectIssue',
   IntegrationConnection: 'IntegrationConnection',
   AgentSession: 'AgentSession',
-  Activity: 'Activity'
+  Activity: 'Activity',
+  Skill: 'Skill',
+  SkillFavorite: 'SkillFavorite'
 };
 
 /**

@@ -7,45 +7,51 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { StatusDot } from "@/components/ui/status-dot";
-import { useSendSkill } from "@/features/skills/hooks/use-skills";
+import { useSendCustomSkill, useSendSkill } from "@/features/skills/hooks/use-skills";
+import type { UnifiedSkill } from "@/features/skills/interfaces/skills.interfaces";
 import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
 import { SkillSendModeOptions } from "@/config/constants/dropdowns/skills/skill.options";
 import { agentStatusDot } from "@/lib/status";
 import { toast } from "@/hooks/use-toast";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useWorkspaceStore } from "@/stores/workspace";
-import { SkillSendModes, type SkillSendMode, type SkillSummary } from "@shared/contract";
+import { SkillSendModes, type SkillSendMode } from "@shared/contract";
 
 interface SkillSendDialogProps {
-  skill: SkillSummary | null;
+  skill: UnifiedSkill | null;
   projectId: string;
   onOpenChange: (open: boolean) => void;
 }
 
-/** Types a skill into one of this project's running agent sessions. */
+/** Types a skill into one of this project's running agent sessions. Custom skills have no file to
+ * reference, so they can only be sent as pasted content. */
 export function SkillSendDialog({ skill, projectId, onOpenChange }: SkillSendDialogProps) {
+  const isCustom = skill?.source === "custom";
   const agents = useRuntimeStore((s) => s.agents);
   const openSessionTab = useWorkspaceStore((s) => s.openSessionTab);
-  const { mutate, isPending } = useSendSkill();
+  const sendSkill = useSendSkill();
+  const sendCustomSkill = useSendCustomSkill();
+  const isPending = sendSkill.isPending || sendCustomSkill.isPending;
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [mode, setMode] = useState<SkillSendMode>(SkillSendModes.REFERENCE);
   const [submit, setSubmit] = useState(false);
 
   const sessions = useMemo(() => Object.values(agents).filter((a) => a.project_id === projectId && a.alive), [agents, projectId]);
   const selected = sessionId && sessions.some((s) => s.id === sessionId) ? sessionId : (sessions[0]?.id ?? null);
+  const effectiveMode = isCustom ? SkillSendModes.CONTENT : mode;
 
   const send = () => {
     if (!skill || !selected) return;
-    mutate(
-      { session_id: selected, skill_id: skill.id, mode, submit },
-      {
-        onSuccess: () => {
-          toast({ title: `Sent "${skill.name}"`, description: submit ? "Submitted to the agent" : "Pasted into the terminal. Review it, then press Enter.", duration: 2500 });
-          openSessionTab(selected);
-          onOpenChange(false);
-        },
-      },
-    );
+    const onSuccess = () => {
+      toast({ title: `Sent "${skill.name}"`, description: submit ? "Submitted to the agent" : "Pasted into the terminal. Review it, then press Enter.", duration: 2500 });
+      openSessionTab(selected);
+      onOpenChange(false);
+    };
+    if (isCustom) {
+      sendCustomSkill.mutate({ session_id: selected, name: skill.name, kind: skill.kind, body: skill.body ?? "", submit }, { onSuccess });
+    } else {
+      sendSkill.mutate({ session_id: selected, skill_id: skill.id, mode: effectiveMode, submit }, { onSuccess });
+    }
   };
 
   return (
@@ -80,17 +86,21 @@ export function SkillSendDialog({ skill, projectId, onOpenChange }: SkillSendDia
               </Select>
             </div>
 
-            <RadioGroup value={mode} onValueChange={(v) => setMode(v as SkillSendMode)} className="space-y-2">
-              {SkillSendModeOptions.map((o) => (
-                <Label key={o.id} htmlFor={`send-mode-${o.id}`} className="flex cursor-pointer items-start gap-2.5 rounded-md border p-2.5 font-normal has-[[data-state=checked]]:border-primary">
-                  <RadioGroupItem id={`send-mode-${o.id}`} value={o.id} className="mt-0.5" />
-                  <span className="space-y-0.5">
-                    <span className="block text-[0.8125rem] font-medium">{o.label}</span>
-                    <span className="block text-xs text-muted-foreground">{o.description}</span>
-                  </span>
-                </Label>
-              ))}
-            </RadioGroup>
+            {isCustom ? (
+              <p className="rounded-md border p-2.5 text-xs text-muted-foreground">This skill has no file on disk, so it's always pasted in full.</p>
+            ) : (
+              <RadioGroup value={mode} onValueChange={(v) => setMode(v as SkillSendMode)} className="space-y-2">
+                {SkillSendModeOptions.map((o) => (
+                  <Label key={o.id} htmlFor={`send-mode-${o.id}`} className="flex cursor-pointer items-start gap-2.5 rounded-md border p-2.5 font-normal has-[[data-state=checked]]:border-primary">
+                    <RadioGroupItem id={`send-mode-${o.id}`} value={o.id} className="mt-0.5" />
+                    <span className="space-y-0.5">
+                      <span className="block text-[0.8125rem] font-medium">{o.label}</span>
+                      <span className="block text-xs text-muted-foreground">{o.description}</span>
+                    </span>
+                  </Label>
+                ))}
+              </RadioGroup>
+            )}
 
             <Label htmlFor="send-submit" className="flex cursor-pointer items-center gap-2 font-normal">
               <Checkbox id="send-submit" checked={submit} onCheckedChange={(v) => setSubmit(v === true)} />

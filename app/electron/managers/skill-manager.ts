@@ -1,5 +1,5 @@
 import os from "node:os";
-import type { SendSkillInput, SkillDetail, SkillListResult } from "../shared/contract";
+import type { SendCustomSkillInput, SendSkillInput, SkillDetail, SkillListResult } from "../shared/contract";
 import { IpcError } from "../ipc/ipc-error";
 import { buildSkillText, toTerminalInput } from "../skills/skill-format.ts";
 import { scanSkills, toDetail, type ScannedSkill } from "../skills/skill-scanner.ts";
@@ -47,6 +47,18 @@ class SkillManager {
     const text = toTerminalInput(buildSkillText(detail, input.mode), input.submit === true);
     if (text.length > MAX_TERMINAL_INPUT) {
       throw new IpcError("This skill is too large to paste. Send it by reference instead.");
+    }
+    agentManager.write(input.session_id, text);
+  }
+
+  /** Like `send`, but for a DB-backed custom skill: no file to read, so only "content" mode applies. */
+  sendCustom(input: SendCustomSkillInput): void {
+    const info = agentManager.list().find((s) => s.id === input.session_id);
+    if (!info?.alive) throw new IpcError("That agent session is not running.");
+
+    const text = toTerminalInput(buildSkillText({ name: input.name, kind: input.kind, path: "", body: input.body }, "content"), input.submit === true);
+    if (text.length > MAX_TERMINAL_INPUT) {
+      throw new IpcError("This skill is too large to paste. Trim it and try again.");
     }
     agentManager.write(input.session_id, text);
   }

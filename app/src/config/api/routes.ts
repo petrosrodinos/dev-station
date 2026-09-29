@@ -62,4 +62,10 @@ export const ApiRoutes = {
     activities: {
         prefix: "/activities",
     },
+    skills: {
+        prefix: "/skills",
+        by_id: (id: string) => `/skills/${id}`,
+        favorites: "/skills/favorites",
+        favorite: (id: string) => `/skills/favorites/${id}`,
+    },
 };
