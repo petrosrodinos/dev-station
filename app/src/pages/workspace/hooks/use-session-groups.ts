@@ -105,5 +105,7 @@ export const nextReviewSession = (groups: SessionGroups, currentId: string | nul
     const item = ordered[(start + step + ordered.length) % ordered.length];
     if (item.review_state === SessionReviewStates.READY && item.id !== currentId) return item;
   }
-  return null;
+  // The only session waiting for review is the one already focused: reopen it (with its review
+  // preview) rather than doing nothing while the "Needs review" badge still shows it.
+  return ordered.find((i) => i.id === currentId && i.review_state === SessionReviewStates.READY) ?? null;
 };

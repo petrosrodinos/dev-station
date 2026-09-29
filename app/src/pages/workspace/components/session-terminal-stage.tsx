@@ -44,7 +44,7 @@ export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups
   onNextRef.current = onNext;
 
   const SessionPanel: FC<IDockviewPanelProps<{ sessionId: string }>> = useCallback(
-    ({ params }) => <SessionTerminalPanel sessionId={params.sessionId} groups={groupsRef.current} onNext={() => onNextRef.current()} />,
+    ({ params, api }) => <SessionTerminalPanel sessionId={params.sessionId} groups={groupsRef.current} onNext={() => onNextRef.current()} panelApi={api} />,
     [],
   );
 

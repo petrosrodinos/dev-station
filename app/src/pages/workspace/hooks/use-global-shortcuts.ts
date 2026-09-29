@@ -21,6 +21,7 @@ import { toast } from "@/hooks/use-toast";
 import { isDesktop } from "@/lib/desktop";
 import { Routes } from "@/routes/routes";
 import { nextReviewSession, type SessionGroups } from "./use-session-groups";
+import { useQuickStartSession } from "@/features/agent-sessions/hooks/use-quick-start-session";
 import { SessionReviewStates } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 
 interface ActionContext {
@@ -28,6 +29,7 @@ interface ActionContext {
   projects: Project[] | undefined;
   can: ReturnType<typeof usePermissions>["can"];
   sessions: SessionGroups;
+  quickStartSession: (projectId: string | null) => void;
 }
 
 /** Steps through the AI panel's sessions in display order (grouped by project), switching project as needed. */
@@ -81,7 +83,9 @@ const runShortcutAction = (actionId: string, ctx: ActionContext): boolean => {
       dialogs.setCommandPalette(!dialogs.command_palette);
       return true;
     case ShortcutActions.NEW_SESSION:
-      return openNewSession(ctx);
+      if (!ctx.can(PermissionKeys.AI_START_AGENTS)) return true;
+      ctx.quickStartSession(ws.active_project_id);
+      return true;
     case ShortcutActions.NEW_TERMINAL:
       return openNewTerminal(ctx);
     case ShortcutActions.TOGGLE_AI_PANEL:
@@ -136,6 +140,9 @@ export const useGlobalShortcuts = (sessions: SessionGroups) => {
   canRef.current = can;
   const sessionsRef = useRef(sessions);
   sessionsRef.current = sessions;
+  const quickStartSession = useQuickStartSession();
+  const quickStartRef = useRef(quickStartSession);
+  quickStartRef.current = quickStartSession;
   const shortcuts = useResolvedShortcuts();
   const index = useMemo(() => buildComboIndex(shortcuts), [shortcuts]);
 
@@ -146,7 +153,7 @@ export const useGlobalShortcuts = (sessions: SessionGroups) => {
       const shortcut = combo ? index.get(combo) : undefined;
       if (!shortcut) return;
 
-      const ctx: ActionContext = { navigate, projects, can: canRef.current, sessions: sessionsRef.current };
+      const ctx: ActionContext = { navigate, projects, can: canRef.current, sessions: sessionsRef.current, quickStartSession: (id) => quickStartRef.current(id) };
       let handled = false;
       if (shortcut.kind === "custom" && shortcut.custom) {
         const { custom } = shortcut;
