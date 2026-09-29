@@ -48,6 +48,8 @@ export class UserPreferenceEntity {
   @ApiProperty() font_size: number;
   @ApiProperty() font_family: string;
   @ApiProperty() mono_font_family: string;
+  @ApiProperty({ enum: ['left', 'right', 'top', 'bottom'] })
+  rail_position: string;
   @ApiProperty({
     description:
       'Resolved notification settings: { enabled, events: { [EVENT_TYPE]: { badge, feed, os, toast } } }',
