@@ -39,6 +39,20 @@ export type GitIdentity = $Result.DefaultSelection<Prisma.$GitIdentityPayload>
  */
 export type UserPreference = $Result.DefaultSelection<Prisma.$UserPreferencePayload>
 /**
+ * Model WorkspaceLayoutPreset
+ * A user's saved dock/workspace layout (named preset). Only the serialized layout tree +
+ * naming metadata is synced; local-only runtime state (which panel currently has focus)
+ * stays in the renderer — mirrors UserPreference's JSON-blob-for-open-ended-data pattern.
+ */
+export type WorkspaceLayoutPreset = $Result.DefaultSelection<Prisma.$WorkspaceLayoutPresetPayload>
+/**
+ * Model WorkspaceLayoutState
+ * One row per user: which preset auto-applies per project, and which preset was last active
+ * with no project open. Separate from UserPreference (changes far more often than the rest of
+ * that row) and from WorkspaceLayoutPreset (this isn't a preset itself).
+ */
+export type WorkspaceLayoutState = $Result.DefaultSelection<Prisma.$WorkspaceLayoutStatePayload>
+/**
  * Model Organization
  * 
  */
@@ -113,6 +127,19 @@ export type Skill = $Result.DefaultSelection<Prisma.$SkillPayload>
  * on purpose, so there is no FK to Skill; SkillsService deletes orphaned favorites explicitly.
  */
 export type SkillFavorite = $Result.DefaultSelection<Prisma.$SkillFavoritePayload>
+/**
+ * Model AppRelease
+ * The latest published desktop app build per platform. Upserted by CI right after
+ * electron-builder publishes a release (Spec: docs/superpowers/specs/2026-09-29-app-distribution-and-updates-design.md).
+ * Not organization/user scoped — this is app-wide release metadata.
+ */
+export type AppRelease = $Result.DefaultSelection<Prisma.$AppReleasePayload>
+/**
+ * Model AppInstall
+ * One row per device that has ever pinged in, for adoption tracking (not tied to a user/org —
+ * a device may run the app before anyone signs in).
+ */
+export type AppInstall = $Result.DefaultSelection<Prisma.$AppInstallPayload>
 
 /**
  * Enums
@@ -536,6 +563,26 @@ export class PrismaClient<
   get userPreference(): Prisma.UserPreferenceDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.workspaceLayoutPreset`: Exposes CRUD operations for the **WorkspaceLayoutPreset** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more WorkspaceLayoutPresets
+    * const workspaceLayoutPresets = await prisma.workspaceLayoutPreset.findMany()
+    * ```
+    */
+  get workspaceLayoutPreset(): Prisma.WorkspaceLayoutPresetDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.workspaceLayoutState`: Exposes CRUD operations for the **WorkspaceLayoutState** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more WorkspaceLayoutStates
+    * const workspaceLayoutStates = await prisma.workspaceLayoutState.findMany()
+    * ```
+    */
+  get workspaceLayoutState(): Prisma.WorkspaceLayoutStateDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.organization`: Exposes CRUD operations for the **Organization** model.
     * Example usage:
     * ```ts
@@ -674,6 +721,26 @@ export class PrismaClient<
     * ```
     */
   get skillFavorite(): Prisma.SkillFavoriteDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.appRelease`: Exposes CRUD operations for the **AppRelease** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AppReleases
+    * const appReleases = await prisma.appRelease.findMany()
+    * ```
+    */
+  get appRelease(): Prisma.AppReleaseDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.appInstall`: Exposes CRUD operations for the **AppInstall** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AppInstalls
+    * const appInstalls = await prisma.appInstall.findMany()
+    * ```
+    */
+  get appInstall(): Prisma.AppInstallDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1113,6 +1180,8 @@ export namespace Prisma {
     Document: 'Document',
     GitIdentity: 'GitIdentity',
     UserPreference: 'UserPreference',
+    WorkspaceLayoutPreset: 'WorkspaceLayoutPreset',
+    WorkspaceLayoutState: 'WorkspaceLayoutState',
     Organization: 'Organization',
     Role: 'Role',
     RolePermission: 'RolePermission',
@@ -1126,7 +1195,9 @@ export namespace Prisma {
     AgentSession: 'AgentSession',
     Activity: 'Activity',
     Skill: 'Skill',
-    SkillFavorite: 'SkillFavorite'
+    SkillFavorite: 'SkillFavorite',
+    AppRelease: 'AppRelease',
+    AppInstall: 'AppInstall'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1142,7 +1213,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "passwordResetToken" | "document" | "gitIdentity" | "userPreference" | "organization" | "role" | "rolePermission" | "organizationMember" | "organizationInvitation" | "repository" | "project" | "projectService" | "projectIssue" | "integrationConnection" | "agentSession" | "activity" | "skill" | "skillFavorite"
+      modelProps: "user" | "passwordResetToken" | "document" | "gitIdentity" | "userPreference" | "workspaceLayoutPreset" | "workspaceLayoutState" | "organization" | "role" | "rolePermission" | "organizationMember" | "organizationInvitation" | "repository" | "project" | "projectService" | "projectIssue" | "integrationConnection" | "agentSession" | "activity" | "skill" | "skillFavorite" | "appRelease" | "appInstall"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1513,6 +1584,154 @@ export namespace Prisma {
           count: {
             args: Prisma.UserPreferenceCountArgs<ExtArgs>
             result: $Utils.Optional<UserPreferenceCountAggregateOutputType> | number
+          }
+        }
+      }
+      WorkspaceLayoutPreset: {
+        payload: Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>
+        fields: Prisma.WorkspaceLayoutPresetFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WorkspaceLayoutPresetFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutPresetPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WorkspaceLayoutPresetFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutPresetPayload>
+          }
+          findFirst: {
+            args: Prisma.WorkspaceLayoutPresetFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutPresetPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WorkspaceLayoutPresetFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutPresetPayload>
+          }
+          findMany: {
+            args: Prisma.WorkspaceLayoutPresetFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutPresetPayload>[]
+          }
+          create: {
+            args: Prisma.WorkspaceLayoutPresetCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutPresetPayload>
+          }
+          createMany: {
+            args: Prisma.WorkspaceLayoutPresetCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WorkspaceLayoutPresetCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutPresetPayload>[]
+          }
+          delete: {
+            args: Prisma.WorkspaceLayoutPresetDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutPresetPayload>
+          }
+          update: {
+            args: Prisma.WorkspaceLayoutPresetUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutPresetPayload>
+          }
+          deleteMany: {
+            args: Prisma.WorkspaceLayoutPresetDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WorkspaceLayoutPresetUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.WorkspaceLayoutPresetUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutPresetPayload>[]
+          }
+          upsert: {
+            args: Prisma.WorkspaceLayoutPresetUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutPresetPayload>
+          }
+          aggregate: {
+            args: Prisma.WorkspaceLayoutPresetAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWorkspaceLayoutPreset>
+          }
+          groupBy: {
+            args: Prisma.WorkspaceLayoutPresetGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WorkspaceLayoutPresetGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WorkspaceLayoutPresetCountArgs<ExtArgs>
+            result: $Utils.Optional<WorkspaceLayoutPresetCountAggregateOutputType> | number
+          }
+        }
+      }
+      WorkspaceLayoutState: {
+        payload: Prisma.$WorkspaceLayoutStatePayload<ExtArgs>
+        fields: Prisma.WorkspaceLayoutStateFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WorkspaceLayoutStateFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutStatePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WorkspaceLayoutStateFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutStatePayload>
+          }
+          findFirst: {
+            args: Prisma.WorkspaceLayoutStateFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutStatePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WorkspaceLayoutStateFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutStatePayload>
+          }
+          findMany: {
+            args: Prisma.WorkspaceLayoutStateFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutStatePayload>[]
+          }
+          create: {
+            args: Prisma.WorkspaceLayoutStateCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutStatePayload>
+          }
+          createMany: {
+            args: Prisma.WorkspaceLayoutStateCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WorkspaceLayoutStateCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutStatePayload>[]
+          }
+          delete: {
+            args: Prisma.WorkspaceLayoutStateDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutStatePayload>
+          }
+          update: {
+            args: Prisma.WorkspaceLayoutStateUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutStatePayload>
+          }
+          deleteMany: {
+            args: Prisma.WorkspaceLayoutStateDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WorkspaceLayoutStateUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.WorkspaceLayoutStateUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutStatePayload>[]
+          }
+          upsert: {
+            args: Prisma.WorkspaceLayoutStateUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkspaceLayoutStatePayload>
+          }
+          aggregate: {
+            args: Prisma.WorkspaceLayoutStateAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWorkspaceLayoutState>
+          }
+          groupBy: {
+            args: Prisma.WorkspaceLayoutStateGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WorkspaceLayoutStateGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WorkspaceLayoutStateCountArgs<ExtArgs>
+            result: $Utils.Optional<WorkspaceLayoutStateCountAggregateOutputType> | number
           }
         }
       }
@@ -2552,6 +2771,154 @@ export namespace Prisma {
           }
         }
       }
+      AppRelease: {
+        payload: Prisma.$AppReleasePayload<ExtArgs>
+        fields: Prisma.AppReleaseFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AppReleaseFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AppReleaseFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>
+          }
+          findFirst: {
+            args: Prisma.AppReleaseFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AppReleaseFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>
+          }
+          findMany: {
+            args: Prisma.AppReleaseFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>[]
+          }
+          create: {
+            args: Prisma.AppReleaseCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>
+          }
+          createMany: {
+            args: Prisma.AppReleaseCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AppReleaseCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>[]
+          }
+          delete: {
+            args: Prisma.AppReleaseDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>
+          }
+          update: {
+            args: Prisma.AppReleaseUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>
+          }
+          deleteMany: {
+            args: Prisma.AppReleaseDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AppReleaseUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AppReleaseUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>[]
+          }
+          upsert: {
+            args: Prisma.AppReleaseUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppReleasePayload>
+          }
+          aggregate: {
+            args: Prisma.AppReleaseAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAppRelease>
+          }
+          groupBy: {
+            args: Prisma.AppReleaseGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AppReleaseGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AppReleaseCountArgs<ExtArgs>
+            result: $Utils.Optional<AppReleaseCountAggregateOutputType> | number
+          }
+        }
+      }
+      AppInstall: {
+        payload: Prisma.$AppInstallPayload<ExtArgs>
+        fields: Prisma.AppInstallFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AppInstallFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppInstallPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AppInstallFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppInstallPayload>
+          }
+          findFirst: {
+            args: Prisma.AppInstallFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppInstallPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AppInstallFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppInstallPayload>
+          }
+          findMany: {
+            args: Prisma.AppInstallFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppInstallPayload>[]
+          }
+          create: {
+            args: Prisma.AppInstallCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppInstallPayload>
+          }
+          createMany: {
+            args: Prisma.AppInstallCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AppInstallCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppInstallPayload>[]
+          }
+          delete: {
+            args: Prisma.AppInstallDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppInstallPayload>
+          }
+          update: {
+            args: Prisma.AppInstallUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppInstallPayload>
+          }
+          deleteMany: {
+            args: Prisma.AppInstallDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AppInstallUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AppInstallUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppInstallPayload>[]
+          }
+          upsert: {
+            args: Prisma.AppInstallUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AppInstallPayload>
+          }
+          aggregate: {
+            args: Prisma.AppInstallAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAppInstall>
+          }
+          groupBy: {
+            args: Prisma.AppInstallGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AppInstallGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AppInstallCountArgs<ExtArgs>
+            result: $Utils.Optional<AppInstallCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2665,6 +3032,8 @@ export namespace Prisma {
     document?: DocumentOmit
     gitIdentity?: GitIdentityOmit
     userPreference?: UserPreferenceOmit
+    workspaceLayoutPreset?: WorkspaceLayoutPresetOmit
+    workspaceLayoutState?: WorkspaceLayoutStateOmit
     organization?: OrganizationOmit
     role?: RoleOmit
     rolePermission?: RolePermissionOmit
@@ -2679,6 +3048,8 @@ export namespace Prisma {
     activity?: ActivityOmit
     skill?: SkillOmit
     skillFavorite?: SkillFavoriteOmit
+    appRelease?: AppReleaseOmit
+    appInstall?: AppInstallOmit
   }
 
   /* Types for Logging */
@@ -2766,6 +3137,7 @@ export namespace Prisma {
     activities: number
     git_identities: number
     skill_favorites: number
+    workspace_layouts: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2776,6 +3148,7 @@ export namespace Prisma {
     activities?: boolean | UserCountOutputTypeCountActivitiesArgs
     git_identities?: boolean | UserCountOutputTypeCountGit_identitiesArgs
     skill_favorites?: boolean | UserCountOutputTypeCountSkill_favoritesArgs
+    workspace_layouts?: boolean | UserCountOutputTypeCountWorkspace_layoutsArgs
   }
 
   // Custom InputTypes
@@ -2836,6 +3209,44 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountSkill_favoritesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SkillFavoriteWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountWorkspace_layoutsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkspaceLayoutPresetWhereInput
+  }
+
+
+  /**
+   * Count Type WorkspaceLayoutPresetCountOutputType
+   */
+
+  export type WorkspaceLayoutPresetCountOutputType = {
+    state: number
+  }
+
+  export type WorkspaceLayoutPresetCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    state?: boolean | WorkspaceLayoutPresetCountOutputTypeCountStateArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * WorkspaceLayoutPresetCountOutputType without action
+   */
+  export type WorkspaceLayoutPresetCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPresetCountOutputType
+     */
+    select?: WorkspaceLayoutPresetCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * WorkspaceLayoutPresetCountOutputType without action
+   */
+  export type WorkspaceLayoutPresetCountOutputTypeCountStateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkspaceLayoutStateWhereInput
   }
 
 
@@ -3386,6 +3797,8 @@ export namespace Prisma {
     activities?: boolean | User$activitiesArgs<ExtArgs>
     git_identities?: boolean | User$git_identitiesArgs<ExtArgs>
     skill_favorites?: boolean | User$skill_favoritesArgs<ExtArgs>
+    workspace_layouts?: boolean | User$workspace_layoutsArgs<ExtArgs>
+    workspace_layout_state?: boolean | User$workspace_layout_stateArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3435,6 +3848,8 @@ export namespace Prisma {
     activities?: boolean | User$activitiesArgs<ExtArgs>
     git_identities?: boolean | User$git_identitiesArgs<ExtArgs>
     skill_favorites?: boolean | User$skill_favoritesArgs<ExtArgs>
+    workspace_layouts?: boolean | User$workspace_layoutsArgs<ExtArgs>
+    workspace_layout_state?: boolean | User$workspace_layout_stateArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3451,6 +3866,8 @@ export namespace Prisma {
       activities: Prisma.$ActivityPayload<ExtArgs>[]
       git_identities: Prisma.$GitIdentityPayload<ExtArgs>[]
       skill_favorites: Prisma.$SkillFavoritePayload<ExtArgs>[]
+      workspace_layouts: Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>[]
+      workspace_layout_state: Prisma.$WorkspaceLayoutStatePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3864,6 +4281,8 @@ export namespace Prisma {
     activities<T extends User$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     git_identities<T extends User$git_identitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$git_identitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     skill_favorites<T extends User$skill_favoritesArgs<ExtArgs> = {}>(args?: Subset<T, User$skill_favoritesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SkillFavoritePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    workspace_layouts<T extends User$workspace_layoutsArgs<ExtArgs> = {}>(args?: Subset<T, User$workspace_layoutsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    workspace_layout_state<T extends User$workspace_layout_stateArgs<ExtArgs> = {}>(args?: Subset<T, User$workspace_layout_stateArgs<ExtArgs>>): Prisma__WorkspaceLayoutStateClient<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4474,6 +4893,49 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SkillFavoriteScalarFieldEnum | SkillFavoriteScalarFieldEnum[]
+  }
+
+  /**
+   * User.workspace_layouts
+   */
+  export type User$workspace_layoutsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetInclude<ExtArgs> | null
+    where?: WorkspaceLayoutPresetWhereInput
+    orderBy?: WorkspaceLayoutPresetOrderByWithRelationInput | WorkspaceLayoutPresetOrderByWithRelationInput[]
+    cursor?: WorkspaceLayoutPresetWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WorkspaceLayoutPresetScalarFieldEnum | WorkspaceLayoutPresetScalarFieldEnum[]
+  }
+
+  /**
+   * User.workspace_layout_state
+   */
+  export type User$workspace_layout_stateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateInclude<ExtArgs> | null
+    where?: WorkspaceLayoutStateWhereInput
   }
 
   /**
@@ -9017,6 +9479,2271 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserPreferenceInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model WorkspaceLayoutPreset
+   */
+
+  export type AggregateWorkspaceLayoutPreset = {
+    _count: WorkspaceLayoutPresetCountAggregateOutputType | null
+    _avg: WorkspaceLayoutPresetAvgAggregateOutputType | null
+    _sum: WorkspaceLayoutPresetSumAggregateOutputType | null
+    _min: WorkspaceLayoutPresetMinAggregateOutputType | null
+    _max: WorkspaceLayoutPresetMaxAggregateOutputType | null
+  }
+
+  export type WorkspaceLayoutPresetAvgAggregateOutputType = {
+    layout_version: number | null
+  }
+
+  export type WorkspaceLayoutPresetSumAggregateOutputType = {
+    layout_version: number | null
+  }
+
+  export type WorkspaceLayoutPresetMinAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    name: string | null
+    is_default: boolean | null
+    layout_version: number | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type WorkspaceLayoutPresetMaxAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    name: string | null
+    is_default: boolean | null
+    layout_version: number | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type WorkspaceLayoutPresetCountAggregateOutputType = {
+    id: number
+    user_id: number
+    name: number
+    is_default: number
+    layout_version: number
+    layout: number
+    floating: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type WorkspaceLayoutPresetAvgAggregateInputType = {
+    layout_version?: true
+  }
+
+  export type WorkspaceLayoutPresetSumAggregateInputType = {
+    layout_version?: true
+  }
+
+  export type WorkspaceLayoutPresetMinAggregateInputType = {
+    id?: true
+    user_id?: true
+    name?: true
+    is_default?: true
+    layout_version?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type WorkspaceLayoutPresetMaxAggregateInputType = {
+    id?: true
+    user_id?: true
+    name?: true
+    is_default?: true
+    layout_version?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type WorkspaceLayoutPresetCountAggregateInputType = {
+    id?: true
+    user_id?: true
+    name?: true
+    is_default?: true
+    layout_version?: true
+    layout?: true
+    floating?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type WorkspaceLayoutPresetAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkspaceLayoutPreset to aggregate.
+     */
+    where?: WorkspaceLayoutPresetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkspaceLayoutPresets to fetch.
+     */
+    orderBy?: WorkspaceLayoutPresetOrderByWithRelationInput | WorkspaceLayoutPresetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WorkspaceLayoutPresetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkspaceLayoutPresets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkspaceLayoutPresets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned WorkspaceLayoutPresets
+    **/
+    _count?: true | WorkspaceLayoutPresetCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: WorkspaceLayoutPresetAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: WorkspaceLayoutPresetSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WorkspaceLayoutPresetMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WorkspaceLayoutPresetMaxAggregateInputType
+  }
+
+  export type GetWorkspaceLayoutPresetAggregateType<T extends WorkspaceLayoutPresetAggregateArgs> = {
+        [P in keyof T & keyof AggregateWorkspaceLayoutPreset]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWorkspaceLayoutPreset[P]>
+      : GetScalarType<T[P], AggregateWorkspaceLayoutPreset[P]>
+  }
+
+
+
+
+  export type WorkspaceLayoutPresetGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkspaceLayoutPresetWhereInput
+    orderBy?: WorkspaceLayoutPresetOrderByWithAggregationInput | WorkspaceLayoutPresetOrderByWithAggregationInput[]
+    by: WorkspaceLayoutPresetScalarFieldEnum[] | WorkspaceLayoutPresetScalarFieldEnum
+    having?: WorkspaceLayoutPresetScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WorkspaceLayoutPresetCountAggregateInputType | true
+    _avg?: WorkspaceLayoutPresetAvgAggregateInputType
+    _sum?: WorkspaceLayoutPresetSumAggregateInputType
+    _min?: WorkspaceLayoutPresetMinAggregateInputType
+    _max?: WorkspaceLayoutPresetMaxAggregateInputType
+  }
+
+  export type WorkspaceLayoutPresetGroupByOutputType = {
+    id: string
+    user_id: string
+    name: string
+    is_default: boolean
+    layout_version: number
+    layout: JsonValue
+    floating: JsonValue
+    created_at: Date
+    updated_at: Date
+    _count: WorkspaceLayoutPresetCountAggregateOutputType | null
+    _avg: WorkspaceLayoutPresetAvgAggregateOutputType | null
+    _sum: WorkspaceLayoutPresetSumAggregateOutputType | null
+    _min: WorkspaceLayoutPresetMinAggregateOutputType | null
+    _max: WorkspaceLayoutPresetMaxAggregateOutputType | null
+  }
+
+  type GetWorkspaceLayoutPresetGroupByPayload<T extends WorkspaceLayoutPresetGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WorkspaceLayoutPresetGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WorkspaceLayoutPresetGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WorkspaceLayoutPresetGroupByOutputType[P]>
+            : GetScalarType<T[P], WorkspaceLayoutPresetGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WorkspaceLayoutPresetSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    name?: boolean
+    is_default?: boolean
+    layout_version?: boolean
+    layout?: boolean
+    floating?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    state?: boolean | WorkspaceLayoutPreset$stateArgs<ExtArgs>
+    _count?: boolean | WorkspaceLayoutPresetCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["workspaceLayoutPreset"]>
+
+  export type WorkspaceLayoutPresetSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    name?: boolean
+    is_default?: boolean
+    layout_version?: boolean
+    layout?: boolean
+    floating?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["workspaceLayoutPreset"]>
+
+  export type WorkspaceLayoutPresetSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    name?: boolean
+    is_default?: boolean
+    layout_version?: boolean
+    layout?: boolean
+    floating?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["workspaceLayoutPreset"]>
+
+  export type WorkspaceLayoutPresetSelectScalar = {
+    id?: boolean
+    user_id?: boolean
+    name?: boolean
+    is_default?: boolean
+    layout_version?: boolean
+    layout?: boolean
+    floating?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type WorkspaceLayoutPresetOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "name" | "is_default" | "layout_version" | "layout" | "floating" | "created_at" | "updated_at", ExtArgs["result"]["workspaceLayoutPreset"]>
+  export type WorkspaceLayoutPresetInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    state?: boolean | WorkspaceLayoutPreset$stateArgs<ExtArgs>
+    _count?: boolean | WorkspaceLayoutPresetCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type WorkspaceLayoutPresetIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type WorkspaceLayoutPresetIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $WorkspaceLayoutPresetPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "WorkspaceLayoutPreset"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      state: Prisma.$WorkspaceLayoutStatePayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      user_id: string
+      name: string
+      /**
+       * Seeded once per user, cannot be deleted — only reset/overwritten.
+       */
+      is_default: boolean
+      /**
+       * Bumped whenever the view-type registry changes shape; lets the client run migrations
+       * before calling dockview's fromJSON().
+       */
+      layout_version: number
+      /**
+       * Opaque serialized dockview tree (DockviewApi.toJSON() shape): groups, splits, panel
+       * ids/params, sizes. Structurally open-ended and library-owned, so untyped here.
+       */
+      layout: Prisma.JsonValue
+      /**
+       * Floating-window bounds array (panels floated as real OS windows) — not part of dockview's own tree.
+       */
+      floating: Prisma.JsonValue
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["workspaceLayoutPreset"]>
+    composites: {}
+  }
+
+  type WorkspaceLayoutPresetGetPayload<S extends boolean | null | undefined | WorkspaceLayoutPresetDefaultArgs> = $Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload, S>
+
+  type WorkspaceLayoutPresetCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<WorkspaceLayoutPresetFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: WorkspaceLayoutPresetCountAggregateInputType | true
+    }
+
+  export interface WorkspaceLayoutPresetDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['WorkspaceLayoutPreset'], meta: { name: 'WorkspaceLayoutPreset' } }
+    /**
+     * Find zero or one WorkspaceLayoutPreset that matches the filter.
+     * @param {WorkspaceLayoutPresetFindUniqueArgs} args - Arguments to find a WorkspaceLayoutPreset
+     * @example
+     * // Get one WorkspaceLayoutPreset
+     * const workspaceLayoutPreset = await prisma.workspaceLayoutPreset.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WorkspaceLayoutPresetFindUniqueArgs>(args: SelectSubset<T, WorkspaceLayoutPresetFindUniqueArgs<ExtArgs>>): Prisma__WorkspaceLayoutPresetClient<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one WorkspaceLayoutPreset that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {WorkspaceLayoutPresetFindUniqueOrThrowArgs} args - Arguments to find a WorkspaceLayoutPreset
+     * @example
+     * // Get one WorkspaceLayoutPreset
+     * const workspaceLayoutPreset = await prisma.workspaceLayoutPreset.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WorkspaceLayoutPresetFindUniqueOrThrowArgs>(args: SelectSubset<T, WorkspaceLayoutPresetFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WorkspaceLayoutPresetClient<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WorkspaceLayoutPreset that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutPresetFindFirstArgs} args - Arguments to find a WorkspaceLayoutPreset
+     * @example
+     * // Get one WorkspaceLayoutPreset
+     * const workspaceLayoutPreset = await prisma.workspaceLayoutPreset.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WorkspaceLayoutPresetFindFirstArgs>(args?: SelectSubset<T, WorkspaceLayoutPresetFindFirstArgs<ExtArgs>>): Prisma__WorkspaceLayoutPresetClient<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WorkspaceLayoutPreset that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutPresetFindFirstOrThrowArgs} args - Arguments to find a WorkspaceLayoutPreset
+     * @example
+     * // Get one WorkspaceLayoutPreset
+     * const workspaceLayoutPreset = await prisma.workspaceLayoutPreset.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WorkspaceLayoutPresetFindFirstOrThrowArgs>(args?: SelectSubset<T, WorkspaceLayoutPresetFindFirstOrThrowArgs<ExtArgs>>): Prisma__WorkspaceLayoutPresetClient<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more WorkspaceLayoutPresets that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutPresetFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all WorkspaceLayoutPresets
+     * const workspaceLayoutPresets = await prisma.workspaceLayoutPreset.findMany()
+     * 
+     * // Get first 10 WorkspaceLayoutPresets
+     * const workspaceLayoutPresets = await prisma.workspaceLayoutPreset.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const workspaceLayoutPresetWithIdOnly = await prisma.workspaceLayoutPreset.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WorkspaceLayoutPresetFindManyArgs>(args?: SelectSubset<T, WorkspaceLayoutPresetFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a WorkspaceLayoutPreset.
+     * @param {WorkspaceLayoutPresetCreateArgs} args - Arguments to create a WorkspaceLayoutPreset.
+     * @example
+     * // Create one WorkspaceLayoutPreset
+     * const WorkspaceLayoutPreset = await prisma.workspaceLayoutPreset.create({
+     *   data: {
+     *     // ... data to create a WorkspaceLayoutPreset
+     *   }
+     * })
+     * 
+     */
+    create<T extends WorkspaceLayoutPresetCreateArgs>(args: SelectSubset<T, WorkspaceLayoutPresetCreateArgs<ExtArgs>>): Prisma__WorkspaceLayoutPresetClient<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many WorkspaceLayoutPresets.
+     * @param {WorkspaceLayoutPresetCreateManyArgs} args - Arguments to create many WorkspaceLayoutPresets.
+     * @example
+     * // Create many WorkspaceLayoutPresets
+     * const workspaceLayoutPreset = await prisma.workspaceLayoutPreset.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WorkspaceLayoutPresetCreateManyArgs>(args?: SelectSubset<T, WorkspaceLayoutPresetCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many WorkspaceLayoutPresets and returns the data saved in the database.
+     * @param {WorkspaceLayoutPresetCreateManyAndReturnArgs} args - Arguments to create many WorkspaceLayoutPresets.
+     * @example
+     * // Create many WorkspaceLayoutPresets
+     * const workspaceLayoutPreset = await prisma.workspaceLayoutPreset.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many WorkspaceLayoutPresets and only return the `id`
+     * const workspaceLayoutPresetWithIdOnly = await prisma.workspaceLayoutPreset.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WorkspaceLayoutPresetCreateManyAndReturnArgs>(args?: SelectSubset<T, WorkspaceLayoutPresetCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a WorkspaceLayoutPreset.
+     * @param {WorkspaceLayoutPresetDeleteArgs} args - Arguments to delete one WorkspaceLayoutPreset.
+     * @example
+     * // Delete one WorkspaceLayoutPreset
+     * const WorkspaceLayoutPreset = await prisma.workspaceLayoutPreset.delete({
+     *   where: {
+     *     // ... filter to delete one WorkspaceLayoutPreset
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WorkspaceLayoutPresetDeleteArgs>(args: SelectSubset<T, WorkspaceLayoutPresetDeleteArgs<ExtArgs>>): Prisma__WorkspaceLayoutPresetClient<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one WorkspaceLayoutPreset.
+     * @param {WorkspaceLayoutPresetUpdateArgs} args - Arguments to update one WorkspaceLayoutPreset.
+     * @example
+     * // Update one WorkspaceLayoutPreset
+     * const workspaceLayoutPreset = await prisma.workspaceLayoutPreset.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WorkspaceLayoutPresetUpdateArgs>(args: SelectSubset<T, WorkspaceLayoutPresetUpdateArgs<ExtArgs>>): Prisma__WorkspaceLayoutPresetClient<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more WorkspaceLayoutPresets.
+     * @param {WorkspaceLayoutPresetDeleteManyArgs} args - Arguments to filter WorkspaceLayoutPresets to delete.
+     * @example
+     * // Delete a few WorkspaceLayoutPresets
+     * const { count } = await prisma.workspaceLayoutPreset.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WorkspaceLayoutPresetDeleteManyArgs>(args?: SelectSubset<T, WorkspaceLayoutPresetDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WorkspaceLayoutPresets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutPresetUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many WorkspaceLayoutPresets
+     * const workspaceLayoutPreset = await prisma.workspaceLayoutPreset.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WorkspaceLayoutPresetUpdateManyArgs>(args: SelectSubset<T, WorkspaceLayoutPresetUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WorkspaceLayoutPresets and returns the data updated in the database.
+     * @param {WorkspaceLayoutPresetUpdateManyAndReturnArgs} args - Arguments to update many WorkspaceLayoutPresets.
+     * @example
+     * // Update many WorkspaceLayoutPresets
+     * const workspaceLayoutPreset = await prisma.workspaceLayoutPreset.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more WorkspaceLayoutPresets and only return the `id`
+     * const workspaceLayoutPresetWithIdOnly = await prisma.workspaceLayoutPreset.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends WorkspaceLayoutPresetUpdateManyAndReturnArgs>(args: SelectSubset<T, WorkspaceLayoutPresetUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one WorkspaceLayoutPreset.
+     * @param {WorkspaceLayoutPresetUpsertArgs} args - Arguments to update or create a WorkspaceLayoutPreset.
+     * @example
+     * // Update or create a WorkspaceLayoutPreset
+     * const workspaceLayoutPreset = await prisma.workspaceLayoutPreset.upsert({
+     *   create: {
+     *     // ... data to create a WorkspaceLayoutPreset
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the WorkspaceLayoutPreset we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WorkspaceLayoutPresetUpsertArgs>(args: SelectSubset<T, WorkspaceLayoutPresetUpsertArgs<ExtArgs>>): Prisma__WorkspaceLayoutPresetClient<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of WorkspaceLayoutPresets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutPresetCountArgs} args - Arguments to filter WorkspaceLayoutPresets to count.
+     * @example
+     * // Count the number of WorkspaceLayoutPresets
+     * const count = await prisma.workspaceLayoutPreset.count({
+     *   where: {
+     *     // ... the filter for the WorkspaceLayoutPresets we want to count
+     *   }
+     * })
+    **/
+    count<T extends WorkspaceLayoutPresetCountArgs>(
+      args?: Subset<T, WorkspaceLayoutPresetCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WorkspaceLayoutPresetCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a WorkspaceLayoutPreset.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutPresetAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WorkspaceLayoutPresetAggregateArgs>(args: Subset<T, WorkspaceLayoutPresetAggregateArgs>): Prisma.PrismaPromise<GetWorkspaceLayoutPresetAggregateType<T>>
+
+    /**
+     * Group by WorkspaceLayoutPreset.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutPresetGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WorkspaceLayoutPresetGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WorkspaceLayoutPresetGroupByArgs['orderBy'] }
+        : { orderBy?: WorkspaceLayoutPresetGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WorkspaceLayoutPresetGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWorkspaceLayoutPresetGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the WorkspaceLayoutPreset model
+   */
+  readonly fields: WorkspaceLayoutPresetFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for WorkspaceLayoutPreset.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WorkspaceLayoutPresetClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    state<T extends WorkspaceLayoutPreset$stateArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceLayoutPreset$stateArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the WorkspaceLayoutPreset model
+   */
+  interface WorkspaceLayoutPresetFieldRefs {
+    readonly id: FieldRef<"WorkspaceLayoutPreset", 'String'>
+    readonly user_id: FieldRef<"WorkspaceLayoutPreset", 'String'>
+    readonly name: FieldRef<"WorkspaceLayoutPreset", 'String'>
+    readonly is_default: FieldRef<"WorkspaceLayoutPreset", 'Boolean'>
+    readonly layout_version: FieldRef<"WorkspaceLayoutPreset", 'Int'>
+    readonly layout: FieldRef<"WorkspaceLayoutPreset", 'Json'>
+    readonly floating: FieldRef<"WorkspaceLayoutPreset", 'Json'>
+    readonly created_at: FieldRef<"WorkspaceLayoutPreset", 'DateTime'>
+    readonly updated_at: FieldRef<"WorkspaceLayoutPreset", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * WorkspaceLayoutPreset findUnique
+   */
+  export type WorkspaceLayoutPresetFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceLayoutPreset to fetch.
+     */
+    where: WorkspaceLayoutPresetWhereUniqueInput
+  }
+
+  /**
+   * WorkspaceLayoutPreset findUniqueOrThrow
+   */
+  export type WorkspaceLayoutPresetFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceLayoutPreset to fetch.
+     */
+    where: WorkspaceLayoutPresetWhereUniqueInput
+  }
+
+  /**
+   * WorkspaceLayoutPreset findFirst
+   */
+  export type WorkspaceLayoutPresetFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceLayoutPreset to fetch.
+     */
+    where?: WorkspaceLayoutPresetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkspaceLayoutPresets to fetch.
+     */
+    orderBy?: WorkspaceLayoutPresetOrderByWithRelationInput | WorkspaceLayoutPresetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkspaceLayoutPresets.
+     */
+    cursor?: WorkspaceLayoutPresetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkspaceLayoutPresets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkspaceLayoutPresets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkspaceLayoutPresets.
+     */
+    distinct?: WorkspaceLayoutPresetScalarFieldEnum | WorkspaceLayoutPresetScalarFieldEnum[]
+  }
+
+  /**
+   * WorkspaceLayoutPreset findFirstOrThrow
+   */
+  export type WorkspaceLayoutPresetFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceLayoutPreset to fetch.
+     */
+    where?: WorkspaceLayoutPresetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkspaceLayoutPresets to fetch.
+     */
+    orderBy?: WorkspaceLayoutPresetOrderByWithRelationInput | WorkspaceLayoutPresetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkspaceLayoutPresets.
+     */
+    cursor?: WorkspaceLayoutPresetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkspaceLayoutPresets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkspaceLayoutPresets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkspaceLayoutPresets.
+     */
+    distinct?: WorkspaceLayoutPresetScalarFieldEnum | WorkspaceLayoutPresetScalarFieldEnum[]
+  }
+
+  /**
+   * WorkspaceLayoutPreset findMany
+   */
+  export type WorkspaceLayoutPresetFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceLayoutPresets to fetch.
+     */
+    where?: WorkspaceLayoutPresetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkspaceLayoutPresets to fetch.
+     */
+    orderBy?: WorkspaceLayoutPresetOrderByWithRelationInput | WorkspaceLayoutPresetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing WorkspaceLayoutPresets.
+     */
+    cursor?: WorkspaceLayoutPresetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkspaceLayoutPresets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkspaceLayoutPresets.
+     */
+    skip?: number
+    distinct?: WorkspaceLayoutPresetScalarFieldEnum | WorkspaceLayoutPresetScalarFieldEnum[]
+  }
+
+  /**
+   * WorkspaceLayoutPreset create
+   */
+  export type WorkspaceLayoutPresetCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetInclude<ExtArgs> | null
+    /**
+     * The data needed to create a WorkspaceLayoutPreset.
+     */
+    data: XOR<WorkspaceLayoutPresetCreateInput, WorkspaceLayoutPresetUncheckedCreateInput>
+  }
+
+  /**
+   * WorkspaceLayoutPreset createMany
+   */
+  export type WorkspaceLayoutPresetCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many WorkspaceLayoutPresets.
+     */
+    data: WorkspaceLayoutPresetCreateManyInput | WorkspaceLayoutPresetCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * WorkspaceLayoutPreset createManyAndReturn
+   */
+  export type WorkspaceLayoutPresetCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * The data used to create many WorkspaceLayoutPresets.
+     */
+    data: WorkspaceLayoutPresetCreateManyInput | WorkspaceLayoutPresetCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WorkspaceLayoutPreset update
+   */
+  export type WorkspaceLayoutPresetUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetInclude<ExtArgs> | null
+    /**
+     * The data needed to update a WorkspaceLayoutPreset.
+     */
+    data: XOR<WorkspaceLayoutPresetUpdateInput, WorkspaceLayoutPresetUncheckedUpdateInput>
+    /**
+     * Choose, which WorkspaceLayoutPreset to update.
+     */
+    where: WorkspaceLayoutPresetWhereUniqueInput
+  }
+
+  /**
+   * WorkspaceLayoutPreset updateMany
+   */
+  export type WorkspaceLayoutPresetUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update WorkspaceLayoutPresets.
+     */
+    data: XOR<WorkspaceLayoutPresetUpdateManyMutationInput, WorkspaceLayoutPresetUncheckedUpdateManyInput>
+    /**
+     * Filter which WorkspaceLayoutPresets to update
+     */
+    where?: WorkspaceLayoutPresetWhereInput
+    /**
+     * Limit how many WorkspaceLayoutPresets to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * WorkspaceLayoutPreset updateManyAndReturn
+   */
+  export type WorkspaceLayoutPresetUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * The data used to update WorkspaceLayoutPresets.
+     */
+    data: XOR<WorkspaceLayoutPresetUpdateManyMutationInput, WorkspaceLayoutPresetUncheckedUpdateManyInput>
+    /**
+     * Filter which WorkspaceLayoutPresets to update
+     */
+    where?: WorkspaceLayoutPresetWhereInput
+    /**
+     * Limit how many WorkspaceLayoutPresets to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WorkspaceLayoutPreset upsert
+   */
+  export type WorkspaceLayoutPresetUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetInclude<ExtArgs> | null
+    /**
+     * The filter to search for the WorkspaceLayoutPreset to update in case it exists.
+     */
+    where: WorkspaceLayoutPresetWhereUniqueInput
+    /**
+     * In case the WorkspaceLayoutPreset found by the `where` argument doesn't exist, create a new WorkspaceLayoutPreset with this data.
+     */
+    create: XOR<WorkspaceLayoutPresetCreateInput, WorkspaceLayoutPresetUncheckedCreateInput>
+    /**
+     * In case the WorkspaceLayoutPreset was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WorkspaceLayoutPresetUpdateInput, WorkspaceLayoutPresetUncheckedUpdateInput>
+  }
+
+  /**
+   * WorkspaceLayoutPreset delete
+   */
+  export type WorkspaceLayoutPresetDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetInclude<ExtArgs> | null
+    /**
+     * Filter which WorkspaceLayoutPreset to delete.
+     */
+    where: WorkspaceLayoutPresetWhereUniqueInput
+  }
+
+  /**
+   * WorkspaceLayoutPreset deleteMany
+   */
+  export type WorkspaceLayoutPresetDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkspaceLayoutPresets to delete
+     */
+    where?: WorkspaceLayoutPresetWhereInput
+    /**
+     * Limit how many WorkspaceLayoutPresets to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * WorkspaceLayoutPreset.state
+   */
+  export type WorkspaceLayoutPreset$stateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateInclude<ExtArgs> | null
+    where?: WorkspaceLayoutStateWhereInput
+    orderBy?: WorkspaceLayoutStateOrderByWithRelationInput | WorkspaceLayoutStateOrderByWithRelationInput[]
+    cursor?: WorkspaceLayoutStateWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WorkspaceLayoutStateScalarFieldEnum | WorkspaceLayoutStateScalarFieldEnum[]
+  }
+
+  /**
+   * WorkspaceLayoutPreset without action
+   */
+  export type WorkspaceLayoutPresetDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model WorkspaceLayoutState
+   */
+
+  export type AggregateWorkspaceLayoutState = {
+    _count: WorkspaceLayoutStateCountAggregateOutputType | null
+    _min: WorkspaceLayoutStateMinAggregateOutputType | null
+    _max: WorkspaceLayoutStateMaxAggregateOutputType | null
+  }
+
+  export type WorkspaceLayoutStateMinAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    active_preset_id: string | null
+    updated_at: Date | null
+  }
+
+  export type WorkspaceLayoutStateMaxAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    active_preset_id: string | null
+    updated_at: Date | null
+  }
+
+  export type WorkspaceLayoutStateCountAggregateOutputType = {
+    id: number
+    user_id: number
+    active_preset_id: number
+    preset_by_project: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type WorkspaceLayoutStateMinAggregateInputType = {
+    id?: true
+    user_id?: true
+    active_preset_id?: true
+    updated_at?: true
+  }
+
+  export type WorkspaceLayoutStateMaxAggregateInputType = {
+    id?: true
+    user_id?: true
+    active_preset_id?: true
+    updated_at?: true
+  }
+
+  export type WorkspaceLayoutStateCountAggregateInputType = {
+    id?: true
+    user_id?: true
+    active_preset_id?: true
+    preset_by_project?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type WorkspaceLayoutStateAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkspaceLayoutState to aggregate.
+     */
+    where?: WorkspaceLayoutStateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkspaceLayoutStates to fetch.
+     */
+    orderBy?: WorkspaceLayoutStateOrderByWithRelationInput | WorkspaceLayoutStateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WorkspaceLayoutStateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkspaceLayoutStates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkspaceLayoutStates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned WorkspaceLayoutStates
+    **/
+    _count?: true | WorkspaceLayoutStateCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WorkspaceLayoutStateMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WorkspaceLayoutStateMaxAggregateInputType
+  }
+
+  export type GetWorkspaceLayoutStateAggregateType<T extends WorkspaceLayoutStateAggregateArgs> = {
+        [P in keyof T & keyof AggregateWorkspaceLayoutState]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWorkspaceLayoutState[P]>
+      : GetScalarType<T[P], AggregateWorkspaceLayoutState[P]>
+  }
+
+
+
+
+  export type WorkspaceLayoutStateGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkspaceLayoutStateWhereInput
+    orderBy?: WorkspaceLayoutStateOrderByWithAggregationInput | WorkspaceLayoutStateOrderByWithAggregationInput[]
+    by: WorkspaceLayoutStateScalarFieldEnum[] | WorkspaceLayoutStateScalarFieldEnum
+    having?: WorkspaceLayoutStateScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WorkspaceLayoutStateCountAggregateInputType | true
+    _min?: WorkspaceLayoutStateMinAggregateInputType
+    _max?: WorkspaceLayoutStateMaxAggregateInputType
+  }
+
+  export type WorkspaceLayoutStateGroupByOutputType = {
+    id: string
+    user_id: string
+    active_preset_id: string | null
+    preset_by_project: JsonValue
+    updated_at: Date
+    _count: WorkspaceLayoutStateCountAggregateOutputType | null
+    _min: WorkspaceLayoutStateMinAggregateOutputType | null
+    _max: WorkspaceLayoutStateMaxAggregateOutputType | null
+  }
+
+  type GetWorkspaceLayoutStateGroupByPayload<T extends WorkspaceLayoutStateGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WorkspaceLayoutStateGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WorkspaceLayoutStateGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WorkspaceLayoutStateGroupByOutputType[P]>
+            : GetScalarType<T[P], WorkspaceLayoutStateGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WorkspaceLayoutStateSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    active_preset_id?: boolean
+    preset_by_project?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    active_preset?: boolean | WorkspaceLayoutState$active_presetArgs<ExtArgs>
+  }, ExtArgs["result"]["workspaceLayoutState"]>
+
+  export type WorkspaceLayoutStateSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    active_preset_id?: boolean
+    preset_by_project?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    active_preset?: boolean | WorkspaceLayoutState$active_presetArgs<ExtArgs>
+  }, ExtArgs["result"]["workspaceLayoutState"]>
+
+  export type WorkspaceLayoutStateSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    active_preset_id?: boolean
+    preset_by_project?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    active_preset?: boolean | WorkspaceLayoutState$active_presetArgs<ExtArgs>
+  }, ExtArgs["result"]["workspaceLayoutState"]>
+
+  export type WorkspaceLayoutStateSelectScalar = {
+    id?: boolean
+    user_id?: boolean
+    active_preset_id?: boolean
+    preset_by_project?: boolean
+    updated_at?: boolean
+  }
+
+  export type WorkspaceLayoutStateOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "active_preset_id" | "preset_by_project" | "updated_at", ExtArgs["result"]["workspaceLayoutState"]>
+  export type WorkspaceLayoutStateInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    active_preset?: boolean | WorkspaceLayoutState$active_presetArgs<ExtArgs>
+  }
+  export type WorkspaceLayoutStateIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    active_preset?: boolean | WorkspaceLayoutState$active_presetArgs<ExtArgs>
+  }
+  export type WorkspaceLayoutStateIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    active_preset?: boolean | WorkspaceLayoutState$active_presetArgs<ExtArgs>
+  }
+
+  export type $WorkspaceLayoutStatePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "WorkspaceLayoutState"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      active_preset: Prisma.$WorkspaceLayoutPresetPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      user_id: string
+      active_preset_id: string | null
+      /**
+       * Record<projectId, presetId> — mirrors the existing preview_by_project/session_by_project
+       * client-side shape exactly, so no translation layer is needed.
+       */
+      preset_by_project: Prisma.JsonValue
+      updated_at: Date
+    }, ExtArgs["result"]["workspaceLayoutState"]>
+    composites: {}
+  }
+
+  type WorkspaceLayoutStateGetPayload<S extends boolean | null | undefined | WorkspaceLayoutStateDefaultArgs> = $Result.GetResult<Prisma.$WorkspaceLayoutStatePayload, S>
+
+  type WorkspaceLayoutStateCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<WorkspaceLayoutStateFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: WorkspaceLayoutStateCountAggregateInputType | true
+    }
+
+  export interface WorkspaceLayoutStateDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['WorkspaceLayoutState'], meta: { name: 'WorkspaceLayoutState' } }
+    /**
+     * Find zero or one WorkspaceLayoutState that matches the filter.
+     * @param {WorkspaceLayoutStateFindUniqueArgs} args - Arguments to find a WorkspaceLayoutState
+     * @example
+     * // Get one WorkspaceLayoutState
+     * const workspaceLayoutState = await prisma.workspaceLayoutState.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WorkspaceLayoutStateFindUniqueArgs>(args: SelectSubset<T, WorkspaceLayoutStateFindUniqueArgs<ExtArgs>>): Prisma__WorkspaceLayoutStateClient<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one WorkspaceLayoutState that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {WorkspaceLayoutStateFindUniqueOrThrowArgs} args - Arguments to find a WorkspaceLayoutState
+     * @example
+     * // Get one WorkspaceLayoutState
+     * const workspaceLayoutState = await prisma.workspaceLayoutState.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WorkspaceLayoutStateFindUniqueOrThrowArgs>(args: SelectSubset<T, WorkspaceLayoutStateFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WorkspaceLayoutStateClient<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WorkspaceLayoutState that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutStateFindFirstArgs} args - Arguments to find a WorkspaceLayoutState
+     * @example
+     * // Get one WorkspaceLayoutState
+     * const workspaceLayoutState = await prisma.workspaceLayoutState.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WorkspaceLayoutStateFindFirstArgs>(args?: SelectSubset<T, WorkspaceLayoutStateFindFirstArgs<ExtArgs>>): Prisma__WorkspaceLayoutStateClient<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WorkspaceLayoutState that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutStateFindFirstOrThrowArgs} args - Arguments to find a WorkspaceLayoutState
+     * @example
+     * // Get one WorkspaceLayoutState
+     * const workspaceLayoutState = await prisma.workspaceLayoutState.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WorkspaceLayoutStateFindFirstOrThrowArgs>(args?: SelectSubset<T, WorkspaceLayoutStateFindFirstOrThrowArgs<ExtArgs>>): Prisma__WorkspaceLayoutStateClient<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more WorkspaceLayoutStates that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutStateFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all WorkspaceLayoutStates
+     * const workspaceLayoutStates = await prisma.workspaceLayoutState.findMany()
+     * 
+     * // Get first 10 WorkspaceLayoutStates
+     * const workspaceLayoutStates = await prisma.workspaceLayoutState.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const workspaceLayoutStateWithIdOnly = await prisma.workspaceLayoutState.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WorkspaceLayoutStateFindManyArgs>(args?: SelectSubset<T, WorkspaceLayoutStateFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a WorkspaceLayoutState.
+     * @param {WorkspaceLayoutStateCreateArgs} args - Arguments to create a WorkspaceLayoutState.
+     * @example
+     * // Create one WorkspaceLayoutState
+     * const WorkspaceLayoutState = await prisma.workspaceLayoutState.create({
+     *   data: {
+     *     // ... data to create a WorkspaceLayoutState
+     *   }
+     * })
+     * 
+     */
+    create<T extends WorkspaceLayoutStateCreateArgs>(args: SelectSubset<T, WorkspaceLayoutStateCreateArgs<ExtArgs>>): Prisma__WorkspaceLayoutStateClient<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many WorkspaceLayoutStates.
+     * @param {WorkspaceLayoutStateCreateManyArgs} args - Arguments to create many WorkspaceLayoutStates.
+     * @example
+     * // Create many WorkspaceLayoutStates
+     * const workspaceLayoutState = await prisma.workspaceLayoutState.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WorkspaceLayoutStateCreateManyArgs>(args?: SelectSubset<T, WorkspaceLayoutStateCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many WorkspaceLayoutStates and returns the data saved in the database.
+     * @param {WorkspaceLayoutStateCreateManyAndReturnArgs} args - Arguments to create many WorkspaceLayoutStates.
+     * @example
+     * // Create many WorkspaceLayoutStates
+     * const workspaceLayoutState = await prisma.workspaceLayoutState.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many WorkspaceLayoutStates and only return the `id`
+     * const workspaceLayoutStateWithIdOnly = await prisma.workspaceLayoutState.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WorkspaceLayoutStateCreateManyAndReturnArgs>(args?: SelectSubset<T, WorkspaceLayoutStateCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a WorkspaceLayoutState.
+     * @param {WorkspaceLayoutStateDeleteArgs} args - Arguments to delete one WorkspaceLayoutState.
+     * @example
+     * // Delete one WorkspaceLayoutState
+     * const WorkspaceLayoutState = await prisma.workspaceLayoutState.delete({
+     *   where: {
+     *     // ... filter to delete one WorkspaceLayoutState
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WorkspaceLayoutStateDeleteArgs>(args: SelectSubset<T, WorkspaceLayoutStateDeleteArgs<ExtArgs>>): Prisma__WorkspaceLayoutStateClient<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one WorkspaceLayoutState.
+     * @param {WorkspaceLayoutStateUpdateArgs} args - Arguments to update one WorkspaceLayoutState.
+     * @example
+     * // Update one WorkspaceLayoutState
+     * const workspaceLayoutState = await prisma.workspaceLayoutState.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WorkspaceLayoutStateUpdateArgs>(args: SelectSubset<T, WorkspaceLayoutStateUpdateArgs<ExtArgs>>): Prisma__WorkspaceLayoutStateClient<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more WorkspaceLayoutStates.
+     * @param {WorkspaceLayoutStateDeleteManyArgs} args - Arguments to filter WorkspaceLayoutStates to delete.
+     * @example
+     * // Delete a few WorkspaceLayoutStates
+     * const { count } = await prisma.workspaceLayoutState.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WorkspaceLayoutStateDeleteManyArgs>(args?: SelectSubset<T, WorkspaceLayoutStateDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WorkspaceLayoutStates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutStateUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many WorkspaceLayoutStates
+     * const workspaceLayoutState = await prisma.workspaceLayoutState.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WorkspaceLayoutStateUpdateManyArgs>(args: SelectSubset<T, WorkspaceLayoutStateUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WorkspaceLayoutStates and returns the data updated in the database.
+     * @param {WorkspaceLayoutStateUpdateManyAndReturnArgs} args - Arguments to update many WorkspaceLayoutStates.
+     * @example
+     * // Update many WorkspaceLayoutStates
+     * const workspaceLayoutState = await prisma.workspaceLayoutState.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more WorkspaceLayoutStates and only return the `id`
+     * const workspaceLayoutStateWithIdOnly = await prisma.workspaceLayoutState.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends WorkspaceLayoutStateUpdateManyAndReturnArgs>(args: SelectSubset<T, WorkspaceLayoutStateUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one WorkspaceLayoutState.
+     * @param {WorkspaceLayoutStateUpsertArgs} args - Arguments to update or create a WorkspaceLayoutState.
+     * @example
+     * // Update or create a WorkspaceLayoutState
+     * const workspaceLayoutState = await prisma.workspaceLayoutState.upsert({
+     *   create: {
+     *     // ... data to create a WorkspaceLayoutState
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the WorkspaceLayoutState we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WorkspaceLayoutStateUpsertArgs>(args: SelectSubset<T, WorkspaceLayoutStateUpsertArgs<ExtArgs>>): Prisma__WorkspaceLayoutStateClient<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of WorkspaceLayoutStates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutStateCountArgs} args - Arguments to filter WorkspaceLayoutStates to count.
+     * @example
+     * // Count the number of WorkspaceLayoutStates
+     * const count = await prisma.workspaceLayoutState.count({
+     *   where: {
+     *     // ... the filter for the WorkspaceLayoutStates we want to count
+     *   }
+     * })
+    **/
+    count<T extends WorkspaceLayoutStateCountArgs>(
+      args?: Subset<T, WorkspaceLayoutStateCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WorkspaceLayoutStateCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a WorkspaceLayoutState.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutStateAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WorkspaceLayoutStateAggregateArgs>(args: Subset<T, WorkspaceLayoutStateAggregateArgs>): Prisma.PrismaPromise<GetWorkspaceLayoutStateAggregateType<T>>
+
+    /**
+     * Group by WorkspaceLayoutState.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkspaceLayoutStateGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WorkspaceLayoutStateGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WorkspaceLayoutStateGroupByArgs['orderBy'] }
+        : { orderBy?: WorkspaceLayoutStateGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WorkspaceLayoutStateGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWorkspaceLayoutStateGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the WorkspaceLayoutState model
+   */
+  readonly fields: WorkspaceLayoutStateFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for WorkspaceLayoutState.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WorkspaceLayoutStateClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    active_preset<T extends WorkspaceLayoutState$active_presetArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceLayoutState$active_presetArgs<ExtArgs>>): Prisma__WorkspaceLayoutPresetClient<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the WorkspaceLayoutState model
+   */
+  interface WorkspaceLayoutStateFieldRefs {
+    readonly id: FieldRef<"WorkspaceLayoutState", 'String'>
+    readonly user_id: FieldRef<"WorkspaceLayoutState", 'String'>
+    readonly active_preset_id: FieldRef<"WorkspaceLayoutState", 'String'>
+    readonly preset_by_project: FieldRef<"WorkspaceLayoutState", 'Json'>
+    readonly updated_at: FieldRef<"WorkspaceLayoutState", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * WorkspaceLayoutState findUnique
+   */
+  export type WorkspaceLayoutStateFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceLayoutState to fetch.
+     */
+    where: WorkspaceLayoutStateWhereUniqueInput
+  }
+
+  /**
+   * WorkspaceLayoutState findUniqueOrThrow
+   */
+  export type WorkspaceLayoutStateFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceLayoutState to fetch.
+     */
+    where: WorkspaceLayoutStateWhereUniqueInput
+  }
+
+  /**
+   * WorkspaceLayoutState findFirst
+   */
+  export type WorkspaceLayoutStateFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceLayoutState to fetch.
+     */
+    where?: WorkspaceLayoutStateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkspaceLayoutStates to fetch.
+     */
+    orderBy?: WorkspaceLayoutStateOrderByWithRelationInput | WorkspaceLayoutStateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkspaceLayoutStates.
+     */
+    cursor?: WorkspaceLayoutStateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkspaceLayoutStates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkspaceLayoutStates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkspaceLayoutStates.
+     */
+    distinct?: WorkspaceLayoutStateScalarFieldEnum | WorkspaceLayoutStateScalarFieldEnum[]
+  }
+
+  /**
+   * WorkspaceLayoutState findFirstOrThrow
+   */
+  export type WorkspaceLayoutStateFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceLayoutState to fetch.
+     */
+    where?: WorkspaceLayoutStateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkspaceLayoutStates to fetch.
+     */
+    orderBy?: WorkspaceLayoutStateOrderByWithRelationInput | WorkspaceLayoutStateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkspaceLayoutStates.
+     */
+    cursor?: WorkspaceLayoutStateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkspaceLayoutStates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkspaceLayoutStates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkspaceLayoutStates.
+     */
+    distinct?: WorkspaceLayoutStateScalarFieldEnum | WorkspaceLayoutStateScalarFieldEnum[]
+  }
+
+  /**
+   * WorkspaceLayoutState findMany
+   */
+  export type WorkspaceLayoutStateFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkspaceLayoutStates to fetch.
+     */
+    where?: WorkspaceLayoutStateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkspaceLayoutStates to fetch.
+     */
+    orderBy?: WorkspaceLayoutStateOrderByWithRelationInput | WorkspaceLayoutStateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing WorkspaceLayoutStates.
+     */
+    cursor?: WorkspaceLayoutStateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkspaceLayoutStates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkspaceLayoutStates.
+     */
+    skip?: number
+    distinct?: WorkspaceLayoutStateScalarFieldEnum | WorkspaceLayoutStateScalarFieldEnum[]
+  }
+
+  /**
+   * WorkspaceLayoutState create
+   */
+  export type WorkspaceLayoutStateCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateInclude<ExtArgs> | null
+    /**
+     * The data needed to create a WorkspaceLayoutState.
+     */
+    data: XOR<WorkspaceLayoutStateCreateInput, WorkspaceLayoutStateUncheckedCreateInput>
+  }
+
+  /**
+   * WorkspaceLayoutState createMany
+   */
+  export type WorkspaceLayoutStateCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many WorkspaceLayoutStates.
+     */
+    data: WorkspaceLayoutStateCreateManyInput | WorkspaceLayoutStateCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * WorkspaceLayoutState createManyAndReturn
+   */
+  export type WorkspaceLayoutStateCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * The data used to create many WorkspaceLayoutStates.
+     */
+    data: WorkspaceLayoutStateCreateManyInput | WorkspaceLayoutStateCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WorkspaceLayoutState update
+   */
+  export type WorkspaceLayoutStateUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateInclude<ExtArgs> | null
+    /**
+     * The data needed to update a WorkspaceLayoutState.
+     */
+    data: XOR<WorkspaceLayoutStateUpdateInput, WorkspaceLayoutStateUncheckedUpdateInput>
+    /**
+     * Choose, which WorkspaceLayoutState to update.
+     */
+    where: WorkspaceLayoutStateWhereUniqueInput
+  }
+
+  /**
+   * WorkspaceLayoutState updateMany
+   */
+  export type WorkspaceLayoutStateUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update WorkspaceLayoutStates.
+     */
+    data: XOR<WorkspaceLayoutStateUpdateManyMutationInput, WorkspaceLayoutStateUncheckedUpdateManyInput>
+    /**
+     * Filter which WorkspaceLayoutStates to update
+     */
+    where?: WorkspaceLayoutStateWhereInput
+    /**
+     * Limit how many WorkspaceLayoutStates to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * WorkspaceLayoutState updateManyAndReturn
+   */
+  export type WorkspaceLayoutStateUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * The data used to update WorkspaceLayoutStates.
+     */
+    data: XOR<WorkspaceLayoutStateUpdateManyMutationInput, WorkspaceLayoutStateUncheckedUpdateManyInput>
+    /**
+     * Filter which WorkspaceLayoutStates to update
+     */
+    where?: WorkspaceLayoutStateWhereInput
+    /**
+     * Limit how many WorkspaceLayoutStates to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WorkspaceLayoutState upsert
+   */
+  export type WorkspaceLayoutStateUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateInclude<ExtArgs> | null
+    /**
+     * The filter to search for the WorkspaceLayoutState to update in case it exists.
+     */
+    where: WorkspaceLayoutStateWhereUniqueInput
+    /**
+     * In case the WorkspaceLayoutState found by the `where` argument doesn't exist, create a new WorkspaceLayoutState with this data.
+     */
+    create: XOR<WorkspaceLayoutStateCreateInput, WorkspaceLayoutStateUncheckedCreateInput>
+    /**
+     * In case the WorkspaceLayoutState was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WorkspaceLayoutStateUpdateInput, WorkspaceLayoutStateUncheckedUpdateInput>
+  }
+
+  /**
+   * WorkspaceLayoutState delete
+   */
+  export type WorkspaceLayoutStateDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateInclude<ExtArgs> | null
+    /**
+     * Filter which WorkspaceLayoutState to delete.
+     */
+    where: WorkspaceLayoutStateWhereUniqueInput
+  }
+
+  /**
+   * WorkspaceLayoutState deleteMany
+   */
+  export type WorkspaceLayoutStateDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkspaceLayoutStates to delete
+     */
+    where?: WorkspaceLayoutStateWhereInput
+    /**
+     * Limit how many WorkspaceLayoutStates to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * WorkspaceLayoutState.active_preset
+   */
+  export type WorkspaceLayoutState$active_presetArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutPreset
+     */
+    select?: WorkspaceLayoutPresetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutPreset
+     */
+    omit?: WorkspaceLayoutPresetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutPresetInclude<ExtArgs> | null
+    where?: WorkspaceLayoutPresetWhereInput
+  }
+
+  /**
+   * WorkspaceLayoutState without action
+   */
+  export type WorkspaceLayoutStateDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkspaceLayoutState
+     */
+    select?: WorkspaceLayoutStateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkspaceLayoutState
+     */
+    omit?: WorkspaceLayoutStateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkspaceLayoutStateInclude<ExtArgs> | null
   }
 
 
@@ -25888,6 +28615,2108 @@ export namespace Prisma {
 
 
   /**
+   * Model AppRelease
+   */
+
+  export type AggregateAppRelease = {
+    _count: AppReleaseCountAggregateOutputType | null
+    _avg: AppReleaseAvgAggregateOutputType | null
+    _sum: AppReleaseSumAggregateOutputType | null
+    _min: AppReleaseMinAggregateOutputType | null
+    _max: AppReleaseMaxAggregateOutputType | null
+  }
+
+  export type AppReleaseAvgAggregateOutputType = {
+    download_count: number | null
+  }
+
+  export type AppReleaseSumAggregateOutputType = {
+    download_count: number | null
+  }
+
+  export type AppReleaseMinAggregateOutputType = {
+    id: string | null
+    platform: string | null
+    version: string | null
+    download_url: string | null
+    min_version: string | null
+    release_notes: string | null
+    download_count: number | null
+    published_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type AppReleaseMaxAggregateOutputType = {
+    id: string | null
+    platform: string | null
+    version: string | null
+    download_url: string | null
+    min_version: string | null
+    release_notes: string | null
+    download_count: number | null
+    published_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type AppReleaseCountAggregateOutputType = {
+    id: number
+    platform: number
+    version: number
+    download_url: number
+    min_version: number
+    release_notes: number
+    download_count: number
+    published_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type AppReleaseAvgAggregateInputType = {
+    download_count?: true
+  }
+
+  export type AppReleaseSumAggregateInputType = {
+    download_count?: true
+  }
+
+  export type AppReleaseMinAggregateInputType = {
+    id?: true
+    platform?: true
+    version?: true
+    download_url?: true
+    min_version?: true
+    release_notes?: true
+    download_count?: true
+    published_at?: true
+    updated_at?: true
+  }
+
+  export type AppReleaseMaxAggregateInputType = {
+    id?: true
+    platform?: true
+    version?: true
+    download_url?: true
+    min_version?: true
+    release_notes?: true
+    download_count?: true
+    published_at?: true
+    updated_at?: true
+  }
+
+  export type AppReleaseCountAggregateInputType = {
+    id?: true
+    platform?: true
+    version?: true
+    download_url?: true
+    min_version?: true
+    release_notes?: true
+    download_count?: true
+    published_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type AppReleaseAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AppRelease to aggregate.
+     */
+    where?: AppReleaseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AppReleases to fetch.
+     */
+    orderBy?: AppReleaseOrderByWithRelationInput | AppReleaseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AppReleaseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AppReleases from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AppReleases.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AppReleases
+    **/
+    _count?: true | AppReleaseCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AppReleaseAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AppReleaseSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AppReleaseMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AppReleaseMaxAggregateInputType
+  }
+
+  export type GetAppReleaseAggregateType<T extends AppReleaseAggregateArgs> = {
+        [P in keyof T & keyof AggregateAppRelease]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAppRelease[P]>
+      : GetScalarType<T[P], AggregateAppRelease[P]>
+  }
+
+
+
+
+  export type AppReleaseGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AppReleaseWhereInput
+    orderBy?: AppReleaseOrderByWithAggregationInput | AppReleaseOrderByWithAggregationInput[]
+    by: AppReleaseScalarFieldEnum[] | AppReleaseScalarFieldEnum
+    having?: AppReleaseScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AppReleaseCountAggregateInputType | true
+    _avg?: AppReleaseAvgAggregateInputType
+    _sum?: AppReleaseSumAggregateInputType
+    _min?: AppReleaseMinAggregateInputType
+    _max?: AppReleaseMaxAggregateInputType
+  }
+
+  export type AppReleaseGroupByOutputType = {
+    id: string
+    platform: string
+    version: string
+    download_url: string
+    min_version: string | null
+    release_notes: string | null
+    download_count: number
+    published_at: Date
+    updated_at: Date
+    _count: AppReleaseCountAggregateOutputType | null
+    _avg: AppReleaseAvgAggregateOutputType | null
+    _sum: AppReleaseSumAggregateOutputType | null
+    _min: AppReleaseMinAggregateOutputType | null
+    _max: AppReleaseMaxAggregateOutputType | null
+  }
+
+  type GetAppReleaseGroupByPayload<T extends AppReleaseGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AppReleaseGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AppReleaseGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AppReleaseGroupByOutputType[P]>
+            : GetScalarType<T[P], AppReleaseGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AppReleaseSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    platform?: boolean
+    version?: boolean
+    download_url?: boolean
+    min_version?: boolean
+    release_notes?: boolean
+    download_count?: boolean
+    published_at?: boolean
+    updated_at?: boolean
+  }, ExtArgs["result"]["appRelease"]>
+
+  export type AppReleaseSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    platform?: boolean
+    version?: boolean
+    download_url?: boolean
+    min_version?: boolean
+    release_notes?: boolean
+    download_count?: boolean
+    published_at?: boolean
+    updated_at?: boolean
+  }, ExtArgs["result"]["appRelease"]>
+
+  export type AppReleaseSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    platform?: boolean
+    version?: boolean
+    download_url?: boolean
+    min_version?: boolean
+    release_notes?: boolean
+    download_count?: boolean
+    published_at?: boolean
+    updated_at?: boolean
+  }, ExtArgs["result"]["appRelease"]>
+
+  export type AppReleaseSelectScalar = {
+    id?: boolean
+    platform?: boolean
+    version?: boolean
+    download_url?: boolean
+    min_version?: boolean
+    release_notes?: boolean
+    download_count?: boolean
+    published_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type AppReleaseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "platform" | "version" | "download_url" | "min_version" | "release_notes" | "download_count" | "published_at" | "updated_at", ExtArgs["result"]["appRelease"]>
+
+  export type $AppReleasePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AppRelease"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      platform: string
+      version: string
+      download_url: string
+      min_version: string | null
+      release_notes: string | null
+      download_count: number
+      published_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["appRelease"]>
+    composites: {}
+  }
+
+  type AppReleaseGetPayload<S extends boolean | null | undefined | AppReleaseDefaultArgs> = $Result.GetResult<Prisma.$AppReleasePayload, S>
+
+  type AppReleaseCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AppReleaseFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AppReleaseCountAggregateInputType | true
+    }
+
+  export interface AppReleaseDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AppRelease'], meta: { name: 'AppRelease' } }
+    /**
+     * Find zero or one AppRelease that matches the filter.
+     * @param {AppReleaseFindUniqueArgs} args - Arguments to find a AppRelease
+     * @example
+     * // Get one AppRelease
+     * const appRelease = await prisma.appRelease.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AppReleaseFindUniqueArgs>(args: SelectSubset<T, AppReleaseFindUniqueArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AppRelease that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AppReleaseFindUniqueOrThrowArgs} args - Arguments to find a AppRelease
+     * @example
+     * // Get one AppRelease
+     * const appRelease = await prisma.appRelease.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AppReleaseFindUniqueOrThrowArgs>(args: SelectSubset<T, AppReleaseFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AppRelease that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseFindFirstArgs} args - Arguments to find a AppRelease
+     * @example
+     * // Get one AppRelease
+     * const appRelease = await prisma.appRelease.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AppReleaseFindFirstArgs>(args?: SelectSubset<T, AppReleaseFindFirstArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AppRelease that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseFindFirstOrThrowArgs} args - Arguments to find a AppRelease
+     * @example
+     * // Get one AppRelease
+     * const appRelease = await prisma.appRelease.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AppReleaseFindFirstOrThrowArgs>(args?: SelectSubset<T, AppReleaseFindFirstOrThrowArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AppReleases that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AppReleases
+     * const appReleases = await prisma.appRelease.findMany()
+     * 
+     * // Get first 10 AppReleases
+     * const appReleases = await prisma.appRelease.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const appReleaseWithIdOnly = await prisma.appRelease.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AppReleaseFindManyArgs>(args?: SelectSubset<T, AppReleaseFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AppRelease.
+     * @param {AppReleaseCreateArgs} args - Arguments to create a AppRelease.
+     * @example
+     * // Create one AppRelease
+     * const AppRelease = await prisma.appRelease.create({
+     *   data: {
+     *     // ... data to create a AppRelease
+     *   }
+     * })
+     * 
+     */
+    create<T extends AppReleaseCreateArgs>(args: SelectSubset<T, AppReleaseCreateArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AppReleases.
+     * @param {AppReleaseCreateManyArgs} args - Arguments to create many AppReleases.
+     * @example
+     * // Create many AppReleases
+     * const appRelease = await prisma.appRelease.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AppReleaseCreateManyArgs>(args?: SelectSubset<T, AppReleaseCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AppReleases and returns the data saved in the database.
+     * @param {AppReleaseCreateManyAndReturnArgs} args - Arguments to create many AppReleases.
+     * @example
+     * // Create many AppReleases
+     * const appRelease = await prisma.appRelease.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AppReleases and only return the `id`
+     * const appReleaseWithIdOnly = await prisma.appRelease.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AppReleaseCreateManyAndReturnArgs>(args?: SelectSubset<T, AppReleaseCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AppRelease.
+     * @param {AppReleaseDeleteArgs} args - Arguments to delete one AppRelease.
+     * @example
+     * // Delete one AppRelease
+     * const AppRelease = await prisma.appRelease.delete({
+     *   where: {
+     *     // ... filter to delete one AppRelease
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AppReleaseDeleteArgs>(args: SelectSubset<T, AppReleaseDeleteArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AppRelease.
+     * @param {AppReleaseUpdateArgs} args - Arguments to update one AppRelease.
+     * @example
+     * // Update one AppRelease
+     * const appRelease = await prisma.appRelease.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AppReleaseUpdateArgs>(args: SelectSubset<T, AppReleaseUpdateArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AppReleases.
+     * @param {AppReleaseDeleteManyArgs} args - Arguments to filter AppReleases to delete.
+     * @example
+     * // Delete a few AppReleases
+     * const { count } = await prisma.appRelease.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AppReleaseDeleteManyArgs>(args?: SelectSubset<T, AppReleaseDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AppReleases.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AppReleases
+     * const appRelease = await prisma.appRelease.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AppReleaseUpdateManyArgs>(args: SelectSubset<T, AppReleaseUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AppReleases and returns the data updated in the database.
+     * @param {AppReleaseUpdateManyAndReturnArgs} args - Arguments to update many AppReleases.
+     * @example
+     * // Update many AppReleases
+     * const appRelease = await prisma.appRelease.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AppReleases and only return the `id`
+     * const appReleaseWithIdOnly = await prisma.appRelease.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AppReleaseUpdateManyAndReturnArgs>(args: SelectSubset<T, AppReleaseUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AppRelease.
+     * @param {AppReleaseUpsertArgs} args - Arguments to update or create a AppRelease.
+     * @example
+     * // Update or create a AppRelease
+     * const appRelease = await prisma.appRelease.upsert({
+     *   create: {
+     *     // ... data to create a AppRelease
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AppRelease we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AppReleaseUpsertArgs>(args: SelectSubset<T, AppReleaseUpsertArgs<ExtArgs>>): Prisma__AppReleaseClient<$Result.GetResult<Prisma.$AppReleasePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AppReleases.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseCountArgs} args - Arguments to filter AppReleases to count.
+     * @example
+     * // Count the number of AppReleases
+     * const count = await prisma.appRelease.count({
+     *   where: {
+     *     // ... the filter for the AppReleases we want to count
+     *   }
+     * })
+    **/
+    count<T extends AppReleaseCountArgs>(
+      args?: Subset<T, AppReleaseCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AppReleaseCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AppRelease.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AppReleaseAggregateArgs>(args: Subset<T, AppReleaseAggregateArgs>): Prisma.PrismaPromise<GetAppReleaseAggregateType<T>>
+
+    /**
+     * Group by AppRelease.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppReleaseGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AppReleaseGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AppReleaseGroupByArgs['orderBy'] }
+        : { orderBy?: AppReleaseGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AppReleaseGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAppReleaseGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AppRelease model
+   */
+  readonly fields: AppReleaseFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AppRelease.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AppReleaseClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AppRelease model
+   */
+  interface AppReleaseFieldRefs {
+    readonly id: FieldRef<"AppRelease", 'String'>
+    readonly platform: FieldRef<"AppRelease", 'String'>
+    readonly version: FieldRef<"AppRelease", 'String'>
+    readonly download_url: FieldRef<"AppRelease", 'String'>
+    readonly min_version: FieldRef<"AppRelease", 'String'>
+    readonly release_notes: FieldRef<"AppRelease", 'String'>
+    readonly download_count: FieldRef<"AppRelease", 'Int'>
+    readonly published_at: FieldRef<"AppRelease", 'DateTime'>
+    readonly updated_at: FieldRef<"AppRelease", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AppRelease findUnique
+   */
+  export type AppReleaseFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppRelease
+     */
+    omit?: AppReleaseOmit<ExtArgs> | null
+    /**
+     * Filter, which AppRelease to fetch.
+     */
+    where: AppReleaseWhereUniqueInput
+  }
+
+  /**
+   * AppRelease findUniqueOrThrow
+   */
+  export type AppReleaseFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppRelease
+     */
+    omit?: AppReleaseOmit<ExtArgs> | null
+    /**
+     * Filter, which AppRelease to fetch.
+     */
+    where: AppReleaseWhereUniqueInput
+  }
+
+  /**
+   * AppRelease findFirst
+   */
+  export type AppReleaseFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppRelease
+     */
+    omit?: AppReleaseOmit<ExtArgs> | null
+    /**
+     * Filter, which AppRelease to fetch.
+     */
+    where?: AppReleaseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AppReleases to fetch.
+     */
+    orderBy?: AppReleaseOrderByWithRelationInput | AppReleaseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AppReleases.
+     */
+    cursor?: AppReleaseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AppReleases from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AppReleases.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AppReleases.
+     */
+    distinct?: AppReleaseScalarFieldEnum | AppReleaseScalarFieldEnum[]
+  }
+
+  /**
+   * AppRelease findFirstOrThrow
+   */
+  export type AppReleaseFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppRelease
+     */
+    omit?: AppReleaseOmit<ExtArgs> | null
+    /**
+     * Filter, which AppRelease to fetch.
+     */
+    where?: AppReleaseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AppReleases to fetch.
+     */
+    orderBy?: AppReleaseOrderByWithRelationInput | AppReleaseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AppReleases.
+     */
+    cursor?: AppReleaseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AppReleases from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AppReleases.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AppReleases.
+     */
+    distinct?: AppReleaseScalarFieldEnum | AppReleaseScalarFieldEnum[]
+  }
+
+  /**
+   * AppRelease findMany
+   */
+  export type AppReleaseFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppRelease
+     */
+    omit?: AppReleaseOmit<ExtArgs> | null
+    /**
+     * Filter, which AppReleases to fetch.
+     */
+    where?: AppReleaseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AppReleases to fetch.
+     */
+    orderBy?: AppReleaseOrderByWithRelationInput | AppReleaseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AppReleases.
+     */
+    cursor?: AppReleaseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AppReleases from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AppReleases.
+     */
+    skip?: number
+    distinct?: AppReleaseScalarFieldEnum | AppReleaseScalarFieldEnum[]
+  }
+
+  /**
+   * AppRelease create
+   */
+  export type AppReleaseCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppRelease
+     */
+    omit?: AppReleaseOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AppRelease.
+     */
+    data: XOR<AppReleaseCreateInput, AppReleaseUncheckedCreateInput>
+  }
+
+  /**
+   * AppRelease createMany
+   */
+  export type AppReleaseCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AppReleases.
+     */
+    data: AppReleaseCreateManyInput | AppReleaseCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AppRelease createManyAndReturn
+   */
+  export type AppReleaseCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppRelease
+     */
+    omit?: AppReleaseOmit<ExtArgs> | null
+    /**
+     * The data used to create many AppReleases.
+     */
+    data: AppReleaseCreateManyInput | AppReleaseCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AppRelease update
+   */
+  export type AppReleaseUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppRelease
+     */
+    omit?: AppReleaseOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AppRelease.
+     */
+    data: XOR<AppReleaseUpdateInput, AppReleaseUncheckedUpdateInput>
+    /**
+     * Choose, which AppRelease to update.
+     */
+    where: AppReleaseWhereUniqueInput
+  }
+
+  /**
+   * AppRelease updateMany
+   */
+  export type AppReleaseUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AppReleases.
+     */
+    data: XOR<AppReleaseUpdateManyMutationInput, AppReleaseUncheckedUpdateManyInput>
+    /**
+     * Filter which AppReleases to update
+     */
+    where?: AppReleaseWhereInput
+    /**
+     * Limit how many AppReleases to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AppRelease updateManyAndReturn
+   */
+  export type AppReleaseUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppRelease
+     */
+    omit?: AppReleaseOmit<ExtArgs> | null
+    /**
+     * The data used to update AppReleases.
+     */
+    data: XOR<AppReleaseUpdateManyMutationInput, AppReleaseUncheckedUpdateManyInput>
+    /**
+     * Filter which AppReleases to update
+     */
+    where?: AppReleaseWhereInput
+    /**
+     * Limit how many AppReleases to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AppRelease upsert
+   */
+  export type AppReleaseUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppRelease
+     */
+    omit?: AppReleaseOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AppRelease to update in case it exists.
+     */
+    where: AppReleaseWhereUniqueInput
+    /**
+     * In case the AppRelease found by the `where` argument doesn't exist, create a new AppRelease with this data.
+     */
+    create: XOR<AppReleaseCreateInput, AppReleaseUncheckedCreateInput>
+    /**
+     * In case the AppRelease was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AppReleaseUpdateInput, AppReleaseUncheckedUpdateInput>
+  }
+
+  /**
+   * AppRelease delete
+   */
+  export type AppReleaseDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppRelease
+     */
+    omit?: AppReleaseOmit<ExtArgs> | null
+    /**
+     * Filter which AppRelease to delete.
+     */
+    where: AppReleaseWhereUniqueInput
+  }
+
+  /**
+   * AppRelease deleteMany
+   */
+  export type AppReleaseDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AppReleases to delete
+     */
+    where?: AppReleaseWhereInput
+    /**
+     * Limit how many AppReleases to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AppRelease without action
+   */
+  export type AppReleaseDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppRelease
+     */
+    select?: AppReleaseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppRelease
+     */
+    omit?: AppReleaseOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AppInstall
+   */
+
+  export type AggregateAppInstall = {
+    _count: AppInstallCountAggregateOutputType | null
+    _min: AppInstallMinAggregateOutputType | null
+    _max: AppInstallMaxAggregateOutputType | null
+  }
+
+  export type AppInstallMinAggregateOutputType = {
+    id: string | null
+    device_id: string | null
+    platform: string | null
+    arch: string | null
+    app_version: string | null
+    first_seen_at: Date | null
+    last_seen_at: Date | null
+  }
+
+  export type AppInstallMaxAggregateOutputType = {
+    id: string | null
+    device_id: string | null
+    platform: string | null
+    arch: string | null
+    app_version: string | null
+    first_seen_at: Date | null
+    last_seen_at: Date | null
+  }
+
+  export type AppInstallCountAggregateOutputType = {
+    id: number
+    device_id: number
+    platform: number
+    arch: number
+    app_version: number
+    first_seen_at: number
+    last_seen_at: number
+    _all: number
+  }
+
+
+  export type AppInstallMinAggregateInputType = {
+    id?: true
+    device_id?: true
+    platform?: true
+    arch?: true
+    app_version?: true
+    first_seen_at?: true
+    last_seen_at?: true
+  }
+
+  export type AppInstallMaxAggregateInputType = {
+    id?: true
+    device_id?: true
+    platform?: true
+    arch?: true
+    app_version?: true
+    first_seen_at?: true
+    last_seen_at?: true
+  }
+
+  export type AppInstallCountAggregateInputType = {
+    id?: true
+    device_id?: true
+    platform?: true
+    arch?: true
+    app_version?: true
+    first_seen_at?: true
+    last_seen_at?: true
+    _all?: true
+  }
+
+  export type AppInstallAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AppInstall to aggregate.
+     */
+    where?: AppInstallWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AppInstalls to fetch.
+     */
+    orderBy?: AppInstallOrderByWithRelationInput | AppInstallOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AppInstallWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AppInstalls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AppInstalls.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AppInstalls
+    **/
+    _count?: true | AppInstallCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AppInstallMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AppInstallMaxAggregateInputType
+  }
+
+  export type GetAppInstallAggregateType<T extends AppInstallAggregateArgs> = {
+        [P in keyof T & keyof AggregateAppInstall]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAppInstall[P]>
+      : GetScalarType<T[P], AggregateAppInstall[P]>
+  }
+
+
+
+
+  export type AppInstallGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AppInstallWhereInput
+    orderBy?: AppInstallOrderByWithAggregationInput | AppInstallOrderByWithAggregationInput[]
+    by: AppInstallScalarFieldEnum[] | AppInstallScalarFieldEnum
+    having?: AppInstallScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AppInstallCountAggregateInputType | true
+    _min?: AppInstallMinAggregateInputType
+    _max?: AppInstallMaxAggregateInputType
+  }
+
+  export type AppInstallGroupByOutputType = {
+    id: string
+    device_id: string
+    platform: string
+    arch: string
+    app_version: string
+    first_seen_at: Date
+    last_seen_at: Date
+    _count: AppInstallCountAggregateOutputType | null
+    _min: AppInstallMinAggregateOutputType | null
+    _max: AppInstallMaxAggregateOutputType | null
+  }
+
+  type GetAppInstallGroupByPayload<T extends AppInstallGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AppInstallGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AppInstallGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AppInstallGroupByOutputType[P]>
+            : GetScalarType<T[P], AppInstallGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AppInstallSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    device_id?: boolean
+    platform?: boolean
+    arch?: boolean
+    app_version?: boolean
+    first_seen_at?: boolean
+    last_seen_at?: boolean
+  }, ExtArgs["result"]["appInstall"]>
+
+  export type AppInstallSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    device_id?: boolean
+    platform?: boolean
+    arch?: boolean
+    app_version?: boolean
+    first_seen_at?: boolean
+    last_seen_at?: boolean
+  }, ExtArgs["result"]["appInstall"]>
+
+  export type AppInstallSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    device_id?: boolean
+    platform?: boolean
+    arch?: boolean
+    app_version?: boolean
+    first_seen_at?: boolean
+    last_seen_at?: boolean
+  }, ExtArgs["result"]["appInstall"]>
+
+  export type AppInstallSelectScalar = {
+    id?: boolean
+    device_id?: boolean
+    platform?: boolean
+    arch?: boolean
+    app_version?: boolean
+    first_seen_at?: boolean
+    last_seen_at?: boolean
+  }
+
+  export type AppInstallOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "device_id" | "platform" | "arch" | "app_version" | "first_seen_at" | "last_seen_at", ExtArgs["result"]["appInstall"]>
+
+  export type $AppInstallPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AppInstall"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      device_id: string
+      platform: string
+      arch: string
+      app_version: string
+      first_seen_at: Date
+      last_seen_at: Date
+    }, ExtArgs["result"]["appInstall"]>
+    composites: {}
+  }
+
+  type AppInstallGetPayload<S extends boolean | null | undefined | AppInstallDefaultArgs> = $Result.GetResult<Prisma.$AppInstallPayload, S>
+
+  type AppInstallCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AppInstallFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AppInstallCountAggregateInputType | true
+    }
+
+  export interface AppInstallDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AppInstall'], meta: { name: 'AppInstall' } }
+    /**
+     * Find zero or one AppInstall that matches the filter.
+     * @param {AppInstallFindUniqueArgs} args - Arguments to find a AppInstall
+     * @example
+     * // Get one AppInstall
+     * const appInstall = await prisma.appInstall.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AppInstallFindUniqueArgs>(args: SelectSubset<T, AppInstallFindUniqueArgs<ExtArgs>>): Prisma__AppInstallClient<$Result.GetResult<Prisma.$AppInstallPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AppInstall that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AppInstallFindUniqueOrThrowArgs} args - Arguments to find a AppInstall
+     * @example
+     * // Get one AppInstall
+     * const appInstall = await prisma.appInstall.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AppInstallFindUniqueOrThrowArgs>(args: SelectSubset<T, AppInstallFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AppInstallClient<$Result.GetResult<Prisma.$AppInstallPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AppInstall that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppInstallFindFirstArgs} args - Arguments to find a AppInstall
+     * @example
+     * // Get one AppInstall
+     * const appInstall = await prisma.appInstall.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AppInstallFindFirstArgs>(args?: SelectSubset<T, AppInstallFindFirstArgs<ExtArgs>>): Prisma__AppInstallClient<$Result.GetResult<Prisma.$AppInstallPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AppInstall that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppInstallFindFirstOrThrowArgs} args - Arguments to find a AppInstall
+     * @example
+     * // Get one AppInstall
+     * const appInstall = await prisma.appInstall.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AppInstallFindFirstOrThrowArgs>(args?: SelectSubset<T, AppInstallFindFirstOrThrowArgs<ExtArgs>>): Prisma__AppInstallClient<$Result.GetResult<Prisma.$AppInstallPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AppInstalls that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppInstallFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AppInstalls
+     * const appInstalls = await prisma.appInstall.findMany()
+     * 
+     * // Get first 10 AppInstalls
+     * const appInstalls = await prisma.appInstall.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const appInstallWithIdOnly = await prisma.appInstall.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AppInstallFindManyArgs>(args?: SelectSubset<T, AppInstallFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppInstallPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AppInstall.
+     * @param {AppInstallCreateArgs} args - Arguments to create a AppInstall.
+     * @example
+     * // Create one AppInstall
+     * const AppInstall = await prisma.appInstall.create({
+     *   data: {
+     *     // ... data to create a AppInstall
+     *   }
+     * })
+     * 
+     */
+    create<T extends AppInstallCreateArgs>(args: SelectSubset<T, AppInstallCreateArgs<ExtArgs>>): Prisma__AppInstallClient<$Result.GetResult<Prisma.$AppInstallPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AppInstalls.
+     * @param {AppInstallCreateManyArgs} args - Arguments to create many AppInstalls.
+     * @example
+     * // Create many AppInstalls
+     * const appInstall = await prisma.appInstall.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AppInstallCreateManyArgs>(args?: SelectSubset<T, AppInstallCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AppInstalls and returns the data saved in the database.
+     * @param {AppInstallCreateManyAndReturnArgs} args - Arguments to create many AppInstalls.
+     * @example
+     * // Create many AppInstalls
+     * const appInstall = await prisma.appInstall.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AppInstalls and only return the `id`
+     * const appInstallWithIdOnly = await prisma.appInstall.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AppInstallCreateManyAndReturnArgs>(args?: SelectSubset<T, AppInstallCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppInstallPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AppInstall.
+     * @param {AppInstallDeleteArgs} args - Arguments to delete one AppInstall.
+     * @example
+     * // Delete one AppInstall
+     * const AppInstall = await prisma.appInstall.delete({
+     *   where: {
+     *     // ... filter to delete one AppInstall
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AppInstallDeleteArgs>(args: SelectSubset<T, AppInstallDeleteArgs<ExtArgs>>): Prisma__AppInstallClient<$Result.GetResult<Prisma.$AppInstallPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AppInstall.
+     * @param {AppInstallUpdateArgs} args - Arguments to update one AppInstall.
+     * @example
+     * // Update one AppInstall
+     * const appInstall = await prisma.appInstall.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AppInstallUpdateArgs>(args: SelectSubset<T, AppInstallUpdateArgs<ExtArgs>>): Prisma__AppInstallClient<$Result.GetResult<Prisma.$AppInstallPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AppInstalls.
+     * @param {AppInstallDeleteManyArgs} args - Arguments to filter AppInstalls to delete.
+     * @example
+     * // Delete a few AppInstalls
+     * const { count } = await prisma.appInstall.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AppInstallDeleteManyArgs>(args?: SelectSubset<T, AppInstallDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AppInstalls.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppInstallUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AppInstalls
+     * const appInstall = await prisma.appInstall.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AppInstallUpdateManyArgs>(args: SelectSubset<T, AppInstallUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AppInstalls and returns the data updated in the database.
+     * @param {AppInstallUpdateManyAndReturnArgs} args - Arguments to update many AppInstalls.
+     * @example
+     * // Update many AppInstalls
+     * const appInstall = await prisma.appInstall.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AppInstalls and only return the `id`
+     * const appInstallWithIdOnly = await prisma.appInstall.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AppInstallUpdateManyAndReturnArgs>(args: SelectSubset<T, AppInstallUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppInstallPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AppInstall.
+     * @param {AppInstallUpsertArgs} args - Arguments to update or create a AppInstall.
+     * @example
+     * // Update or create a AppInstall
+     * const appInstall = await prisma.appInstall.upsert({
+     *   create: {
+     *     // ... data to create a AppInstall
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AppInstall we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AppInstallUpsertArgs>(args: SelectSubset<T, AppInstallUpsertArgs<ExtArgs>>): Prisma__AppInstallClient<$Result.GetResult<Prisma.$AppInstallPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AppInstalls.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppInstallCountArgs} args - Arguments to filter AppInstalls to count.
+     * @example
+     * // Count the number of AppInstalls
+     * const count = await prisma.appInstall.count({
+     *   where: {
+     *     // ... the filter for the AppInstalls we want to count
+     *   }
+     * })
+    **/
+    count<T extends AppInstallCountArgs>(
+      args?: Subset<T, AppInstallCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AppInstallCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AppInstall.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppInstallAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AppInstallAggregateArgs>(args: Subset<T, AppInstallAggregateArgs>): Prisma.PrismaPromise<GetAppInstallAggregateType<T>>
+
+    /**
+     * Group by AppInstall.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AppInstallGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AppInstallGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AppInstallGroupByArgs['orderBy'] }
+        : { orderBy?: AppInstallGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AppInstallGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAppInstallGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AppInstall model
+   */
+  readonly fields: AppInstallFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AppInstall.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AppInstallClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AppInstall model
+   */
+  interface AppInstallFieldRefs {
+    readonly id: FieldRef<"AppInstall", 'String'>
+    readonly device_id: FieldRef<"AppInstall", 'String'>
+    readonly platform: FieldRef<"AppInstall", 'String'>
+    readonly arch: FieldRef<"AppInstall", 'String'>
+    readonly app_version: FieldRef<"AppInstall", 'String'>
+    readonly first_seen_at: FieldRef<"AppInstall", 'DateTime'>
+    readonly last_seen_at: FieldRef<"AppInstall", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AppInstall findUnique
+   */
+  export type AppInstallFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppInstall
+     */
+    select?: AppInstallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppInstall
+     */
+    omit?: AppInstallOmit<ExtArgs> | null
+    /**
+     * Filter, which AppInstall to fetch.
+     */
+    where: AppInstallWhereUniqueInput
+  }
+
+  /**
+   * AppInstall findUniqueOrThrow
+   */
+  export type AppInstallFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppInstall
+     */
+    select?: AppInstallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppInstall
+     */
+    omit?: AppInstallOmit<ExtArgs> | null
+    /**
+     * Filter, which AppInstall to fetch.
+     */
+    where: AppInstallWhereUniqueInput
+  }
+
+  /**
+   * AppInstall findFirst
+   */
+  export type AppInstallFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppInstall
+     */
+    select?: AppInstallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppInstall
+     */
+    omit?: AppInstallOmit<ExtArgs> | null
+    /**
+     * Filter, which AppInstall to fetch.
+     */
+    where?: AppInstallWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AppInstalls to fetch.
+     */
+    orderBy?: AppInstallOrderByWithRelationInput | AppInstallOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AppInstalls.
+     */
+    cursor?: AppInstallWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AppInstalls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AppInstalls.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AppInstalls.
+     */
+    distinct?: AppInstallScalarFieldEnum | AppInstallScalarFieldEnum[]
+  }
+
+  /**
+   * AppInstall findFirstOrThrow
+   */
+  export type AppInstallFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppInstall
+     */
+    select?: AppInstallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppInstall
+     */
+    omit?: AppInstallOmit<ExtArgs> | null
+    /**
+     * Filter, which AppInstall to fetch.
+     */
+    where?: AppInstallWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AppInstalls to fetch.
+     */
+    orderBy?: AppInstallOrderByWithRelationInput | AppInstallOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AppInstalls.
+     */
+    cursor?: AppInstallWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AppInstalls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AppInstalls.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AppInstalls.
+     */
+    distinct?: AppInstallScalarFieldEnum | AppInstallScalarFieldEnum[]
+  }
+
+  /**
+   * AppInstall findMany
+   */
+  export type AppInstallFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppInstall
+     */
+    select?: AppInstallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppInstall
+     */
+    omit?: AppInstallOmit<ExtArgs> | null
+    /**
+     * Filter, which AppInstalls to fetch.
+     */
+    where?: AppInstallWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AppInstalls to fetch.
+     */
+    orderBy?: AppInstallOrderByWithRelationInput | AppInstallOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AppInstalls.
+     */
+    cursor?: AppInstallWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AppInstalls from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AppInstalls.
+     */
+    skip?: number
+    distinct?: AppInstallScalarFieldEnum | AppInstallScalarFieldEnum[]
+  }
+
+  /**
+   * AppInstall create
+   */
+  export type AppInstallCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppInstall
+     */
+    select?: AppInstallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppInstall
+     */
+    omit?: AppInstallOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AppInstall.
+     */
+    data: XOR<AppInstallCreateInput, AppInstallUncheckedCreateInput>
+  }
+
+  /**
+   * AppInstall createMany
+   */
+  export type AppInstallCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AppInstalls.
+     */
+    data: AppInstallCreateManyInput | AppInstallCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AppInstall createManyAndReturn
+   */
+  export type AppInstallCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppInstall
+     */
+    select?: AppInstallSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppInstall
+     */
+    omit?: AppInstallOmit<ExtArgs> | null
+    /**
+     * The data used to create many AppInstalls.
+     */
+    data: AppInstallCreateManyInput | AppInstallCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AppInstall update
+   */
+  export type AppInstallUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppInstall
+     */
+    select?: AppInstallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppInstall
+     */
+    omit?: AppInstallOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AppInstall.
+     */
+    data: XOR<AppInstallUpdateInput, AppInstallUncheckedUpdateInput>
+    /**
+     * Choose, which AppInstall to update.
+     */
+    where: AppInstallWhereUniqueInput
+  }
+
+  /**
+   * AppInstall updateMany
+   */
+  export type AppInstallUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AppInstalls.
+     */
+    data: XOR<AppInstallUpdateManyMutationInput, AppInstallUncheckedUpdateManyInput>
+    /**
+     * Filter which AppInstalls to update
+     */
+    where?: AppInstallWhereInput
+    /**
+     * Limit how many AppInstalls to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AppInstall updateManyAndReturn
+   */
+  export type AppInstallUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppInstall
+     */
+    select?: AppInstallSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppInstall
+     */
+    omit?: AppInstallOmit<ExtArgs> | null
+    /**
+     * The data used to update AppInstalls.
+     */
+    data: XOR<AppInstallUpdateManyMutationInput, AppInstallUncheckedUpdateManyInput>
+    /**
+     * Filter which AppInstalls to update
+     */
+    where?: AppInstallWhereInput
+    /**
+     * Limit how many AppInstalls to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AppInstall upsert
+   */
+  export type AppInstallUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppInstall
+     */
+    select?: AppInstallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppInstall
+     */
+    omit?: AppInstallOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AppInstall to update in case it exists.
+     */
+    where: AppInstallWhereUniqueInput
+    /**
+     * In case the AppInstall found by the `where` argument doesn't exist, create a new AppInstall with this data.
+     */
+    create: XOR<AppInstallCreateInput, AppInstallUncheckedCreateInput>
+    /**
+     * In case the AppInstall was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AppInstallUpdateInput, AppInstallUncheckedUpdateInput>
+  }
+
+  /**
+   * AppInstall delete
+   */
+  export type AppInstallDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppInstall
+     */
+    select?: AppInstallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppInstall
+     */
+    omit?: AppInstallOmit<ExtArgs> | null
+    /**
+     * Filter which AppInstall to delete.
+     */
+    where: AppInstallWhereUniqueInput
+  }
+
+  /**
+   * AppInstall deleteMany
+   */
+  export type AppInstallDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AppInstalls to delete
+     */
+    where?: AppInstallWhereInput
+    /**
+     * Limit how many AppInstalls to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AppInstall without action
+   */
+  export type AppInstallDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AppInstall
+     */
+    select?: AppInstallSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AppInstall
+     */
+    omit?: AppInstallOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -25980,6 +30809,32 @@ export namespace Prisma {
   };
 
   export type UserPreferenceScalarFieldEnum = (typeof UserPreferenceScalarFieldEnum)[keyof typeof UserPreferenceScalarFieldEnum]
+
+
+  export const WorkspaceLayoutPresetScalarFieldEnum: {
+    id: 'id',
+    user_id: 'user_id',
+    name: 'name',
+    is_default: 'is_default',
+    layout_version: 'layout_version',
+    layout: 'layout',
+    floating: 'floating',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type WorkspaceLayoutPresetScalarFieldEnum = (typeof WorkspaceLayoutPresetScalarFieldEnum)[keyof typeof WorkspaceLayoutPresetScalarFieldEnum]
+
+
+  export const WorkspaceLayoutStateScalarFieldEnum: {
+    id: 'id',
+    user_id: 'user_id',
+    active_preset_id: 'active_preset_id',
+    preset_by_project: 'preset_by_project',
+    updated_at: 'updated_at'
+  };
+
+  export type WorkspaceLayoutStateScalarFieldEnum = (typeof WorkspaceLayoutStateScalarFieldEnum)[keyof typeof WorkspaceLayoutStateScalarFieldEnum]
 
 
   export const OrganizationScalarFieldEnum: {
@@ -26213,6 +31068,34 @@ export namespace Prisma {
   export type SkillFavoriteScalarFieldEnum = (typeof SkillFavoriteScalarFieldEnum)[keyof typeof SkillFavoriteScalarFieldEnum]
 
 
+  export const AppReleaseScalarFieldEnum: {
+    id: 'id',
+    platform: 'platform',
+    version: 'version',
+    download_url: 'download_url',
+    min_version: 'min_version',
+    release_notes: 'release_notes',
+    download_count: 'download_count',
+    published_at: 'published_at',
+    updated_at: 'updated_at'
+  };
+
+  export type AppReleaseScalarFieldEnum = (typeof AppReleaseScalarFieldEnum)[keyof typeof AppReleaseScalarFieldEnum]
+
+
+  export const AppInstallScalarFieldEnum: {
+    id: 'id',
+    device_id: 'device_id',
+    platform: 'platform',
+    arch: 'arch',
+    app_version: 'app_version',
+    first_seen_at: 'first_seen_at',
+    last_seen_at: 'last_seen_at'
+  };
+
+  export type AppInstallScalarFieldEnum = (typeof AppInstallScalarFieldEnum)[keyof typeof AppInstallScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -26227,6 +31110,13 @@ export namespace Prisma {
   };
 
   export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
   export const QueryMode: {
@@ -26570,6 +31460,8 @@ export namespace Prisma {
     activities?: ActivityListRelationFilter
     git_identities?: GitIdentityListRelationFilter
     skill_favorites?: SkillFavoriteListRelationFilter
+    workspace_layouts?: WorkspaceLayoutPresetListRelationFilter
+    workspace_layout_state?: XOR<WorkspaceLayoutStateNullableScalarRelationFilter, WorkspaceLayoutStateWhereInput> | null
   }
 
   export type UserOrderByWithRelationInput = {
@@ -26590,6 +31482,8 @@ export namespace Prisma {
     activities?: ActivityOrderByRelationAggregateInput
     git_identities?: GitIdentityOrderByRelationAggregateInput
     skill_favorites?: SkillFavoriteOrderByRelationAggregateInput
+    workspace_layouts?: WorkspaceLayoutPresetOrderByRelationAggregateInput
+    workspace_layout_state?: WorkspaceLayoutStateOrderByWithRelationInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -26613,6 +31507,8 @@ export namespace Prisma {
     activities?: ActivityListRelationFilter
     git_identities?: GitIdentityListRelationFilter
     skill_favorites?: SkillFavoriteListRelationFilter
+    workspace_layouts?: WorkspaceLayoutPresetListRelationFilter
+    workspace_layout_state?: XOR<WorkspaceLayoutStateNullableScalarRelationFilter, WorkspaceLayoutStateWhereInput> | null
   }, "id" | "email" | "phone">
 
   export type UserOrderByWithAggregationInput = {
@@ -26975,6 +31871,145 @@ export namespace Prisma {
     shortcut_settings?: JsonNullableWithAggregatesFilter<"UserPreference">
     created_at?: DateTimeWithAggregatesFilter<"UserPreference"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserPreference"> | Date | string
+  }
+
+  export type WorkspaceLayoutPresetWhereInput = {
+    AND?: WorkspaceLayoutPresetWhereInput | WorkspaceLayoutPresetWhereInput[]
+    OR?: WorkspaceLayoutPresetWhereInput[]
+    NOT?: WorkspaceLayoutPresetWhereInput | WorkspaceLayoutPresetWhereInput[]
+    id?: StringFilter<"WorkspaceLayoutPreset"> | string
+    user_id?: StringFilter<"WorkspaceLayoutPreset"> | string
+    name?: StringFilter<"WorkspaceLayoutPreset"> | string
+    is_default?: BoolFilter<"WorkspaceLayoutPreset"> | boolean
+    layout_version?: IntFilter<"WorkspaceLayoutPreset"> | number
+    layout?: JsonFilter<"WorkspaceLayoutPreset">
+    floating?: JsonFilter<"WorkspaceLayoutPreset">
+    created_at?: DateTimeFilter<"WorkspaceLayoutPreset"> | Date | string
+    updated_at?: DateTimeFilter<"WorkspaceLayoutPreset"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    state?: WorkspaceLayoutStateListRelationFilter
+  }
+
+  export type WorkspaceLayoutPresetOrderByWithRelationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    name?: SortOrder
+    is_default?: SortOrder
+    layout_version?: SortOrder
+    layout?: SortOrder
+    floating?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    user?: UserOrderByWithRelationInput
+    state?: WorkspaceLayoutStateOrderByRelationAggregateInput
+  }
+
+  export type WorkspaceLayoutPresetWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    user_id_name?: WorkspaceLayoutPresetUser_idNameCompoundUniqueInput
+    AND?: WorkspaceLayoutPresetWhereInput | WorkspaceLayoutPresetWhereInput[]
+    OR?: WorkspaceLayoutPresetWhereInput[]
+    NOT?: WorkspaceLayoutPresetWhereInput | WorkspaceLayoutPresetWhereInput[]
+    user_id?: StringFilter<"WorkspaceLayoutPreset"> | string
+    name?: StringFilter<"WorkspaceLayoutPreset"> | string
+    is_default?: BoolFilter<"WorkspaceLayoutPreset"> | boolean
+    layout_version?: IntFilter<"WorkspaceLayoutPreset"> | number
+    layout?: JsonFilter<"WorkspaceLayoutPreset">
+    floating?: JsonFilter<"WorkspaceLayoutPreset">
+    created_at?: DateTimeFilter<"WorkspaceLayoutPreset"> | Date | string
+    updated_at?: DateTimeFilter<"WorkspaceLayoutPreset"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    state?: WorkspaceLayoutStateListRelationFilter
+  }, "id" | "user_id_name">
+
+  export type WorkspaceLayoutPresetOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    name?: SortOrder
+    is_default?: SortOrder
+    layout_version?: SortOrder
+    layout?: SortOrder
+    floating?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: WorkspaceLayoutPresetCountOrderByAggregateInput
+    _avg?: WorkspaceLayoutPresetAvgOrderByAggregateInput
+    _max?: WorkspaceLayoutPresetMaxOrderByAggregateInput
+    _min?: WorkspaceLayoutPresetMinOrderByAggregateInput
+    _sum?: WorkspaceLayoutPresetSumOrderByAggregateInput
+  }
+
+  export type WorkspaceLayoutPresetScalarWhereWithAggregatesInput = {
+    AND?: WorkspaceLayoutPresetScalarWhereWithAggregatesInput | WorkspaceLayoutPresetScalarWhereWithAggregatesInput[]
+    OR?: WorkspaceLayoutPresetScalarWhereWithAggregatesInput[]
+    NOT?: WorkspaceLayoutPresetScalarWhereWithAggregatesInput | WorkspaceLayoutPresetScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"WorkspaceLayoutPreset"> | string
+    user_id?: StringWithAggregatesFilter<"WorkspaceLayoutPreset"> | string
+    name?: StringWithAggregatesFilter<"WorkspaceLayoutPreset"> | string
+    is_default?: BoolWithAggregatesFilter<"WorkspaceLayoutPreset"> | boolean
+    layout_version?: IntWithAggregatesFilter<"WorkspaceLayoutPreset"> | number
+    layout?: JsonWithAggregatesFilter<"WorkspaceLayoutPreset">
+    floating?: JsonWithAggregatesFilter<"WorkspaceLayoutPreset">
+    created_at?: DateTimeWithAggregatesFilter<"WorkspaceLayoutPreset"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"WorkspaceLayoutPreset"> | Date | string
+  }
+
+  export type WorkspaceLayoutStateWhereInput = {
+    AND?: WorkspaceLayoutStateWhereInput | WorkspaceLayoutStateWhereInput[]
+    OR?: WorkspaceLayoutStateWhereInput[]
+    NOT?: WorkspaceLayoutStateWhereInput | WorkspaceLayoutStateWhereInput[]
+    id?: StringFilter<"WorkspaceLayoutState"> | string
+    user_id?: StringFilter<"WorkspaceLayoutState"> | string
+    active_preset_id?: StringNullableFilter<"WorkspaceLayoutState"> | string | null
+    preset_by_project?: JsonFilter<"WorkspaceLayoutState">
+    updated_at?: DateTimeFilter<"WorkspaceLayoutState"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    active_preset?: XOR<WorkspaceLayoutPresetNullableScalarRelationFilter, WorkspaceLayoutPresetWhereInput> | null
+  }
+
+  export type WorkspaceLayoutStateOrderByWithRelationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    active_preset_id?: SortOrderInput | SortOrder
+    preset_by_project?: SortOrder
+    updated_at?: SortOrder
+    user?: UserOrderByWithRelationInput
+    active_preset?: WorkspaceLayoutPresetOrderByWithRelationInput
+  }
+
+  export type WorkspaceLayoutStateWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    user_id?: string
+    AND?: WorkspaceLayoutStateWhereInput | WorkspaceLayoutStateWhereInput[]
+    OR?: WorkspaceLayoutStateWhereInput[]
+    NOT?: WorkspaceLayoutStateWhereInput | WorkspaceLayoutStateWhereInput[]
+    active_preset_id?: StringNullableFilter<"WorkspaceLayoutState"> | string | null
+    preset_by_project?: JsonFilter<"WorkspaceLayoutState">
+    updated_at?: DateTimeFilter<"WorkspaceLayoutState"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    active_preset?: XOR<WorkspaceLayoutPresetNullableScalarRelationFilter, WorkspaceLayoutPresetWhereInput> | null
+  }, "id" | "user_id">
+
+  export type WorkspaceLayoutStateOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    active_preset_id?: SortOrderInput | SortOrder
+    preset_by_project?: SortOrder
+    updated_at?: SortOrder
+    _count?: WorkspaceLayoutStateCountOrderByAggregateInput
+    _max?: WorkspaceLayoutStateMaxOrderByAggregateInput
+    _min?: WorkspaceLayoutStateMinOrderByAggregateInput
+  }
+
+  export type WorkspaceLayoutStateScalarWhereWithAggregatesInput = {
+    AND?: WorkspaceLayoutStateScalarWhereWithAggregatesInput | WorkspaceLayoutStateScalarWhereWithAggregatesInput[]
+    OR?: WorkspaceLayoutStateScalarWhereWithAggregatesInput[]
+    NOT?: WorkspaceLayoutStateScalarWhereWithAggregatesInput | WorkspaceLayoutStateScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"WorkspaceLayoutState"> | string
+    user_id?: StringWithAggregatesFilter<"WorkspaceLayoutState"> | string
+    active_preset_id?: StringNullableWithAggregatesFilter<"WorkspaceLayoutState"> | string | null
+    preset_by_project?: JsonWithAggregatesFilter<"WorkspaceLayoutState">
+    updated_at?: DateTimeWithAggregatesFilter<"WorkspaceLayoutState"> | Date | string
   }
 
   export type OrganizationWhereInput = {
@@ -28257,6 +33292,142 @@ export namespace Prisma {
     created_at?: DateTimeWithAggregatesFilter<"SkillFavorite"> | Date | string
   }
 
+  export type AppReleaseWhereInput = {
+    AND?: AppReleaseWhereInput | AppReleaseWhereInput[]
+    OR?: AppReleaseWhereInput[]
+    NOT?: AppReleaseWhereInput | AppReleaseWhereInput[]
+    id?: StringFilter<"AppRelease"> | string
+    platform?: StringFilter<"AppRelease"> | string
+    version?: StringFilter<"AppRelease"> | string
+    download_url?: StringFilter<"AppRelease"> | string
+    min_version?: StringNullableFilter<"AppRelease"> | string | null
+    release_notes?: StringNullableFilter<"AppRelease"> | string | null
+    download_count?: IntFilter<"AppRelease"> | number
+    published_at?: DateTimeFilter<"AppRelease"> | Date | string
+    updated_at?: DateTimeFilter<"AppRelease"> | Date | string
+  }
+
+  export type AppReleaseOrderByWithRelationInput = {
+    id?: SortOrder
+    platform?: SortOrder
+    version?: SortOrder
+    download_url?: SortOrder
+    min_version?: SortOrderInput | SortOrder
+    release_notes?: SortOrderInput | SortOrder
+    download_count?: SortOrder
+    published_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type AppReleaseWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    platform?: string
+    AND?: AppReleaseWhereInput | AppReleaseWhereInput[]
+    OR?: AppReleaseWhereInput[]
+    NOT?: AppReleaseWhereInput | AppReleaseWhereInput[]
+    version?: StringFilter<"AppRelease"> | string
+    download_url?: StringFilter<"AppRelease"> | string
+    min_version?: StringNullableFilter<"AppRelease"> | string | null
+    release_notes?: StringNullableFilter<"AppRelease"> | string | null
+    download_count?: IntFilter<"AppRelease"> | number
+    published_at?: DateTimeFilter<"AppRelease"> | Date | string
+    updated_at?: DateTimeFilter<"AppRelease"> | Date | string
+  }, "id" | "platform">
+
+  export type AppReleaseOrderByWithAggregationInput = {
+    id?: SortOrder
+    platform?: SortOrder
+    version?: SortOrder
+    download_url?: SortOrder
+    min_version?: SortOrderInput | SortOrder
+    release_notes?: SortOrderInput | SortOrder
+    download_count?: SortOrder
+    published_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: AppReleaseCountOrderByAggregateInput
+    _avg?: AppReleaseAvgOrderByAggregateInput
+    _max?: AppReleaseMaxOrderByAggregateInput
+    _min?: AppReleaseMinOrderByAggregateInput
+    _sum?: AppReleaseSumOrderByAggregateInput
+  }
+
+  export type AppReleaseScalarWhereWithAggregatesInput = {
+    AND?: AppReleaseScalarWhereWithAggregatesInput | AppReleaseScalarWhereWithAggregatesInput[]
+    OR?: AppReleaseScalarWhereWithAggregatesInput[]
+    NOT?: AppReleaseScalarWhereWithAggregatesInput | AppReleaseScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AppRelease"> | string
+    platform?: StringWithAggregatesFilter<"AppRelease"> | string
+    version?: StringWithAggregatesFilter<"AppRelease"> | string
+    download_url?: StringWithAggregatesFilter<"AppRelease"> | string
+    min_version?: StringNullableWithAggregatesFilter<"AppRelease"> | string | null
+    release_notes?: StringNullableWithAggregatesFilter<"AppRelease"> | string | null
+    download_count?: IntWithAggregatesFilter<"AppRelease"> | number
+    published_at?: DateTimeWithAggregatesFilter<"AppRelease"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"AppRelease"> | Date | string
+  }
+
+  export type AppInstallWhereInput = {
+    AND?: AppInstallWhereInput | AppInstallWhereInput[]
+    OR?: AppInstallWhereInput[]
+    NOT?: AppInstallWhereInput | AppInstallWhereInput[]
+    id?: StringFilter<"AppInstall"> | string
+    device_id?: StringFilter<"AppInstall"> | string
+    platform?: StringFilter<"AppInstall"> | string
+    arch?: StringFilter<"AppInstall"> | string
+    app_version?: StringFilter<"AppInstall"> | string
+    first_seen_at?: DateTimeFilter<"AppInstall"> | Date | string
+    last_seen_at?: DateTimeFilter<"AppInstall"> | Date | string
+  }
+
+  export type AppInstallOrderByWithRelationInput = {
+    id?: SortOrder
+    device_id?: SortOrder
+    platform?: SortOrder
+    arch?: SortOrder
+    app_version?: SortOrder
+    first_seen_at?: SortOrder
+    last_seen_at?: SortOrder
+  }
+
+  export type AppInstallWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    device_id?: string
+    AND?: AppInstallWhereInput | AppInstallWhereInput[]
+    OR?: AppInstallWhereInput[]
+    NOT?: AppInstallWhereInput | AppInstallWhereInput[]
+    platform?: StringFilter<"AppInstall"> | string
+    arch?: StringFilter<"AppInstall"> | string
+    app_version?: StringFilter<"AppInstall"> | string
+    first_seen_at?: DateTimeFilter<"AppInstall"> | Date | string
+    last_seen_at?: DateTimeFilter<"AppInstall"> | Date | string
+  }, "id" | "device_id">
+
+  export type AppInstallOrderByWithAggregationInput = {
+    id?: SortOrder
+    device_id?: SortOrder
+    platform?: SortOrder
+    arch?: SortOrder
+    app_version?: SortOrder
+    first_seen_at?: SortOrder
+    last_seen_at?: SortOrder
+    _count?: AppInstallCountOrderByAggregateInput
+    _max?: AppInstallMaxOrderByAggregateInput
+    _min?: AppInstallMinOrderByAggregateInput
+  }
+
+  export type AppInstallScalarWhereWithAggregatesInput = {
+    AND?: AppInstallScalarWhereWithAggregatesInput | AppInstallScalarWhereWithAggregatesInput[]
+    OR?: AppInstallScalarWhereWithAggregatesInput[]
+    NOT?: AppInstallScalarWhereWithAggregatesInput | AppInstallScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AppInstall"> | string
+    device_id?: StringWithAggregatesFilter<"AppInstall"> | string
+    platform?: StringWithAggregatesFilter<"AppInstall"> | string
+    arch?: StringWithAggregatesFilter<"AppInstall"> | string
+    app_version?: StringWithAggregatesFilter<"AppInstall"> | string
+    first_seen_at?: DateTimeWithAggregatesFilter<"AppInstall"> | Date | string
+    last_seen_at?: DateTimeWithAggregatesFilter<"AppInstall"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -28275,6 +33446,8 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -28295,6 +33468,8 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -28315,6 +33490,8 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -28335,6 +33512,8 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -28745,6 +33924,147 @@ export namespace Prisma {
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
     shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceLayoutPresetCreateInput = {
+    id?: string
+    name: string
+    is_default?: boolean
+    layout_version?: number
+    layout: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutWorkspace_layoutsInput
+    state?: WorkspaceLayoutStateCreateNestedManyWithoutActive_presetInput
+  }
+
+  export type WorkspaceLayoutPresetUncheckedCreateInput = {
+    id?: string
+    user_id: string
+    name: string
+    is_default?: boolean
+    layout_version?: number
+    layout: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+    state?: WorkspaceLayoutStateUncheckedCreateNestedManyWithoutActive_presetInput
+  }
+
+  export type WorkspaceLayoutPresetUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    layout_version?: IntFieldUpdateOperationsInput | number
+    layout?: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutWorkspace_layoutsNestedInput
+    state?: WorkspaceLayoutStateUpdateManyWithoutActive_presetNestedInput
+  }
+
+  export type WorkspaceLayoutPresetUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    layout_version?: IntFieldUpdateOperationsInput | number
+    layout?: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    state?: WorkspaceLayoutStateUncheckedUpdateManyWithoutActive_presetNestedInput
+  }
+
+  export type WorkspaceLayoutPresetCreateManyInput = {
+    id?: string
+    user_id: string
+    name: string
+    is_default?: boolean
+    layout_version?: number
+    layout: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type WorkspaceLayoutPresetUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    layout_version?: IntFieldUpdateOperationsInput | number
+    layout?: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceLayoutPresetUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    layout_version?: IntFieldUpdateOperationsInput | number
+    layout?: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceLayoutStateCreateInput = {
+    id?: string
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutWorkspace_layout_stateInput
+    active_preset?: WorkspaceLayoutPresetCreateNestedOneWithoutStateInput
+  }
+
+  export type WorkspaceLayoutStateUncheckedCreateInput = {
+    id?: string
+    user_id: string
+    active_preset_id?: string | null
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: Date | string
+  }
+
+  export type WorkspaceLayoutStateUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutWorkspace_layout_stateNestedInput
+    active_preset?: WorkspaceLayoutPresetUpdateOneWithoutStateNestedInput
+  }
+
+  export type WorkspaceLayoutStateUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    active_preset_id?: NullableStringFieldUpdateOperationsInput | string | null
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceLayoutStateCreateManyInput = {
+    id?: string
+    user_id: string
+    active_preset_id?: string | null
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: Date | string
+  }
+
+  export type WorkspaceLayoutStateUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceLayoutStateUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    active_preset_id?: NullableStringFieldUpdateOperationsInput | string | null
+    preset_by_project?: JsonNullValueInput | InputJsonValue
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -30135,6 +35455,160 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AppReleaseCreateInput = {
+    id?: string
+    platform: string
+    version: string
+    download_url: string
+    min_version?: string | null
+    release_notes?: string | null
+    download_count?: number
+    published_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AppReleaseUncheckedCreateInput = {
+    id?: string
+    platform: string
+    version: string
+    download_url: string
+    min_version?: string | null
+    release_notes?: string | null
+    download_count?: number
+    published_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AppReleaseUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    platform?: StringFieldUpdateOperationsInput | string
+    version?: StringFieldUpdateOperationsInput | string
+    download_url?: StringFieldUpdateOperationsInput | string
+    min_version?: NullableStringFieldUpdateOperationsInput | string | null
+    release_notes?: NullableStringFieldUpdateOperationsInput | string | null
+    download_count?: IntFieldUpdateOperationsInput | number
+    published_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AppReleaseUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    platform?: StringFieldUpdateOperationsInput | string
+    version?: StringFieldUpdateOperationsInput | string
+    download_url?: StringFieldUpdateOperationsInput | string
+    min_version?: NullableStringFieldUpdateOperationsInput | string | null
+    release_notes?: NullableStringFieldUpdateOperationsInput | string | null
+    download_count?: IntFieldUpdateOperationsInput | number
+    published_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AppReleaseCreateManyInput = {
+    id?: string
+    platform: string
+    version: string
+    download_url: string
+    min_version?: string | null
+    release_notes?: string | null
+    download_count?: number
+    published_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AppReleaseUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    platform?: StringFieldUpdateOperationsInput | string
+    version?: StringFieldUpdateOperationsInput | string
+    download_url?: StringFieldUpdateOperationsInput | string
+    min_version?: NullableStringFieldUpdateOperationsInput | string | null
+    release_notes?: NullableStringFieldUpdateOperationsInput | string | null
+    download_count?: IntFieldUpdateOperationsInput | number
+    published_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AppReleaseUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    platform?: StringFieldUpdateOperationsInput | string
+    version?: StringFieldUpdateOperationsInput | string
+    download_url?: StringFieldUpdateOperationsInput | string
+    min_version?: NullableStringFieldUpdateOperationsInput | string | null
+    release_notes?: NullableStringFieldUpdateOperationsInput | string | null
+    download_count?: IntFieldUpdateOperationsInput | number
+    published_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AppInstallCreateInput = {
+    id?: string
+    device_id: string
+    platform: string
+    arch: string
+    app_version: string
+    first_seen_at?: Date | string
+    last_seen_at?: Date | string
+  }
+
+  export type AppInstallUncheckedCreateInput = {
+    id?: string
+    device_id: string
+    platform: string
+    arch: string
+    app_version: string
+    first_seen_at?: Date | string
+    last_seen_at?: Date | string
+  }
+
+  export type AppInstallUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    device_id?: StringFieldUpdateOperationsInput | string
+    platform?: StringFieldUpdateOperationsInput | string
+    arch?: StringFieldUpdateOperationsInput | string
+    app_version?: StringFieldUpdateOperationsInput | string
+    first_seen_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_seen_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AppInstallUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    device_id?: StringFieldUpdateOperationsInput | string
+    platform?: StringFieldUpdateOperationsInput | string
+    arch?: StringFieldUpdateOperationsInput | string
+    app_version?: StringFieldUpdateOperationsInput | string
+    first_seen_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_seen_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AppInstallCreateManyInput = {
+    id?: string
+    device_id: string
+    platform: string
+    arch: string
+    app_version: string
+    first_seen_at?: Date | string
+    last_seen_at?: Date | string
+  }
+
+  export type AppInstallUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    device_id?: StringFieldUpdateOperationsInput | string
+    platform?: StringFieldUpdateOperationsInput | string
+    arch?: StringFieldUpdateOperationsInput | string
+    app_version?: StringFieldUpdateOperationsInput | string
+    first_seen_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_seen_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AppInstallUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    device_id?: StringFieldUpdateOperationsInput | string
+    platform?: StringFieldUpdateOperationsInput | string
+    arch?: StringFieldUpdateOperationsInput | string
+    app_version?: StringFieldUpdateOperationsInput | string
+    first_seen_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_seen_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -30230,6 +35704,17 @@ export namespace Prisma {
     none?: SkillFavoriteWhereInput
   }
 
+  export type WorkspaceLayoutPresetListRelationFilter = {
+    every?: WorkspaceLayoutPresetWhereInput
+    some?: WorkspaceLayoutPresetWhereInput
+    none?: WorkspaceLayoutPresetWhereInput
+  }
+
+  export type WorkspaceLayoutStateNullableScalarRelationFilter = {
+    is?: WorkspaceLayoutStateWhereInput | null
+    isNot?: WorkspaceLayoutStateWhereInput | null
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -30260,6 +35745,10 @@ export namespace Prisma {
   }
 
   export type SkillFavoriteOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type WorkspaceLayoutPresetOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -30691,6 +36180,137 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedJsonNullableFilter<$PrismaModel>
     _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type WorkspaceLayoutStateListRelationFilter = {
+    every?: WorkspaceLayoutStateWhereInput
+    some?: WorkspaceLayoutStateWhereInput
+    none?: WorkspaceLayoutStateWhereInput
+  }
+
+  export type WorkspaceLayoutStateOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type WorkspaceLayoutPresetUser_idNameCompoundUniqueInput = {
+    user_id: string
+    name: string
+  }
+
+  export type WorkspaceLayoutPresetCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    name?: SortOrder
+    is_default?: SortOrder
+    layout_version?: SortOrder
+    layout?: SortOrder
+    floating?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type WorkspaceLayoutPresetAvgOrderByAggregateInput = {
+    layout_version?: SortOrder
+  }
+
+  export type WorkspaceLayoutPresetMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    name?: SortOrder
+    is_default?: SortOrder
+    layout_version?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type WorkspaceLayoutPresetMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    name?: SortOrder
+    is_default?: SortOrder
+    layout_version?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type WorkspaceLayoutPresetSumOrderByAggregateInput = {
+    layout_version?: SortOrder
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
+
+  export type WorkspaceLayoutPresetNullableScalarRelationFilter = {
+    is?: WorkspaceLayoutPresetWhereInput | null
+    isNot?: WorkspaceLayoutPresetWhereInput | null
+  }
+
+  export type WorkspaceLayoutStateCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    active_preset_id?: SortOrder
+    preset_by_project?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type WorkspaceLayoutStateMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    active_preset_id?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type WorkspaceLayoutStateMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    active_preset_id?: SortOrder
+    updated_at?: SortOrder
   }
 
   export type RoleListRelationFilter = {
@@ -31713,6 +37333,80 @@ export namespace Prisma {
     _max?: NestedEnumSkillFavoriteKindFilter<$PrismaModel>
   }
 
+  export type AppReleaseCountOrderByAggregateInput = {
+    id?: SortOrder
+    platform?: SortOrder
+    version?: SortOrder
+    download_url?: SortOrder
+    min_version?: SortOrder
+    release_notes?: SortOrder
+    download_count?: SortOrder
+    published_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type AppReleaseAvgOrderByAggregateInput = {
+    download_count?: SortOrder
+  }
+
+  export type AppReleaseMaxOrderByAggregateInput = {
+    id?: SortOrder
+    platform?: SortOrder
+    version?: SortOrder
+    download_url?: SortOrder
+    min_version?: SortOrder
+    release_notes?: SortOrder
+    download_count?: SortOrder
+    published_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type AppReleaseMinOrderByAggregateInput = {
+    id?: SortOrder
+    platform?: SortOrder
+    version?: SortOrder
+    download_url?: SortOrder
+    min_version?: SortOrder
+    release_notes?: SortOrder
+    download_count?: SortOrder
+    published_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type AppReleaseSumOrderByAggregateInput = {
+    download_count?: SortOrder
+  }
+
+  export type AppInstallCountOrderByAggregateInput = {
+    id?: SortOrder
+    device_id?: SortOrder
+    platform?: SortOrder
+    arch?: SortOrder
+    app_version?: SortOrder
+    first_seen_at?: SortOrder
+    last_seen_at?: SortOrder
+  }
+
+  export type AppInstallMaxOrderByAggregateInput = {
+    id?: SortOrder
+    device_id?: SortOrder
+    platform?: SortOrder
+    arch?: SortOrder
+    app_version?: SortOrder
+    first_seen_at?: SortOrder
+    last_seen_at?: SortOrder
+  }
+
+  export type AppInstallMinOrderByAggregateInput = {
+    id?: SortOrder
+    device_id?: SortOrder
+    platform?: SortOrder
+    arch?: SortOrder
+    app_version?: SortOrder
+    first_seen_at?: SortOrder
+    last_seen_at?: SortOrder
+  }
+
   export type PasswordResetTokenCreateNestedManyWithoutUserInput = {
     create?: XOR<PasswordResetTokenCreateWithoutUserInput, PasswordResetTokenUncheckedCreateWithoutUserInput> | PasswordResetTokenCreateWithoutUserInput[] | PasswordResetTokenUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PasswordResetTokenCreateOrConnectWithoutUserInput | PasswordResetTokenCreateOrConnectWithoutUserInput[]
@@ -31768,6 +37462,19 @@ export namespace Prisma {
     connect?: SkillFavoriteWhereUniqueInput | SkillFavoriteWhereUniqueInput[]
   }
 
+  export type WorkspaceLayoutPresetCreateNestedManyWithoutUserInput = {
+    create?: XOR<WorkspaceLayoutPresetCreateWithoutUserInput, WorkspaceLayoutPresetUncheckedCreateWithoutUserInput> | WorkspaceLayoutPresetCreateWithoutUserInput[] | WorkspaceLayoutPresetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: WorkspaceLayoutPresetCreateOrConnectWithoutUserInput | WorkspaceLayoutPresetCreateOrConnectWithoutUserInput[]
+    createMany?: WorkspaceLayoutPresetCreateManyUserInputEnvelope
+    connect?: WorkspaceLayoutPresetWhereUniqueInput | WorkspaceLayoutPresetWhereUniqueInput[]
+  }
+
+  export type WorkspaceLayoutStateCreateNestedOneWithoutUserInput = {
+    create?: XOR<WorkspaceLayoutStateCreateWithoutUserInput, WorkspaceLayoutStateUncheckedCreateWithoutUserInput>
+    connectOrCreate?: WorkspaceLayoutStateCreateOrConnectWithoutUserInput
+    connect?: WorkspaceLayoutStateWhereUniqueInput
+  }
+
   export type PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<PasswordResetTokenCreateWithoutUserInput, PasswordResetTokenUncheckedCreateWithoutUserInput> | PasswordResetTokenCreateWithoutUserInput[] | PasswordResetTokenUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PasswordResetTokenCreateOrConnectWithoutUserInput | PasswordResetTokenCreateOrConnectWithoutUserInput[]
@@ -31821,6 +37528,19 @@ export namespace Prisma {
     connectOrCreate?: SkillFavoriteCreateOrConnectWithoutUserInput | SkillFavoriteCreateOrConnectWithoutUserInput[]
     createMany?: SkillFavoriteCreateManyUserInputEnvelope
     connect?: SkillFavoriteWhereUniqueInput | SkillFavoriteWhereUniqueInput[]
+  }
+
+  export type WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<WorkspaceLayoutPresetCreateWithoutUserInput, WorkspaceLayoutPresetUncheckedCreateWithoutUserInput> | WorkspaceLayoutPresetCreateWithoutUserInput[] | WorkspaceLayoutPresetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: WorkspaceLayoutPresetCreateOrConnectWithoutUserInput | WorkspaceLayoutPresetCreateOrConnectWithoutUserInput[]
+    createMany?: WorkspaceLayoutPresetCreateManyUserInputEnvelope
+    connect?: WorkspaceLayoutPresetWhereUniqueInput | WorkspaceLayoutPresetWhereUniqueInput[]
+  }
+
+  export type WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<WorkspaceLayoutStateCreateWithoutUserInput, WorkspaceLayoutStateUncheckedCreateWithoutUserInput>
+    connectOrCreate?: WorkspaceLayoutStateCreateOrConnectWithoutUserInput
+    connect?: WorkspaceLayoutStateWhereUniqueInput
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -31947,6 +37667,30 @@ export namespace Prisma {
     deleteMany?: SkillFavoriteScalarWhereInput | SkillFavoriteScalarWhereInput[]
   }
 
+  export type WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput = {
+    create?: XOR<WorkspaceLayoutPresetCreateWithoutUserInput, WorkspaceLayoutPresetUncheckedCreateWithoutUserInput> | WorkspaceLayoutPresetCreateWithoutUserInput[] | WorkspaceLayoutPresetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: WorkspaceLayoutPresetCreateOrConnectWithoutUserInput | WorkspaceLayoutPresetCreateOrConnectWithoutUserInput[]
+    upsert?: WorkspaceLayoutPresetUpsertWithWhereUniqueWithoutUserInput | WorkspaceLayoutPresetUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: WorkspaceLayoutPresetCreateManyUserInputEnvelope
+    set?: WorkspaceLayoutPresetWhereUniqueInput | WorkspaceLayoutPresetWhereUniqueInput[]
+    disconnect?: WorkspaceLayoutPresetWhereUniqueInput | WorkspaceLayoutPresetWhereUniqueInput[]
+    delete?: WorkspaceLayoutPresetWhereUniqueInput | WorkspaceLayoutPresetWhereUniqueInput[]
+    connect?: WorkspaceLayoutPresetWhereUniqueInput | WorkspaceLayoutPresetWhereUniqueInput[]
+    update?: WorkspaceLayoutPresetUpdateWithWhereUniqueWithoutUserInput | WorkspaceLayoutPresetUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: WorkspaceLayoutPresetUpdateManyWithWhereWithoutUserInput | WorkspaceLayoutPresetUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: WorkspaceLayoutPresetScalarWhereInput | WorkspaceLayoutPresetScalarWhereInput[]
+  }
+
+  export type WorkspaceLayoutStateUpdateOneWithoutUserNestedInput = {
+    create?: XOR<WorkspaceLayoutStateCreateWithoutUserInput, WorkspaceLayoutStateUncheckedCreateWithoutUserInput>
+    connectOrCreate?: WorkspaceLayoutStateCreateOrConnectWithoutUserInput
+    upsert?: WorkspaceLayoutStateUpsertWithoutUserInput
+    disconnect?: WorkspaceLayoutStateWhereInput | boolean
+    delete?: WorkspaceLayoutStateWhereInput | boolean
+    connect?: WorkspaceLayoutStateWhereUniqueInput
+    update?: XOR<XOR<WorkspaceLayoutStateUpdateToOneWithWhereWithoutUserInput, WorkspaceLayoutStateUpdateWithoutUserInput>, WorkspaceLayoutStateUncheckedUpdateWithoutUserInput>
+  }
+
   export type PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<PasswordResetTokenCreateWithoutUserInput, PasswordResetTokenUncheckedCreateWithoutUserInput> | PasswordResetTokenCreateWithoutUserInput[] | PasswordResetTokenUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PasswordResetTokenCreateOrConnectWithoutUserInput | PasswordResetTokenCreateOrConnectWithoutUserInput[]
@@ -32055,6 +37799,30 @@ export namespace Prisma {
     deleteMany?: SkillFavoriteScalarWhereInput | SkillFavoriteScalarWhereInput[]
   }
 
+  export type WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<WorkspaceLayoutPresetCreateWithoutUserInput, WorkspaceLayoutPresetUncheckedCreateWithoutUserInput> | WorkspaceLayoutPresetCreateWithoutUserInput[] | WorkspaceLayoutPresetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: WorkspaceLayoutPresetCreateOrConnectWithoutUserInput | WorkspaceLayoutPresetCreateOrConnectWithoutUserInput[]
+    upsert?: WorkspaceLayoutPresetUpsertWithWhereUniqueWithoutUserInput | WorkspaceLayoutPresetUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: WorkspaceLayoutPresetCreateManyUserInputEnvelope
+    set?: WorkspaceLayoutPresetWhereUniqueInput | WorkspaceLayoutPresetWhereUniqueInput[]
+    disconnect?: WorkspaceLayoutPresetWhereUniqueInput | WorkspaceLayoutPresetWhereUniqueInput[]
+    delete?: WorkspaceLayoutPresetWhereUniqueInput | WorkspaceLayoutPresetWhereUniqueInput[]
+    connect?: WorkspaceLayoutPresetWhereUniqueInput | WorkspaceLayoutPresetWhereUniqueInput[]
+    update?: WorkspaceLayoutPresetUpdateWithWhereUniqueWithoutUserInput | WorkspaceLayoutPresetUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: WorkspaceLayoutPresetUpdateManyWithWhereWithoutUserInput | WorkspaceLayoutPresetUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: WorkspaceLayoutPresetScalarWhereInput | WorkspaceLayoutPresetScalarWhereInput[]
+  }
+
+  export type WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<WorkspaceLayoutStateCreateWithoutUserInput, WorkspaceLayoutStateUncheckedCreateWithoutUserInput>
+    connectOrCreate?: WorkspaceLayoutStateCreateOrConnectWithoutUserInput
+    upsert?: WorkspaceLayoutStateUpsertWithoutUserInput
+    disconnect?: WorkspaceLayoutStateWhereInput | boolean
+    delete?: WorkspaceLayoutStateWhereInput | boolean
+    connect?: WorkspaceLayoutStateWhereUniqueInput
+    update?: XOR<XOR<WorkspaceLayoutStateUpdateToOneWithWhereWithoutUserInput, WorkspaceLayoutStateUpdateWithoutUserInput>, WorkspaceLayoutStateUncheckedUpdateWithoutUserInput>
+  }
+
   export type UserCreateNestedOneWithoutPassword_reset_tokensInput = {
     create?: XOR<UserCreateWithoutPassword_reset_tokensInput, UserUncheckedCreateWithoutPassword_reset_tokensInput>
     connectOrCreate?: UserCreateOrConnectWithoutPassword_reset_tokensInput
@@ -32119,6 +37887,92 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutPreferenceInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPreferenceInput, UserUpdateWithoutPreferenceInput>, UserUncheckedUpdateWithoutPreferenceInput>
+  }
+
+  export type UserCreateNestedOneWithoutWorkspace_layoutsInput = {
+    create?: XOR<UserCreateWithoutWorkspace_layoutsInput, UserUncheckedCreateWithoutWorkspace_layoutsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutWorkspace_layoutsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type WorkspaceLayoutStateCreateNestedManyWithoutActive_presetInput = {
+    create?: XOR<WorkspaceLayoutStateCreateWithoutActive_presetInput, WorkspaceLayoutStateUncheckedCreateWithoutActive_presetInput> | WorkspaceLayoutStateCreateWithoutActive_presetInput[] | WorkspaceLayoutStateUncheckedCreateWithoutActive_presetInput[]
+    connectOrCreate?: WorkspaceLayoutStateCreateOrConnectWithoutActive_presetInput | WorkspaceLayoutStateCreateOrConnectWithoutActive_presetInput[]
+    createMany?: WorkspaceLayoutStateCreateManyActive_presetInputEnvelope
+    connect?: WorkspaceLayoutStateWhereUniqueInput | WorkspaceLayoutStateWhereUniqueInput[]
+  }
+
+  export type WorkspaceLayoutStateUncheckedCreateNestedManyWithoutActive_presetInput = {
+    create?: XOR<WorkspaceLayoutStateCreateWithoutActive_presetInput, WorkspaceLayoutStateUncheckedCreateWithoutActive_presetInput> | WorkspaceLayoutStateCreateWithoutActive_presetInput[] | WorkspaceLayoutStateUncheckedCreateWithoutActive_presetInput[]
+    connectOrCreate?: WorkspaceLayoutStateCreateOrConnectWithoutActive_presetInput | WorkspaceLayoutStateCreateOrConnectWithoutActive_presetInput[]
+    createMany?: WorkspaceLayoutStateCreateManyActive_presetInputEnvelope
+    connect?: WorkspaceLayoutStateWhereUniqueInput | WorkspaceLayoutStateWhereUniqueInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutWorkspace_layoutsNestedInput = {
+    create?: XOR<UserCreateWithoutWorkspace_layoutsInput, UserUncheckedCreateWithoutWorkspace_layoutsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutWorkspace_layoutsInput
+    upsert?: UserUpsertWithoutWorkspace_layoutsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutWorkspace_layoutsInput, UserUpdateWithoutWorkspace_layoutsInput>, UserUncheckedUpdateWithoutWorkspace_layoutsInput>
+  }
+
+  export type WorkspaceLayoutStateUpdateManyWithoutActive_presetNestedInput = {
+    create?: XOR<WorkspaceLayoutStateCreateWithoutActive_presetInput, WorkspaceLayoutStateUncheckedCreateWithoutActive_presetInput> | WorkspaceLayoutStateCreateWithoutActive_presetInput[] | WorkspaceLayoutStateUncheckedCreateWithoutActive_presetInput[]
+    connectOrCreate?: WorkspaceLayoutStateCreateOrConnectWithoutActive_presetInput | WorkspaceLayoutStateCreateOrConnectWithoutActive_presetInput[]
+    upsert?: WorkspaceLayoutStateUpsertWithWhereUniqueWithoutActive_presetInput | WorkspaceLayoutStateUpsertWithWhereUniqueWithoutActive_presetInput[]
+    createMany?: WorkspaceLayoutStateCreateManyActive_presetInputEnvelope
+    set?: WorkspaceLayoutStateWhereUniqueInput | WorkspaceLayoutStateWhereUniqueInput[]
+    disconnect?: WorkspaceLayoutStateWhereUniqueInput | WorkspaceLayoutStateWhereUniqueInput[]
+    delete?: WorkspaceLayoutStateWhereUniqueInput | WorkspaceLayoutStateWhereUniqueInput[]
+    connect?: WorkspaceLayoutStateWhereUniqueInput | WorkspaceLayoutStateWhereUniqueInput[]
+    update?: WorkspaceLayoutStateUpdateWithWhereUniqueWithoutActive_presetInput | WorkspaceLayoutStateUpdateWithWhereUniqueWithoutActive_presetInput[]
+    updateMany?: WorkspaceLayoutStateUpdateManyWithWhereWithoutActive_presetInput | WorkspaceLayoutStateUpdateManyWithWhereWithoutActive_presetInput[]
+    deleteMany?: WorkspaceLayoutStateScalarWhereInput | WorkspaceLayoutStateScalarWhereInput[]
+  }
+
+  export type WorkspaceLayoutStateUncheckedUpdateManyWithoutActive_presetNestedInput = {
+    create?: XOR<WorkspaceLayoutStateCreateWithoutActive_presetInput, WorkspaceLayoutStateUncheckedCreateWithoutActive_presetInput> | WorkspaceLayoutStateCreateWithoutActive_presetInput[] | WorkspaceLayoutStateUncheckedCreateWithoutActive_presetInput[]
+    connectOrCreate?: WorkspaceLayoutStateCreateOrConnectWithoutActive_presetInput | WorkspaceLayoutStateCreateOrConnectWithoutActive_presetInput[]
+    upsert?: WorkspaceLayoutStateUpsertWithWhereUniqueWithoutActive_presetInput | WorkspaceLayoutStateUpsertWithWhereUniqueWithoutActive_presetInput[]
+    createMany?: WorkspaceLayoutStateCreateManyActive_presetInputEnvelope
+    set?: WorkspaceLayoutStateWhereUniqueInput | WorkspaceLayoutStateWhereUniqueInput[]
+    disconnect?: WorkspaceLayoutStateWhereUniqueInput | WorkspaceLayoutStateWhereUniqueInput[]
+    delete?: WorkspaceLayoutStateWhereUniqueInput | WorkspaceLayoutStateWhereUniqueInput[]
+    connect?: WorkspaceLayoutStateWhereUniqueInput | WorkspaceLayoutStateWhereUniqueInput[]
+    update?: WorkspaceLayoutStateUpdateWithWhereUniqueWithoutActive_presetInput | WorkspaceLayoutStateUpdateWithWhereUniqueWithoutActive_presetInput[]
+    updateMany?: WorkspaceLayoutStateUpdateManyWithWhereWithoutActive_presetInput | WorkspaceLayoutStateUpdateManyWithWhereWithoutActive_presetInput[]
+    deleteMany?: WorkspaceLayoutStateScalarWhereInput | WorkspaceLayoutStateScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutWorkspace_layout_stateInput = {
+    create?: XOR<UserCreateWithoutWorkspace_layout_stateInput, UserUncheckedCreateWithoutWorkspace_layout_stateInput>
+    connectOrCreate?: UserCreateOrConnectWithoutWorkspace_layout_stateInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type WorkspaceLayoutPresetCreateNestedOneWithoutStateInput = {
+    create?: XOR<WorkspaceLayoutPresetCreateWithoutStateInput, WorkspaceLayoutPresetUncheckedCreateWithoutStateInput>
+    connectOrCreate?: WorkspaceLayoutPresetCreateOrConnectWithoutStateInput
+    connect?: WorkspaceLayoutPresetWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutWorkspace_layout_stateNestedInput = {
+    create?: XOR<UserCreateWithoutWorkspace_layout_stateInput, UserUncheckedCreateWithoutWorkspace_layout_stateInput>
+    connectOrCreate?: UserCreateOrConnectWithoutWorkspace_layout_stateInput
+    upsert?: UserUpsertWithoutWorkspace_layout_stateInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutWorkspace_layout_stateInput, UserUpdateWithoutWorkspace_layout_stateInput>, UserUncheckedUpdateWithoutWorkspace_layout_stateInput>
+  }
+
+  export type WorkspaceLayoutPresetUpdateOneWithoutStateNestedInput = {
+    create?: XOR<WorkspaceLayoutPresetCreateWithoutStateInput, WorkspaceLayoutPresetUncheckedCreateWithoutStateInput>
+    connectOrCreate?: WorkspaceLayoutPresetCreateOrConnectWithoutStateInput
+    upsert?: WorkspaceLayoutPresetUpsertWithoutStateInput
+    disconnect?: WorkspaceLayoutPresetWhereInput | boolean
+    delete?: WorkspaceLayoutPresetWhereInput | boolean
+    connect?: WorkspaceLayoutPresetWhereUniqueInput
+    update?: XOR<XOR<WorkspaceLayoutPresetUpdateToOneWithWhereWithoutStateInput, WorkspaceLayoutPresetUpdateWithoutStateInput>, WorkspaceLayoutPresetUncheckedUpdateWithoutStateInput>
   }
 
   export type OrganizationMemberCreateNestedManyWithoutOrganizationInput = {
@@ -33806,6 +39660,29 @@ export namespace Prisma {
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedEnumSystemRoleKeyFilter<$PrismaModel = never> = {
     equals?: $Enums.SystemRoleKey | EnumSystemRoleKeyFieldRefInput<$PrismaModel>
@@ -34367,6 +40244,59 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type WorkspaceLayoutPresetCreateWithoutUserInput = {
+    id?: string
+    name: string
+    is_default?: boolean
+    layout_version?: number
+    layout: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+    state?: WorkspaceLayoutStateCreateNestedManyWithoutActive_presetInput
+  }
+
+  export type WorkspaceLayoutPresetUncheckedCreateWithoutUserInput = {
+    id?: string
+    name: string
+    is_default?: boolean
+    layout_version?: number
+    layout: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+    state?: WorkspaceLayoutStateUncheckedCreateNestedManyWithoutActive_presetInput
+  }
+
+  export type WorkspaceLayoutPresetCreateOrConnectWithoutUserInput = {
+    where: WorkspaceLayoutPresetWhereUniqueInput
+    create: XOR<WorkspaceLayoutPresetCreateWithoutUserInput, WorkspaceLayoutPresetUncheckedCreateWithoutUserInput>
+  }
+
+  export type WorkspaceLayoutPresetCreateManyUserInputEnvelope = {
+    data: WorkspaceLayoutPresetCreateManyUserInput | WorkspaceLayoutPresetCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkspaceLayoutStateCreateWithoutUserInput = {
+    id?: string
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: Date | string
+    active_preset?: WorkspaceLayoutPresetCreateNestedOneWithoutStateInput
+  }
+
+  export type WorkspaceLayoutStateUncheckedCreateWithoutUserInput = {
+    id?: string
+    active_preset_id?: string | null
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: Date | string
+  }
+
+  export type WorkspaceLayoutStateCreateOrConnectWithoutUserInput = {
+    where: WorkspaceLayoutStateWhereUniqueInput
+    create: XOR<WorkspaceLayoutStateCreateWithoutUserInput, WorkspaceLayoutStateUncheckedCreateWithoutUserInput>
+  }
+
   export type PasswordResetTokenUpsertWithWhereUniqueWithoutUserInput = {
     where: PasswordResetTokenWhereUniqueInput
     update: XOR<PasswordResetTokenUpdateWithoutUserInput, PasswordResetTokenUncheckedUpdateWithoutUserInput>
@@ -34644,6 +40574,62 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"SkillFavorite"> | Date | string
   }
 
+  export type WorkspaceLayoutPresetUpsertWithWhereUniqueWithoutUserInput = {
+    where: WorkspaceLayoutPresetWhereUniqueInput
+    update: XOR<WorkspaceLayoutPresetUpdateWithoutUserInput, WorkspaceLayoutPresetUncheckedUpdateWithoutUserInput>
+    create: XOR<WorkspaceLayoutPresetCreateWithoutUserInput, WorkspaceLayoutPresetUncheckedCreateWithoutUserInput>
+  }
+
+  export type WorkspaceLayoutPresetUpdateWithWhereUniqueWithoutUserInput = {
+    where: WorkspaceLayoutPresetWhereUniqueInput
+    data: XOR<WorkspaceLayoutPresetUpdateWithoutUserInput, WorkspaceLayoutPresetUncheckedUpdateWithoutUserInput>
+  }
+
+  export type WorkspaceLayoutPresetUpdateManyWithWhereWithoutUserInput = {
+    where: WorkspaceLayoutPresetScalarWhereInput
+    data: XOR<WorkspaceLayoutPresetUpdateManyMutationInput, WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type WorkspaceLayoutPresetScalarWhereInput = {
+    AND?: WorkspaceLayoutPresetScalarWhereInput | WorkspaceLayoutPresetScalarWhereInput[]
+    OR?: WorkspaceLayoutPresetScalarWhereInput[]
+    NOT?: WorkspaceLayoutPresetScalarWhereInput | WorkspaceLayoutPresetScalarWhereInput[]
+    id?: StringFilter<"WorkspaceLayoutPreset"> | string
+    user_id?: StringFilter<"WorkspaceLayoutPreset"> | string
+    name?: StringFilter<"WorkspaceLayoutPreset"> | string
+    is_default?: BoolFilter<"WorkspaceLayoutPreset"> | boolean
+    layout_version?: IntFilter<"WorkspaceLayoutPreset"> | number
+    layout?: JsonFilter<"WorkspaceLayoutPreset">
+    floating?: JsonFilter<"WorkspaceLayoutPreset">
+    created_at?: DateTimeFilter<"WorkspaceLayoutPreset"> | Date | string
+    updated_at?: DateTimeFilter<"WorkspaceLayoutPreset"> | Date | string
+  }
+
+  export type WorkspaceLayoutStateUpsertWithoutUserInput = {
+    update: XOR<WorkspaceLayoutStateUpdateWithoutUserInput, WorkspaceLayoutStateUncheckedUpdateWithoutUserInput>
+    create: XOR<WorkspaceLayoutStateCreateWithoutUserInput, WorkspaceLayoutStateUncheckedCreateWithoutUserInput>
+    where?: WorkspaceLayoutStateWhereInput
+  }
+
+  export type WorkspaceLayoutStateUpdateToOneWithWhereWithoutUserInput = {
+    where?: WorkspaceLayoutStateWhereInput
+    data: XOR<WorkspaceLayoutStateUpdateWithoutUserInput, WorkspaceLayoutStateUncheckedUpdateWithoutUserInput>
+  }
+
+  export type WorkspaceLayoutStateUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    active_preset?: WorkspaceLayoutPresetUpdateOneWithoutStateNestedInput
+  }
+
+  export type WorkspaceLayoutStateUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    active_preset_id?: NullableStringFieldUpdateOperationsInput | string | null
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateWithoutPassword_reset_tokensInput = {
     id?: string
     email: string
@@ -34661,6 +40647,8 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPassword_reset_tokensInput = {
@@ -34680,6 +40668,8 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPassword_reset_tokensInput = {
@@ -34715,6 +40705,8 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPassword_reset_tokensInput = {
@@ -34734,6 +40726,8 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutGit_identitiesInput = {
@@ -34753,6 +40747,8 @@ export namespace Prisma {
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutGit_identitiesInput = {
@@ -34772,6 +40768,8 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutGit_identitiesInput = {
@@ -34807,6 +40805,8 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGit_identitiesInput = {
@@ -34826,6 +40826,8 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutPreferenceInput = {
@@ -34845,6 +40847,8 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPreferenceInput = {
@@ -34864,6 +40868,8 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPreferenceInput = {
@@ -34899,6 +40905,8 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPreferenceInput = {
@@ -34918,6 +40926,323 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutWorkspace_layoutsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
+    activities?: ActivityCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutWorkspace_layoutsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutWorkspace_layoutsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutWorkspace_layoutsInput, UserUncheckedCreateWithoutWorkspace_layoutsInput>
+  }
+
+  export type WorkspaceLayoutStateCreateWithoutActive_presetInput = {
+    id?: string
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutWorkspace_layout_stateInput
+  }
+
+  export type WorkspaceLayoutStateUncheckedCreateWithoutActive_presetInput = {
+    id?: string
+    user_id: string
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: Date | string
+  }
+
+  export type WorkspaceLayoutStateCreateOrConnectWithoutActive_presetInput = {
+    where: WorkspaceLayoutStateWhereUniqueInput
+    create: XOR<WorkspaceLayoutStateCreateWithoutActive_presetInput, WorkspaceLayoutStateUncheckedCreateWithoutActive_presetInput>
+  }
+
+  export type WorkspaceLayoutStateCreateManyActive_presetInputEnvelope = {
+    data: WorkspaceLayoutStateCreateManyActive_presetInput | WorkspaceLayoutStateCreateManyActive_presetInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutWorkspace_layoutsInput = {
+    update: XOR<UserUpdateWithoutWorkspace_layoutsInput, UserUncheckedUpdateWithoutWorkspace_layoutsInput>
+    create: XOR<UserCreateWithoutWorkspace_layoutsInput, UserUncheckedCreateWithoutWorkspace_layoutsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutWorkspace_layoutsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutWorkspace_layoutsInput, UserUncheckedUpdateWithoutWorkspace_layoutsInput>
+  }
+
+  export type UserUpdateWithoutWorkspace_layoutsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
+    activities?: ActivityUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutWorkspace_layoutsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type WorkspaceLayoutStateUpsertWithWhereUniqueWithoutActive_presetInput = {
+    where: WorkspaceLayoutStateWhereUniqueInput
+    update: XOR<WorkspaceLayoutStateUpdateWithoutActive_presetInput, WorkspaceLayoutStateUncheckedUpdateWithoutActive_presetInput>
+    create: XOR<WorkspaceLayoutStateCreateWithoutActive_presetInput, WorkspaceLayoutStateUncheckedCreateWithoutActive_presetInput>
+  }
+
+  export type WorkspaceLayoutStateUpdateWithWhereUniqueWithoutActive_presetInput = {
+    where: WorkspaceLayoutStateWhereUniqueInput
+    data: XOR<WorkspaceLayoutStateUpdateWithoutActive_presetInput, WorkspaceLayoutStateUncheckedUpdateWithoutActive_presetInput>
+  }
+
+  export type WorkspaceLayoutStateUpdateManyWithWhereWithoutActive_presetInput = {
+    where: WorkspaceLayoutStateScalarWhereInput
+    data: XOR<WorkspaceLayoutStateUpdateManyMutationInput, WorkspaceLayoutStateUncheckedUpdateManyWithoutActive_presetInput>
+  }
+
+  export type WorkspaceLayoutStateScalarWhereInput = {
+    AND?: WorkspaceLayoutStateScalarWhereInput | WorkspaceLayoutStateScalarWhereInput[]
+    OR?: WorkspaceLayoutStateScalarWhereInput[]
+    NOT?: WorkspaceLayoutStateScalarWhereInput | WorkspaceLayoutStateScalarWhereInput[]
+    id?: StringFilter<"WorkspaceLayoutState"> | string
+    user_id?: StringFilter<"WorkspaceLayoutState"> | string
+    active_preset_id?: StringNullableFilter<"WorkspaceLayoutState"> | string | null
+    preset_by_project?: JsonFilter<"WorkspaceLayoutState">
+    updated_at?: DateTimeFilter<"WorkspaceLayoutState"> | Date | string
+  }
+
+  export type UserCreateWithoutWorkspace_layout_stateInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
+    activities?: ActivityCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutWorkspace_layout_stateInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutWorkspace_layout_stateInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutWorkspace_layout_stateInput, UserUncheckedCreateWithoutWorkspace_layout_stateInput>
+  }
+
+  export type WorkspaceLayoutPresetCreateWithoutStateInput = {
+    id?: string
+    name: string
+    is_default?: boolean
+    layout_version?: number
+    layout: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutWorkspace_layoutsInput
+  }
+
+  export type WorkspaceLayoutPresetUncheckedCreateWithoutStateInput = {
+    id?: string
+    user_id: string
+    name: string
+    is_default?: boolean
+    layout_version?: number
+    layout: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type WorkspaceLayoutPresetCreateOrConnectWithoutStateInput = {
+    where: WorkspaceLayoutPresetWhereUniqueInput
+    create: XOR<WorkspaceLayoutPresetCreateWithoutStateInput, WorkspaceLayoutPresetUncheckedCreateWithoutStateInput>
+  }
+
+  export type UserUpsertWithoutWorkspace_layout_stateInput = {
+    update: XOR<UserUpdateWithoutWorkspace_layout_stateInput, UserUncheckedUpdateWithoutWorkspace_layout_stateInput>
+    create: XOR<UserCreateWithoutWorkspace_layout_stateInput, UserUncheckedCreateWithoutWorkspace_layout_stateInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutWorkspace_layout_stateInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutWorkspace_layout_stateInput, UserUncheckedUpdateWithoutWorkspace_layout_stateInput>
+  }
+
+  export type UserUpdateWithoutWorkspace_layout_stateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
+    activities?: ActivityUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutWorkspace_layout_stateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type WorkspaceLayoutPresetUpsertWithoutStateInput = {
+    update: XOR<WorkspaceLayoutPresetUpdateWithoutStateInput, WorkspaceLayoutPresetUncheckedUpdateWithoutStateInput>
+    create: XOR<WorkspaceLayoutPresetCreateWithoutStateInput, WorkspaceLayoutPresetUncheckedCreateWithoutStateInput>
+    where?: WorkspaceLayoutPresetWhereInput
+  }
+
+  export type WorkspaceLayoutPresetUpdateToOneWithWhereWithoutStateInput = {
+    where?: WorkspaceLayoutPresetWhereInput
+    data: XOR<WorkspaceLayoutPresetUpdateWithoutStateInput, WorkspaceLayoutPresetUncheckedUpdateWithoutStateInput>
+  }
+
+  export type WorkspaceLayoutPresetUpdateWithoutStateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    layout_version?: IntFieldUpdateOperationsInput | number
+    layout?: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutWorkspace_layoutsNestedInput
+  }
+
+  export type WorkspaceLayoutPresetUncheckedUpdateWithoutStateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    layout_version?: IntFieldUpdateOperationsInput | number
+    layout?: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OrganizationMemberCreateWithoutOrganizationInput = {
@@ -35925,6 +42250,8 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -35944,6 +42271,8 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -36059,6 +42388,8 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -36078,6 +42409,8 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type RoleUpsertWithoutMembersInput = {
@@ -37527,6 +43860,8 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutConnectionsInput = {
@@ -37546,6 +43881,8 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutConnectionsInput = {
@@ -37850,6 +44187,8 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConnectionsInput = {
@@ -37869,6 +44208,8 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type RepositoryUpsertWithWhereUniqueWithoutConnectionInput = {
@@ -38050,6 +44391,8 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAgent_sessionsInput = {
@@ -38069,6 +44412,8 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAgent_sessionsInput = {
@@ -38246,6 +44591,8 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAgent_sessionsInput = {
@@ -38265,6 +44612,8 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ActivityUpsertWithWhereUniqueWithoutAgent_sessionInput = {
@@ -38398,6 +44747,8 @@ export namespace Prisma {
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutActivitiesInput = {
@@ -38417,6 +44768,8 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutActivitiesInput = {
@@ -38615,6 +44968,8 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutActivitiesInput = {
@@ -38634,6 +44989,8 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type AgentSessionUpsertWithoutActivitiesInput = {
@@ -38800,6 +45157,8 @@ export namespace Prisma {
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSkill_favoritesInput = {
@@ -38819,6 +45178,8 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSkill_favoritesInput = {
@@ -38895,6 +45256,8 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSkill_favoritesInput = {
@@ -38914,6 +45277,8 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type OrganizationUpsertWithoutSkill_favoritesInput = {
@@ -39045,6 +45410,17 @@ export namespace Prisma {
     target_kind: $Enums.SkillFavoriteKind
     ref_id: string
     created_at?: Date | string
+  }
+
+  export type WorkspaceLayoutPresetCreateManyUserInput = {
+    id?: string
+    name: string
+    is_default?: boolean
+    layout_version?: number
+    layout: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
   }
 
   export type PasswordResetTokenUpdateWithoutUserInput = {
@@ -39307,6 +45683,69 @@ export namespace Prisma {
     target_kind?: EnumSkillFavoriteKindFieldUpdateOperationsInput | $Enums.SkillFavoriteKind
     ref_id?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceLayoutPresetUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    layout_version?: IntFieldUpdateOperationsInput | number
+    layout?: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    state?: WorkspaceLayoutStateUpdateManyWithoutActive_presetNestedInput
+  }
+
+  export type WorkspaceLayoutPresetUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    layout_version?: IntFieldUpdateOperationsInput | number
+    layout?: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    state?: WorkspaceLayoutStateUncheckedUpdateManyWithoutActive_presetNestedInput
+  }
+
+  export type WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    layout_version?: IntFieldUpdateOperationsInput | number
+    layout?: JsonNullValueInput | InputJsonValue
+    floating?: JsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceLayoutStateCreateManyActive_presetInput = {
+    id?: string
+    user_id: string
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: Date | string
+  }
+
+  export type WorkspaceLayoutStateUpdateWithoutActive_presetInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutWorkspace_layout_stateNestedInput
+  }
+
+  export type WorkspaceLayoutStateUncheckedUpdateWithoutActive_presetInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkspaceLayoutStateUncheckedUpdateManyWithoutActive_presetInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    preset_by_project?: JsonNullValueInput | InputJsonValue
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OrganizationMemberCreateManyOrganizationInput = {

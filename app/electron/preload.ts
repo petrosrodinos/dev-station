@@ -30,6 +30,12 @@ const bridge: DevStationBridge = {
     toggleFullScreen: () => call(C.APP_TOGGLE_FULLSCREEN),
     onFullScreenChange: (cb) => on(C.APP_FULLSCREEN_CHANGE, cb),
   },
+  appUpdates: {
+    check: () => call(C.APP_UPDATE_CHECK),
+    download: () => call(C.APP_UPDATE_DOWNLOAD),
+    install: () => call(C.APP_UPDATE_INSTALL),
+    onStatus: (cb) => on(C.APP_UPDATE_STATUS, cb),
+  },
   secure: {
     get: (key) => call(C.SECURE_GET, key),
     set: (key, value) => call(C.SECURE_SET, key, value),
@@ -130,6 +136,11 @@ const bridge: DevStationBridge = {
     destroy: (input) => call(C.PREVIEW_DESTROY, input),
     toggleDevTools: (input) => call(C.PREVIEW_TOGGLE_DEVTOOLS, input),
     onState: (cb) => on(C.PREVIEW_STATE, cb),
+  },
+  layout: {
+    openFloatingPanel: (input) => call(C.LAYOUT_OPEN_FLOATING, input),
+    closeFloatingPanel: (panelId) => call(C.LAYOUT_CLOSE_FLOATING, panelId),
+    onFloatingPanelClosed: (cb) => on(C.LAYOUT_FLOATING_CLOSED, cb),
   },
   notifications: {
     show: (input) => call(C.NOTIF_SHOW, input),

@@ -186,6 +186,26 @@ exports.Prisma.UserPreferenceScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.WorkspaceLayoutPresetScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  name: 'name',
+  is_default: 'is_default',
+  layout_version: 'layout_version',
+  layout: 'layout',
+  floating: 'floating',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.WorkspaceLayoutStateScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  active_preset_id: 'active_preset_id',
+  preset_by_project: 'preset_by_project',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.OrganizationScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -375,6 +395,28 @@ exports.Prisma.SkillFavoriteScalarFieldEnum = {
   created_at: 'created_at'
 };
 
+exports.Prisma.AppReleaseScalarFieldEnum = {
+  id: 'id',
+  platform: 'platform',
+  version: 'version',
+  download_url: 'download_url',
+  min_version: 'min_version',
+  release_notes: 'release_notes',
+  download_count: 'download_count',
+  published_at: 'published_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.AppInstallScalarFieldEnum = {
+  id: 'id',
+  device_id: 'device_id',
+  platform: 'platform',
+  arch: 'arch',
+  app_version: 'app_version',
+  first_seen_at: 'first_seen_at',
+  last_seen_at: 'last_seen_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -382,6 +424,10 @@ exports.Prisma.SortOrder = {
 
 exports.Prisma.NullableJsonNullValueInput = {
   DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
@@ -550,6 +596,8 @@ exports.Prisma.ModelName = {
   Document: 'Document',
   GitIdentity: 'GitIdentity',
   UserPreference: 'UserPreference',
+  WorkspaceLayoutPreset: 'WorkspaceLayoutPreset',
+  WorkspaceLayoutState: 'WorkspaceLayoutState',
   Organization: 'Organization',
   Role: 'Role',
   RolePermission: 'RolePermission',
@@ -563,7 +611,9 @@ exports.Prisma.ModelName = {
   AgentSession: 'AgentSession',
   Activity: 'Activity',
   Skill: 'Skill',
-  SkillFavorite: 'SkillFavorite'
+  SkillFavorite: 'SkillFavorite',
+  AppRelease: 'AppRelease',
+  AppInstall: 'AppInstall'
 };
 
 /**
