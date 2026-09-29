@@ -1,0 +1,63 @@
+name: Release (Windows)
+
+# Builds and publishes the Windows installer to GitHub Releases, then syncs the
+# API's "latest release" record so the in-app minVersion check and the
+# /app-releases/download link pick it up.
+#
+# Trigger: push a tag matching vX.Y.Z that matches app/package.json's "version".
+# Windows only for now (Spec: docs/superpowers/specs/2026-09-29-app-distribution-and-updates-design.md).
+# Unsigned build — Windows SmartScreen will warn until code signing is added.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-publish:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build renderer + main
+        run: npm run build
+
+      - name: Publish to GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win --publish always
+
+      - name: Resolve release version/asset
+        id: release
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "download_url=https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/Dev-Station-Setup-${version}.exe" >> "$GITHUB_OUTPUT"
+
+      - name: Sync latest release record on the API
+        if: ${{ vars.RELEASE_API_URL != '' }}
+        shell: bash
+        continue-on-error: true # the GitHub Release is already published; don't fail the build over this
+        run: |
+          curl -fsS -X PATCH "${{ vars.RELEASE_API_URL }}/app-releases/win" \
+            -H "Content-Type: application/json" \
+            -H "x-release-token: ${{ secrets.RELEASE_PUBLISH_TOKEN }}" \
+            -d "{\"version\": \"${{ steps.release.outputs.version }}\", \"download_url\": \"${{ steps.release.outputs.download_url }}\"}"

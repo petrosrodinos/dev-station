@@ -25,6 +25,10 @@ import { toast } from "@/hooks/use-toast";
 import { environments } from "@/config/environments";
 import { Routes } from "@/routes/routes";
 import { ProcessStatuses } from "@shared/contract";
+import { useAppInfo, useLatestRelease } from "@/features/app-releases/hooks/use-app-releases";
+import { toReleasePlatform } from "@/features/app-releases/utils/app-releases.utils";
+import { isVersionBelow } from "@/lib/semver";
+import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 
 const Scopes = { PROJECT: "project", ALL: "all" } as const;
 type Scope = (typeof Scopes)[keyof typeof Scopes];
@@ -47,6 +51,9 @@ export function StatusBar() {
   const [scope, setScope] = useState<Scope>(Scopes.PROJECT);
   const projectScoped = scope === Scopes.PROJECT && !!activeProjectId;
   const { data: preferences } = useGetPreferences();
+  const { data: appInfo } = useAppInfo();
+  const { data: latestRelease } = useLatestRelease(appInfo ? toReleasePlatform(appInfo.platform) : null);
+  const updateAvailable = !!appInfo && !!latestRelease && isVersionBelow(appInfo.version, latestRelease.version);
   // Over-fetch so hiding muted event types still leaves a full list.
   const { data: latest } = useGetActivities({ limit: 20, project_id: activeProjectId ?? undefined }, !!activeProjectId);
   const { data: feed, isPending } = useGetActivities({ limit: 100, project_id: projectScoped ? activeProjectId! : undefined }, open);
@@ -199,9 +206,18 @@ export function StatusBar() {
         </TooltipTrigger>
         <TooltipContent>Copy path — share with an AI agent to point it at this page</TooltipContent>
       </Tooltip>
-      <div className="whitespace-nowrap text-ash max-md:hidden">
-        {environments.APP_NAME} · v{environments.APP_VERSION}
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => updateAvailable && navigate(Routes.workspace.settings_section(SettingsSections.GENERAL))}
+            className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-ash max-md:hidden hover:text-foreground"
+          >
+            {updateAvailable && <span className="size-1.5 rounded-full bg-info" />}
+            {environments.APP_NAME} · v{appInfo?.version ?? environments.APP_VERSION}
+          </button>
+        </TooltipTrigger>
+        {updateAvailable && <TooltipContent>Update available — v{latestRelease?.version}</TooltipContent>}
+      </Tooltip>
     </footer>
   );
 }

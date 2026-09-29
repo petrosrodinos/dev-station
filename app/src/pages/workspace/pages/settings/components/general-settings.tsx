@@ -10,6 +10,7 @@ import { isDesktop } from "@/lib/desktop";
 import { DirectoryField } from "@/pages/workspace/components/project-form/directory-field";
 import { deviceSettingsSchema, type DeviceSettingsFormData } from "../validation-schemas/settings.schema";
 import { SettingsRow, SettingsSectionHeader } from "./settings-row";
+import { AboutSection } from "./about-section";
 
 export function GeneralSettings() {
   const { data: config, isPending } = useWorkspaceConfig();
@@ -104,6 +105,7 @@ export function GeneralSettings() {
           </Form>
         )}
       </section>
+      <AboutSection />
     </div>
   );
 }

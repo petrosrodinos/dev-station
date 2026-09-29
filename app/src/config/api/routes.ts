@@ -14,6 +14,11 @@ export const ApiRoutes = {
         password: "/users/me/password",
         preferences: "/users/me/preferences",
     },
+    workspaceLayouts: {
+        prefix: "/users/me/layouts",
+        by_id: (id: string) => `/users/me/layouts/${id}`,
+        state: "/users/me/layout-state",
+    },
     gitIdentities: {
         prefix: "/git-identities",
         byId: (id: string) => `/git-identities/${id}`,
@@ -67,5 +72,9 @@ export const ApiRoutes = {
         by_id: (id: string) => `/skills/${id}`,
         favorites: "/skills/favorites",
         favorite: (id: string) => `/skills/favorites/${id}`,
+    },
+    appReleases: {
+        ping: "/app-releases/ping",
+        latest: "/app-releases/latest",
     },
 };

@@ -39,6 +39,7 @@ const EnvSchema = z.object({
   COMPOSIO_CALLBACK_URL: z.string().url().optional(),
   BULL_BOARD_USER: z.string().optional(),
   BULL_BOARD_PASSWORD: z.string().optional(),
+  RELEASE_PUBLISH_TOKEN: z.string().optional(),
 });
 
 export function validateEnv(config: Record<string, unknown>) {
