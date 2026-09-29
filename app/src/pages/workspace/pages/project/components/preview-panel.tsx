@@ -35,10 +35,10 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false 
   const processes = useProjectProcesses(projectId);
   const state = usePreviewState(projectId);
   const actions = usePreviewActions(projectId);
-  const overlayOpen = useOverlayOpen();
   const start = useStartService((command) => toast({ title: "Approval needed", description: `Start this service from the Overview tab to approve: ${command}`, duration: 6000 }));
 
   const bodyRef = useRef<HTMLDivElement>(null);
+  const overlayOpen = useOverlayOpen(bodyRef);
   const lastBounds = useRef<PreviewBounds | null>(null);
   const [dragWidth, setDragWidth] = useState<number | null>(null);
   const dragging = dragWidth !== null;
