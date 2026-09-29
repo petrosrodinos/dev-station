@@ -1,18 +1,18 @@
 import { NotificationEventTypes, type NotificationChannel, type NotificationSettings } from "../interfaces/users.interfaces";
 
-const flags = (badge: boolean, feed: boolean, os: boolean, toast: boolean) => ({ badge, feed, os, toast });
+const flags = (badge: boolean, feed: boolean, os: boolean, toast: boolean, sound: boolean) => ({ badge, feed, os, toast, sound });
 
 /** Mirrors the API defaults so decisions are correct before preferences have loaded. */
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
     enabled: true,
     events: {
-        AGENT_FINISHED: flags(true, true, false, true),
-        AGENT_AWAITING_INPUT: flags(true, true, true, true),
-        AGENT_CRASHED: flags(true, true, true, true),
-        SERVICE_CRASHED: flags(false, true, true, true),
-        GIT_COMMIT: flags(false, true, false, true),
-        GIT_PUSH: flags(false, true, false, true),
-        GIT_PULL: flags(false, true, false, true),
+        AGENT_FINISHED: flags(true, true, false, true, true),
+        AGENT_AWAITING_INPUT: flags(true, true, true, true, true),
+        AGENT_CRASHED: flags(true, true, true, true, true),
+        SERVICE_CRASHED: flags(false, true, true, true, false),
+        GIT_COMMIT: flags(false, true, false, true, false),
+        GIT_PUSH: flags(false, true, false, true, false),
+        GIT_PULL: flags(false, true, false, true, false),
     },
 };
 
