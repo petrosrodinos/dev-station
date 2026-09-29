@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ExternalLink, FileDiff, PictureInPicture2, RotateCw, Square, Terminal, Trash2 } from "lucide-react";
+import { ExternalLink, FileDiff, MoreHorizontal, PictureInPicture2, RotateCw, Square, Terminal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatusDot } from "@/components/ui/status-dot";
 import { ProjectFlag } from "@/components/ui/project-avatar";
@@ -73,6 +74,9 @@ export function SessionTerminalPanel({
   const changes = runtime?.changes ?? (session ? { files_changed: session.files_changed, additions: session.additions, deletions: session.deletions } : null);
   const panelId = `session:${sessionId}`;
   const name = session?.name ?? runtime?.name ?? "Session";
+  const hasAgentActions = !!runtime && can(PermissionKeys.AI_USE_AGENTS);
+  const canFloat = isDesktop();
+  const canDelete = !!session && can(PermissionKeys.AI_USE_AGENTS);
 
   // Dockview defaults the tab title to the panel id (`session:<uuid>`), so push the real name.
   useEffect(() => {
@@ -110,32 +114,44 @@ export function SessionTerminalPanel({
             <FileDiff className="size-3.5" />
           </PanelIconButton>
         )}
-        {runtime && can(PermissionKeys.AI_USE_AGENTS) && (
-          <>
-            <PanelIconButton label="Restart" onClick={() => restart.mutate(runtime.id)} disabled={restart.isPending}>
-              <RotateCw className="size-3.5" />
-            </PanelIconButton>
-            <PanelIconButton label="Stop" onClick={() => stop.mutate(runtime.id)} disabled={!runtime.alive || stop.isPending}>
-              <Square className="size-3.5" />
-            </PanelIconButton>
-            <PanelIconButton label="Open in external terminal" onClick={() => openExternal.mutate(runtime.id)}>
-              <ExternalLink className="size-3.5" />
-            </PanelIconButton>
-          </>
+        {(hasAgentActions || canFloat || canDelete) && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="size-7 shrink-0 text-muted-foreground" aria-label="Session options">
+                <MoreHorizontal className="size-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {hasAgentActions && runtime && (
+                <>
+                  <DropdownMenuItem onSelect={() => restart.mutate(runtime.id)} disabled={restart.isPending}>
+                    <RotateCw className="size-3.5" /> Restart
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => stop.mutate(runtime.id)} disabled={!runtime.alive || stop.isPending}>
+                    <Square className="size-3.5" /> Stop
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => openExternal.mutate(runtime.id)}>
+                    <ExternalLink className="size-3.5" /> Open in external terminal
+                  </DropdownMenuItem>
+                </>
+              )}
+              {canFloat && (
+                <DropdownMenuItem onSelect={floatPanel}>
+                  <PictureInPicture2 className="size-3.5" /> Float in its own window
+                </DropdownMenuItem>
+              )}
+              {canDelete && (
+                <>
+                  {(hasAgentActions || canFloat) && <DropdownMenuSeparator />}
+                  <DropdownMenuItem className="text-danger focus:text-danger" onSelect={() => setConfirmDelete(true)}>
+                    <Trash2 className="size-3.5" /> Delete session
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
-        {isDesktop() && (
-          <PanelIconButton label="Float in its own window" onClick={floatPanel}>
-            <PictureInPicture2 className="size-3.5" />
-          </PanelIconButton>
-        )}
-        {session && can(PermissionKeys.AI_USE_AGENTS) && (
-          <>
-            <PanelIconButton label="Delete session" onClick={() => setConfirmDelete(true)}>
-              <Trash2 className="size-3.5" />
-            </PanelIconButton>
-            <DeleteSessionDialog session={session} open={confirmDelete} onOpenChange={setConfirmDelete} />
-          </>
-        )}
+        {session && canDelete && <DeleteSessionDialog session={session} open={confirmDelete} onOpenChange={setConfirmDelete} />}
       </div>
       <div className="min-h-0 flex-1 bg-terminal">
         {source && ranOnThisDevice ? (
