@@ -15,6 +15,14 @@ export const Routes = {
     },
     /** Bare window a floated dock panel opens into (docking system §C) — no shell chrome. */
     floating: "/floating",
+    /** Hidden admin console — never linked from nav; reachable only by direct URL. */
+    admin: {
+        login: "/ops-console-7f2a",
+        root: "/ops-console-7f2a/dashboard",
+        overview: "/ops-console-7f2a/dashboard/overview",
+        users: "/ops-console-7f2a/dashboard/users",
+        releases: "/ops-console-7f2a/dashboard/releases",
+    },
     workspace: {
         root: "/workspace",
         project: (id: string) => `/workspace/projects/${id}`,
@@ -37,6 +45,11 @@ export const RoutePatterns = {
     sign_up: "sign-up",
     invite: "/invite",
     floating: "/floating",
+    admin_login: "/ops-console-7f2a",
+    admin_dashboard: "/ops-console-7f2a/dashboard",
+    admin_overview: "overview",
+    admin_users: "users",
+    admin_releases: "releases",
     workspace: "/workspace",
     project: "projects/:projectId",
     project_tab: ":tab",
