@@ -37,4 +37,12 @@ export const navigatePreview = async (projectId: string, action: PreviewNavigate
     }
 };
 
+export const toggleDevToolsPreview = async (projectId: string): Promise<boolean> => {
+    try {
+        return await getBridge().preview.toggleDevTools({ projectId });
+    } catch (error) {
+        throw new Error(getErrorMessage(error, "Failed to open DevTools."));
+    }
+};
+
 export const subscribePreviewState = (cb: (state: PreviewState) => void): (() => void) => getBridge().preview.onState(cb);

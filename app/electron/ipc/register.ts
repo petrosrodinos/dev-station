@@ -92,6 +92,13 @@ export function registerIpc() {
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw new IpcError("Only http(s) links can be opened.");
     await shell.openExternal(parsed.toString());
   });
+  handle(IpcChannels.APP_TOGGLE_FULLSCREEN, none, () => {
+    const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+    if (!win) return false;
+    const next = !win.isFullScreen();
+    win.setFullScreen(next);
+    return next;
+  });
 
   // Secure storage -------------------------------------------------------------
   const zSecureKey = z.enum(SECURE_KEYS);
@@ -234,4 +241,5 @@ export function registerIpc() {
   handle(IpcChannels.PREVIEW_NAVIGATE, args(z.object({ projectId: zId, action: z.enum(["back", "forward", "reload"]) })), ([i]) => previewManager.navigate(i.projectId, i.action));
   handle(IpcChannels.PREVIEW_LOAD, args(z.object({ projectId: zId, url: zPreviewUrl })), ([i]) => previewManager.load(i.projectId, i.url));
   handle(IpcChannels.PREVIEW_DESTROY, args(z.object({ projectId: zId })), ([i]) => previewManager.destroy(i.projectId));
+  handle(IpcChannels.PREVIEW_TOGGLE_DEVTOOLS, args(z.object({ projectId: zId })), ([i]) => previewManager.toggleDevTools(i.projectId));
 }

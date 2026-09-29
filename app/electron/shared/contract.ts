@@ -436,6 +436,9 @@ export interface DevStationBridge {
   app: {
     info(): Promise<AppInfo>;
     openUrl(url: string): Promise<void>;
+    /** Toggles the window's native full-screen state; returns the new state. */
+    toggleFullScreen(): Promise<boolean>;
+    onFullScreenChange(cb: (isFullScreen: boolean) => void): Unsubscribe;
   };
   secure: {
     get(key: string): Promise<string | null>;
@@ -538,6 +541,8 @@ export interface DevStationBridge {
     navigate(input: { projectId: string; action: "back" | "forward" | "reload" }): Promise<void>;
     load(input: { projectId: string; url: string }): Promise<void>;
     destroy(input: { projectId: string }): Promise<void>;
+    /** Opens/closes a detached DevTools window for the previewed view; returns the new open state. */
+    toggleDevTools(input: { projectId: string }): Promise<boolean>;
     onState(cb: (e: PreviewState) => void): Unsubscribe;
   };
   notifications: {
@@ -551,6 +556,8 @@ export const IpcChannels = {
   ACCESS_SYNC: "access:sync",
   APP_INFO: "app:info",
   APP_OPEN_URL: "app:open-url",
+  APP_TOGGLE_FULLSCREEN: "app:toggle-fullscreen",
+  APP_FULLSCREEN_CHANGE: "app:fullscreen-change",
   SECURE_GET: "secure:get",
   SECURE_SET: "secure:set",
   SECURE_REMOVE: "secure:remove",
@@ -629,6 +636,7 @@ export const IpcChannels = {
   PREVIEW_NAVIGATE: "preview:navigate",
   PREVIEW_LOAD: "preview:load",
   PREVIEW_DESTROY: "preview:destroy",
+  PREVIEW_TOGGLE_DEVTOOLS: "preview:toggle-devtools",
   PREVIEW_STATE: "preview:state",
   NOTIF_SHOW: "notification:show",
   NOTIF_CLICK: "notification:click",

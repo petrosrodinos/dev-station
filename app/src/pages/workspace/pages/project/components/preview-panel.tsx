@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FC, type PointerEvent as ReactPointerEvent } from "react";
-import { ArrowLeft, ArrowRight, ExternalLink, Globe, Maximize2, Minimize2, Play, RotateCw, TriangleAlert, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Code2, ExternalLink, Globe, Maximize2, Minimize2, Play, RotateCw, TriangleAlert, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -177,6 +177,9 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false 
         </div>
         <HeaderButton label="Open in browser" disabled={!displayUrl} onClick={() => void openUrl(displayUrl)}>
           <ExternalLink className="size-3.5" />
+        </HeaderButton>
+        <HeaderButton label="Open DevTools (Network, Console, ...)" disabled={!url} onClick={() => void actions.toggleDevTools()}>
+          <Code2 className="size-3.5" />
         </HeaderButton>
         <HeaderButton
           label={expanded ? `Restore project view${layoutHint}` : `Review layout — preview beside the session${layoutHint}`}
