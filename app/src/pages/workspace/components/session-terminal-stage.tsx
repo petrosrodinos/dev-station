@@ -59,7 +59,14 @@ export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups
 
   const onReady = useCallback((event: DockviewReadyEvent) => {
     apiRef.current = event.api;
-    defaultGroupRef.current = event.api.addGroup({ hideHeader: true } as AddGroupOptions);
+    try {
+      // `direction` is required here — dockview throws "invalid direction 'undefined'"
+      // without it, which silently prevented `hideHeader` from ever taking effect (the group
+      // was never created, so every panel fell back into a normal, header-visible one).
+      defaultGroupRef.current = event.api.addGroup({ hideHeader: true, direction: "within" } as AddGroupOptions);
+    } catch (error) {
+      console.error("Failed to create the hidden-header session group", error);
+    }
     event.api.onDidActivePanelChange(({ panel }) => {
       if (panel?.id.startsWith("session:")) setActiveSession(panel.id.slice("session:".length));
     });
