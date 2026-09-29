@@ -4,9 +4,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   DockviewReact,
-  type AddGroupOptions,
   type DockviewApi,
-  type DockviewGroupPanel,
   type DockviewReadyEvent,
   type IDockviewPanelProps,
   type IDockviewReactProps,
@@ -29,14 +27,16 @@ const sessionPanelId = (sessionId: string) => `session:${sessionId}`;
  * panels mounted rather than unmounting them, which is exactly what's needed here. Deliberately a
  * nested dock instance (scoped to the AI panel's terminal area) rather than flattened into the
  * workspace-level dock root, so the existing session navigator/header chrome above it is untouched.
+ *
+ * dockview's own tab strip is hidden via the `.session-terminal-dock` CSS rule (see index.css) —
+ * `SessionNavigator` above already provides the same select/close controls with a nicer UI, so a
+ * second generic tab strip here would just be a duplicate. Hidden with plain CSS rather than
+ * dockview's `hideHeader` group option: that option requires going through its `addGroup`/group
+ * API correctly (undocumented internal branching that threw `invalid direction 'undefined'` for
+ * us twice), whereas CSS can't get that wrong.
  */
 export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups; onNext: () => void }) {
   const apiRef = useRef<DockviewApi | null>(null);
-  // The default group's header is hidden — `SessionNavigator` above already shows a nicer,
-  // project-grouped tab strip with the same open/close/select controls, so dockview's own generic
-  // tab strip would just be a duplicate underneath it. A group created by dragging a tab into a
-  // split still gets a normal header, since at that point it genuinely needs one.
-  const defaultGroupRef = useRef<DockviewGroupPanel | null>(null);
   const openTabs = useWorkspaceStore((s) => s.open_session_tabs);
   const activeId = useWorkspaceStore((s) => s.active_session_id);
   const setActiveSession = useWorkspaceStore((s) => s.setActiveSession);
@@ -59,14 +59,6 @@ export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups
 
   const onReady = useCallback((event: DockviewReadyEvent) => {
     apiRef.current = event.api;
-    try {
-      // `direction` is required here — dockview throws "invalid direction 'undefined'"
-      // without it, which silently prevented `hideHeader` from ever taking effect (the group
-      // was never created, so every panel fell back into a normal, header-visible one).
-      defaultGroupRef.current = event.api.addGroup({ hideHeader: true, direction: "within" } as AddGroupOptions);
-    } catch (error) {
-      console.error("Failed to create the hidden-header session group", error);
-    }
     event.api.onDidActivePanelChange(({ panel }) => {
       if (panel?.id.startsWith("session:")) setActiveSession(panel.id.slice("session:".length));
     });
@@ -78,10 +70,9 @@ export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups
   // user can still drag a tab out to see two terminals live at once), remove closed ones.
   useEffect(() => {
     // Closing the last tab swaps the dock for the empty state, which disposes it — drop the stale
-    // handles so nothing below calls into a disposed dockview ("resource already disposed").
+    // handle so nothing below calls into a disposed dockview ("resource already disposed").
     if (!openTabs.length) {
       apiRef.current = null;
-      defaultGroupRef.current = null;
       return;
     }
     const api = apiRef.current;
@@ -103,11 +94,7 @@ export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups
         id,
         component: SESSION_PANEL_COMPONENT,
         params: { sessionId },
-        position: anchor
-          ? { referencePanel: anchor.id, direction: "within" }
-          : defaultGroupRef.current
-            ? { referenceGroup: defaultGroupRef.current, direction: "within" }
-            : undefined,
+        position: anchor ? { referencePanel: anchor.id, direction: "within" } : undefined,
       });
     }
   }, [openTabs, floatingIds]);
@@ -137,5 +124,5 @@ export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups
     );
   }
 
-  return <DockviewReact className="dockview-theme-abyss min-h-0 flex-1" components={components} onReady={onReady} />;
+  return <DockviewReact className="dockview-theme-abyss session-terminal-dock min-h-0 flex-1" components={components} onReady={onReady} />;
 }
