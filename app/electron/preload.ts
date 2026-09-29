@@ -119,6 +119,7 @@ const bridge: DevStationBridge = {
     list: (projectId) => call(C.SKILLS_LIST, projectId),
     read: (skillId) => call(C.SKILLS_READ, skillId),
     send: (input) => call(C.SKILLS_SEND, input),
+    sendCustom: (input) => call(C.SKILLS_SEND_CUSTOM, input),
   },
   preview: {
     show: (input) => call(C.PREVIEW_SHOW, input),

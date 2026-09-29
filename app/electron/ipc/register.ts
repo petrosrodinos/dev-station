@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, shell } from "electron";
 import os from "node:os";
 import path from "node:path";
 import { z } from "zod";
-import { AgentTypes, EditorTargets, IpcChannels, ProcessStatuses, SkillSendModes } from "../shared/contract";
+import { AgentTypes, EditorTargets, IpcChannels, ProcessStatuses, SkillKinds, SkillSendModes } from "../shared/contract";
 import { accessManager } from "../managers/access-manager";
 import { agentManager } from "../managers/agent-manager";
 import { inspect } from "../managers/detection-manager";
@@ -229,6 +229,20 @@ export function registerIpc() {
     IpcChannels.SKILLS_SEND,
     args(z.object({ session_id: zId, skill_id: z.string().min(1).max(100), mode: z.enum([SkillSendModes.CONTENT, SkillSendModes.REFERENCE]), submit: z.boolean().optional() })),
     ([input]) => skillManager.send(input),
+    { requires: ["AI_USE_AGENTS"] },
+  );
+  handle(
+    IpcChannels.SKILLS_SEND_CUSTOM,
+    args(
+      z.object({
+        session_id: zId,
+        name: z.string().min(1).max(120),
+        kind: z.enum([SkillKinds.SKILL, SkillKinds.COMMAND, SkillKinds.RULE, SkillKinds.CONTEXT, SkillKinds.DOC]),
+        body: z.string().min(1).max(90_000),
+        submit: z.boolean().optional(),
+      }),
+    ),
+    ([input]) => skillManager.sendCustom(input),
     { requires: ["AI_USE_AGENTS"] },
   );
 

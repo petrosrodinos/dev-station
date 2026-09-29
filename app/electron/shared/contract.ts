@@ -149,6 +149,15 @@ export interface SendSkillInput {
   submit?: boolean;
 }
 
+/** Sends a DB-backed custom skill (no file on disk, so only "content" mode applies). */
+export interface SendCustomSkillInput {
+  session_id: string;
+  name: string;
+  kind: SkillKind;
+  body: string;
+  submit?: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // Detection
 // ---------------------------------------------------------------------------
@@ -533,6 +542,8 @@ export interface DevStationBridge {
     list(projectId: string | null): Promise<SkillListResult>;
     read(skillId: string): Promise<SkillDetail>;
     send(input: SendSkillInput): Promise<void>;
+    /** Same as `send`, but for a DB-backed custom skill that has no file to read. */
+    sendCustom(input: SendCustomSkillInput): Promise<void>;
   };
   preview: {
     show(input: { projectId: string; url: string; bounds: PreviewBounds }): Promise<void>;
@@ -630,6 +641,7 @@ export const IpcChannels = {
   SKILLS_LIST: "skills:list",
   SKILLS_READ: "skills:read",
   SKILLS_SEND: "skills:send",
+  SKILLS_SEND_CUSTOM: "skills:send-custom",
   PREVIEW_SHOW: "preview:show",
   PREVIEW_HIDE: "preview:hide",
   PREVIEW_SET_BOUNDS: "preview:set-bounds",
