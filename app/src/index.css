@@ -300,3 +300,44 @@
 .session-terminal-dock .dv-tabs-and-actions-container {
   display: none;
 }
+
+/* Dockview's built-in "abyss" theme ships its own hard-coded near-black/purple palette
+   (independent of our light/dark theme), which reads as a mismatched floating box rather than
+   blending with the rest of the app's flat header/tab-strip chrome. Re-point its theme variables
+   at our own design tokens so every dock (project sections, main workspace dock, project
+   terminal) looks like native app chrome instead of a third-party widget. Structure/behavior is
+   untouched — this only recolors it.
+   `:root` is added purely to out-specificity dockview's own `.dockview-theme-abyss` rule (equal
+   specificity otherwise, so whichever stylesheet happens to load/register later would win — that
+   silently broke this in light mode: dockview's own hard-coded dark values kept winning, which
+   only ever looked "fixed" in dark mode because the two happened to be similar shades there). */
+:root .dockview-theme-abyss {
+  color-scheme: normal;
+  --dv-tabs-and-actions-container-height: 2.5rem;
+  --dv-group-view-background-color: var(--background);
+  --dv-tabs-and-actions-container-background-color: var(--background);
+  --dv-activegroup-visiblepanel-tab-background-color: var(--background);
+  --dv-activegroup-hiddenpanel-tab-background-color: var(--background);
+  --dv-inactivegroup-visiblepanel-tab-background-color: var(--background);
+  --dv-inactivegroup-hiddenpanel-tab-background-color: var(--background);
+  --dv-activegroup-visiblepanel-tab-color: var(--foreground);
+  --dv-activegroup-hiddenpanel-tab-color: var(--muted-foreground);
+  --dv-inactivegroup-visiblepanel-tab-color: var(--muted-foreground);
+  --dv-inactivegroup-hiddenpanel-tab-color: var(--muted-foreground);
+  --dv-tab-divider-color: var(--border);
+  --dv-separator-border: var(--border);
+  --dv-paneview-header-border-color: var(--border);
+  --dv-icon-hover-background-color: var(--surface-card);
+  --dv-drag-over-background-color: var(--accent);
+}
+/* The header bar carries the underline itself (border-bottom under the whole strip), matching the
+   old static nav's `border-b` — individual tabs no longer need dockview's per-tab divider lines. */
+:root .dockview-theme-abyss .dv-tabs-and-actions-container {
+  border-bottom: 1px solid var(--border);
+}
+/* The project tab strip replaced the old static nav (which lived inside the header's `px-4`
+   wrapper); it now renders flush at the dock's own edge, so re-add that same inset here to keep
+   "Overview" lined up under the project name above it, matching the old layout. */
+.project-tab-dock .dv-tabs-container {
+  padding-left: 1rem;
+}

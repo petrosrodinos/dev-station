@@ -155,7 +155,9 @@ const ProjectLayout: FC = () => {
       </div>
       <div ref={bodyRef} className="flex min-h-0 flex-1">
         {!drawerMode && (
-          <div className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">
+          // The setup wizard (`Outlet`) still scrolls at this level; the dock scrolls per-panel
+          // instead (see `ProjectTabDock`'s `TabPanel`), so this level must not also clip or scroll it.
+          <div className={cn("@container min-h-0 min-w-0 flex-1", onSetup ? "overflow-y-auto" : "overflow-hidden")}>
             {onSetup ? <Outlet context={{ project }} /> : <ProjectTabDock key={project.id} projectId={project.id} routeTab={currentTab} />}
           </div>
         )}
@@ -179,7 +181,7 @@ const ProjectLayout: FC = () => {
               </Button>
             )}
           </div>
-          <div className="@container min-h-0 flex-1 overflow-y-auto">
+          <div className="@container min-h-0 flex-1 overflow-hidden">
             <ProjectTabDock key={project.id} projectId={project.id} routeTab={currentTab} />
           </div>
         </SheetContent>

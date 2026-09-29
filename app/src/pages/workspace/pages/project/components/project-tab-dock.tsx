@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type FC } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FC } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Plus, X } from "lucide-react";
 import {
@@ -113,7 +113,7 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
           {closedTabs.map((tab) => {
             const Icon = TAB_ICONS[tab as ProjectTab];
             return (
-              <DropdownMenuItem key={tab} onSelect={() => openProjectTab(projectId, tab)} className="gap-2">
+              <DropdownMenuItem key={tab} onSelect={() => navigate(Routes.workspace.project_tab(projectId, tab as ProjectTab))} className="gap-2">
                 <Icon className="size-3.5" />
                 {TAB_LABEL.get(tab as ProjectTab) ?? tab}
               </DropdownMenuItem>
@@ -125,20 +125,34 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [closedTabs.join("|"), projectId]);
 
+  // Each split pane gets a fixed pixel height from dockview's layout engine, not a page-flowing one,
+  // so a page taller than its pane (e.g. Overview, Files) would just clip with no way to reach the
+  // rest — every panel needs its own scroll container rather than relying on one shared ancestor.
   const TabPanel = useCallback<FC<IDockviewPanelProps<{ tab: ProjectTab }>>>(({ params }) => {
     const Page = TAB_PAGES[params.tab];
     if (!Page) return null;
     const permission = tabPermission(params.tab);
-    if (!permission) return <Page />;
-    return (
+    const content = permission ? (
       <RequirePermission permission={permission} redirectTo={Routes.workspace.project(projectId)}>
         <Page />
       </RequirePermission>
+    ) : (
+      <Page />
     );
-
+    return (
+      <div className="@container h-full min-h-0 overflow-y-auto">
+        {content}
+      </div>
+    );
   }, [projectId]);
 
-  const components: IDockviewReactProps["components"] = { [TAB_PANEL_COMPONENT]: TabPanel };
+  // dockview-react calls `updateOptions()` (a *forced full relayout*, unconditionally, regardless of
+  // which option actually changed) whenever this prop gets a new identity — a fresh object literal
+  // here on every render was re-triggering that relayout on every render (this component subscribes
+  // to git status, permissions, etc., so it re-renders often), visible as the whole dock — tab strip
+  // and every split pane — constantly jittering. Memoizing keeps the identity stable across renders
+  // unless the panel component itself changes.
+  const components: IDockviewReactProps["components"] = useMemo(() => ({ [TAB_PANEL_COMPONENT]: TabPanel }), [TabPanel]);
 
   const onReady = useCallback((event: DockviewReadyEvent) => {
     apiRef.current = event.api;
@@ -206,7 +220,7 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
 
   return (
     <DockviewReact
-      className="dockview-theme-abyss h-full"
+      className="dockview-theme-abyss project-tab-dock h-full"
       components={components}
       defaultTabComponent={ProjectTabHeader}
       rightHeaderActionsComponent={AddTabMenu}

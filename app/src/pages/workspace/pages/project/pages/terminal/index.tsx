@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, type FC } from "react";
+import { useCallback, useEffect, useMemo, useRef, type FC } from "react";
 import { Plus, SquareTerminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -45,7 +45,11 @@ const TerminalTab: FC = () => {
     return <ShellTerminalPanel terminalId={params.terminalId} alive={terminal?.alive ?? false} readOnly={!canEditRef.current} />;
   }, []);
 
-  const components: IDockviewReactProps["components"] = { [SHELL_PANEL_COMPONENT]: ShellPanel };
+  // dockview-react calls `updateOptions()` (a *forced full relayout*, unconditionally, regardless of
+  // which option actually changed) whenever this prop gets a new identity — a fresh object literal
+  // here on every render was re-triggering that relayout on every render, visible as the dock's
+  // panels constantly jittering. Memoizing keeps the identity stable unless the panel component changes.
+  const components: IDockviewReactProps["components"] = useMemo(() => ({ [SHELL_PANEL_COMPONENT]: ShellPanel }), [ShellPanel]);
 
   const onReady = useCallback((event: DockviewReadyEvent) => {
     apiRef.current = event.api;
