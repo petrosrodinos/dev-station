@@ -37,7 +37,7 @@ export function StatusBar() {
   const openSessionTab = useWorkspaceStore((s) => s.openSessionTab);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
   const runningProcesses = useRunningProcessCount();
-  const processes = useRuntimeStore((s) => Object.values(s.processes));
+  const processMap = useRuntimeStore((s) => s.processes);
   const activeAgents = useRuntimeStore((s) => Object.values(s.agents).filter((a) => a.alive && isAgentActive(a.status)).length);
   const { data: git } = useGitStatus(activeProjectId, { refetchInterval: 15_000 });
   const { data: projects } = useGetProjects();
@@ -80,8 +80,8 @@ export function StatusBar() {
   };
 
   const sortedProcesses = useMemo(
-    () => [...processes].sort((a, b) => Number(b.status === ProcessStatuses.RUNNING) - Number(a.status === ProcessStatuses.RUNNING) || a.name.localeCompare(b.name)),
-    [processes],
+    () => Object.values(processMap).sort((a, b) => Number(b.status === ProcessStatuses.RUNNING) - Number(a.status === ProcessStatuses.RUNNING) || a.name.localeCompare(b.name)),
+    [processMap],
   );
 
   return (
