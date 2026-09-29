@@ -1,9 +1,14 @@
-import type { FC } from "react";
+import type { Metadata } from "next";
 import { Panel } from "@/components/ui/panel";
-import { AdminLoginForm } from "./components/admin-login-form";
+import { AdminLoginForm } from "./_components/admin-login-form";
 
-/** Bare, unbranded login for the hidden admin console — no nav, no sign-up link. */
-const AdminLoginPage: FC = () => {
+export const metadata: Metadata = {
+    title: "Sign in",
+    robots: { index: false, follow: false },
+};
+
+/** Bare, unbranded login for the hidden admin console — no nav, no marketing chrome. */
+export default function AdminLoginPage() {
     return (
         <div className="flex min-h-screen items-center justify-center bg-background p-4">
             <Panel className="w-full max-w-sm p-6">
@@ -15,6 +20,4 @@ const AdminLoginPage: FC = () => {
             </Panel>
         </div>
     );
-};
-
-export default AdminLoginPage;
+}

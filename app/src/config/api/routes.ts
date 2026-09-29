@@ -81,11 +81,4 @@ export const ApiRoutes = {
         ping: "/app-releases/ping",
         latest: "/app-releases/latest",
     },
-    admin: {
-        stats: "/admin/stats",
-        users: "/admin/users",
-        releases: "/admin/releases",
-        release: (platform: string) => `/admin/releases/${platform}`,
-        installs: "/admin/installs",
-    },
 };

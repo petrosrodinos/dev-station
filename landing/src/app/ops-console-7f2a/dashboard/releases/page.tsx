@@ -1,4 +1,6 @@
-import { useState, type FC } from "react";
+"use client";
+
+import { useState } from "react";
 import { Pencil } from "lucide-react";
 import { Panel, PanelBody, PanelHeader, StatRow } from "@/components/ui/panel";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,10 +11,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useAdminInstallAdoption, useAdminReleases } from "@/features/admin/hooks/use-admin";
 import type { AdminRelease } from "@/features/admin/interfaces/admin.interface";
 import { formatDateTime } from "@/lib/date";
-import { ReleaseLimitsDialog } from "./components/release-limits-dialog";
+import { ReleaseLimitsDialog } from "./_components/release-limits-dialog";
 
 /** Desktop distribution & version tracking (docs/electron-distribution-and-updates.md). */
-const AdminReleasesPage: FC = () => {
+export default function AdminReleasesPage() {
     const { data: releases, isPending: releasesPending } = useAdminReleases();
     const { data: adoption, isPending: adoptionPending } = useAdminInstallAdoption();
     const [editing, setEditing] = useState<AdminRelease | null>(null);
@@ -92,6 +94,4 @@ const AdminReleasesPage: FC = () => {
             <ReleaseLimitsDialog release={editing} onClose={() => setEditing(null)} />
         </div>
     );
-};
-
-export default AdminReleasesPage;
+}

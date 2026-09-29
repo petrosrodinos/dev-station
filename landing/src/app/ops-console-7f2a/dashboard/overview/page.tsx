@@ -1,11 +1,12 @@
-import type { FC } from "react";
+"use client";
+
 import { format, parseISO } from "date-fns";
 import { Panel, PanelBody, PanelHeader, StatRow } from "@/components/ui/panel";
 import { CardGridSkeleton } from "@/components/ui/list-skeleton";
 import { useAdminStats } from "@/features/admin/hooks/use-admin";
 
 /** User growth & activity overview for the hidden admin console. */
-const AdminOverviewPage: FC = () => {
+export default function AdminOverviewPage() {
     const { data: stats, isPending } = useAdminStats();
 
     if (isPending || !stats) return <CardGridSkeleton />;
@@ -40,6 +41,4 @@ const AdminOverviewPage: FC = () => {
             </Panel>
         </div>
     );
-};
-
-export default AdminOverviewPage;
+}
