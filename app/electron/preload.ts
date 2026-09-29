@@ -27,6 +27,8 @@ const bridge: DevStationBridge = {
   app: {
     info: () => call(C.APP_INFO),
     openUrl: (url) => call(C.APP_OPEN_URL, url),
+    toggleFullScreen: () => call(C.APP_TOGGLE_FULLSCREEN),
+    onFullScreenChange: (cb) => on(C.APP_FULLSCREEN_CHANGE, cb),
   },
   secure: {
     get: (key) => call(C.SECURE_GET, key),
@@ -125,6 +127,7 @@ const bridge: DevStationBridge = {
     navigate: (input) => call(C.PREVIEW_NAVIGATE, input),
     load: (input) => call(C.PREVIEW_LOAD, input),
     destroy: (input) => call(C.PREVIEW_DESTROY, input),
+    toggleDevTools: (input) => call(C.PREVIEW_TOGGLE_DEVTOOLS, input),
     onState: (cb) => on(C.PREVIEW_STATE, cb),
   },
   notifications: {

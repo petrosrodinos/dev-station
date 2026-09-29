@@ -90,6 +90,18 @@ class PreviewManager {
     for (const id of [...this.views.keys()]) this.destroy(id);
   }
 
+  /** Opens/closes a detached DevTools window for the previewed view; returns the new open state. */
+  toggleDevTools(projectId: string): boolean {
+    const wc = this.views.get(projectId)?.view.webContents;
+    if (!wc || wc.isDestroyed()) return false;
+    if (wc.isDevToolsOpened()) {
+      wc.closeDevTools();
+      return false;
+    }
+    wc.openDevTools({ mode: "detach" });
+    return true;
+  }
+
   /** Window regained focus: pick up changes made while the user was in the editor. */
   reloadActive() {
     if (this.activeId) this.reload(this.activeId);

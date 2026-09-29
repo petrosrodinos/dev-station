@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { PreviewBounds, PreviewState } from "@shared/contract";
 import { IpcErrorCodes } from "@shared/contract";
-import { hidePreview, loadPreview, navigatePreview, setPreviewBounds, showPreview, subscribePreviewState } from "../services/preview.services";
+import { hidePreview, loadPreview, navigatePreview, setPreviewBounds, showPreview, subscribePreviewState, toggleDevToolsPreview } from "../services/preview.services";
 import type { PreviewNavigateAction } from "../interfaces/preview.interfaces";
 import { getBridgeErrorCode, getErrorMessage, isDesktop } from "@/lib/desktop";
 import { toast } from "@/hooks/use-toast";
@@ -38,5 +38,6 @@ export const usePreviewActions = (projectId: string) => {
     const setBounds = useCallback((bounds: PreviewBounds) => setPreviewBounds(projectId, bounds).catch(() => undefined), [projectId]);
     const navigate = useCallback((action: PreviewNavigateAction) => navigatePreview(projectId, action).catch(() => undefined), [projectId]);
     const load = useCallback((url: string) => loadPreview({ projectId, url }).catch((e) => notifyError(e, "Could not load the URL")), [projectId]);
-    return useMemo(() => ({ show, hide, setBounds, navigate, load }), [show, hide, setBounds, navigate, load]);
+    const toggleDevTools = useCallback(() => toggleDevToolsPreview(projectId).catch((e) => notifyError(e, "Could not open DevTools")), [projectId]);
+    return useMemo(() => ({ show, hide, setBounds, navigate, load, toggleDevTools }), [show, hide, setBounds, navigate, load, toggleDevTools]);
 };
