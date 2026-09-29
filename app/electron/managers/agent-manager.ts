@@ -7,6 +7,7 @@ import type { AgentAdapterInfo, AgentChanges, AgentRuntimeStatus, AgentSessionIn
 import { AgentRuntimeStatuses, IpcErrorCodes } from "../shared/contract";
 import { agentAdapters } from "../agents/adapters";
 import type { AgentAdapter } from "../agents/agent-adapter";
+import { isSubmit, resumesWork } from "../agents/agent-activity";
 import { IpcError } from "../ipc/ipc-error";
 import { childEnv, isWindows, which } from "../utils/platform";
 import { Scrollback } from "../utils/scrollback";
@@ -23,7 +24,6 @@ const ANSI_RE = /\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07]*(\x07|\x1b\\)|\x1b[()][
 const CHANGE_POLL_MS = 10_000;
 const TITLE_POLL_MS = 5_000;
 const TRANSCRIPT_TAIL_BYTES = 512 * 1024;
-const ECHO_WINDOW_MS = 1200;
 const BRACKETED_PASTE_DELAY_MS = 2500;
 
 interface ManagedAgent {
@@ -38,6 +38,10 @@ interface ManagedAgent {
   titleTimer: NodeJS.Timeout | null;
   transcriptStamp: string;
   lastUserInputAt: number;
+  /** Last time the user pressed Enter in the agent's terminal. */
+  lastSubmitAt: number;
+  /** When the agent last went idle; output after this only counts as work under `resumesWork`. */
+  awaitingSince: number;
   stopping: boolean;
 }
 
@@ -120,6 +124,8 @@ class AgentManager {
       titleTimer: null,
       transcriptStamp: "",
       lastUserInputAt: 0,
+      lastSubmitAt: 0,
+      awaitingSince: 0,
       stopping: false,
     };
     managed.pty = proc;
@@ -165,11 +171,14 @@ class AgentManager {
 
   private handleData(managed: ManagedAgent, data: string) {
     managed.scrollback.push(data);
-    managed.recent = (managed.recent + data.replace(ANSI_RE, "")).slice(-4000);
+    const text = data.replace(ANSI_RE, "");
+    managed.recent = (managed.recent + text).slice(-4000);
     this.onData({ id: managed.info.id, data });
 
-    const isEcho = Date.now() - managed.lastUserInputAt < ECHO_WINDOW_MS;
-    if (managed.info.status === AgentRuntimeStatuses.AWAITING_INPUT && !isEcho) {
+    if (managed.info.status === AgentRuntimeStatuses.AWAITING_INPUT) {
+      const hinted = managed.adapter.inferStatus?.(text) ?? null;
+      // Idle redraws (resize, status line, focus) keep the session idle — no new "finished" announcement.
+      if (!resumesWork({ awaitingSince: managed.awaitingSince, lastSubmitAt: managed.lastSubmitAt, now: Date.now(), hinted })) return;
       this.transition(managed, AgentRuntimeStatuses.RUNNING);
     }
     this.armIdle(managed);
@@ -249,6 +258,7 @@ class AgentManager {
   }
 
   private transition(managed: ManagedAgent, status: AgentRuntimeStatus, previous: AgentRuntimeStatus | null = managed.info.status) {
+    if (status === AgentRuntimeStatuses.AWAITING_INPUT && previous !== status) managed.awaitingSince = Date.now();
     managed.info = { ...managed.info, status };
     this.onStatus({ session: managed.info, previous });
   }
@@ -257,6 +267,7 @@ class AgentManager {
     const s = this.get(id);
     if (!s.pty) return;
     s.lastUserInputAt = Date.now();
+    if (isSubmit(data)) s.lastSubmitAt = s.lastUserInputAt;
     s.pty.write(data);
   }
 
