@@ -8,6 +8,7 @@ import { previewManager } from "./managers/preview-manager";
 import { processManager } from "./managers/process-manager";
 import { terminalManager } from "./managers/terminal-manager";
 import { logger } from "./utils/logger";
+import { IpcChannels } from "./shared/contract";
 
 // Electron main process: window lifecycle, custom app:// protocol for the packaged renderer,
 // navigation lockdown, IPC registration and orderly shutdown of every child process.
@@ -74,6 +75,10 @@ function createWindow() {
   mainWindow.once("ready-to-show", () => mainWindow?.show());
   previewManager.attach(mainWindow);
   mainWindow.on("focus", () => previewManager.reloadActive());
+  // Keeps the renderer's toggle button in sync even when full screen is entered/left natively
+  // (e.g. the macOS green traffic-light button), not just via our own IPC toggle.
+  mainWindow.on("enter-full-screen", () => mainWindow?.webContents.send(IpcChannels.APP_FULLSCREEN_CHANGE, true));
+  mainWindow.on("leave-full-screen", () => mainWindow?.webContents.send(IpcChannels.APP_FULLSCREEN_CHANGE, false));
 
   // Only our renderer may navigate the window; external links go to the system browser.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {

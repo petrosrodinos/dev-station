@@ -1,5 +1,5 @@
 import { useNavigate, useNavigationType } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Building2, Check, ChevronDown, Keyboard, LogOut, Moon, PanelRight, Plus, Search, Settings, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, Check, ChevronDown, Keyboard, LogOut, Maximize, Minimize, Moon, PanelRight, Plus, Search, Settings, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShortcutKeys } from "@/components/ui/shortcut-keys";
 import { Switch } from "@/components/ui/switch";
@@ -26,6 +26,8 @@ import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { useDialogsStore } from "@/stores/dialogs";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { useTheme } from "@/hooks/use-theme";
+import { useFullScreen } from "@/hooks/use-fullscreen";
+import { isDesktop } from "@/lib/desktop";
 import { environments } from "@/config/environments";
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
@@ -84,6 +86,7 @@ export function TopBar() {
   const paletteCombo = shortcuts.find((s) => s.id === ShortcutActions.COMMAND_PALETTE)?.combo;
   const aiPanelCombo = shortcuts.find((s) => s.id === ShortcutActions.TOGGLE_AI_PANEL)?.combo;
   const { theme, setTheme } = useTheme();
+  const { isFullScreen, toggle: toggleFullScreen } = useFullScreen();
   const savePreferences = useUpdatePreferences();
   const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
@@ -174,6 +177,14 @@ export function TopBar() {
       </button>
 
       <div className="app-no-drag flex items-center gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={toggleFullScreen} aria-label={isFullScreen ? "Exit full screen" : "Enter full screen"}>
+              {isFullScreen ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{isFullScreen ? "Exit full screen" : "Enter full screen"}{isDesktop() ? " (F11)" : ""}</TooltipContent>
+        </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={() => setShortcutsOpen(true)} aria-label="Keyboard shortcuts">
