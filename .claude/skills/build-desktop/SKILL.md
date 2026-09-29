@@ -7,9 +7,10 @@ description: Build the Dev Station Electron app as an unpacked folder (not the N
 
 Run without asking for confirmation. Output goes outside the Desktop folder because building into `app\release` fails with `EPERM` on the `win-unpacked.tmp` rename.
 
-From `app/` (PowerShell):
+From `app/` (PowerShell). First close the desktop app if it's running (without asking) — a running copy locks `win-unpacked` and packaging fails with `EBUSY`:
 
 ```powershell
+Get-Process | Where-Object { $_.Path -like "C:\dev-station-release\*" } | Stop-Process -Force
 npm run build
 npx electron-builder --dir --config.directories.output=C:\dev-station-release
 ```
