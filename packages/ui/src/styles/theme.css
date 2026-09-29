@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Tailwind only auto-scans from the consuming app; without this, classes used solely by shared
+   components (e.g. bg-popover on menus/popovers) are never generated and render transparent. */
+@source "../";
+
 /* Design tokens follow DESIGN.MD (Raycast-style dark developer-tool system). Dark is the default
    theme. This file is the single source of truth for tokens shared by `app` and `landing` — each
    consumer imports it from its own global stylesheet and layers any app-only CSS on top. */

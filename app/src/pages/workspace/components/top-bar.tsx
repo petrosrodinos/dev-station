@@ -238,7 +238,7 @@ export function TopBar() {
               <Settings className="size-3.5" /> Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-2">
+            <DropdownMenuItem closeOnClick={false} className="gap-2">
               <Moon className="size-3.5" />
               <span className="flex-1">Dark mode</span>
               <Switch checked={isDark} onCheckedChange={toggleDarkMode} />
