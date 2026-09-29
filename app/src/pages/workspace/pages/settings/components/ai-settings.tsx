@@ -70,10 +70,10 @@ export function AiSettings() {
             control={form.control}
             name="preferred_agent"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full @xl:w-auto">
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
-                    <SelectTrigger className="w-44">
+                    <SelectTrigger className="w-full @xl:w-44">
                       <SelectValue />
                     </SelectTrigger>
                   </FormControl>
@@ -94,10 +94,10 @@ export function AiSettings() {
             control={form.control}
             name="idle_threshold_seconds"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full @xl:w-auto">
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
-                    <SelectTrigger className="w-44">
+                    <SelectTrigger className="w-full @xl:w-44">
                       <SelectValue />
                     </SelectTrigger>
                   </FormControl>

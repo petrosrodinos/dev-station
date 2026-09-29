@@ -73,27 +73,27 @@ export function NotificationSettings() {
             </SettingsRow>
 
             <div className={enabled ? undefined : "pointer-events-none opacity-50"} aria-disabled={!enabled}>
-              <div className="flex items-center justify-end gap-6 border-b border-hairline-soft py-2 text-xs text-muted-foreground">
+              <div className="flex items-center justify-end gap-2 border-b border-hairline-soft py-2 text-xs text-muted-foreground sm:gap-6">
                 {channels.map((c) => (
-                  <span key={c.id} className="w-14 text-center" title={getDropdownOptionLabel(NotificationChannelDescriptionOptions, c.id)}>
+                  <span key={c.id} className="w-12 text-center sm:w-14" title={getDropdownOptionLabel(NotificationChannelDescriptionOptions, c.id)}>
                     {c.label}
                   </span>
                 ))}
               </div>
               {NotificationEventOptions.map((event) => (
-                <div key={event.id} className="flex items-center justify-between gap-6 border-b border-hairline-soft py-3">
+                <div key={event.id} className="flex items-center justify-between gap-3 border-b border-hairline-soft py-3 sm:gap-6">
                   <div className="min-w-0">
                     <div className="text-[0.8125rem]">{event.label}</div>
                     <div className="mt-0.5 text-xs text-muted-foreground">{getDropdownOptionLabel(NotificationEventDescriptionOptions, event.id)}</div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-6">
+                  <div className="flex shrink-0 items-center gap-2 sm:gap-6">
                     {channels.map((channel) => (
                       <FormField
                         key={channel.id}
                         control={form.control}
                         name={`events.${event.id}.${channel.id}`}
                         render={({ field }) => (
-                          <FormItem className="flex w-14 justify-center">
+                          <FormItem className="flex w-12 justify-center sm:w-14">
                             <FormControl>
                               <Switch checked={field.value} onCheckedChange={field.onChange} disabled={!enabled} aria-label={`${event.label}: ${channel.label}`} />
                             </FormControl>
@@ -106,7 +106,7 @@ export function NotificationSettings() {
               ))}
             </div>
 
-            <div className="mt-3 flex items-center justify-end gap-2">
+            <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
               <Button type="button" variant="outline" onClick={sendTestSound}>
                 Play test sound
               </Button>

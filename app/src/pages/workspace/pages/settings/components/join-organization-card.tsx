@@ -16,7 +16,7 @@ export function JoinOrganizationCard() {
       <PanelHeader title="Join with an invite code" />
       <PanelBody>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((d) => accept.mutate(d.token, { onSuccess: () => form.reset() }))} className="flex items-start gap-2">
+          <form onSubmit={form.handleSubmit((d) => accept.mutate(d.token, { onSuccess: () => form.reset() }))} className="flex flex-col gap-2 sm:flex-row sm:items-start">
             <FormField
               control={form.control}
               name="token"

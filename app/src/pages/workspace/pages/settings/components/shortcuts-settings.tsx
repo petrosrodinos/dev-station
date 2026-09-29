@@ -138,12 +138,12 @@ export function ShortcutsSettings() {
   return (
     <div className="space-y-8">
       <section>
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-x-4 sm:flex-row sm:items-start sm:justify-between">
           <SettingsSectionHeader
             title="Keyboard shortcuts"
             description="Change the keys for built-in actions. Synced to your account."
           />
-          <div className="flex shrink-0 gap-2">
+          <div className="mb-3 flex shrink-0 gap-2 sm:mb-0">
             <Button
               variant="outline"
               size="sm"
@@ -183,7 +183,7 @@ export function ShortcutsSettings() {
                   {rows.map((row) => (
                     <TableRow key={row.id}>
                       <TableCell className="text-[0.8125rem]">
-                        <span className="flex items-center gap-2">
+                        <span className="flex flex-wrap items-center gap-2">
                           {row.label}
                           {conflictIcon(row.id)}
                           {!row.rebindable && (
@@ -191,7 +191,7 @@ export function ShortcutsSettings() {
                           )}
                         </span>
                       </TableCell>
-                      <TableCell className="w-56">
+                      <TableCell className="sm:w-56">
                         {row.combo ? (
                           <ShortcutKeys combo={row.combo} />
                         ) : (
@@ -200,7 +200,7 @@ export function ShortcutsSettings() {
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="w-20 text-right">
+                      <TableCell className="w-16 text-right sm:w-20">
                         {row.rebindable && (
                           <span className="inline-flex gap-0.5">
                             <RowAction
@@ -231,14 +231,14 @@ export function ShortcutsSettings() {
 
       {SHOW_CUSTOM_SHORTCUTS && (
         <section>
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-x-4 sm:flex-row sm:items-start sm:justify-between">
             <SettingsSectionHeader
               title="Custom shortcuts"
               description="Run an action or open a new AI session with a saved prompt."
             />
             <Button
               size="sm"
-              className="gap-2"
+              className="mb-3 gap-2 self-start sm:mb-0"
               disabled={customShortcuts.length >= MAX_CUSTOM_SHORTCUTS}
               onClick={() => setCustomDialog({ open: true, editing: null })}
             >
@@ -265,10 +265,10 @@ export function ShortcutsSettings() {
                           : row.custom?.prompt}
                       </span>
                     </TableCell>
-                    <TableCell className="w-56">
+                    <TableCell className="sm:w-56">
                       {row.combo && <ShortcutKeys combo={row.combo} />}
                     </TableCell>
-                    <TableCell className="w-20 text-right">
+                    <TableCell className="w-16 text-right sm:w-20">
                       <span className="inline-flex gap-0.5">
                         <RowAction
                           label="Edit shortcut"

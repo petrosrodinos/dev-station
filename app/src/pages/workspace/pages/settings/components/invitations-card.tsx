@@ -57,10 +57,10 @@ export function InvitationsCard() {
       ) : (
         invitations.map((inv) => (
           <div key={inv.id} className="flex items-center gap-3 border-b border-hairline-soft px-4 py-2.5 text-[0.8125rem] last:border-b-0">
-            <span className="flex-1 truncate">{inv.email}</span>
-            <span className="text-xs text-muted-foreground">{inv.role.name}</span>
-            <span className="text-xs text-ash">sent {formatRelative(inv.created_at)}</span>
-            <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={() => setRevoking(inv.id)} aria-label={`Revoke invitation for ${inv.email}`}>
+            <span className="min-w-0 flex-1 truncate">{inv.email}</span>
+            <span className="shrink-0 text-xs text-muted-foreground">{inv.role.name}</span>
+            <span className="hidden shrink-0 text-xs text-ash sm:inline">sent {formatRelative(inv.created_at)}</span>
+            <Button variant="ghost" size="icon" className="size-7 shrink-0 text-muted-foreground" onClick={() => setRevoking(inv.id)} aria-label={`Revoke invitation for ${inv.email}`}>
               <X className="size-3.5" />
             </Button>
           </div>

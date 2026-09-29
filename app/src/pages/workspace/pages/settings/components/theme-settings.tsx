@@ -22,7 +22,7 @@ import { AccentPicker } from "./theme/accent-picker";
 function FontSelect({ label, options, value, onChange }: { label: string; options: FontOption[]; value: string; onChange: (id: string) => void }) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-56" aria-label={label}>
+      <SelectTrigger className="w-full @xl:w-56" aria-label={label}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -57,7 +57,7 @@ export function ThemeSettings() {
         </SettingsRow>
         <div className="border-b border-hairline-soft py-3">
           <div className="mb-2 text-[0.8125rem]">Preset</div>
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(6.5rem,1fr))] gap-3">
             {ThemePresets.map((preset) => (
               <PresetCard key={preset.id} preset={preset} mode={previewMode} accent={values.accent_color} selected={values.preset_id === preset.id} onSelect={() => change({ preset_id: preset.id })} />
             ))}
@@ -89,7 +89,7 @@ export function ThemeSettings() {
         <div className="space-y-2 rounded-md border border-border bg-card p-4">
           <div className="text-sm font-medium">Fix flaky session reconnect</div>
           <p className="text-[0.8125rem] text-muted-foreground">The quick brown fox jumps over the lazy dog. 0123456789</p>
-          <pre className={cn("rounded-sm bg-terminal p-3 text-xs text-body")} style={{ fontFamily: getFontOption(MonoFontFamilyOptions, values.mono_font_family).stack }}>
+          <pre className={cn("overflow-x-auto rounded-sm bg-terminal p-3 text-xs text-body")} style={{ fontFamily: getFontOption(MonoFontFamilyOptions, values.mono_font_family).stack }}>
             {"$ git commit -m \"feat: appearance settings\"\n[main 3f9a2c1] feat: appearance settings"}
           </pre>
           <div className="flex gap-2 pt-1">

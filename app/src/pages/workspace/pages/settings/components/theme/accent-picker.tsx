@@ -23,7 +23,7 @@ export function AccentPicker({ value, onChange }: AccentPickerProps) {
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <div className="flex items-center justify-between px-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-1">
         {ACCENT_SWATCHES.map((color) => (
           <button
             key={color}

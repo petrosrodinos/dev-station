@@ -42,7 +42,7 @@ export function AccountSettings() {
             />
           </SettingsRow>
           <SettingsRow label="Email">
-            <span className="text-[0.8125rem] text-muted-foreground">{me?.email}</span>
+            <span className="min-w-0 break-all text-[0.8125rem] text-muted-foreground">{me?.email}</span>
           </SettingsRow>
           <div className="mt-3 flex justify-end">
             <Button type="submit" loading={update.isPending} disabled={!form.formState.isDirty}>

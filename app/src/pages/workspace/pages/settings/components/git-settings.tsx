@@ -42,10 +42,10 @@ export function GitSettings() {
               control={form.control}
               name="default_branch"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-full @xl:w-auto">
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
-                      <SelectTrigger className="w-40 font-mono">
+                      <SelectTrigger className="w-full font-mono @xl:w-40">
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
@@ -76,10 +76,12 @@ export function GitSettings() {
         <SettingsSectionHeader title="Git accounts" description="GitHub accounts connected through Composio. Each project chooses which one it uses." />
         {connections.map((c) => (
           <div key={c.id} className="flex items-center gap-2 border-b border-hairline-soft py-2 text-[0.8125rem]">
-            <Github className="size-4 text-muted-foreground" />
-            {c.label}
-            {c.external_account && <span className="text-muted-foreground">({c.external_account})</span>}
-            {c.is_default && <span className="text-xs text-ash">default</span>}
+            <Github className="size-4 shrink-0 text-muted-foreground" />
+            <span className="min-w-0 truncate">
+              {c.label}
+              {c.external_account && <span className="text-muted-foreground"> ({c.external_account})</span>}
+            </span>
+            {c.is_default && <span className="shrink-0 text-xs text-ash">default</span>}
           </div>
         ))}
         <Button variant="ghost" size="sm" className="mt-2 gap-1 text-muted-foreground" onClick={() => navigate(Routes.workspace.integrations)}>

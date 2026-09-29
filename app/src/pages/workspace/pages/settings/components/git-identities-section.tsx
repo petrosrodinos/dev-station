@@ -94,14 +94,18 @@ export function GitIdentitiesSection() {
       ) : (
         identities?.map((i) => (
           <div key={i.id} className="flex items-center gap-2 border-b border-hairline-soft py-2 text-[0.8125rem]">
-            <span className="font-medium">{i.label}</span>
-            <span className="truncate text-muted-foreground">
+            <span className="shrink-0 font-medium">{i.label}</span>
+            <span className="min-w-0 truncate text-muted-foreground">
               {i.name} &lt;{i.email}&gt;
             </span>
-            {i.is_default && <Badge variant="secondary">default</Badge>}
+            {i.is_default && (
+              <Badge variant="secondary" className="shrink-0">
+                default
+              </Badge>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="ml-auto size-7" aria-label={`Actions for ${i.label}`}>
+                <Button variant="ghost" size="icon" className="ml-auto size-7 shrink-0" aria-label={`Actions for ${i.label}`}>
                   <MoreHorizontal className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
