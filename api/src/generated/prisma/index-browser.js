@@ -164,6 +164,17 @@ exports.Prisma.GitIdentityScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.AgentCommandScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  agent_type: 'agent_type',
+  name: 'name',
+  command: 'command',
+  is_default: 'is_default',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.UserPreferenceScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
@@ -180,6 +191,7 @@ exports.Prisma.UserPreferenceScalarFieldEnum = {
   font_size: 'font_size',
   font_family: 'font_family',
   mono_font_family: 'mono_font_family',
+  rail_position: 'rail_position',
   notification_settings: 'notification_settings',
   shortcut_settings: 'shortcut_settings',
   created_at: 'created_at',
@@ -595,6 +607,7 @@ exports.Prisma.ModelName = {
   PasswordResetToken: 'PasswordResetToken',
   Document: 'Document',
   GitIdentity: 'GitIdentity',
+  AgentCommand: 'AgentCommand',
   UserPreference: 'UserPreference',
   WorkspaceLayoutPreset: 'WorkspaceLayoutPreset',
   WorkspaceLayoutState: 'WorkspaceLayoutState',
