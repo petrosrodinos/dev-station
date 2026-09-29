@@ -412,6 +412,8 @@ export interface StartAgentInput {
   session_id: string;
   project_id: string;
   agent_type: AgentType;
+  /** Full launch command line (executable + flags, quotes group spaces), e.g. `claude --dangerously-skip-permissions`. Overrides the executable setting. */
+  command?: string;
   name: string;
   prompt: string | null;
   env?: Record<string, string>;

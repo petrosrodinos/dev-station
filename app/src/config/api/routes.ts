@@ -23,6 +23,10 @@ export const ApiRoutes = {
         prefix: "/git-identities",
         byId: (id: string) => `/git-identities/${id}`,
     },
+    agentCommands: {
+        prefix: "/agent-commands",
+        byId: (id: string) => `/agent-commands/${id}`,
+    },
     organizations: {
         prefix: "/organizations",
         current: "/organizations/current",

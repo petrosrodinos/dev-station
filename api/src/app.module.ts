@@ -13,6 +13,7 @@ import { AgentsModule } from './modules/agents/agents.module';
 import { AgentSessionsModule } from './modules/agent-sessions/agent-sessions.module';
 import { ActivitiesModule } from './modules/activities/activities.module';
 import { GitIdentitiesModule } from './modules/git-identities/git-identities.module';
+import { AgentCommandsModule } from './modules/agent-commands/agent-commands.module';
 import { SkillsModule } from './modules/skills/skills.module';
 import { WorkspaceLayoutsModule } from './modules/workspace-layouts/workspace-layouts.module';
 import { AppReleasesModule } from './modules/app-releases/app-releases.module';
@@ -33,6 +34,7 @@ import { AccessModule } from './shared/services/access/access.module';
     AgentSessionsModule,
     ActivitiesModule,
     GitIdentitiesModule,
+    AgentCommandsModule,
     SkillsModule,
     WorkspaceLayoutsModule,
     AppReleasesModule,

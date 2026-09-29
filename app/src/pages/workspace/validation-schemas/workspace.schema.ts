@@ -8,6 +8,8 @@ export type CreateOrganizationFormData = z.infer<typeof createOrganizationSchema
 export const newSessionSchema = z.object({
     project_id: z.string().min(1, "Choose a project"),
     agent_type: z.enum(["CLAUDE_CODE", "CURSOR_CLI"]),
+    /** A custom command id, or empty to use the agent type's default. */
+    command_id: z.string().optional(),
     name: z.string().trim().max(120).optional(),
     prompt: z.string().max(50_000).optional(),
 });

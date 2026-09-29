@@ -211,6 +211,7 @@ export function registerIpc() {
         session_id: zId,
         project_id: zId,
         agent_type: zAgentType,
+        command: z.string().trim().min(1).max(2000).optional(),
         name: z.string().min(1).max(200),
         prompt: z.string().max(100_000).nullable(),
         env: zEnv.optional().transform((v) => v ?? undefined),
