@@ -1,17 +1,22 @@
 import { useCallback, useEffect, useRef, useState, type FC } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import {
   DockviewReact,
   type DockviewApi,
   type DockviewReadyEvent,
+  type IDockviewHeaderActionsProps,
   type IDockviewPanelHeaderProps,
   type IDockviewPanelProps,
   type IDockviewReactProps,
 } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 import { RequirePermission } from "@/components/access/require-permission";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProjectTabOptions, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { filterByAccess } from "@/lib/access.utils";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
@@ -76,13 +81,49 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   const routeTabRef = useRef(routeTab);
   routeTabRef.current = routeTab;
   const apiRef = useRef<DockviewApi | null>(null);
-  const openTabs = useWorkspaceStore((s) => s.open_project_tabs[projectId]) ?? [];
+  const { can } = usePermissions();
+  const permittedTabs = filterByAccess(ProjectTabOptions, can).map((t) => t.id);
+  const storedOpenTabs = useWorkspaceStore((s) => s.open_project_tabs[projectId]);
   const openProjectTab = useWorkspaceStore((s) => s.openProjectTab);
   const closeProjectTab = useWorkspaceStore((s) => s.closeProjectTab);
 
+  // Every permitted tab starts open (matches the old always-visible nav); once the user closes one
+  // the store remembers an explicit list instead. Either way, stay within what's actually permitted.
+  const openTabs = (storedOpenTabs ?? permittedTabs).filter((t) => permittedTabs.includes(t as ProjectTab));
   // The route's current tab is always considered "open" — this is what makes today's exact
   // single-tab navigation still work unless the user explicitly splits another tab alongside it.
   const wantedTabs = openTabs.includes(routeTab) ? openTabs : [...openTabs, routeTab];
+  const closedTabs = permittedTabs.filter((t) => !wantedTabs.includes(t));
+
+  const AddTabMenu = useCallback<FC<IDockviewHeaderActionsProps>>(() => {
+    if (!closedTabs.length) return null;
+    return (
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <button className="flex h-10 w-9 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Open a section">
+                <Plus className="size-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Open a section</TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent align="end">
+          {closedTabs.map((tab) => {
+            const Icon = TAB_ICONS[tab as ProjectTab];
+            return (
+              <DropdownMenuItem key={tab} onSelect={() => openProjectTab(projectId, tab)} className="gap-2">
+                <Icon className="size-3.5" />
+                {TAB_LABEL.get(tab as ProjectTab) ?? tab}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [closedTabs.join("|"), projectId]);
 
   const TabPanel = useCallback<FC<IDockviewPanelProps<{ tab: ProjectTab }>>>(({ params }) => {
     const Page = TAB_PAGES[params.tab];
@@ -153,5 +194,13 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
 
   if (!TAB_PAGES[routeTab]) return <Navigate to={Routes.workspace.project(projectId)} replace />;
 
-  return <DockviewReact className="dockview-theme-abyss h-full" components={components} defaultTabComponent={ProjectTabHeader} onReady={onReady} />;
+  return (
+    <DockviewReact
+      className="dockview-theme-abyss h-full"
+      components={components}
+      defaultTabComponent={ProjectTabHeader}
+      rightHeaderActionsComponent={AddTabMenu}
+      onReady={onReady}
+    />
+  );
 };
