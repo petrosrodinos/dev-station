@@ -8,7 +8,6 @@ import { useAppearanceHydration } from "@/features/users/hooks/use-appearance";
 import { useShortcutsHydration } from "@/features/users/hooks/use-shortcuts";
 import { useAccessSync } from "@/hooks/use-access-sync";
 import { TopBar } from "./components/top-bar";
-import { SessionTabStrip } from "./components/session-tab-strip";
 import { ProjectRail } from "./components/project-rail";
 import { AiPanel } from "./components/ai-panel";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
@@ -19,16 +18,20 @@ import { NewSessionDialog } from "./components/new-session-dialog";
 import { ProjectDialog } from "./components/project-dialog";
 import { ShortcutsPracticeDialog } from "./components/shortcuts-practice-dialog";
 import { useGlobalShortcuts } from "./hooks/use-global-shortcuts";
+import { useSessionGroups } from "./hooks/use-session-groups";
+import { useProjectSessionMemory } from "./hooks/use-project-session-memory";
 
 /**
  * Desktop workspace shell (Spec §4):
- * top bar · global AI session tabs · project rail | project workspace | AI/terminal panel · status bar.
+ * top bar · project rail | project workspace | AI panel (sessions grouped by project + review) · status bar.
  */
 const WorkspaceLayout: FC = () => {
   useAccessSync();
   const { can } = usePermissions();
   const aiPanelOpen = useWorkspaceStore((s) => s.ai_panel_open) && can(PermissionKeys.AI_USE_AGENTS);
-  useGlobalShortcuts();
+  const sessionGroups = useSessionGroups();
+  useGlobalShortcuts(sessionGroups);
+  useProjectSessionMemory(sessionGroups);
   useAppearanceHydration();
   useShortcutsHydration();
 
@@ -37,7 +40,6 @@ const WorkspaceLayout: FC = () => {
       <DesktopEventsProvider />
       <div className="flex h-screen flex-col bg-canvas text-foreground">
         <TopBar />
-        <SessionTabStrip />
         <div className="flex min-h-0 flex-1">
           <ProjectRail />
           <ResizablePanelGroup orientation="horizontal" className="min-w-0 flex-1">
@@ -49,8 +51,8 @@ const WorkspaceLayout: FC = () => {
             {aiPanelOpen && (
               <>
                 <ResizableHandle />
-                <ResizablePanel id="ai-panel" minSize={320} maxSize={760} defaultSize={420}>
-                  <AiPanel />
+                <ResizablePanel id="ai-panel" minSize={320} maxSize={960} defaultSize={420}>
+                  <AiPanel groups={sessionGroups} />
                 </ResizablePanel>
               </>
             )}

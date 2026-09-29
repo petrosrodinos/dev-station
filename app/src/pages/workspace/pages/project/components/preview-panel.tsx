@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FC, type PointerEvent as ReactPointerEvent } from "react";
-import { ArrowLeft, ArrowRight, ExternalLink, Globe, Play, RotateCw, TriangleAlert, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, Globe, Maximize2, Minimize2, Play, RotateCw, TriangleAlert, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,6 +12,10 @@ import { openUrl } from "@/features/local-workspace/services/local-workspace.ser
 import { useOverlayOpen } from "@/hooks/use-overlay-open";
 import { toast } from "@/hooks/use-toast";
 import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
+import { useResolvedShortcuts } from "@/features/users/hooks/use-shortcuts";
+import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
+import { formatComboParts } from "@/lib/shortcuts.utils";
+import { cn } from "@/lib/utils";
 import { ProcessStatuses, type PreviewBounds } from "@shared/contract";
 
 const MIN_WIDTH = 280;
@@ -19,10 +23,12 @@ const MAX_WIDTH_RATIO = 0.75;
 
 interface PreviewPanelProps {
   project: Project;
+  /** Review layout: fill the project area instead of docking at a fixed width. */
+  expanded?: boolean;
 }
 
 /** Docked preview of a running localhost service, rendered by a native view that main positions over the body placeholder. */
-export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
+export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false }) => {
   const projectId = project.id;
   const prefs = useWorkspaceStore((s) => s.preview_by_project[projectId]) ?? DEFAULT_PREVIEW_PREFS;
   const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
@@ -122,18 +128,26 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
     if (target) start.mutate({ projectId, service: target.service, siblings: project.services });
   };
 
-  const close = () => setProjectPreview(projectId, { previewOpen: false });
+  const close = () => setProjectPreview(projectId, { previewOpen: false, previewExpanded: false });
+  const layoutCombo = useResolvedShortcuts().find((s) => s.id === ShortcutActions.TOGGLE_REVIEW_LAYOUT)?.combo;
+  const layoutHint = layoutCombo ? ` (${formatComboParts(layoutCombo).join("+")})` : "";
   const displayUrl = state?.url || url || "";
 
   return (
-    <aside className="relative flex shrink-0 flex-col border-l bg-background" style={{ width: dragWidth ?? prefs.previewWidth }} aria-label="Preview">
-      <div
-        role="separator"
-        aria-orientation="vertical"
-        aria-label="Resize preview"
-        onPointerDown={onDragStart}
-        className="absolute inset-y-0 -left-1 z-10 w-2 cursor-col-resize hover:bg-hairline-strong/40"
-      />
+    <aside
+      className={cn("relative flex flex-col bg-background", expanded ? "min-w-0 flex-1 border-t" : "shrink-0 border-l")}
+      style={expanded ? undefined : { width: dragWidth ?? prefs.previewWidth }}
+      aria-label="Preview"
+    >
+      {!expanded && (
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize preview"
+          onPointerDown={onDragStart}
+          className="absolute inset-y-0 -left-1 z-10 w-2 cursor-col-resize hover:bg-hairline-strong/40"
+        />
+      )}
       <div className="flex shrink-0 items-center gap-1 border-b px-2 py-1.5">
         {runningWithUrl.length > 1 && selected && (
           <Select value={selected.service.id} onValueChange={(id) => setProjectPreview(projectId, { previewServiceId: id })}>
@@ -163,6 +177,12 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
         </div>
         <HeaderButton label="Open in browser" disabled={!displayUrl} onClick={() => void openUrl(displayUrl)}>
           <ExternalLink className="size-3.5" />
+        </HeaderButton>
+        <HeaderButton
+          label={expanded ? `Restore project view${layoutHint}` : `Review layout — preview beside the session${layoutHint}`}
+          onClick={() => setProjectPreview(projectId, { previewExpanded: !expanded })}
+        >
+          {expanded ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
         </HeaderButton>
         <HeaderButton label="Close preview" onClick={close}>
           <X className="size-3.5" />

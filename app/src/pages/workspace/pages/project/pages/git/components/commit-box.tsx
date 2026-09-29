@@ -10,7 +10,8 @@ import type { Project } from "@/features/projects/interfaces/projects.interfaces
 import { useGitCommit, useGitPush } from "@/features/git/hooks/use-git";
 import { useGitIdentities } from "@/features/git-identities/hooks/use-git-identities";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAgentSessions, useRenameAgentSession } from "@/features/agent-sessions/hooks/use-agent-sessions";
+import { useAgentSessions, useMarkSessionReviewed } from "@/features/agent-sessions/hooks/use-agent-sessions";
+import { useWorkspaceStore } from "@/stores/workspace";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { commitSchema, type CommitFormData } from "../../../validation-schemas/project.schema";
@@ -23,7 +24,8 @@ export function CommitBox({ project, selectedPaths, totalFiles }: { project: Pro
   const [identityId, setIdentityId] = useState<string | null>(null);
   const identity = identities?.find((i) => i.id === identityId) ?? identities?.find((i) => i.is_default);
   const { data: sessions } = useAgentSessions({ project_id: project.id });
-  const linkCommit = useRenameAgentSession();
+  const linkCommit = useMarkSessionReviewed();
+  const activeSessionId = useWorkspaceStore((s) => s.active_session_id);
   const { can } = usePermissions();
   const form = useForm<CommitFormData>({ resolver: zodResolver(commitSchema), defaultValues: { message: "" } });
 
@@ -40,8 +42,9 @@ export function CommitBox({ project, selectedPaths, totalFiles }: { project: Pro
         {
           onSuccess: (result) => {
             form.reset({ message: "" });
-            // Attach the commit to the most recent AI session that produced uncommitted changes.
-            const session = sessions?.data.find((s) => s.files_changed > 0 && !s.commit_sha);
+            // Attach the commit to the session being reviewed in this project, else the most recent one with uncommitted changes.
+            const session =
+              sessions?.data.find((s) => s.id === activeSessionId) ?? sessions?.data.find((s) => s.files_changed > 0 && !s.commit_sha);
             if (session) linkCommit.mutate({ id: session.id, commit_sha: result.sha });
             if (andPush) push.mutate({ projectId: project.id });
           },
