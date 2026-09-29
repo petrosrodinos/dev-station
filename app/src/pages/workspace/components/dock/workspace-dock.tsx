@@ -1,21 +1,25 @@
 import { useCallback, useEffect, useRef, type FC } from "react";
 import { Outlet } from "react-router-dom";
+import { History } from "lucide-react";
 import {
   DockviewReact,
   type DockviewApi,
   type DockviewReadyEvent,
+  type IDockviewHeaderActionsProps,
   type IDockviewPanelHeaderProps,
   type IDockviewPanelProps,
   type IDockviewReactProps,
 } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AiPanel } from "../ai-panel";
 import { useSessionGroups } from "../../hooks/use-session-groups";
-import { useWorkspaceStore } from "@/stores/workspace";
+import { AiPanelModes, useWorkspaceStore } from "@/stores/workspace";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { useDockApi } from "../../context/dock-api-context";
 import { useLayoutPersistence } from "@/features/workspace-layouts/hooks/use-layout-persistence";
+import { cn } from "@/lib/utils";
 
 export const MAIN_CONTENT_PANEL_ID = "main-content";
 export const AI_PANEL_ID = "ai-panel";
@@ -43,6 +47,35 @@ const MainContentTab: FC<IDockviewPanelHeaderProps> = () => (
 const AiPanelDockPanel: FC<IDockviewPanelProps> = () => {
   const groups = useSessionGroups();
   return <AiPanel groups={groups} />;
+};
+
+/**
+ * The history toggle used to live in its own always-visible row inside `AiPanel`, alongside a
+ * "New" button — dead weight once there was nothing to review. It lives on the AI panel's own dock
+ * tab now instead (`rightHeaderActionsComponent` renders once per group, so every group gets this;
+ * bail out for any group whose active panel isn't the AI panel, i.e. `main-content`'s).
+ */
+const AiPanelHeaderActions: FC<IDockviewHeaderActionsProps> = ({ activePanel }) => {
+  const mode = useWorkspaceStore((s) => s.ai_panel_mode);
+  const setMode = useWorkspaceStore((s) => s.setAiPanelMode);
+  if (activePanel?.id !== AI_PANEL_ID) return null;
+  const history = mode === AiPanelModes.SESSIONS;
+  const label = history ? "Back to open sessions" : "Session history";
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={() => setMode(history ? AiPanelModes.TERMINAL : AiPanelModes.SESSIONS)}
+          aria-label={label}
+          aria-pressed={history}
+          className={cn("flex h-10 w-9 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground", history && "text-foreground")}
+        >
+          <History className="size-3.5" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
 };
 
 const components: IDockviewReactProps["components"] = {
@@ -124,5 +157,13 @@ export const WorkspaceDock: FC = () => {
     else if (!aiPanelOpen && existing) existing.api.close();
   }, [aiPanelOpen, addAiPanel]);
 
-  return <DockviewReact className="dockview-theme-abyss min-w-0 flex-1" components={components} tabComponents={tabComponents} onReady={onReady} />;
+  return (
+    <DockviewReact
+      className="dockview-theme-abyss min-w-0 flex-1"
+      components={components}
+      tabComponents={tabComponents}
+      rightHeaderActionsComponent={AiPanelHeaderActions}
+      onReady={onReady}
+    />
+  );
 };
