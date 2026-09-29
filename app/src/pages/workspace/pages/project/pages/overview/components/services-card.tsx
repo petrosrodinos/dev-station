@@ -99,19 +99,19 @@ export function ServicesCard({ project }: { project: Project }) {
                     {proc?.status === ProcessStatuses.CRASHED && <span className="text-xs text-danger">crashed ({proc.exit_code})</span>}
                     {running && proc?.port && proc.requested_port && proc.port !== proc.requested_port && (
                       <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="shrink-0 rounded bg-warning-soft px-1.5 py-0.5 font-mono text-[0.6875rem] text-warning">
-                            :{proc.requested_port} → :{proc.port}
-                          </span>
-                        </TooltipTrigger>
+                        <TooltipTrigger
+                          render={
+                            <span className="shrink-0 rounded bg-warning-soft px-1.5 py-0.5 font-mono text-[0.6875rem] text-warning">
+                              :{proc.requested_port} → :{proc.port}
+                            </span>
+                          }
+                        />
                         <TooltipContent>Port {proc.requested_port} was taken, so this runs on {proc.port}. Services that reference it (e.g. {"{{name.url}}"}) use the new port.</TooltipContent>
                       </Tooltip>
                     )}
                     {running && proc?.needs_restart && (
                       <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="shrink-0 rounded bg-warning-soft px-1.5 py-0.5 text-[0.6875rem] text-warning">restart needed</span>
-                        </TooltipTrigger>
+                        <TooltipTrigger render={<span className="shrink-0 rounded bg-warning-soft px-1.5 py-0.5 text-[0.6875rem] text-warning">restart needed</span>} />
                         <TooltipContent>A service this one references changed port after it started. Restart it to pick up the new port.</TooltipContent>
                       </Tooltip>
                     )}
@@ -180,11 +180,13 @@ export function ServicesCard({ project }: { project: Project }) {
 function IconAction({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={onClick} aria-label={label}>
-          {children}
-        </Button>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={onClick} aria-label={label}>
+            {children}
+          </Button>
+        }
+      />
       <TooltipContent>{label}</TooltipContent>
     </Tooltip>
   );

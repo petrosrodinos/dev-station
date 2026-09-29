@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { SerializedDockview } from "dockview-react";
-import { Check, LayoutPanelLeft, Pencil, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
+import { Bot, Check, LayoutPanelLeft, PanelLeft, Pencil, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,7 +16,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -29,7 +34,10 @@ import {
 } from "@/features/workspace-layouts/hooks/use-workspace-layouts";
 import { useLayoutStore } from "@/stores/layout";
 import { useWorkspaceStore } from "@/stores/workspace";
+import { RailPositionOptions, type RailPosition } from "@/config/constants/dropdowns/settings/rail-position.options";
+import { useRailPosition } from "@/features/users/hooks/use-rail-position";
 import { useDockApi } from "../context/dock-api-context";
+import { AI_PANEL_ID, moveAiPanel } from "./dock/workspace-dock";
 import { cn } from "@/lib/utils";
 
 /**
@@ -46,6 +54,7 @@ export function LayoutMenu() {
   const markClean = useLayoutStore((s) => s.markClean);
   const rememberProjectPreset = useLayoutStore((s) => s.rememberProjectPreset);
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
+  const { position: railPosition, setPosition: setRailPosition } = useRailPosition();
 
   const create = useCreateLayout();
   const update = useUpdateLayout({ silent: false });
@@ -112,13 +121,17 @@ export function LayoutMenu() {
     <>
       <DropdownMenu>
         <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" aria-label="Layout">
-                <LayoutPanelLeft className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
+          <TooltipTrigger
+            render={
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" aria-label="Layout">
+                    <LayoutPanelLeft className="size-4" />
+                  </Button>
+                }
+              />
+            }
+          />
           <TooltipContent>Layout{activePreset ? `: ${activePreset.name}` : ""}</TooltipContent>
         </Tooltip>
         <DropdownMenuContent align="end" className="w-64">
@@ -129,6 +142,33 @@ export function LayoutMenu() {
               {preset.id === activePresetId && <Check className="size-3.5" />}
             </DropdownMenuItem>
           ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="gap-2">
+              <PanelLeft className="size-3.5" /> Sidebar position
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuRadioGroup value={railPosition} onValueChange={(v) => setRailPosition(v as RailPosition)}>
+                {RailPositionOptions.map((o) => (
+                  <DropdownMenuRadioItem key={o.id} value={o.id}>
+                    {o.label}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="gap-2" disabled={!api?.getPanel(AI_PANEL_ID)}>
+              <Bot className="size-3.5" /> AI panel position
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              {RailPositionOptions.map((o) => (
+                <DropdownMenuItem key={o.id} onSelect={() => api && moveAiPanel(api, o.id)}>
+                  {o.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onSelect={() => {

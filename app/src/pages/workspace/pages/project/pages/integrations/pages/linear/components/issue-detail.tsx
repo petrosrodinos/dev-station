@@ -108,7 +108,7 @@ export function IssueDetail({ project, issueId }: { project: Project; issueId: s
       <div className="my-4 grid grid-cols-[100px_1fr] items-center gap-x-3 gap-y-2 text-[0.7813rem]">
         <span className="text-muted-foreground">Status</span>
         {canEdit && states?.length ? (
-          <Select value={issue.state?.id} onValueChange={(v) => save({ state_id: v })} disabled={update.isPending}>
+          <Select value={issue.state?.id} onValueChange={(v) => save({ state_id: v ?? undefined })} disabled={update.isPending}>
             <SelectTrigger aria-label="Status" className="h-7 text-[0.7813rem]">
               <SelectValue placeholder="Set status" />
             </SelectTrigger>

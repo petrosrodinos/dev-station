@@ -55,7 +55,7 @@ export function MembersCard() {
               </div>
               <div className="ml-auto flex shrink-0 items-center gap-3">
                 {editable ? (
-                  <Select value={m.role.id} onValueChange={(role_id) => updateRole.mutate({ memberId: m.id, role_id })}>
+                  <Select value={m.role.id} onValueChange={(role_id) => role_id && updateRole.mutate({ memberId: m.id, role_id })}>
                     <SelectTrigger className="h-8 w-40" aria-label={`Role for ${m.user.email}`}>
                       <SelectValue />
                     </SelectTrigger>
@@ -74,11 +74,13 @@ export function MembersCard() {
                 )}
                 {editable ? (
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="Member actions">
-                        <MoreHorizontal className="size-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="Member actions">
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      }
+                    />
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem className="gap-2 text-danger focus:text-danger" onSelect={() => setRemoving(m)}>
                         <UserMinus className="size-3.5" /> Remove from organization

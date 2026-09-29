@@ -15,7 +15,7 @@ export function SessionContextMenu({ session, children }: { session: AgentSessio
   return (
     <>
       <ContextMenu>
-        <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
+        <ContextMenuTrigger render={children as React.ReactElement} />
         <ContextMenuContent>
           <ContextMenuItem onSelect={() => setRenaming(true)}>
             <Pencil /> Rename

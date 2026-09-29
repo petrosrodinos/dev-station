@@ -52,11 +52,13 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
       )}
       {canBranch && (
       <DropdownMenu open={branchMenuOpen} onOpenChange={setBranchMenuOpen}>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="h-[30px] gap-1.5 font-mono">
-            <GitBranch className="size-3.5" /> {status.branch ?? "detached HEAD"} <ChevronDown className="size-3" />
-          </Button>
-        </DropdownMenuTrigger>
+        <DropdownMenuTrigger
+          render={
+            <Button variant="outline" size="sm" className="h-[30px] gap-1.5 font-mono">
+              <GitBranch className="size-3.5" /> {status.branch ?? "detached HEAD"} <ChevronDown className="size-3" />
+            </Button>
+          }
+        />
         <DropdownMenuContent align="start" className="max-h-96 w-72 overflow-y-auto">
           <DropdownMenuItem onSelect={() => setCreating(true)} className="gap-2">
             <Plus className="size-3.5" /> New branch…
@@ -116,11 +118,13 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
       <div className="ml-auto flex items-center gap-2">
         {canCommit && (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-[30px] gap-1.5">
-              <Archive className="size-3.5" /> Stash {stashes?.length ? `(${stashes.length})` : ""} <ChevronDown className="size-3" />
-            </Button>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="outline" size="sm" className="h-[30px] gap-1.5">
+                <Archive className="size-3.5" /> Stash {stashes?.length ? `(${stashes.length})` : ""} <ChevronDown className="size-3" />
+              </Button>
+            }
+          />
           <DropdownMenuContent align="end" className="w-72">
             <DropdownMenuItem disabled={!dirty} onSelect={() => stash.mutate({ projectId, message: `Dev Station stash ${new Date().toLocaleString()}` })}>
               Stash all changes

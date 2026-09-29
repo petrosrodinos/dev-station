@@ -232,11 +232,13 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false 
 function HeaderButton({ label, onClick, disabled, children }: { label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-7 shrink-0 text-muted-foreground" onClick={onClick} disabled={disabled} aria-label={label}>
-          {children}
-        </Button>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <Button variant="ghost" size="icon" className="size-7 shrink-0 text-muted-foreground" onClick={onClick} disabled={disabled} aria-label={label}>
+            {children}
+          </Button>
+        }
+      />
       <TooltipContent>{label}</TooltipContent>
     </Tooltip>
   );

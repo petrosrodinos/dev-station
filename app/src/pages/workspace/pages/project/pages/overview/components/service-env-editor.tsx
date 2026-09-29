@@ -70,11 +70,13 @@ export function ServiceEnvEditor({ form, index, targets }: ServiceEnvEditorProps
           />
           <div className="col-span-12 sm:col-span-1 flex items-center gap-0.5">
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button type="button" variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="Insert service reference" disabled={!withPort.length}>
-                  <Braces className="size-3.5" />
-                </Button>
-              </DropdownMenuTrigger>
+              <DropdownMenuTrigger
+                render={
+                  <Button type="button" variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="Insert service reference" disabled={!withPort.length}>
+                    <Braces className="size-3.5" />
+                  </Button>
+                }
+              />
               <DropdownMenuContent align="end" className="w-56">
                 {withPort.map((t, n) => (
                   <div key={t.slug}>

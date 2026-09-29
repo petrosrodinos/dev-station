@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, CircleCheck } from "lucide-react";
+import { Bot, CircleCheck, History } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatusDot } from "@/components/ui/status-dot";
 import { ShortcutKeys } from "@/components/ui/shortcut-keys";
@@ -39,6 +39,8 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
   const { data: projects } = useGetProjects();
   const nextCombo = useResolvedShortcuts().find((s) => s.id === ShortcutActions.GO_TO_FINISHED_SESSION)?.combo;
   const history = mode === AiPanelModes.SESSIONS;
+  const setMode = useWorkspaceStore((s) => s.setAiPanelMode);
+  const historyLabel = history ? "Back to open sessions" : "Session history";
 
   const openItem = (item: SessionItem) =>
     jumpToSession(item.id, navigate, { fallbackProjectId: item.project_id, review: item.review_state === SessionReviewStates.READY ? { projects } : undefined });
@@ -50,29 +52,43 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
 
   return (
     <aside className="flex h-full min-w-0 flex-col bg-surface" aria-label="AI panel">
-      {/* This bar used to always show (label + history toggle + "New"), which was dead weight once
-          there was nothing to review — the history toggle moved to the panel's own dock tab (see
-          `AiPanelHeaderActions` in `workspace-dock.tsx`), "New" was dropped (redundant with the
-          per-project "+" in `SessionNavigator` and Overview's "New session"), so now this only
-          renders when there's actually something to say. */}
-      {groups.ready.length > 0 && !history && (
-        <div className="flex h-9 shrink-0 items-center border-b px-3">
+      <div className="flex h-9 shrink-0 items-center gap-2 border-b px-2">
+        {groups.ready.length > 0 && !history ? (
           <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={openNext}
-                className="flex h-7 items-center gap-1.5 rounded-full bg-info-soft pl-2 pr-1 text-[0.7813rem] font-medium text-info hover:brightness-110"
-              >
-                <CircleCheck className="size-3.5" /> Needs review
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-info px-1.5 text-[0.6875rem] font-bold text-[#04121b]">{groups.ready.length}</span>
-              </button>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <button
+                  onClick={openNext}
+                  className="flex h-7 items-center gap-1.5 rounded-full bg-info-soft pl-2 pr-1 text-[0.7813rem] font-medium text-info hover:brightness-110"
+                >
+                  <CircleCheck className="size-3.5" /> Needs review
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-info px-1.5 text-[0.6875rem] font-bold text-[#04121b]">{groups.ready.length}</span>
+                </button>
+              }
+            />
             <TooltipContent className="flex items-center gap-2">
               Open the next session to review {nextCombo && <ShortcutKeys combo={nextCombo} />}
             </TooltipContent>
           </Tooltip>
-        </div>
-      )}
+        ) : (
+          <span className="px-1 text-[0.7813rem] font-medium text-muted-foreground">{history ? "Session history" : "AI sessions"}</span>
+        )}
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <button
+                onClick={() => setMode(history ? AiPanelModes.TERMINAL : AiPanelModes.SESSIONS)}
+                aria-label={historyLabel}
+                aria-pressed={history}
+                className={cn("ml-auto flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground", history && "bg-accent text-foreground")}
+              >
+                <History className="size-3.5" />
+              </button>
+            }
+          />
+          <TooltipContent>{historyLabel}</TooltipContent>
+        </Tooltip>
+      </div>
       <div className="flex min-h-0 flex-1 flex-col">
         {history ? (
           <SessionList />

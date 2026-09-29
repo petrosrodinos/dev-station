@@ -56,7 +56,12 @@ const NotionTab: FC = () => {
       <div className="p-4">
         <Panel className="max-w-xl p-4">
           <div className="mb-3 text-[0.8125rem] font-medium">Choose the Notion workspace for this project</div>
-          <Select onValueChange={(v) => update.mutate({ id: project.id, notion_connection_id: v })} disabled={!can(PermissionKeys.PROJECTS_EDIT)}>
+          <Select
+            onValueChange={(v: string | null) => {
+              if (v) update.mutate({ id: project.id, notion_connection_id: v });
+            }}
+            disabled={!can(PermissionKeys.PROJECTS_EDIT)}
+          >
             <SelectTrigger aria-label="Notion account">
               <SelectValue placeholder="Choose a Notion account" />
             </SelectTrigger>

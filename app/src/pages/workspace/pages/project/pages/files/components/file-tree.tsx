@@ -148,13 +148,17 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
       <div className="ml-auto hidden gap-0.5 group-hover:flex">
         <DropdownMenu>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="size-5 text-muted-foreground" onClick={(e) => e.stopPropagation()} aria-label="Open with">
-                  <SquarePen className="size-3" />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <DropdownMenuTrigger
+                  render={
+                    <Button variant="ghost" size="icon" className="size-5 text-muted-foreground" onClick={(e) => e.stopPropagation()} aria-label="Open with">
+                      <SquarePen className="size-3" />
+                    </Button>
+                  }
+                />
+              }
+            />
             <TooltipContent>Open with</TooltipContent>
           </Tooltip>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
@@ -189,20 +193,22 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
 function RowAction({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-5 text-muted-foreground"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick();
-          }}
-          aria-label={label}
-        >
-          {children}
-        </Button>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-5 text-muted-foreground"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick();
+            }}
+            aria-label={label}
+          >
+            {children}
+          </Button>
+        }
+      />
       <TooltipContent>{label}</TooltipContent>
     </Tooltip>
   );
