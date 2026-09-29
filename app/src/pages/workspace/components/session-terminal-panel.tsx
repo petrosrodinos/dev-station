@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ExternalLink, FileDiff, PictureInPicture2, RotateCw, Square, Terminal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,17 @@ import { cn } from "@/lib/utils";
  * only the single "active" one. Content is unchanged from the previous `ActiveSessionTerminal`,
  * just parameterized by `sessionId` instead of always reading the store's active session.
  */
-export function SessionTerminalPanel({ sessionId, groups, onNext }: { sessionId: string; groups: SessionGroups; onNext: () => void }) {
+export function SessionTerminalPanel({
+  sessionId,
+  groups,
+  onNext,
+  panelApi,
+}: {
+  sessionId: string;
+  groups: SessionGroups;
+  onNext: () => void;
+  panelApi?: { setTitle: (title: string) => void };
+}) {
   const navigate = useNavigate();
   const { data: sessions } = useAgentSessions();
   const { data: projects } = useGetProjects();
@@ -63,6 +73,11 @@ export function SessionTerminalPanel({ sessionId, groups, onNext }: { sessionId:
   const changes = runtime?.changes ?? (session ? { files_changed: session.files_changed, additions: session.additions, deletions: session.deletions } : null);
   const panelId = `session:${sessionId}`;
   const name = session?.name ?? runtime?.name ?? "Session";
+
+  // Dockview defaults the tab title to the panel id (`session:<uuid>`), so push the real name.
+  useEffect(() => {
+    panelApi?.setTitle(name);
+  }, [panelApi, name]);
 
   // Real-OS-window floating (docking system §C): pops this panel's content into its own window;
   // the dock excludes it (see `session-terminal-stage.tsx`) until that window is closed.

@@ -15,7 +15,7 @@ import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { projectRouteKeepingTab } from "@/lib/project-route.utils";
 import { isAgentActive, reviewStateDot } from "@/lib/status";
 import { useWorkspaceStore } from "@/stores/workspace";
-import { useDialogsStore } from "@/stores/dialogs";
+import { useQuickStartSession } from "@/features/agent-sessions/hooks/use-quick-start-session";
 import { cn } from "@/lib/utils";
 import type { SessionGroups, SessionItem } from "../hooks/use-session-groups";
 import { CloseSessionDialog } from "./close-session-dialog";
@@ -35,7 +35,7 @@ export function SessionNavigator({ groups, activeId, onOpen }: SessionNavigatorP
   const navigate = useNavigate();
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
-  const openNewSession = useDialogsStore((s) => s.openNewSession);
+  const quickStartSession = useQuickStartSession();
   const closeTab = useCloseSessionTab();
   const { can } = usePermissions();
   const [closing, setClosing] = useState<SessionItem | null>(null);
@@ -98,7 +98,7 @@ export function SessionNavigator({ groups, activeId, onOpen }: SessionNavigatorP
             ))}
             {can(PermissionKeys.AI_START_AGENTS) && (
               <button
-                onClick={() => openNewSession({ project_id: group.project.id })}
+                onClick={() => quickStartSession(group.project.id)}
                 className="flex w-0 items-center justify-center overflow-hidden text-ash hover:text-foreground focus-visible:w-6 group-hover/project:w-6"
                 aria-label={`New session in ${group.project.name}`}
                 title={`New session in ${group.project.name}`}
