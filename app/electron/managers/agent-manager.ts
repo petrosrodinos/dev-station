@@ -9,6 +9,7 @@ import { agentAdapters } from "../agents/adapters";
 import type { AgentAdapter } from "../agents/agent-adapter";
 import { isSubmit, resumesWork } from "../agents/agent-activity";
 import { IpcError } from "../ipc/ipc-error";
+import { splitCommandLine } from "../utils/command-line";
 import { childEnv, isWindows, which } from "../utils/platform";
 import { Scrollback } from "../utils/scrollback";
 import { logger } from "../utils/logger";
@@ -64,11 +65,15 @@ class AgentManager {
     return path.join(app.getPath("userData"), "agent-sessions");
   }
 
-  private async resolveExecutable(type: AgentType) {
+  /**
+   * `command` (a full command line, e.g. `claude --dangerously-skip-permissions`) wins over the
+   * configured executable; its flags are passed to every launch of the session.
+   */
+  private async resolveExecutable(type: AgentType, command?: string) {
     const adapter = agentAdapters[type];
-    const configured = workspaceConfig.settings.agent_executables[type];
-    const exe = configured || adapter.defaultExecutable;
-    return { adapter, executable: exe, resolved: await which(exe) };
+    const [customExe, ...extraArgs] = command ? splitCommandLine(command) : [];
+    const exe = customExe || workspaceConfig.settings.agent_executables[type] || adapter.defaultExecutable;
+    return { adapter, executable: exe, extraArgs: customExe ? extraArgs : [], resolved: await which(exe) };
   }
 
   async adapters(): Promise<AgentAdapterInfo[]> {
@@ -96,7 +101,7 @@ class AgentManager {
     if (input.idle_threshold_seconds) this.setIdleThreshold(input.idle_threshold_seconds);
 
     const cwd = workspaceConfig.projectRoot(input.project_id);
-    const { adapter, executable, resolved } = await this.resolveExecutable(input.agent_type);
+    const { adapter, executable, extraArgs, resolved } = await this.resolveExecutable(input.agent_type, input.command);
     if (!resolved) {
       throw new IpcError(`${adapter.name} was not found (looked for "${executable}"). Install it or set its path in Settings → AI.`, IpcErrorCodes.AGENT_NOT_FOUND);
     }
@@ -106,7 +111,7 @@ class AgentManager {
     const promptViaPaste = needsShell && !!input.prompt;
     const transcript = adapter.transcriptPath?.(cwd, input.session_id);
     const sessionArgs = adapter.sessionArgs?.(input.session_id, !!transcript && fs.existsSync(transcript)) ?? [];
-    const args = needsShell ? ["/d", "/s", "/c", resolved, ...sessionArgs, ...adapter.buildArgs(null)] : [...sessionArgs, ...adapter.buildArgs(input.prompt)];
+    const args = needsShell ? ["/d", "/s", "/c", resolved, ...extraArgs, ...sessionArgs, ...adapter.buildArgs(null)] : [...extraArgs, ...sessionArgs, ...adapter.buildArgs(input.prompt)];
     const file = needsShell ? process.env.ComSpec || "cmd.exe" : resolved;
 
     const env = childEnv({ ...input.env, DEV_STATION_SESSION_ID: input.session_id, DEV_STATION_PROJECT_ID: input.project_id }) as Record<string, string>;
@@ -139,7 +144,7 @@ class AgentManager {
       name: input.name,
       status: AgentRuntimeStatuses.RUNNING,
       pid: proc.pid,
-      command: [path.basename(resolved), ...adapter.buildArgs(input.prompt ? "<prompt>" : null)].join(" "),
+      command: [path.basename(resolved), ...extraArgs, ...adapter.buildArgs(input.prompt ? "<prompt>" : null)].join(" "),
       cwd,
       started_at: new Date().toISOString(),
       ended_at: null,
@@ -337,10 +342,10 @@ class AgentManager {
     const s = this.sessions.get(id);
     const projectId = s?.input.project_id;
     if (!s || !projectId) throw new IpcError("Session not found on this device.");
-    const { adapter, resolved } = await this.resolveExecutable(s.input.agent_type);
+    const { adapter, extraArgs, resolved } = await this.resolveExecutable(s.input.agent_type, s.input.command);
     if (!resolved) throw new IpcError(`${adapter.name} executable not found.`);
     const cwd = workspaceConfig.projectRoot(projectId);
-    const args = adapter.resumeArgs();
+    const args = [...extraArgs, ...adapter.resumeArgs()];
 
     if (isWindows) {
       const wt = await which("wt.exe");

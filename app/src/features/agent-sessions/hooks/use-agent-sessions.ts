@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createAgentSession, deleteAgentSession, getAgentCatalog, getAgentSessions, updateAgentSession } from "../services/agent-sessions.services";
 import { forgetAgentProcess, getAgentAdapters, openAgentExternally, restartAgentProcess, startAgentProcess, stopAgentProcess } from "../services/agent-runtime.services";
 import type { AgentSession, AgentSessionsQuery, CreateAgentSessionDto } from "../interfaces/agent-sessions.interfaces";
+import { getAgentCommands } from "@/features/agent-commands/services/agent-commands.services";
+import { AGENT_COMMANDS_KEY } from "@/features/agent-commands/hooks/use-agent-commands";
 import { linkProjectIssue } from "@/features/projects/services/projects.services";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useWorkspaceStore } from "@/stores/workspace";
@@ -33,6 +35,8 @@ export interface StartSessionInput extends CreateAgentSessionDto {
     prompt: string | null;
     device_id: string | null;
     idle_threshold_seconds?: number;
+    /** Custom launch command (Settings → AI); the agent type's default command is used when omitted. */
+    command_id?: string;
 }
 
 /** Creates the session record, spawns the agent CLI locally, and opens it as a tab. */
@@ -43,13 +47,17 @@ export const useStartAgentSession = () => {
     const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
 
     return useMutation({
-        mutationFn: async ({ prompt, idle_threshold_seconds, ...dto }: StartSessionInput) => {
+        mutationFn: async ({ prompt, idle_threshold_seconds, command_id, ...dto }: StartSessionInput) => {
             const session = await createAgentSession({ ...dto, initial_prompt: prompt });
             try {
+                // A stale or unreachable command list must never block starting the agent.
+                const commands = await queryClient.fetchQuery({ queryKey: AGENT_COMMANDS_KEY, queryFn: getAgentCommands, staleTime: 60_000 }).catch(() => []);
+                const custom = command_id ? commands.find((c) => c.id === command_id) : commands.find((c) => c.agent_type === session.agent_type && c.is_default);
                 const runtime = await startAgentProcess({
                     session_id: session.id,
                     project_id: session.project_id,
                     agent_type: session.agent_type,
+                    command: custom?.command,
                     name: session.name,
                     prompt,
                     idle_threshold_seconds,

@@ -13,6 +13,7 @@ import { useGetProjects } from "@/features/projects/hooks/use-projects";
 import { useProjectLocalStates, useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
 import { useAgentAdapters, useStartAgentSession } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { buildIssuePrompt, sessionNameFromPrompt } from "@/features/agent-sessions/utils/issue-prompt.utils";
+import { useAgentCommands } from "@/features/agent-commands/hooks/use-agent-commands";
 import { useGetPreferences } from "@/features/users/hooks/use-users";
 import { IntegrationProviders } from "@/features/integrations/interfaces/integrations.interfaces";
 import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
@@ -22,6 +23,8 @@ import { PermissionKeys } from "@/features/organizations/interfaces/organization
 import { isDesktop } from "@/lib/desktop";
 import { AgentTypes, ProjectLocalStates, type AgentType } from "@shared/contract";
 import { newSessionSchema, type NewSessionFormData } from "../validation-schemas/workspace.schema";
+
+const DEFAULT_COMMAND = "__default__";
 
 /** Start an agent CLI in a project, optionally seeded with a Linear issue (Spec §12/§17). */
 export function NewSessionDialog() {
@@ -34,12 +37,13 @@ export function NewSessionDialog() {
   const { data: adapters } = useAgentAdapters();
   const { data: preferences } = useGetPreferences();
   const { data: workspaceConfig } = useWorkspaceConfig();
+  const { data: allCommands } = useAgentCommands();
   const start = useStartAgentSession();
   const issue = state.issue;
 
   const form = useForm<NewSessionFormData>({
     resolver: zodResolver(newSessionSchema),
-    defaultValues: { project_id: "", agent_type: AgentTypes.CLAUDE_CODE, name: "", prompt: "" },
+    defaultValues: { project_id: "", agent_type: AgentTypes.CLAUDE_CODE, command_id: DEFAULT_COMMAND, name: "", prompt: "" },
   });
 
   useEffect(() => {
@@ -48,6 +52,7 @@ export function NewSessionDialog() {
     form.reset({
       project_id: state.project_id ?? "",
       agent_type: (project?.preferred_agent ?? preferences?.preferred_agent ?? AgentTypes.CLAUDE_CODE) as AgentType,
+      command_id: DEFAULT_COMMAND,
       name: issue ? `${issue.identifier} ${issue.title}`.slice(0, 120) : "",
       prompt: state.initial_prompt ?? "",
     });
@@ -57,6 +62,8 @@ export function NewSessionDialog() {
   const agentType = form.watch("agent_type");
   const adapter = adapters?.find((a) => a.type === agentType);
   const localProjects = (projects ?? []).filter((p) => localStates?.[p.id] === ProjectLocalStates.LOCAL);
+  const agentCommands = (allCommands ?? []).filter((c) => c.agent_type === agentType);
+  const defaultCommand = agentCommands.find((c) => c.is_default);
 
   const onSubmit = (data: NewSessionFormData) => {
     const prompt = issue ? buildIssuePrompt(issue, data.prompt) : data.prompt?.trim() || null;
@@ -66,6 +73,7 @@ export function NewSessionDialog() {
         agent_type: data.agent_type,
         name: data.name?.trim() || sessionNameFromPrompt(data.prompt, `${getAgentTypeLabel(data.agent_type)} session`),
         prompt,
+        command_id: data.command_id && data.command_id !== DEFAULT_COMMAND && agentCommands.some((c) => c.id === data.command_id) ? data.command_id : undefined,
         device_id: workspaceConfig?.device_id ?? null,
         idle_threshold_seconds: preferences?.idle_threshold_seconds,
         issue_provider: issue ? IntegrationProviders.LINEAR : null,
@@ -136,6 +144,34 @@ export function NewSessionDialog() {
                     <b>{adapter.name}</b> wasn't found on PATH (looked for <code className="font-mono">{adapter.executable}</code>). Install it or set its path in Settings → AI.
                   </span>
                 </div>
+              )}
+
+              {agentCommands.length > 0 && (
+                <FormField
+                  control={form.control}
+                  name="command_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Command</FormLabel>
+                      <Select value={field.value ?? DEFAULT_COMMAND} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value={DEFAULT_COMMAND}>{defaultCommand ? `Default — ${defaultCommand.name}` : `Default — ${adapter?.executable ?? getAgentTypeLabel(agentType)}`}</SelectItem>
+                          {agentCommands.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.name} <span className="font-mono text-xs text-muted-foreground">{c.command}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               )}
 
               <FormField

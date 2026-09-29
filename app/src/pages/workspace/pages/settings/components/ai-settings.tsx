@@ -16,6 +16,7 @@ import { IdleThresholdOptions } from "@/config/constants/dropdowns/agents/idle-t
 import { isDesktop } from "@/lib/desktop";
 import { AgentTypes, type AgentType } from "@shared/contract";
 import { aiSettingsSchema, type AiSettingsFormData } from "../validation-schemas/settings.schema";
+import { AgentCommandsSettings } from "./agent-commands-settings";
 import { SettingsRow, SettingsSectionHeader } from "./settings-row";
 
 export function AiSettings() {
@@ -149,6 +150,7 @@ export function AiSettings() {
           </Button>
         </div>
       </form>
+      {isDesktop() && <AgentCommandsSettings />}
     </Form>
   );
 }
