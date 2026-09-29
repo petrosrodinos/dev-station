@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, type FC } from "react";
+import { useCallback, useEffect, useMemo, useRef, type FC } from "react";
 import { Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -55,7 +55,12 @@ export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups
     [],
   );
 
-  const components: IDockviewReactProps["components"] = { [SESSION_PANEL_COMPONENT]: SessionPanel };
+  // dockview-react calls `updateOptions()` (a *forced full relayout*, unconditionally, regardless of
+  // which option actually changed) whenever any of these props gets a new identity — a fresh object
+  // literal here on every render was re-triggering that relayout on every render this component made
+  // (which, sitting under the always-visible AI panel, is often), visible as the dock's tabs/panels
+  // constantly jittering. Memoizing keeps the identity stable unless the panel component itself changes.
+  const components: IDockviewReactProps["components"] = useMemo(() => ({ [SESSION_PANEL_COMPONENT]: SessionPanel }), [SessionPanel]);
 
   const onReady = useCallback((event: DockviewReadyEvent) => {
     apiRef.current = event.api;
