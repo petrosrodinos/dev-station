@@ -12,7 +12,7 @@ import { CustomShortcutTypes } from "@/features/users/interfaces/users.interface
 import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { buildComboIndex, eventToCombo } from "@/lib/shortcuts.utils";
-import { jumpToAttentionSession } from "@/lib/session-navigation.utils";
+import { jumpToSession } from "@/lib/session-navigation.utils";
 import { projectRouteKeepingTab } from "@/lib/project-route.utils";
 import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { createTerminal } from "@/features/terminals/services/terminals.services";
@@ -20,20 +20,35 @@ import { useRuntimeStore } from "@/stores/runtime";
 import { toast } from "@/hooks/use-toast";
 import { isDesktop } from "@/lib/desktop";
 import { Routes } from "@/routes/routes";
+import { nextReviewSession, type SessionGroups } from "./use-session-groups";
+import { SessionReviewStates } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 
 interface ActionContext {
   navigate: NavigateFunction;
   projects: Project[] | undefined;
   can: ReturnType<typeof usePermissions>["can"];
+  sessions: SessionGroups;
 }
 
-const cycleSessionTab = (direction: 1 | -1): boolean => {
+/** Steps through the AI panel's sessions in display order (grouped by project), switching project as needed. */
+const cycleSession = (ctx: ActionContext, direction: 1 | -1): boolean => {
+  const items = ctx.sessions.ordered;
+  if (!items.length) return false;
+  const idx = items.findIndex((i) => i.id === useWorkspaceStore.getState().active_session_id);
+  const item = items[(Math.max(idx, direction === 1 ? -1 : 0) + direction + items.length) % items.length];
+  return jumpToSession(item.id, ctx.navigate, { fallbackProjectId: item.project_id });
+};
+
+/** Opens the next session waiting for review, with its project and preview. */
+const openNextReview = (ctx: ActionContext): boolean => {
   const ws = useWorkspaceStore.getState();
-  const tabs = ws.open_session_tabs;
-  if (!tabs.length) return false;
-  const idx = Math.max(0, tabs.indexOf(ws.active_session_id ?? ""));
-  ws.openSessionTab(tabs[(idx + direction + tabs.length) % tabs.length]);
-  return true;
+  const next = nextReviewSession(ctx.sessions, ws.active_session_id, ws.attention_session_ids);
+  if (!next) {
+    toast({ title: "Nothing waiting for review", duration: 1500 });
+    return true;
+  }
+  const review = next.review_state === SessionReviewStates.READY ? { projects: ctx.projects } : undefined;
+  return jumpToSession(next.id, ctx.navigate, { fallbackProjectId: next.project_id, review });
 };
 
 const openNewSession = (ctx: ActionContext, initialPrompt: string | null = null): boolean => {
@@ -73,15 +88,23 @@ const runShortcutAction = (actionId: string, ctx: ActionContext): boolean => {
       if (ctx.can(PermissionKeys.AI_USE_AGENTS)) ws.setAiPanelOpen(!ws.ai_panel_open);
       return true;
     case ShortcutActions.NEXT_SESSION_TAB:
-      return cycleSessionTab(1);
+      return cycleSession(ctx, 1);
     case ShortcutActions.PREV_SESSION_TAB:
-      return cycleSessionTab(-1);
+      return cycleSession(ctx, -1);
     case ShortcutActions.GO_TO_FINISHED_SESSION:
-      return jumpToAttentionSession(ctx.navigate);
+      return openNextReview(ctx);
     case ShortcutActions.TOGGLE_PREVIEW: {
       const id = ws.active_project_id;
       if (!id) return false;
       ws.setProjectPreview(id, { previewOpen: !ws.preview_by_project[id]?.previewOpen });
+      return true;
+    }
+    case ShortcutActions.TOGGLE_REVIEW_LAYOUT: {
+      const id = ws.active_project_id;
+      if (!id || !isDesktop()) return false;
+      const prefs = ws.preview_by_project[id];
+      const expanded = !!prefs?.previewOpen && !!prefs.previewExpanded;
+      ws.setProjectPreview(id, { previewOpen: true, previewExpanded: !expanded });
       return true;
     }
     case ShortcutActions.OPEN_SETTINGS:
@@ -105,12 +128,14 @@ const runShortcutAction = (actionId: string, ctx: ActionContext): boolean => {
 };
 
 /** Dispatches the user's effective shortcuts (defaults, overrides and custom ones) on Ctrl/⌘ key presses. */
-export const useGlobalShortcuts = () => {
+export const useGlobalShortcuts = (sessions: SessionGroups) => {
   const navigate = useNavigate();
   const { data: projects } = useGetProjects();
   const { can } = usePermissions();
   const canRef = useRef(can);
   canRef.current = can;
+  const sessionsRef = useRef(sessions);
+  sessionsRef.current = sessions;
   const shortcuts = useResolvedShortcuts();
   const index = useMemo(() => buildComboIndex(shortcuts), [shortcuts]);
 
@@ -121,7 +146,7 @@ export const useGlobalShortcuts = () => {
       const shortcut = combo ? index.get(combo) : undefined;
       if (!shortcut) return;
 
-      const ctx: ActionContext = { navigate, projects, can: canRef.current };
+      const ctx: ActionContext = { navigate, projects, can: canRef.current, sessions: sessionsRef.current };
       let handled = false;
       if (shortcut.kind === "custom" && shortcut.custom) {
         const { custom } = shortcut;

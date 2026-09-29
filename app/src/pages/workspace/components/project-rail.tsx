@@ -25,6 +25,7 @@ import { Routes } from "@/routes/routes";
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { isDesktop } from "@/lib/desktop";
 import { projectRouteKeepingTab } from "@/lib/project-route.utils";
+import { jumpToSession } from "@/lib/session-navigation.utils";
 import { cn } from "@/lib/utils";
 import { EditorTargets, ProjectLocalStates, type ProjectLocalState } from "@shared/contract";
 
@@ -37,7 +38,6 @@ export function ProjectRail() {
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
   const attentionIds = useWorkspaceStore((s) => s.attention_session_ids);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
-  const openSessionTab = useWorkspaceStore((s) => s.openSessionTab);
   const runtimeAgents = useRuntimeStore((s) => s.agents);
   const openProjectDialog = useDialogsStore((s) => s.openProjectDialog);
   const { can } = usePermissions();
@@ -75,11 +75,11 @@ export function ProjectRail() {
     navigate(projectRouteKeepingTab(project.id, pathname));
   };
 
+  // The badge opens the latest session that needs attention straight into review.
   const openAttention = (project: Project) => {
-    const [first] = attentionByProject.get(project.id) ?? [];
-    setActiveProject(project.id);
-    navigate(Routes.workspace.project(project.id));
-    if (first) openSessionTab(first);
+    const latest = attentionByProject.get(project.id)?.at(-1);
+    if (latest && jumpToSession(latest, navigate, { fallbackProjectId: project.id, review: { projects } })) return;
+    selectProject(project);
   };
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {

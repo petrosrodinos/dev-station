@@ -43,8 +43,11 @@ const ProjectLayout: FC = () => {
   const { can } = usePermissions();
   const onSetup = location.pathname.endsWith("/setup");
   const previewOpen = useWorkspaceStore((s) => (projectId ? s.preview_by_project[projectId]?.previewOpen : false)) ?? DEFAULT_PREVIEW_PREFS.previewOpen;
+  const previewExpanded = useWorkspaceStore((s) => (projectId ? s.preview_by_project[projectId]?.previewExpanded : false)) ?? DEFAULT_PREVIEW_PREFS.previewExpanded;
   const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
   const previewAvailable = isDesktop() && !onSetup;
+  // Review layout: the preview takes the whole project area, side by side with the AI panel.
+  const reviewLayout = previewOpen && previewExpanded && previewAvailable;
 
   useEffect(() => {
     if (projectId) setActiveProject(projectId);
@@ -135,10 +138,11 @@ const ProjectLayout: FC = () => {
                   aria-label={tab.label}
                   to={Routes.workspace.project_tab(project.id, tab.id)}
                   end
+                  onClick={() => reviewLayout && setProjectPreview(project.id, { previewExpanded: false })}
                   className={({ isActive }) =>
                     cn(
                       "-mb-px inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent px-2 text-[0.8125rem] font-medium text-muted-foreground hover:text-foreground",
-                      (isActive || (tab.id === ProjectTabs.OVERVIEW && location.pathname === Routes.workspace.project(project.id))) && "border-foreground text-foreground",
+                      !reviewLayout && (isActive || (tab.id === ProjectTabs.OVERVIEW && location.pathname === Routes.workspace.project(project.id))) && "border-foreground text-foreground",
                     )
                   }
                 >
@@ -158,10 +162,11 @@ const ProjectLayout: FC = () => {
         )}
       </div>
       <div className="flex min-h-0 flex-1">
-        <div className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">
+        {/* Stays mounted in the review layout so the tab keeps its state when the preview is restored. */}
+        <div className={cn("@container min-h-0 min-w-0 flex-1 overflow-y-auto", reviewLayout && "hidden")}>
           <Outlet context={{ project }} />
         </div>
-        {previewOpen && previewAvailable && <PreviewPanel key={project.id} project={project} />}
+        {previewOpen && previewAvailable && <PreviewPanel key={project.id} project={project} expanded={reviewLayout} />}
       </div>
     </div>
   );

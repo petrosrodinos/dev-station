@@ -1,24 +1,31 @@
 import type { NavigateFunction } from "react-router-dom";
-import { Routes } from "@/routes/routes";
+import type { Project } from "@/features/projects/interfaces/projects.interfaces";
+import { projectRouteKeepingTab } from "@/lib/project-route.utils";
+import { isDesktop } from "@/lib/desktop";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useWorkspaceStore } from "@/stores/workspace";
 
-/** Switches to the session's project and focuses its tab. Returns false when the project is unknown. */
-export function jumpToSession(sessionId: string, navigate: NavigateFunction, fallbackProjectId?: string | null): boolean {
-  const workspace = useWorkspaceStore.getState();
-  const projectId = useRuntimeStore.getState().agents[sessionId]?.project_id ?? fallbackProjectId;
-  if (!projectId) return false;
-  workspace.setActiveProject(projectId);
-  navigate(Routes.workspace.project(projectId));
-  workspace.openSessionTab(sessionId);
-  return true;
+interface JumpOptions {
+  fallbackProjectId?: string | null;
+  /**
+   * Review the session's result: also shows the project's preview (in the side-by-side review
+   * layout when the preview was closed). Pass the project list so projects without services are skipped.
+   */
+  review?: { projects: Project[] | undefined };
 }
 
-/** Jumps to the most recent session that finished / needs input and hasn't been looked at yet. */
-export function jumpToAttentionSession(navigate: NavigateFunction): boolean {
-  const { attention_session_ids } = useWorkspaceStore.getState();
-  for (let i = attention_session_ids.length - 1; i >= 0; i--) {
-    if (jumpToSession(attention_session_ids[i], navigate)) return true;
+/** Switches to the session's project (keeping the open tab) and focuses the session. Returns false when the project is unknown. */
+export function jumpToSession(sessionId: string, navigate: NavigateFunction, options: JumpOptions = {}): boolean {
+  const workspace = useWorkspaceStore.getState();
+  const projectId = useRuntimeStore.getState().agents[sessionId]?.project_id ?? options.fallbackProjectId;
+  if (!projectId) return false;
+  workspace.setActiveProject(projectId);
+  navigate(projectRouteKeepingTab(projectId, window.location.pathname));
+  workspace.openSessionTab(sessionId);
+
+  const project = options.review?.projects?.find((p) => p.id === projectId);
+  if (project && project.services.length > 0 && isDesktop() && !workspace.preview_by_project[projectId]?.previewOpen) {
+    workspace.setProjectPreview(projectId, { previewOpen: true, previewExpanded: true });
   }
-  return false;
+  return true;
 }

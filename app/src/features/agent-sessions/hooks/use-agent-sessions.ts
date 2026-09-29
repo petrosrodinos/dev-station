@@ -110,7 +110,7 @@ export const useCloseSessionTab = () => {
         onSuccess: ({ id, stopProcess }) => {
             closeSessionTab(id);
             if (stopProcess) removeAgent(id);
-            toast({ title: stopProcess ? "Session stopped and closed" : "Tab closed — agent keeps running", duration: 1500 });
+            toast({ title: stopProcess ? "Session stopped and closed" : "Session closed — agent keeps running", duration: 1500 });
         },
         onError: (error: Error) => toast({ title: "Could not close session", description: error.message, variant: "error" }),
     });
@@ -142,6 +142,25 @@ export const useDeleteAgentSession = () => {
             toast({ title: "Session deleted", duration: 1500 });
         },
         onError: (error: Error) => toast({ title: "Could not delete session", description: error.message, variant: "error" }),
+    });
+};
+
+/** Takes a session out of the review queue; with a commit sha it also links that commit to the session record. */
+export const useMarkSessionReviewed = () => {
+    const queryClient = useQueryClient();
+    const markReviewed = useWorkspaceStore((s) => s.markReviewed);
+    return useMutation({
+        mutationFn: async ({ id, commit_sha }: { id: string; commit_sha?: string | null }) => {
+            if (commit_sha) await updateAgentSession({ id, commit_sha });
+            return { commit_sha };
+        },
+        onMutate: ({ id }) => markReviewed(id),
+        onSuccess: ({ commit_sha }) => {
+            queryClient.invalidateQueries({ queryKey: ["agent-sessions"] });
+            // A commit already announced itself; only a plain "reviewed" needs its own confirmation.
+            if (!commit_sha) toast({ title: "Marked as reviewed", duration: 1200 });
+        },
+        onError: (error: Error) => toast({ title: "Could not link the commit to this session", description: error.message, variant: "error" }),
     });
 };
 

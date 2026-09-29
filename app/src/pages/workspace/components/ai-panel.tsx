@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, ExternalLink, FileDiff, Plus, RotateCw, Square, Terminal, Trash2 } from "lucide-react";
+import { Bot, CircleCheck, ExternalLink, FileDiff, History, Plus, RotateCw, Square, Terminal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatusDot } from "@/components/ui/status-dot";
+import { ShortcutKeys } from "@/components/ui/shortcut-keys";
 import { ProjectFlag } from "@/components/ui/project-avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
@@ -16,59 +16,107 @@ import {
   useRuntimeAgent,
   useStopAgentSession,
 } from "@/features/agent-sessions/hooks/use-agent-sessions";
-import type { AgentSession } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
+import { SessionReviewStates, type AgentSession } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 import { useAgentTerminalSource } from "@/features/terminals/hooks/use-terminal-source";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
 import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { AgentStatusOptions } from "@/config/constants/dropdowns/agents/agent-status.options";
+import { SessionReviewStateOptions } from "@/config/constants/dropdowns/agents/session-review-state.options";
+import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
+import { useResolvedShortcuts } from "@/features/users/hooks/use-shortcuts";
 import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
 import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
-import { agentStatusDot } from "@/lib/status";
+import { agentStatusDot, reviewStateDot } from "@/lib/status";
+import { jumpToSession } from "@/lib/session-navigation.utils";
 import { formatRelative } from "@/lib/date";
 import { isDesktop } from "@/lib/desktop";
-import { AiPanelModes, useWorkspaceStore, type AiPanelMode } from "@/stores/workspace";
+import { AiPanelModes, useWorkspaceStore } from "@/stores/workspace";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
 import { Routes } from "@/routes/routes";
 import { DeleteSessionDialog, SessionContextMenu } from "./session-context-menu";
+import { SessionNavigator } from "./session-navigator";
+import { SessionReviewBar } from "./session-review-bar";
+import { nextReviewSession, type SessionGroups, type SessionItem } from "../hooks/use-session-groups";
 import { cn } from "@/lib/utils";
 
-/** Right-hand panel: the active session's embedded agent terminal, or the list of all sessions. */
-export function AiPanel() {
+/**
+ * Right-hand panel — the hub for parallel agent work: every open session grouped by project with
+ * its review state, the focused session's terminal, and the review bar (commit → next).
+ * The history toggle swaps in the full list of recent sessions.
+ */
+export function AiPanel({ groups }: { groups: SessionGroups }) {
+  const navigate = useNavigate();
   const mode = useWorkspaceStore((s) => s.ai_panel_mode);
   const setMode = useWorkspaceStore((s) => s.setAiPanelMode);
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
+  const activeId = useWorkspaceStore((s) => s.active_session_id);
   const openNewSession = useDialogsStore((s) => s.openNewSession);
+  const { data: projects } = useGetProjects();
+  const nextCombo = useResolvedShortcuts().find((s) => s.id === ShortcutActions.GO_TO_FINISHED_SESSION)?.combo;
   const { can } = usePermissions();
+  const history = mode === AiPanelModes.SESSIONS;
+
+  const openItem = (item: SessionItem) =>
+    jumpToSession(item.id, navigate, { fallbackProjectId: item.project_id, review: item.review_state === SessionReviewStates.READY ? { projects } : undefined });
+
+  const openNext = () => {
+    const next = nextReviewSession(groups, activeId, useWorkspaceStore.getState().attention_session_ids);
+    if (next) openItem(next);
+  };
 
   return (
     <aside className="flex h-full min-w-0 flex-col bg-surface" aria-label="AI panel">
-      <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b px-3">
-        <Tabs value={mode} onValueChange={(v) => setMode(v as AiPanelMode)}>
-          <TabsList className="h-8 rounded-full border bg-surface p-[3px]">
-            <TabsTrigger value={AiPanelModes.TERMINAL} className="h-6 gap-1.5 rounded-full px-3 text-[0.7813rem] data-[state=active]:bg-surface-elevated data-[state=active]:shadow-none">
-              <Terminal className="size-3.5" /> Terminal
-            </TabsTrigger>
-            <TabsTrigger value={AiPanelModes.SESSIONS} className="h-6 gap-1.5 rounded-full px-3 text-[0.7813rem] data-[state=active]:bg-surface-elevated data-[state=active]:shadow-none">
-              <Bot className="size-3.5" /> Sessions
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-        {can(PermissionKeys.AI_START_AGENTS) && (
-          <Button size="sm" variant="secondary" className="h-7 gap-1 px-2.5 text-xs" onClick={() => openNewSession({ project_id: activeProjectId })}>
-            <Plus className="size-3.5" /> New
-          </Button>
+      <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
+        {groups.ready.length > 0 && !history ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={openNext}
+                className="flex h-7 items-center gap-1.5 rounded-full bg-info-soft pl-2 pr-1 text-[0.7813rem] font-medium text-info hover:brightness-110"
+              >
+                <CircleCheck className="size-3.5" /> Needs review
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-info px-1.5 text-[0.6875rem] font-bold text-[#04121b]">{groups.ready.length}</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="flex items-center gap-2">
+              Open the next session to review {nextCombo && <ShortcutKeys combo={nextCombo} />}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <span className="flex items-center gap-1.5 text-[0.7813rem] font-medium text-muted-foreground">
+            <Bot className="size-3.5" /> {history ? "Recent sessions" : "AI sessions"}
+          </span>
+        )}
+        <div className="ml-auto flex items-center gap-1">
+          <PanelIconButton label={history ? "Back to open sessions" : "Session history"} onClick={() => setMode(history ? AiPanelModes.TERMINAL : AiPanelModes.SESSIONS)} pressed={history}>
+            <History className="size-3.5" />
+          </PanelIconButton>
+          {can(PermissionKeys.AI_START_AGENTS) && (
+            <Button size="sm" variant="secondary" className="h-7 gap-1 px-2.5 text-xs" onClick={() => openNewSession({ project_id: activeProjectId })}>
+              <Plus className="size-3.5" /> New
+            </Button>
+          )}
+        </div>
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col">
+        {history ? (
+          <SessionList />
+        ) : (
+          <>
+            <SessionNavigator groups={groups} activeId={activeId} onOpen={openItem} />
+            <ActiveSessionTerminal groups={groups} onNext={openNext} />
+          </>
         )}
       </div>
-      <div className="flex min-h-0 flex-1 flex-col">{mode === AiPanelModes.SESSIONS ? <SessionList /> : <ActiveSessionTerminal />}</div>
     </aside>
   );
 }
 
-function ActiveSessionTerminal() {
+function ActiveSessionTerminal({ groups, onNext }: { groups: SessionGroups; onNext: () => void }) {
   const navigate = useNavigate();
   const activeId = useWorkspaceStore((s) => s.active_session_id);
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
@@ -81,6 +129,7 @@ function ActiveSessionTerminal() {
   const restart = useRestartAgentSession();
   const openExternal = useOpenAgentExternally();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
   const { can } = usePermissions();
 
   const { data: workspaceConfig } = useWorkspaceConfig();
@@ -88,7 +137,9 @@ function ActiveSessionTerminal() {
   const ranOnThisDevice = !!runtime || (!!session?.device_id && session.device_id === workspaceConfig?.device_id);
   const project = projects?.find((p) => p.id === (runtime?.project_id ?? session?.project_id));
   const status = runtime?.status ?? session?.status ?? null;
-  const statusLabel = status ? getDropdownOptionLabel(AgentStatusOptions, status) : "";
+  const item = groups.ordered.find((i) => i.id === activeId) ?? null;
+  const statusLabel = item ? getDropdownOptionLabel(SessionReviewStateOptions, item.review_state) : status ? getDropdownOptionLabel(AgentStatusOptions, status) : "";
+  const remaining = groups.ready.filter((i) => i.id !== activeId).length;
 
   if (!activeId) {
     return (
@@ -126,10 +177,16 @@ function ActiveSessionTerminal() {
             )}
           </div>
         </div>
-        <StatusDot status={agentStatusDot(status)} title={statusLabel} />
-        <span className="text-[0.7188rem] text-muted-foreground">{statusLabel}</span>
+        <StatusDot status={item ? reviewStateDot(item.review_state) : agentStatusDot(status)} title={statusLabel} />
+        <span className="shrink-0 text-[0.7188rem] text-muted-foreground">{statusLabel}</span>
         {changes && changes.files_changed > 0 && project && (
-          <PanelIconButton label="Review changes" onClick={() => navigate(Routes.workspace.project_tab(project.id, ProjectTabs.GIT))}>
+          <PanelIconButton
+            label="Review changes"
+            onClick={() => {
+              setProjectPreview(project.id, { previewExpanded: false });
+              navigate(Routes.workspace.project_tab(project.id, ProjectTabs.GIT));
+            }}
+          >
             <FileDiff className="size-3.5" />
           </PanelIconButton>
         )}
@@ -169,18 +226,27 @@ function ActiveSessionTerminal() {
       </div>
       {runtime && !runtime.alive && (
         <div className="shrink-0 border-t bg-surface px-3 py-2 text-[0.7188rem] text-muted-foreground">
-          Process exited ({runtime.exit_code ?? 0}). Restart to continue in this terminal, or review the changes in Git.
+          Process exited ({runtime.exit_code ?? 0}). Restart to continue in this terminal.
         </div>
       )}
+      {item && project && <SessionReviewBar key={item.id} item={item} project={project} remaining={remaining} onNext={onNext} />}
     </>
   );
 }
 
-function PanelIconButton({ label, onClick, disabled, children }: { label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+function PanelIconButton({ label, onClick, disabled, pressed, children }: { label: string; onClick: () => void; disabled?: boolean; pressed?: boolean; children: React.ReactNode }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={onClick} disabled={disabled} aria-label={label}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("size-7 text-muted-foreground", pressed && "bg-surface-elevated text-foreground")}
+          onClick={onClick}
+          disabled={disabled}
+          aria-label={label}
+          aria-pressed={pressed}
+        >
           {children}
         </Button>
       </TooltipTrigger>

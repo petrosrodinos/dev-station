@@ -66,3 +66,14 @@ export interface AgentCatalogItem {
     default_executable: string;
     description: string;
 }
+
+/** What a session needs from the developer — derived from the runtime status plus the local review state. */
+export const SessionReviewStates = {
+    WORKING: "WORKING",
+    READY: "READY",
+    FAILED: "FAILED",
+    STOPPED: "STOPPED",
+    REVIEWED: "REVIEWED",
+    COMMITTED: "COMMITTED",
+} as const;
+export type SessionReviewState = (typeof SessionReviewStates)[keyof typeof SessionReviewStates];

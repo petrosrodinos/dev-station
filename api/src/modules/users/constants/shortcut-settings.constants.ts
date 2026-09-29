@@ -7,6 +7,7 @@ export const SHORTCUT_ACTION_IDS = [
   'prev_session_tab',
   'go_to_finished_session',
   'toggle_preview',
+  'toggle_review_layout',
   'open_settings',
   'open_integrations',
   'add_project',

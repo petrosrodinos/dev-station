@@ -1,0 +1,190 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowRight, Check, FileDiff, GitCommitHorizontal, TriangleAlert } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { ShortcutKeys } from "@/components/ui/shortcut-keys";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useGitCommit, useGitStatus } from "@/features/git/hooks/use-git";
+import { useGitIdentities } from "@/features/git-identities/hooks/use-git-identities";
+import { useMarkSessionReviewed } from "@/features/agent-sessions/hooks/use-agent-sessions";
+import { SessionReviewStates } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
+import type { Project } from "@/features/projects/interfaces/projects.interfaces";
+import { useProjectLocalState } from "@/features/local-workspace/hooks/use-local-workspace";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
+import { useResolvedShortcuts } from "@/features/users/hooks/use-shortcuts";
+import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
+import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
+import { commitSchema, type CommitFormData } from "@/pages/workspace/pages/project/validation-schemas/project.schema";
+import { useRuntimeStore } from "@/stores/runtime";
+import { useWorkspaceStore } from "@/stores/workspace";
+import { Routes } from "@/routes/routes";
+import { AgentRuntimeStatuses, ProjectLocalStates } from "@shared/contract";
+import type { SessionItem } from "../hooks/use-session-groups";
+
+interface SessionReviewBarProps {
+  item: SessionItem;
+  project: Project;
+  /** Ready sessions other than this one. */
+  remaining: number;
+  onNext: () => void;
+}
+
+/**
+ * Review footer under the agent terminal: what changed, a one-line commit, and the jump to the
+ * next session waiting for review. Hidden while the agent is still working.
+ */
+export function SessionReviewBar({ item, project, remaining, onNext }: SessionReviewBarProps) {
+  const navigate = useNavigate();
+  const localState = useProjectLocalState(project.id);
+  const isLocal = localState === ProjectLocalStates.LOCAL;
+  const { data: git } = useGitStatus(isLocal ? project.id : null);
+  const commit = useGitCommit();
+  const markReviewed = useMarkSessionReviewed();
+  const { data: identities } = useGitIdentities();
+  const identity = identities?.find((i) => i.is_default);
+  const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
+  const nextCombo = useResolvedShortcuts().find((s) => s.id === ShortcutActions.GO_TO_FINISHED_SESSION)?.combo;
+  const othersWorking = useRuntimeStore(
+    (s) => Object.values(s.agents).filter((a) => a.project_id === project.id && a.id !== item.id && a.alive && a.status === AgentRuntimeStatuses.RUNNING).length,
+  );
+  const { can } = usePermissions();
+  const [committedSha, setCommittedSha] = useState<string | null>(null);
+  // Focus "Next" only right after the developer finished reviewing here, not when revisiting a reviewed session.
+  const [justReviewed, setJustReviewed] = useState(false);
+  const form = useForm<CommitFormData>({ resolver: zodResolver(commitSchema), defaultValues: { message: item.name } });
+
+  const state = item.review_state;
+  const files = git?.files ?? [];
+  const done = !!committedSha || state === SessionReviewStates.REVIEWED || state === SessionReviewStates.COMMITTED;
+  const reviewable = state === SessionReviewStates.READY || done;
+  if (state === SessionReviewStates.WORKING || (!reviewable && !files.length)) return null;
+
+  const openDiff = () => {
+    setProjectPreview(project.id, { previewExpanded: false });
+    navigate(Routes.workspace.project_tab(project.id, ProjectTabs.GIT));
+  };
+
+  const submit = form.handleSubmit((data) =>
+    commit.mutate(
+      { projectId: project.id, message: data.message, name: identity?.name, email: identity?.email },
+      {
+        onSuccess: (result) => {
+          setCommittedSha(result.sha);
+          setJustReviewed(true);
+          markReviewed.mutate({ id: item.id, commit_sha: result.sha });
+        },
+      },
+    ),
+  );
+
+  const nextButton = (autoFocus: boolean) =>
+    remaining > 0 ? (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button size="sm" variant={done ? "default" : "ghost"} className="h-8 shrink-0 gap-1.5" onClick={onNext} autoFocus={autoFocus}>
+            {done ? `Next review (${remaining})` : "Skip"} <ArrowRight className="size-3.5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent className="flex items-center gap-2">
+          Next session to review {nextCombo && <ShortcutKeys combo={nextCombo} />}
+        </TooltipContent>
+      </Tooltip>
+    ) : null;
+
+  if (done) {
+    return (
+      <div className="flex shrink-0 items-center gap-2 border-t bg-surface px-3 py-2 text-xs">
+        <Check className="size-3.5 shrink-0 text-success" />
+        <span className="min-w-0 flex-1 truncate text-muted-foreground">
+          {committedSha || state === SessionReviewStates.COMMITTED ? (
+            <>
+              Committed <span className="font-mono text-info">{(committedSha ?? item.session?.commit_sha ?? "").slice(0, 7)}</span>
+            </>
+          ) : (
+            "Reviewed"
+          )}
+          {remaining === 0 && " · nothing else waiting for review"}
+        </span>
+        {nextButton(justReviewed)}
+      </div>
+    );
+  }
+
+  const canCommit = isLocal && files.length > 0 && can(PermissionKeys.GIT_COMMIT);
+
+  return (
+    <div className="shrink-0 space-y-2 border-t bg-surface px-3 py-2.5">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        {files.length > 0 ? (
+          <>
+            <span>
+              {files.length} file{files.length === 1 ? "" : "s"} changed{" "}
+              <span className="font-mono">
+                <span className="text-success">+{git?.totals.additions ?? 0}</span> <span className="text-danger">-{git?.totals.deletions ?? 0}</span>
+              </span>
+            </span>
+            {can(PermissionKeys.GIT_VIEW_CHANGES) && (
+              <button onClick={openDiff} className="inline-flex items-center gap-1 hover:text-foreground">
+                <FileDiff className="size-3.5" /> Diff
+              </button>
+            )}
+          </>
+        ) : (
+          <span>{isLocal ? "No uncommitted changes" : "Changes are tracked on the device that ran this session"}</span>
+        )}
+        <span className="ml-auto" />
+        {state === SessionReviewStates.READY && (
+          <button
+            onClick={() => {
+              setJustReviewed(true);
+              markReviewed.mutate({ id: item.id });
+            }}
+            className="hover:text-foreground"
+          >
+            Mark reviewed
+          </button>
+        )}
+      </div>
+      {canCommit && othersWorking > 0 && (
+        <div className="flex items-start gap-1.5 text-[0.7188rem] text-warning">
+          <TriangleAlert className="mt-px size-3.5 shrink-0" />
+          {othersWorking} other agent{othersWorking === 1 ? " is" : "s are"} still working in this project — their edits so far will be part of this commit.
+        </div>
+      )}
+      {canCommit ? (
+        <Form {...form}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void submit();
+            }}
+            className="flex items-center gap-2"
+          >
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem className="min-w-0 flex-1">
+                  <FormControl>
+                    <Input aria-label="Commit message" placeholder="Commit message" className="h-8 font-mono text-[0.7813rem]" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button type="submit" size="sm" className="h-8 shrink-0 gap-1.5" loading={commit.isPending} disabled={!form.watch("message").trim()}>
+              {!commit.isPending && <GitCommitHorizontal className="size-3.5" />} Commit
+            </Button>
+            {nextButton(false)}
+          </form>
+        </Form>
+      ) : (
+        remaining > 0 && <div className="flex justify-end">{nextButton(false)}</div>
+      )}
+    </div>
+  );
+}

@@ -19,6 +19,7 @@ import { useResolvedShortcuts } from "@/features/users/hooks/use-shortcuts";
 import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
 import { formatComboParts } from "@/lib/shortcuts.utils";
 import { jumpToSession } from "@/lib/session-navigation.utils";
+import { useGetProjects } from "@/features/projects/hooks/use-projects";
 import { AgentRuntimeStatuses, ProcessStatuses, type AgentSessionInfo, type AgentStatusEvent, type OsNotificationClick, type ProcessEvent } from "@shared/contract";
 
 const ATTENTION_EVENTS: Partial<Record<string, { type: NotificationEventType; verb: string }>> = {
@@ -42,6 +43,9 @@ export function DesktopEventsProvider() {
   const appliedNames = useRef(new Map<string, string>());
   const goToFinishedComboRef = useRef<string | null>(null);
   goToFinishedComboRef.current = useResolvedShortcuts().find((s) => s.action_id === ShortcutActions.GO_TO_FINISHED_SESSION)?.combo ?? null;
+  const { data: projects } = useGetProjects();
+  const projectsRef = useRef(projects);
+  projectsRef.current = projects;
 
   useEffect(() => {
     if (!isDesktop()) return;
@@ -84,6 +88,13 @@ export function DesktopEventsProvider() {
         .catch(() => appliedNames.current.set(session.id, followed));
     };
 
+    // Opening a finished session from a toast or OS notification lands in review: project, session and preview.
+    const reviewSession = (sessionId: string, projectId: string | null, status?: string) =>
+      jumpToSession(sessionId, navigate, {
+        fallbackProjectId: projectId,
+        review: status === AgentRuntimeStatuses.CRASHED ? undefined : { projects: projectsRef.current },
+      });
+
     const onAgentStatus = ({ session, previous }: AgentStatusEvent) => {
       useRuntimeStore.getState().upsertAgent(session);
       followAgentTitle(session);
@@ -107,8 +118,8 @@ export function DesktopEventsProvider() {
             description: combo ? `Press ${formatComboParts(combo).join("+")} to jump to it.` : undefined,
             variant: attention.type === NotificationEventTypes.AGENT_CRASHED ? "error" : "info",
             action: (
-              <ToastAction altText="View session" onClick={() => jumpToSession(session.id, navigate, session.project_id)}>
-                View session
+              <ToastAction altText="Review session" onClick={() => reviewSession(session.id, session.project_id, session.status)}>
+                {session.status === AgentRuntimeStatuses.CRASHED ? "View session" : "Review"}
               </ToastAction>
             ),
           });
@@ -118,7 +129,11 @@ export function DesktopEventsProvider() {
           void showOsNotification({ title: `${session.name} ${attention.verb}`, body: getNotificationEventLabel(attention.type), project_id: session.project_id, session_id: session.id }).catch(() => undefined);
         }
       }
-      if (session.status === AgentRuntimeStatuses.RUNNING) workspace.clearAttention(session.id);
+      if (session.status === AgentRuntimeStatuses.RUNNING) {
+        // The agent picked up new work, so whatever was reviewed before needs a fresh look when it finishes.
+        workspace.clearAttention(session.id);
+        workspace.clearReviewed(session.id);
+      }
 
       // The API records AGENT_* activity entries on status transitions.
       void updateAgentSession({
@@ -158,12 +173,11 @@ export function DesktopEventsProvider() {
     };
 
     const onNotificationClick = ({ project_id, session_id }: OsNotificationClick) => {
-      const workspace = useWorkspaceStore.getState();
+      if (session_id && reviewSession(session_id, project_id ?? null, useRuntimeStore.getState().agents[session_id]?.status)) return;
       if (project_id) {
-        workspace.setActiveProject(project_id);
+        useWorkspaceStore.getState().setActiveProject(project_id);
         navigate(Routes.workspace.project(project_id));
       }
-      if (session_id) workspace.openSessionTab(session_id);
     };
 
     const unsubscribers = [
