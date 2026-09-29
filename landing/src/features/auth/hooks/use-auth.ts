@@ -24,7 +24,8 @@ export function useAdminSignin() {
                 return;
             }
             login(user);
-            router.push(Routes.admin.root);
+            // Straight to overview — skips the /dashboard root's redirect hop entirely.
+            router.push(Routes.admin.overview);
         },
         onError: (error: Error) => {
             toast({ title: "Could not sign in", description: error.message, duration: 4000, variant: "error" });

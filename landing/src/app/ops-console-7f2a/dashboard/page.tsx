@@ -1,13 +1,7 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Routes } from "@/routes/routes";
 
+// Server-side redirect — no client mount/effect race with the layout's own auth check.
 export default function AdminDashboardIndexPage() {
-    const router = useRouter();
-    useEffect(() => {
-        router.replace(Routes.admin.overview);
-    }, [router]);
-    return null;
+    redirect(Routes.admin.overview);
 }

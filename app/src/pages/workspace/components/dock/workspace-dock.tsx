@@ -19,8 +19,7 @@ import { useLayoutPersistence } from "@/features/workspace-layouts/hooks/use-lay
 export const MAIN_CONTENT_PANEL_ID = "main-content";
 export const AI_PANEL_ID = "ai-panel";
 const AI_PANEL_MIN_WIDTH = 320;
-const AI_PANEL_DEFAULT_WIDTH = 420;
-const AI_PANEL_DEFAULT_HEIGHT = 360;
+export const AI_PANEL_DEFAULT_WIDTH = 420;
 
 /** Routed project/workspace content — unchanged from the previous fixed shell. */
 const MainContentPanel: FC<IDockviewPanelProps> = () => (
@@ -46,30 +45,6 @@ const components: IDockviewReactProps["components"] = {
  * behaviorally equivalent to the previous shell — free drag-to-dock/split, tab groups, named
  * presets, and floating panels land in later phases (see plan `giggly-growing-heron.md`).
  */
-export const AiPanelDockSides = {
-  LEFT: "left",
-  RIGHT: "right",
-  TOP: "top",
-  BOTTOM: "bottom",
-} as const;
-export type AiPanelDockSide = (typeof AiPanelDockSides)[keyof typeof AiPanelDockSides];
-
-/**
- * The dock's tab strip is hidden (see `.workspace-dock` in index.css), so drag-to-dock is gone; this
- * is how the AI panel changes sides instead — it re-splits next to the main content panel.
- */
-export const moveAiPanel = (api: DockviewApi, side: AiPanelDockSide) => {
-  const ai = api.getPanel(AI_PANEL_ID);
-  const main = api.getPanel(MAIN_CONTENT_PANEL_ID);
-  if (!ai || !main) return;
-  try {
-    ai.api.moveTo({ group: main.group, position: side });
-    ai.api.setSize(side === "left" || side === "right" ? { width: AI_PANEL_DEFAULT_WIDTH } : { height: AI_PANEL_DEFAULT_HEIGHT });
-  } catch (error) {
-    console.error("Failed to move the AI panel", error);
-  }
-};
-
 export const WorkspaceDock: FC = () => {
   const apiRef = useRef<DockviewApi | null>(null);
   const { api, setApi } = useDockApi();

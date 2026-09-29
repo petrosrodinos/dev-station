@@ -6,9 +6,10 @@ import { useProject } from "@/features/projects/hooks/use-projects";
 import { useProjectLocalState } from "@/features/local-workspace/hooks/use-local-workspace";
 import { ProjectTabs, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { useWorkspaceStore } from "@/stores/workspace";
-import { ProjectIdentity, ProjectTabDock } from "./components/project-tab-dock";
+import { ProjectTabDock } from "./components/project-tab-dock";
 import { ProjectContext } from "./hooks/use-project-context";
 import { Routes } from "@/routes/routes";
+import { isDesktop } from "@/lib/desktop";
 import { cn } from "@/lib/utils";
 import { ProjectLocalStates } from "@shared/contract";
 
@@ -53,14 +54,6 @@ const ProjectLayout: FC = () => {
   return (
     <ProjectContext.Provider value={project}>
     <div className="@container flex h-full min-h-0 flex-col">
-      {/* In the dock the project's name and repo live at the left of the tab strip (see
-          `ProjectIdentity` in project-tab-dock.tsx), so there is no separate header row. The setup
-          wizard has no dock, so it keeps a slim one. */}
-      {onSetup && (
-        <div className="flex h-11 shrink-0 items-center gap-2.5 px-4">
-          <ProjectIdentity project={project} />
-        </div>
-      )}
       {/* The setup wizard (`Outlet`) still scrolls at this level; the dock scrolls per-panel
           instead (see `ProjectTabDock`'s `TabPanel`), so this level must not also clip or scroll it.
           The preview is a panel inside that dock, not a column here, so it moves like any tab. */}

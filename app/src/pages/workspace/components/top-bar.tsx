@@ -31,6 +31,7 @@ import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
 import { ShortcutsDialog } from "./shortcuts-dialog";
 import { LayoutMenu } from "./layout-menu";
+import { ProjectIdentity } from "./project-identity";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -125,6 +126,8 @@ export function TopBar() {
           <TooltipContent>Forward</TooltipContent>
         </Tooltip>
       </div>
+
+      <ProjectIdentity />
 
       <div className="app-drag min-w-0 flex-1" />
 

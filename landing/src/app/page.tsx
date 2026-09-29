@@ -1,8 +1,19 @@
 import Image from "next/image";
+import Link from "next/link";
+import { Routes } from "@/routes/routes";
 
 export default function Home() {
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+      {/* TEMP debug nav — remove once the admin console navigation works without it. */}
+      <div className="fixed top-2 left-2 z-50 flex gap-2 rounded-md bg-black/80 p-2 text-xs">
+        <Link href={Routes.admin.login} className="text-white underline">
+          admin login
+        </Link>
+        <Link href={Routes.admin.overview} className="text-white underline">
+          admin dashboard
+        </Link>
+      </div>
       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
         <Image
           className="dark:invert h-5 w-[100px]"

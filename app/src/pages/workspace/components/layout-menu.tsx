@@ -37,7 +37,8 @@ import { useWorkspaceStore } from "@/stores/workspace";
 import { RailPositionOptions, type RailPosition } from "@/config/constants/dropdowns/settings/rail-position.options";
 import { useRailPosition } from "@/features/users/hooks/use-rail-position";
 import { useDockApi } from "../context/dock-api-context";
-import { AI_PANEL_ID, moveAiPanel } from "./dock/workspace-dock";
+import { AI_PANEL_ID } from "./dock/workspace-dock";
+import { moveAiPanel } from "./dock/move-ai-panel";
 import { cn } from "@/lib/utils";
 
 /**
