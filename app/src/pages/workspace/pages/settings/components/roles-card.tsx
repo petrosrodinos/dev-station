@@ -93,7 +93,7 @@ export function RolesCard() {
                   </tr>
                   {items.map((perm) => (
                     <tr key={perm.key} className="border-b border-hairline-soft">
-                      <td className="px-4 py-2">{perm.label}</td>
+                      <td className="min-w-40 px-4 py-2">{perm.label}</td>
                       {roles?.map((r) => {
                         const allowed = r.permissions.includes(perm.key);
                         const editable = canEditThis(r) && !!actor && (allowed || canGrantPermission(actor, perm.key));

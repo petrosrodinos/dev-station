@@ -50,23 +50,25 @@ const SettingsPage: FC = () => {
   const permission = SettingsSectionOptions.find((s) => s.id === current)?.permission;
 
   return (
-    <div className="flex h-full min-h-0 gap-6 p-6">
-      <nav className="flex w-44 shrink-0 flex-col gap-0.5" aria-label="Settings sections">
-        <div className="mb-2 text-lg font-medium">Settings</div>
-        {filterByAccess(SettingsSectionOptions, can).map((s) => {
-          const Icon = SECTION_ICONS[s.id];
-          return (
-            <NavLink
-              key={s.id}
-              to={Routes.workspace.settings_section(s.id)}
-              className={cn("flex h-8 items-center gap-2 rounded-sm px-2 text-[0.8125rem] text-body hover:bg-surface-elevated", current === s.id && "bg-surface-elevated text-foreground")}
-            >
-              <Icon className="size-3.5" /> {s.label}
-            </NavLink>
-          );
-        })}
+    <div className="flex h-full min-h-0 flex-col gap-4 p-4 md:flex-row md:gap-6 md:p-6">
+      <nav className="flex shrink-0 flex-col gap-2 md:w-44 md:gap-0.5" aria-label="Settings sections">
+        <div className="text-lg font-medium md:mb-2">Settings</div>
+        <div className="-mx-4 flex gap-0.5 overflow-x-auto px-4 md:mx-0 md:flex-col md:overflow-visible md:px-0">
+          {filterByAccess(SettingsSectionOptions, can).map((s) => {
+            const Icon = SECTION_ICONS[s.id];
+            return (
+              <NavLink
+                key={s.id}
+                to={Routes.workspace.settings_section(s.id)}
+                className={cn("flex h-8 shrink-0 items-center gap-2 whitespace-nowrap rounded-sm px-2 text-[0.8125rem] text-body hover:bg-surface-elevated", current === s.id && "bg-surface-elevated text-foreground")}
+              >
+                <Icon className="size-3.5" /> {s.label}
+              </NavLink>
+            );
+          })}
+        </div>
       </nav>
-      <div className="min-w-0 max-w-3xl flex-1 overflow-y-auto pb-8">
+      <div className="min-h-0 min-w-0 max-w-3xl flex-1 overflow-y-auto pb-8">
         {permission ? (
           <RequirePermission permission={permission} redirectTo={Routes.workspace.settings}>
             <Section />

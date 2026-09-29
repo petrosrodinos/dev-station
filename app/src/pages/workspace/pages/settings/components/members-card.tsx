@@ -43,9 +43,9 @@ export function MembersCard() {
           const isMe = m.user.id === me?.id;
           const editable = canManage && !!actor && canModifyMember(actor, { user_id: m.user.id, rank: m.role.rank });
           return (
-            <div key={m.id} className="flex items-center gap-3 border-b border-hairline-soft px-4 py-3 last:border-b-0">
-              <div className="flex size-8 items-center justify-center rounded-full border bg-surface-card text-[0.6875rem] font-semibold">{generateInitials(m.user.full_name || m.user.email)}</div>
-              <div className="min-w-0 flex-1">
+            <div key={m.id} className="flex flex-wrap items-center gap-3 border-b border-hairline-soft px-4 py-3 last:border-b-0">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full border bg-surface-card text-[0.6875rem] font-semibold">{generateInitials(m.user.full_name || m.user.email)}</div>
+              <div className="min-w-0 flex-1 basis-40">
                 <div className="truncate text-[0.8125rem] font-medium">
                   {m.user.full_name ?? m.user.email} {isMe && <span className="text-muted-foreground">(you)</span>}
                 </div>
@@ -53,40 +53,42 @@ export function MembersCard() {
                   {m.user.email} · joined {formatRelative(m.joined_at)}
                 </div>
               </div>
-              {editable ? (
-                <Select value={m.role.id} onValueChange={(role_id) => updateRole.mutate({ memberId: m.id, role_id })}>
-                  <SelectTrigger className="h-8 w-40" aria-label={`Role for ${m.user.email}`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roles?.filter((r) => r.id === m.role.id || (actor && canAssignRole(actor, r))).map((r) => (
-                      <SelectItem key={r.id} value={r.id}>
-                        {r.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Badge variant="secondary" className={cn("font-medium", ROLE_BADGE[m.role.key])}>
-                  {m.role.name}
-                </Badge>
-              )}
-              {editable ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="Member actions">
-                      <MoreHorizontal className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="gap-2 text-danger focus:text-danger" onSelect={() => setRemoving(m)}>
-                      <UserMinus className="size-3.5" /> Remove from organization
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <span className="w-8" />
-              )}
+              <div className="ml-auto flex shrink-0 items-center gap-3">
+                {editable ? (
+                  <Select value={m.role.id} onValueChange={(role_id) => updateRole.mutate({ memberId: m.id, role_id })}>
+                    <SelectTrigger className="h-8 w-40" aria-label={`Role for ${m.user.email}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles?.filter((r) => r.id === m.role.id || (actor && canAssignRole(actor, r))).map((r) => (
+                        <SelectItem key={r.id} value={r.id}>
+                          {r.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Badge variant="secondary" className={cn("font-medium", ROLE_BADGE[m.role.key])}>
+                    {m.role.name}
+                  </Badge>
+                )}
+                {editable ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="Member actions">
+                        <MoreHorizontal className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem className="gap-2 text-danger focus:text-danger" onSelect={() => setRemoving(m)}>
+                        <UserMinus className="size-3.5" /> Remove from organization
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <span className="w-8" />
+                )}
+              </div>
             </div>
           );
         })

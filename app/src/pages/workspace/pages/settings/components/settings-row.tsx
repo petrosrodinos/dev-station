@@ -19,7 +19,7 @@ export function SettingsSectionHeader({ title, description }: { title: string; d
   return (
     <div className="mb-3">
       <div className="text-sm font-medium">{title}</div>
-      <div className="text-[0.7813rem] text-muted-foreground">{description}</div>
+      <div className="text-[0.7813rem] text-muted-foreground [overflow-wrap:anywhere]">{description}</div>
     </div>
   );
 }
