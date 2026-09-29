@@ -294,3 +294,9 @@
 .xterm-viewport {
   background-color: transparent !important;
 }
+
+/* SessionTerminalStage hides dockview's own tab strip — SessionNavigator above it already
+   provides select/close controls with a nicer UI, so a second generic strip is just a duplicate. */
+.session-terminal-dock .dv-tabs-and-actions-container {
+  display: none;
+}
