@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   DockviewReact,
+  type AddGroupOptions,
   type DockviewApi,
+  type DockviewGroupPanel,
   type DockviewReadyEvent,
   type IDockviewPanelProps,
   type IDockviewReactProps,
@@ -30,6 +32,11 @@ const sessionPanelId = (sessionId: string) => `session:${sessionId}`;
  */
 export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups; onNext: () => void }) {
   const apiRef = useRef<DockviewApi | null>(null);
+  // The default group's header is hidden — `SessionNavigator` above already shows a nicer,
+  // project-grouped tab strip with the same open/close/select controls, so dockview's own generic
+  // tab strip would just be a duplicate underneath it. A group created by dragging a tab into a
+  // split still gets a normal header, since at that point it genuinely needs one.
+  const defaultGroupRef = useRef<DockviewGroupPanel | null>(null);
   const openTabs = useWorkspaceStore((s) => s.open_session_tabs);
   const activeId = useWorkspaceStore((s) => s.active_session_id);
   const setActiveSession = useWorkspaceStore((s) => s.setActiveSession);
@@ -52,6 +59,7 @@ export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups
 
   const onReady = useCallback((event: DockviewReadyEvent) => {
     apiRef.current = event.api;
+    defaultGroupRef.current = event.api.addGroup({ hideHeader: true } as AddGroupOptions);
     event.api.onDidActivePanelChange(({ panel }) => {
       if (panel?.id.startsWith("session:")) setActiveSession(panel.id.slice("session:".length));
     });
@@ -62,6 +70,13 @@ export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups
   // (tabbed alongside any existing ones, so today's "one strip of tabs" look is the default; the
   // user can still drag a tab out to see two terminals live at once), remove closed ones.
   useEffect(() => {
+    // Closing the last tab swaps the dock for the empty state, which disposes it — drop the stale
+    // handles so nothing below calls into a disposed dockview ("resource already disposed").
+    if (!openTabs.length) {
+      apiRef.current = null;
+      defaultGroupRef.current = null;
+      return;
+    }
     const api = apiRef.current;
     if (!api) return;
     const floatingPanelIds = new Set(floatingIds.map((f) => f.panelId));
@@ -81,7 +96,11 @@ export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups
         id,
         component: SESSION_PANEL_COMPONENT,
         params: { sessionId },
-        position: anchor ? { referencePanel: anchor.id, direction: "within" } : undefined,
+        position: anchor
+          ? { referencePanel: anchor.id, direction: "within" }
+          : defaultGroupRef.current
+            ? { referenceGroup: defaultGroupRef.current, direction: "within" }
+            : undefined,
       });
     }
   }, [openTabs, floatingIds]);
@@ -89,9 +108,9 @@ export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups
   // Keep the dock's focused tab following the store's active session (e.g. after "next review").
   useEffect(() => {
     const api = apiRef.current;
-    if (!api || !activeId) return;
+    if (!api || !activeId || !openTabs.length) return;
     api.getPanel(sessionPanelId(activeId))?.api.setActive();
-  }, [activeId]);
+  }, [activeId, openTabs.length]);
 
   if (!openTabs.length) {
     return (
