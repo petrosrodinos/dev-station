@@ -1,10 +1,11 @@
-import { useEffect, type FC } from "react";
+import { useEffect, useRef, useState, type FC } from "react";
 import { Navigate, NavLink, Outlet, useLocation, useParams } from "react-router-dom";
-import { Bot, BookOpen, ChevronDown, ExternalLink, Files, GitBranch, Home, PanelRight, Plug, SquareTerminal } from "lucide-react";
+import { Bot, BookOpen, ChevronDown, ExternalLink, Files, GitBranch, Home, Minimize2, PanelRight, Plug, SquareTerminal } from "lucide-react";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useProject } from "@/features/projects/hooks/use-projects";
 import { useProjectLocalState } from "@/features/local-workspace/hooks/use-local-workspace";
@@ -13,6 +14,7 @@ import { useOpenInEditor } from "@/features/files/hooks/use-files";
 import { EditorTargetOptions } from "@/config/constants/dropdowns/settings/editor-target.options";
 import { ProjectTabOptions, ProjectTabs, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
+import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { PreviewPanel } from "./components/preview-panel";
 import { Routes } from "@/routes/routes";
 import { isDesktop } from "@/lib/desktop";
@@ -20,6 +22,9 @@ import { filterByAccess } from "@/lib/access.utils";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { cn } from "@/lib/utils";
 import { ProjectLocalStates } from "@shared/contract";
+
+/** Below this width the tab content beside the preview is unusable, so tabs open in a drawer instead. */
+const MIN_CONTENT_WIDTH = 360;
 
 const TAB_ICONS: Record<ProjectTab, typeof Home> = {
   [ProjectTabs.OVERVIEW]: Home,
@@ -33,7 +38,7 @@ const TAB_ICONS: Record<ProjectTab, typeof Home> = {
 
 /** Project workspace frame: header + sub navigation; non-local projects go to the setup flow (Spec §26). */
 const ProjectLayout: FC = () => {
-  const { projectId } = useParams();
+  const { projectId, tab: tabParam } = useParams();
   const location = useLocation();
   const { project, isPending } = useProject(projectId);
   const localState = useProjectLocalState(projectId);
@@ -48,6 +53,34 @@ const ProjectLayout: FC = () => {
   const previewAvailable = isDesktop() && !onSetup;
   // Review layout: the preview takes the whole project area, side by side with the AI panel.
   const reviewLayout = previewOpen && previewExpanded && previewAvailable;
+  const previewWidth = useWorkspaceStore((s) => (projectId ? s.preview_by_project[projectId]?.previewWidth : undefined)) ?? DEFAULT_PREVIEW_PREFS.previewWidth;
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [bodyWidth, setBodyWidth] = useState(0);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  // Tab content opens in a drawer when the preview leaves it no usable room.
+  const drawerMode = reviewLayout || (previewOpen && previewAvailable && bodyWidth > 0 && bodyWidth - previewWidth < MIN_CONTENT_WIDTH);
+  const currentTab = (tabParam ?? ProjectTabs.OVERVIEW) as ProjectTab;
+
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => setBodyWidth(entry.contentRect.width));
+    observer.observe(el);
+    return () => observer.disconnect();
+    // The body only exists once the project has loaded.
+  }, [project]);
+
+  useEffect(() => {
+    if (!drawerMode) setDrawerOpen(false);
+  }, [drawerMode]);
+
+  // Moving to another section of this project (tab click, "Diff" in the AI panel…) opens it in the drawer.
+  const lastSection = useRef({ projectId, tab: currentTab });
+  useEffect(() => {
+    const last = lastSection.current;
+    lastSection.current = { projectId, tab: currentTab };
+    if (drawerMode && last.projectId === projectId && last.tab !== currentTab) setDrawerOpen(true);
+  }, [projectId, currentTab, drawerMode]);
 
   useEffect(() => {
     if (projectId) setActiveProject(projectId);
@@ -138,11 +171,11 @@ const ProjectLayout: FC = () => {
                   aria-label={tab.label}
                   to={Routes.workspace.project_tab(project.id, tab.id)}
                   end
-                  onClick={() => reviewLayout && setProjectPreview(project.id, { previewExpanded: false })}
+                  onClick={() => drawerMode && setDrawerOpen(true)}
                   className={({ isActive }) =>
                     cn(
                       "-mb-px inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent px-2 text-[0.8125rem] font-medium text-muted-foreground hover:text-foreground",
-                      !reviewLayout && (isActive || (tab.id === ProjectTabs.OVERVIEW && location.pathname === Routes.workspace.project(project.id))) && "border-foreground text-foreground",
+                      (!drawerMode || drawerOpen) && (isActive || (tab.id === ProjectTabs.OVERVIEW && location.pathname === Routes.workspace.project(project.id))) && "border-foreground text-foreground",
                     )
                   }
                 >
@@ -161,13 +194,37 @@ const ProjectLayout: FC = () => {
           </nav>
         )}
       </div>
-      <div className="flex min-h-0 flex-1">
-        {/* Stays mounted in the review layout so the tab keeps its state when the preview is restored. */}
-        <div className={cn("@container min-h-0 min-w-0 flex-1 overflow-y-auto", reviewLayout && "hidden")}>
-          <Outlet context={{ project }} />
-        </div>
+      <div ref={bodyRef} className="flex min-h-0 flex-1">
+        {!drawerMode && (
+          <div className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">
+            <Outlet context={{ project }} />
+          </div>
+        )}
         {previewOpen && previewAvailable && <PreviewPanel key={project.id} project={project} expanded={reviewLayout} />}
       </div>
+      <Sheet open={drawerMode && drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent side="right" className="flex w-[min(960px,85vw)] flex-col gap-0 p-0 sm:max-w-none">
+          <div className="flex h-12 shrink-0 items-center gap-2 border-b pl-4 pr-12">
+            <SheetTitle className="truncate text-sm font-medium">
+              {project.name} · {getDropdownOptionLabel(ProjectTabOptions, currentTab)}
+            </SheetTitle>
+            <SheetDescription className="sr-only">Project section shown over the preview.</SheetDescription>
+            {reviewLayout && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto h-7 gap-1.5 text-xs text-muted-foreground"
+                onClick={() => setProjectPreview(project.id, { previewExpanded: false })}
+              >
+                <Minimize2 className="size-3.5" /> Show beside the preview
+              </Button>
+            )}
+          </div>
+          <div className="@container min-h-0 flex-1 overflow-y-auto">
+            <Outlet context={{ project }} />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };

@@ -34,7 +34,6 @@ interface WorkspaceState {
     reviewed_session_ids: string[];
     /** Last focused session per project, restored when switching back to that project. */
     session_by_project: Record<string, string>;
-    session_list_collapsed: boolean;
     /** Per-project preview panel state (open, width in px, previewed service). */
     preview_by_project: Record<string, ProjectPreviewPrefs>;
 }
@@ -52,7 +51,6 @@ interface WorkspaceActions {
     markReviewed(id: string): void;
     clearReviewed(id: string): void;
     rememberProjectSession(projectId: string, sessionId: string): void;
-    setSessionListCollapsed(collapsed: boolean): void;
     setProjectPreview(projectId: string, patch: Partial<ProjectPreviewPrefs>): void;
     reset(): void;
 }
@@ -67,7 +65,6 @@ const initialValues: WorkspaceState = {
     attention_session_ids: [],
     reviewed_session_ids: [],
     session_by_project: {},
-    session_list_collapsed: false,
     preview_by_project: {},
 };
 
@@ -116,7 +113,6 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                 clearReviewed: (id) => set((s) => (s.reviewed_session_ids.includes(id) ? { reviewed_session_ids: s.reviewed_session_ids.filter((x) => x !== id) } : s)),
                 rememberProjectSession: (projectId, sessionId) =>
                     set((s) => (s.session_by_project[projectId] === sessionId ? s : { session_by_project: { ...s.session_by_project, [projectId]: sessionId } })),
-                setSessionListCollapsed: (collapsed) => set({ session_list_collapsed: collapsed }),
                 setProjectPreview: (projectId, patch) =>
                     set((s) => ({
                         preview_by_project: {

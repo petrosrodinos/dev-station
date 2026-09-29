@@ -21,7 +21,6 @@ import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-ac
 import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { commitSchema, type CommitFormData } from "@/pages/workspace/pages/project/validation-schemas/project.schema";
 import { useRuntimeStore } from "@/stores/runtime";
-import { useWorkspaceStore } from "@/stores/workspace";
 import { Routes } from "@/routes/routes";
 import { AgentRuntimeStatuses, ProjectLocalStates } from "@shared/contract";
 import type { SessionItem } from "../hooks/use-session-groups";
@@ -47,7 +46,6 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
   const markReviewed = useMarkSessionReviewed();
   const { data: identities } = useGitIdentities();
   const identity = identities?.find((i) => i.is_default);
-  const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
   const nextCombo = useResolvedShortcuts().find((s) => s.id === ShortcutActions.GO_TO_FINISHED_SESSION)?.combo;
   const othersWorking = useRuntimeStore(
     (s) => Object.values(s.agents).filter((a) => a.project_id === project.id && a.id !== item.id && a.alive && a.status === AgentRuntimeStatuses.RUNNING).length,
@@ -64,10 +62,8 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
   const reviewable = state === SessionReviewStates.READY || done;
   if (state === SessionReviewStates.WORKING || (!reviewable && !files.length)) return null;
 
-  const openDiff = () => {
-    setProjectPreview(project.id, { previewExpanded: false });
-    navigate(Routes.workspace.project_tab(project.id, ProjectTabs.GIT));
-  };
+  // In the review layout the Git tab opens in a drawer over the preview.
+  const openDiff = () => navigate(Routes.workspace.project_tab(project.id, ProjectTabs.GIT));
 
   const submit = form.handleSubmit((data) =>
     commit.mutate(
