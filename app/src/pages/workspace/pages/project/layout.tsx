@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FC } from "react";
 import { Navigate, NavLink, Outlet, useLocation, useParams } from "react-router-dom";
-import { Bot, BookOpen, ChevronDown, ExternalLink, Files, GitBranch, Home, Minimize2, PanelRight, Plug, SquareTerminal } from "lucide-react";
+import { ChevronDown, ExternalLink, GitBranch, Minimize2, PanelRight } from "lucide-react";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,25 +20,15 @@ import { ProjectTabDock } from "./components/project-tab-dock";
 import { ProjectContext } from "./hooks/use-project-context";
 import { Routes } from "@/routes/routes";
 import { isDesktop } from "@/lib/desktop";
-import { filterByAccess } from "@/lib/access.utils";
-import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { cn } from "@/lib/utils";
 import { ProjectLocalStates } from "@shared/contract";
 
 /** Below this width the tab content beside the preview is unusable, so tabs open in a drawer instead. */
 const MIN_CONTENT_WIDTH = 360;
 
-const TAB_ICONS: Record<ProjectTab, typeof Home> = {
-  [ProjectTabs.OVERVIEW]: Home,
-  [ProjectTabs.GIT]: GitBranch,
-  [ProjectTabs.FILES]: Files,
-  [ProjectTabs.TERMINAL]: SquareTerminal,
-  [ProjectTabs.SESSIONS]: Bot,
-  [ProjectTabs.SKILLS]: BookOpen,
-  [ProjectTabs.INTEGRATIONS]: Plug,
-};
-
-/** Project workspace frame: header + sub navigation; non-local projects go to the setup flow (Spec §26). */
+/** Project workspace frame: header only — the tab bar itself is the dock's own tab strip now
+ * (see `project-tab-dock.tsx`'s custom tab renderer), not a separate nav, to avoid showing two
+ * tab bars for the same sections. Non-local projects go to the setup flow (Spec §26). */
 const ProjectLayout: FC = () => {
   const { projectId, tab: tabParam } = useParams();
   const location = useLocation();
@@ -47,7 +37,6 @@ const ProjectLayout: FC = () => {
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
   const { data: git } = useGitStatus(projectId ?? null);
   const openInEditor = useOpenInEditor();
-  const { can } = usePermissions();
   const onSetup = location.pathname.endsWith("/setup");
   const previewOpen = useWorkspaceStore((s) => (projectId ? s.preview_by_project[projectId]?.previewOpen : false)) ?? DEFAULT_PREVIEW_PREFS.previewOpen;
   const previewExpanded = useWorkspaceStore((s) => (projectId ? s.preview_by_project[projectId]?.previewExpanded : false)) ?? DEFAULT_PREVIEW_PREFS.previewExpanded;
@@ -163,39 +152,6 @@ const ProjectLayout: FC = () => {
             )}
           </div>
         </div>
-        {!onSetup && (
-          <nav className="-mx-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Project sections">
-            {filterByAccess(ProjectTabOptions, can).map((tab) => {
-              const Icon = TAB_ICONS[tab.id];
-              return (
-                <NavLink
-                  key={tab.id}
-                  title={tab.label}
-                  aria-label={tab.label}
-                  to={Routes.workspace.project_tab(project.id, tab.id)}
-                  end
-                  onClick={() => drawerMode && setDrawerOpen(true)}
-                  className={({ isActive }) =>
-                    cn(
-                      "-mb-px inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent px-2 text-[0.8125rem] font-medium text-muted-foreground hover:text-foreground",
-                      (!drawerMode || drawerOpen) && (isActive || (tab.id === ProjectTabs.OVERVIEW && location.pathname === Routes.workspace.project(project.id))) && "border-foreground text-foreground",
-                    )
-                  }
-                >
-                  {({ isActive }) => {
-                    const active = isActive || (tab.id === ProjectTabs.OVERVIEW && location.pathname === Routes.workspace.project(project.id));
-                    return (
-                      <>
-                        <Icon className="size-3.5 shrink-0" />
-                        <span className={cn(!active && "hidden @3xl:inline")}>{tab.label}</span>
-                      </>
-                    );
-                  }}
-                </NavLink>
-              );
-            })}
-          </nav>
-        )}
       </div>
       <div ref={bodyRef} className="flex min-h-0 flex-1">
         {!drawerMode && (
