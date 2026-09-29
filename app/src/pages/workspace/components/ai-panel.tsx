@@ -129,7 +129,6 @@ function ActiveSessionTerminal({ groups, onNext }: { groups: SessionGroups; onNe
   const restart = useRestartAgentSession();
   const openExternal = useOpenAgentExternally();
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
   const { can } = usePermissions();
 
   const { data: workspaceConfig } = useWorkspaceConfig();
@@ -182,10 +181,7 @@ function ActiveSessionTerminal({ groups, onNext }: { groups: SessionGroups; onNe
         {changes && changes.files_changed > 0 && project && (
           <PanelIconButton
             label="Review changes"
-            onClick={() => {
-              setProjectPreview(project.id, { previewExpanded: false });
-              navigate(Routes.workspace.project_tab(project.id, ProjectTabs.GIT));
-            }}
+            onClick={() => navigate(Routes.workspace.project_tab(project.id, ProjectTabs.GIT))}
           >
             <FileDiff className="size-3.5" />
           </PanelIconButton>

@@ -43,7 +43,7 @@ const WorkspaceLayout: FC = () => {
         <div className="flex min-h-0 flex-1">
           <ProjectRail />
           <ResizablePanelGroup orientation="horizontal" className="min-w-0 flex-1">
-            <ResizablePanel id="workspace" minSize={480}>
+            <ResizablePanel id="workspace">
               <main className="flex h-full min-w-0 flex-col">
                 <Outlet />
               </main>
@@ -51,7 +51,7 @@ const WorkspaceLayout: FC = () => {
             {aiPanelOpen && (
               <>
                 <ResizableHandle />
-                <ResizablePanel id="ai-panel" minSize={320} maxSize={960} defaultSize={420}>
+                <ResizablePanel id="ai-panel" minSize={320} defaultSize={420}>
                   <AiPanel groups={sessionGroups} />
                 </ResizablePanel>
               </>
