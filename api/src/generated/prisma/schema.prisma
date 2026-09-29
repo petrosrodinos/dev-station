@@ -173,6 +173,7 @@ model User {
   agent_sessions         AgentSession[]
   activities             Activity[]
   git_identities         GitIdentity[]
+  agent_commands         AgentCommand[]
   skill_favorites        SkillFavorite[]
   workspace_layouts      WorkspaceLayoutPreset[]
   workspace_layout_state WorkspaceLayoutState?
@@ -230,6 +231,25 @@ model GitIdentity {
   @@map("git_identities")
 }
 
+/// Custom launch command lines per agent CLI (e.g. `claude --dangerously-skip-permissions`).
+/// At most one per (user, agent_type) is the default (enforced in the service).
+model AgentCommand {
+  id         String    @id @default(uuid())
+  user_id    String
+  agent_type AgentType
+  name       String
+  command    String
+  is_default Boolean   @default(false)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, agent_type, name])
+  @@index([user_id])
+  @@map("agent_commands")
+}
+
 /// Cross-device user preferences (preferred agent, theme...). Device-only settings live in Electron.
 model UserPreference {
   id                     String    @id @default(uuid())
@@ -247,6 +267,8 @@ model UserPreference {
   font_size              Int       @default(14)
   font_family            String    @default("inter")
   mono_font_family       String    @default("jetbrains-mono")
+  /// Edge of the workspace the project rail is docked to: left | right | top | bottom
+  rail_position          String    @default("left")
   /// Partial override of the notification defaults (see users/constants/notification-settings.constants.ts); null = defaults
   notification_settings  Json?
   /// Keyboard shortcut overrides + custom shortcuts (see users/constants/shortcut-settings.constants.ts); null = defaults

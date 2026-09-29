@@ -34,6 +34,12 @@ export type Document = $Result.DefaultSelection<Prisma.$DocumentPayload>
  */
 export type GitIdentity = $Result.DefaultSelection<Prisma.$GitIdentityPayload>
 /**
+ * Model AgentCommand
+ * Custom launch command lines per agent CLI (e.g. `claude --dangerously-skip-permissions`).
+ * At most one per (user, agent_type) is the default (enforced in the service).
+ */
+export type AgentCommand = $Result.DefaultSelection<Prisma.$AgentCommandPayload>
+/**
  * Model UserPreference
  * Cross-device user preferences (preferred agent, theme...). Device-only settings live in Electron.
  */
@@ -551,6 +557,16 @@ export class PrismaClient<
     * ```
     */
   get gitIdentity(): Prisma.GitIdentityDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.agentCommand`: Exposes CRUD operations for the **AgentCommand** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AgentCommands
+    * const agentCommands = await prisma.agentCommand.findMany()
+    * ```
+    */
+  get agentCommand(): Prisma.AgentCommandDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.userPreference`: Exposes CRUD operations for the **UserPreference** model.
@@ -1179,6 +1195,7 @@ export namespace Prisma {
     PasswordResetToken: 'PasswordResetToken',
     Document: 'Document',
     GitIdentity: 'GitIdentity',
+    AgentCommand: 'AgentCommand',
     UserPreference: 'UserPreference',
     WorkspaceLayoutPreset: 'WorkspaceLayoutPreset',
     WorkspaceLayoutState: 'WorkspaceLayoutState',
@@ -1213,7 +1230,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "passwordResetToken" | "document" | "gitIdentity" | "userPreference" | "workspaceLayoutPreset" | "workspaceLayoutState" | "organization" | "role" | "rolePermission" | "organizationMember" | "organizationInvitation" | "repository" | "project" | "projectService" | "projectIssue" | "integrationConnection" | "agentSession" | "activity" | "skill" | "skillFavorite" | "appRelease" | "appInstall"
+      modelProps: "user" | "passwordResetToken" | "document" | "gitIdentity" | "agentCommand" | "userPreference" | "workspaceLayoutPreset" | "workspaceLayoutState" | "organization" | "role" | "rolePermission" | "organizationMember" | "organizationInvitation" | "repository" | "project" | "projectService" | "projectIssue" | "integrationConnection" | "agentSession" | "activity" | "skill" | "skillFavorite" | "appRelease" | "appInstall"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1510,6 +1527,80 @@ export namespace Prisma {
           count: {
             args: Prisma.GitIdentityCountArgs<ExtArgs>
             result: $Utils.Optional<GitIdentityCountAggregateOutputType> | number
+          }
+        }
+      }
+      AgentCommand: {
+        payload: Prisma.$AgentCommandPayload<ExtArgs>
+        fields: Prisma.AgentCommandFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AgentCommandFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentCommandPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AgentCommandFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentCommandPayload>
+          }
+          findFirst: {
+            args: Prisma.AgentCommandFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentCommandPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AgentCommandFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentCommandPayload>
+          }
+          findMany: {
+            args: Prisma.AgentCommandFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentCommandPayload>[]
+          }
+          create: {
+            args: Prisma.AgentCommandCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentCommandPayload>
+          }
+          createMany: {
+            args: Prisma.AgentCommandCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AgentCommandCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentCommandPayload>[]
+          }
+          delete: {
+            args: Prisma.AgentCommandDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentCommandPayload>
+          }
+          update: {
+            args: Prisma.AgentCommandUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentCommandPayload>
+          }
+          deleteMany: {
+            args: Prisma.AgentCommandDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AgentCommandUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AgentCommandUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentCommandPayload>[]
+          }
+          upsert: {
+            args: Prisma.AgentCommandUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentCommandPayload>
+          }
+          aggregate: {
+            args: Prisma.AgentCommandAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAgentCommand>
+          }
+          groupBy: {
+            args: Prisma.AgentCommandGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AgentCommandGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AgentCommandCountArgs<ExtArgs>
+            result: $Utils.Optional<AgentCommandCountAggregateOutputType> | number
           }
         }
       }
@@ -3031,6 +3122,7 @@ export namespace Prisma {
     passwordResetToken?: PasswordResetTokenOmit
     document?: DocumentOmit
     gitIdentity?: GitIdentityOmit
+    agentCommand?: AgentCommandOmit
     userPreference?: UserPreferenceOmit
     workspaceLayoutPreset?: WorkspaceLayoutPresetOmit
     workspaceLayoutState?: WorkspaceLayoutStateOmit
@@ -3136,6 +3228,7 @@ export namespace Prisma {
     agent_sessions: number
     activities: number
     git_identities: number
+    agent_commands: number
     skill_favorites: number
     workspace_layouts: number
   }
@@ -3147,6 +3240,7 @@ export namespace Prisma {
     agent_sessions?: boolean | UserCountOutputTypeCountAgent_sessionsArgs
     activities?: boolean | UserCountOutputTypeCountActivitiesArgs
     git_identities?: boolean | UserCountOutputTypeCountGit_identitiesArgs
+    agent_commands?: boolean | UserCountOutputTypeCountAgent_commandsArgs
     skill_favorites?: boolean | UserCountOutputTypeCountSkill_favoritesArgs
     workspace_layouts?: boolean | UserCountOutputTypeCountWorkspace_layoutsArgs
   }
@@ -3202,6 +3296,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountGit_identitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GitIdentityWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAgent_commandsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgentCommandWhereInput
   }
 
   /**
@@ -3796,6 +3897,7 @@ export namespace Prisma {
     agent_sessions?: boolean | User$agent_sessionsArgs<ExtArgs>
     activities?: boolean | User$activitiesArgs<ExtArgs>
     git_identities?: boolean | User$git_identitiesArgs<ExtArgs>
+    agent_commands?: boolean | User$agent_commandsArgs<ExtArgs>
     skill_favorites?: boolean | User$skill_favoritesArgs<ExtArgs>
     workspace_layouts?: boolean | User$workspace_layoutsArgs<ExtArgs>
     workspace_layout_state?: boolean | User$workspace_layout_stateArgs<ExtArgs>
@@ -3847,6 +3949,7 @@ export namespace Prisma {
     agent_sessions?: boolean | User$agent_sessionsArgs<ExtArgs>
     activities?: boolean | User$activitiesArgs<ExtArgs>
     git_identities?: boolean | User$git_identitiesArgs<ExtArgs>
+    agent_commands?: boolean | User$agent_commandsArgs<ExtArgs>
     skill_favorites?: boolean | User$skill_favoritesArgs<ExtArgs>
     workspace_layouts?: boolean | User$workspace_layoutsArgs<ExtArgs>
     workspace_layout_state?: boolean | User$workspace_layout_stateArgs<ExtArgs>
@@ -3865,6 +3968,7 @@ export namespace Prisma {
       agent_sessions: Prisma.$AgentSessionPayload<ExtArgs>[]
       activities: Prisma.$ActivityPayload<ExtArgs>[]
       git_identities: Prisma.$GitIdentityPayload<ExtArgs>[]
+      agent_commands: Prisma.$AgentCommandPayload<ExtArgs>[]
       skill_favorites: Prisma.$SkillFavoritePayload<ExtArgs>[]
       workspace_layouts: Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>[]
       workspace_layout_state: Prisma.$WorkspaceLayoutStatePayload<ExtArgs> | null
@@ -4280,6 +4384,7 @@ export namespace Prisma {
     agent_sessions<T extends User$agent_sessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$agent_sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     activities<T extends User$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     git_identities<T extends User$git_identitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$git_identitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GitIdentityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    agent_commands<T extends User$agent_commandsArgs<ExtArgs> = {}>(args?: Subset<T, User$agent_commandsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     skill_favorites<T extends User$skill_favoritesArgs<ExtArgs> = {}>(args?: Subset<T, User$skill_favoritesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SkillFavoritePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     workspace_layouts<T extends User$workspace_layoutsArgs<ExtArgs> = {}>(args?: Subset<T, User$workspace_layoutsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     workspace_layout_state<T extends User$workspace_layout_stateArgs<ExtArgs> = {}>(args?: Subset<T, User$workspace_layout_stateArgs<ExtArgs>>): Prisma__WorkspaceLayoutStateClient<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -4869,6 +4974,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: GitIdentityScalarFieldEnum | GitIdentityScalarFieldEnum[]
+  }
+
+  /**
+   * User.agent_commands
+   */
+  export type User$agent_commandsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandInclude<ExtArgs> | null
+    where?: AgentCommandWhereInput
+    orderBy?: AgentCommandOrderByWithRelationInput | AgentCommandOrderByWithRelationInput[]
+    cursor?: AgentCommandWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AgentCommandScalarFieldEnum | AgentCommandScalarFieldEnum[]
   }
 
   /**
@@ -8207,6 +8336,1103 @@ export namespace Prisma {
 
 
   /**
+   * Model AgentCommand
+   */
+
+  export type AggregateAgentCommand = {
+    _count: AgentCommandCountAggregateOutputType | null
+    _min: AgentCommandMinAggregateOutputType | null
+    _max: AgentCommandMaxAggregateOutputType | null
+  }
+
+  export type AgentCommandMinAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    agent_type: $Enums.AgentType | null
+    name: string | null
+    command: string | null
+    is_default: boolean | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type AgentCommandMaxAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    agent_type: $Enums.AgentType | null
+    name: string | null
+    command: string | null
+    is_default: boolean | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type AgentCommandCountAggregateOutputType = {
+    id: number
+    user_id: number
+    agent_type: number
+    name: number
+    command: number
+    is_default: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type AgentCommandMinAggregateInputType = {
+    id?: true
+    user_id?: true
+    agent_type?: true
+    name?: true
+    command?: true
+    is_default?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type AgentCommandMaxAggregateInputType = {
+    id?: true
+    user_id?: true
+    agent_type?: true
+    name?: true
+    command?: true
+    is_default?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type AgentCommandCountAggregateInputType = {
+    id?: true
+    user_id?: true
+    agent_type?: true
+    name?: true
+    command?: true
+    is_default?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type AgentCommandAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgentCommand to aggregate.
+     */
+    where?: AgentCommandWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentCommands to fetch.
+     */
+    orderBy?: AgentCommandOrderByWithRelationInput | AgentCommandOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AgentCommandWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentCommands from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentCommands.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AgentCommands
+    **/
+    _count?: true | AgentCommandCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AgentCommandMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AgentCommandMaxAggregateInputType
+  }
+
+  export type GetAgentCommandAggregateType<T extends AgentCommandAggregateArgs> = {
+        [P in keyof T & keyof AggregateAgentCommand]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAgentCommand[P]>
+      : GetScalarType<T[P], AggregateAgentCommand[P]>
+  }
+
+
+
+
+  export type AgentCommandGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgentCommandWhereInput
+    orderBy?: AgentCommandOrderByWithAggregationInput | AgentCommandOrderByWithAggregationInput[]
+    by: AgentCommandScalarFieldEnum[] | AgentCommandScalarFieldEnum
+    having?: AgentCommandScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AgentCommandCountAggregateInputType | true
+    _min?: AgentCommandMinAggregateInputType
+    _max?: AgentCommandMaxAggregateInputType
+  }
+
+  export type AgentCommandGroupByOutputType = {
+    id: string
+    user_id: string
+    agent_type: $Enums.AgentType
+    name: string
+    command: string
+    is_default: boolean
+    created_at: Date
+    updated_at: Date
+    _count: AgentCommandCountAggregateOutputType | null
+    _min: AgentCommandMinAggregateOutputType | null
+    _max: AgentCommandMaxAggregateOutputType | null
+  }
+
+  type GetAgentCommandGroupByPayload<T extends AgentCommandGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AgentCommandGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AgentCommandGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AgentCommandGroupByOutputType[P]>
+            : GetScalarType<T[P], AgentCommandGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AgentCommandSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    agent_type?: boolean
+    name?: boolean
+    command?: boolean
+    is_default?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentCommand"]>
+
+  export type AgentCommandSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    agent_type?: boolean
+    name?: boolean
+    command?: boolean
+    is_default?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentCommand"]>
+
+  export type AgentCommandSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    agent_type?: boolean
+    name?: boolean
+    command?: boolean
+    is_default?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentCommand"]>
+
+  export type AgentCommandSelectScalar = {
+    id?: boolean
+    user_id?: boolean
+    agent_type?: boolean
+    name?: boolean
+    command?: boolean
+    is_default?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type AgentCommandOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "agent_type" | "name" | "command" | "is_default" | "created_at" | "updated_at", ExtArgs["result"]["agentCommand"]>
+  export type AgentCommandInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type AgentCommandIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type AgentCommandIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $AgentCommandPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AgentCommand"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      user_id: string
+      agent_type: $Enums.AgentType
+      name: string
+      command: string
+      is_default: boolean
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["agentCommand"]>
+    composites: {}
+  }
+
+  type AgentCommandGetPayload<S extends boolean | null | undefined | AgentCommandDefaultArgs> = $Result.GetResult<Prisma.$AgentCommandPayload, S>
+
+  type AgentCommandCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AgentCommandFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AgentCommandCountAggregateInputType | true
+    }
+
+  export interface AgentCommandDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AgentCommand'], meta: { name: 'AgentCommand' } }
+    /**
+     * Find zero or one AgentCommand that matches the filter.
+     * @param {AgentCommandFindUniqueArgs} args - Arguments to find a AgentCommand
+     * @example
+     * // Get one AgentCommand
+     * const agentCommand = await prisma.agentCommand.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AgentCommandFindUniqueArgs>(args: SelectSubset<T, AgentCommandFindUniqueArgs<ExtArgs>>): Prisma__AgentCommandClient<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AgentCommand that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AgentCommandFindUniqueOrThrowArgs} args - Arguments to find a AgentCommand
+     * @example
+     * // Get one AgentCommand
+     * const agentCommand = await prisma.agentCommand.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AgentCommandFindUniqueOrThrowArgs>(args: SelectSubset<T, AgentCommandFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AgentCommandClient<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgentCommand that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentCommandFindFirstArgs} args - Arguments to find a AgentCommand
+     * @example
+     * // Get one AgentCommand
+     * const agentCommand = await prisma.agentCommand.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AgentCommandFindFirstArgs>(args?: SelectSubset<T, AgentCommandFindFirstArgs<ExtArgs>>): Prisma__AgentCommandClient<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgentCommand that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentCommandFindFirstOrThrowArgs} args - Arguments to find a AgentCommand
+     * @example
+     * // Get one AgentCommand
+     * const agentCommand = await prisma.agentCommand.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AgentCommandFindFirstOrThrowArgs>(args?: SelectSubset<T, AgentCommandFindFirstOrThrowArgs<ExtArgs>>): Prisma__AgentCommandClient<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AgentCommands that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentCommandFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AgentCommands
+     * const agentCommands = await prisma.agentCommand.findMany()
+     * 
+     * // Get first 10 AgentCommands
+     * const agentCommands = await prisma.agentCommand.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const agentCommandWithIdOnly = await prisma.agentCommand.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AgentCommandFindManyArgs>(args?: SelectSubset<T, AgentCommandFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AgentCommand.
+     * @param {AgentCommandCreateArgs} args - Arguments to create a AgentCommand.
+     * @example
+     * // Create one AgentCommand
+     * const AgentCommand = await prisma.agentCommand.create({
+     *   data: {
+     *     // ... data to create a AgentCommand
+     *   }
+     * })
+     * 
+     */
+    create<T extends AgentCommandCreateArgs>(args: SelectSubset<T, AgentCommandCreateArgs<ExtArgs>>): Prisma__AgentCommandClient<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AgentCommands.
+     * @param {AgentCommandCreateManyArgs} args - Arguments to create many AgentCommands.
+     * @example
+     * // Create many AgentCommands
+     * const agentCommand = await prisma.agentCommand.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AgentCommandCreateManyArgs>(args?: SelectSubset<T, AgentCommandCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AgentCommands and returns the data saved in the database.
+     * @param {AgentCommandCreateManyAndReturnArgs} args - Arguments to create many AgentCommands.
+     * @example
+     * // Create many AgentCommands
+     * const agentCommand = await prisma.agentCommand.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AgentCommands and only return the `id`
+     * const agentCommandWithIdOnly = await prisma.agentCommand.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AgentCommandCreateManyAndReturnArgs>(args?: SelectSubset<T, AgentCommandCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AgentCommand.
+     * @param {AgentCommandDeleteArgs} args - Arguments to delete one AgentCommand.
+     * @example
+     * // Delete one AgentCommand
+     * const AgentCommand = await prisma.agentCommand.delete({
+     *   where: {
+     *     // ... filter to delete one AgentCommand
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AgentCommandDeleteArgs>(args: SelectSubset<T, AgentCommandDeleteArgs<ExtArgs>>): Prisma__AgentCommandClient<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AgentCommand.
+     * @param {AgentCommandUpdateArgs} args - Arguments to update one AgentCommand.
+     * @example
+     * // Update one AgentCommand
+     * const agentCommand = await prisma.agentCommand.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AgentCommandUpdateArgs>(args: SelectSubset<T, AgentCommandUpdateArgs<ExtArgs>>): Prisma__AgentCommandClient<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AgentCommands.
+     * @param {AgentCommandDeleteManyArgs} args - Arguments to filter AgentCommands to delete.
+     * @example
+     * // Delete a few AgentCommands
+     * const { count } = await prisma.agentCommand.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AgentCommandDeleteManyArgs>(args?: SelectSubset<T, AgentCommandDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgentCommands.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentCommandUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AgentCommands
+     * const agentCommand = await prisma.agentCommand.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AgentCommandUpdateManyArgs>(args: SelectSubset<T, AgentCommandUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgentCommands and returns the data updated in the database.
+     * @param {AgentCommandUpdateManyAndReturnArgs} args - Arguments to update many AgentCommands.
+     * @example
+     * // Update many AgentCommands
+     * const agentCommand = await prisma.agentCommand.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AgentCommands and only return the `id`
+     * const agentCommandWithIdOnly = await prisma.agentCommand.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AgentCommandUpdateManyAndReturnArgs>(args: SelectSubset<T, AgentCommandUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AgentCommand.
+     * @param {AgentCommandUpsertArgs} args - Arguments to update or create a AgentCommand.
+     * @example
+     * // Update or create a AgentCommand
+     * const agentCommand = await prisma.agentCommand.upsert({
+     *   create: {
+     *     // ... data to create a AgentCommand
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AgentCommand we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AgentCommandUpsertArgs>(args: SelectSubset<T, AgentCommandUpsertArgs<ExtArgs>>): Prisma__AgentCommandClient<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AgentCommands.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentCommandCountArgs} args - Arguments to filter AgentCommands to count.
+     * @example
+     * // Count the number of AgentCommands
+     * const count = await prisma.agentCommand.count({
+     *   where: {
+     *     // ... the filter for the AgentCommands we want to count
+     *   }
+     * })
+    **/
+    count<T extends AgentCommandCountArgs>(
+      args?: Subset<T, AgentCommandCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AgentCommandCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AgentCommand.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentCommandAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AgentCommandAggregateArgs>(args: Subset<T, AgentCommandAggregateArgs>): Prisma.PrismaPromise<GetAgentCommandAggregateType<T>>
+
+    /**
+     * Group by AgentCommand.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentCommandGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AgentCommandGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AgentCommandGroupByArgs['orderBy'] }
+        : { orderBy?: AgentCommandGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AgentCommandGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAgentCommandGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AgentCommand model
+   */
+  readonly fields: AgentCommandFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AgentCommand.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AgentCommandClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AgentCommand model
+   */
+  interface AgentCommandFieldRefs {
+    readonly id: FieldRef<"AgentCommand", 'String'>
+    readonly user_id: FieldRef<"AgentCommand", 'String'>
+    readonly agent_type: FieldRef<"AgentCommand", 'AgentType'>
+    readonly name: FieldRef<"AgentCommand", 'String'>
+    readonly command: FieldRef<"AgentCommand", 'String'>
+    readonly is_default: FieldRef<"AgentCommand", 'Boolean'>
+    readonly created_at: FieldRef<"AgentCommand", 'DateTime'>
+    readonly updated_at: FieldRef<"AgentCommand", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AgentCommand findUnique
+   */
+  export type AgentCommandFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentCommand to fetch.
+     */
+    where: AgentCommandWhereUniqueInput
+  }
+
+  /**
+   * AgentCommand findUniqueOrThrow
+   */
+  export type AgentCommandFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentCommand to fetch.
+     */
+    where: AgentCommandWhereUniqueInput
+  }
+
+  /**
+   * AgentCommand findFirst
+   */
+  export type AgentCommandFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentCommand to fetch.
+     */
+    where?: AgentCommandWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentCommands to fetch.
+     */
+    orderBy?: AgentCommandOrderByWithRelationInput | AgentCommandOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgentCommands.
+     */
+    cursor?: AgentCommandWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentCommands from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentCommands.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgentCommands.
+     */
+    distinct?: AgentCommandScalarFieldEnum | AgentCommandScalarFieldEnum[]
+  }
+
+  /**
+   * AgentCommand findFirstOrThrow
+   */
+  export type AgentCommandFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentCommand to fetch.
+     */
+    where?: AgentCommandWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentCommands to fetch.
+     */
+    orderBy?: AgentCommandOrderByWithRelationInput | AgentCommandOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgentCommands.
+     */
+    cursor?: AgentCommandWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentCommands from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentCommands.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgentCommands.
+     */
+    distinct?: AgentCommandScalarFieldEnum | AgentCommandScalarFieldEnum[]
+  }
+
+  /**
+   * AgentCommand findMany
+   */
+  export type AgentCommandFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentCommands to fetch.
+     */
+    where?: AgentCommandWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentCommands to fetch.
+     */
+    orderBy?: AgentCommandOrderByWithRelationInput | AgentCommandOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AgentCommands.
+     */
+    cursor?: AgentCommandWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentCommands from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentCommands.
+     */
+    skip?: number
+    distinct?: AgentCommandScalarFieldEnum | AgentCommandScalarFieldEnum[]
+  }
+
+  /**
+   * AgentCommand create
+   */
+  export type AgentCommandCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AgentCommand.
+     */
+    data: XOR<AgentCommandCreateInput, AgentCommandUncheckedCreateInput>
+  }
+
+  /**
+   * AgentCommand createMany
+   */
+  export type AgentCommandCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AgentCommands.
+     */
+    data: AgentCommandCreateManyInput | AgentCommandCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AgentCommand createManyAndReturn
+   */
+  export type AgentCommandCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * The data used to create many AgentCommands.
+     */
+    data: AgentCommandCreateManyInput | AgentCommandCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AgentCommand update
+   */
+  export type AgentCommandUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AgentCommand.
+     */
+    data: XOR<AgentCommandUpdateInput, AgentCommandUncheckedUpdateInput>
+    /**
+     * Choose, which AgentCommand to update.
+     */
+    where: AgentCommandWhereUniqueInput
+  }
+
+  /**
+   * AgentCommand updateMany
+   */
+  export type AgentCommandUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AgentCommands.
+     */
+    data: XOR<AgentCommandUpdateManyMutationInput, AgentCommandUncheckedUpdateManyInput>
+    /**
+     * Filter which AgentCommands to update
+     */
+    where?: AgentCommandWhereInput
+    /**
+     * Limit how many AgentCommands to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgentCommand updateManyAndReturn
+   */
+  export type AgentCommandUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * The data used to update AgentCommands.
+     */
+    data: XOR<AgentCommandUpdateManyMutationInput, AgentCommandUncheckedUpdateManyInput>
+    /**
+     * Filter which AgentCommands to update
+     */
+    where?: AgentCommandWhereInput
+    /**
+     * Limit how many AgentCommands to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AgentCommand upsert
+   */
+  export type AgentCommandUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AgentCommand to update in case it exists.
+     */
+    where: AgentCommandWhereUniqueInput
+    /**
+     * In case the AgentCommand found by the `where` argument doesn't exist, create a new AgentCommand with this data.
+     */
+    create: XOR<AgentCommandCreateInput, AgentCommandUncheckedCreateInput>
+    /**
+     * In case the AgentCommand was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AgentCommandUpdateInput, AgentCommandUncheckedUpdateInput>
+  }
+
+  /**
+   * AgentCommand delete
+   */
+  export type AgentCommandDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandInclude<ExtArgs> | null
+    /**
+     * Filter which AgentCommand to delete.
+     */
+    where: AgentCommandWhereUniqueInput
+  }
+
+  /**
+   * AgentCommand deleteMany
+   */
+  export type AgentCommandDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgentCommands to delete
+     */
+    where?: AgentCommandWhereInput
+    /**
+     * Limit how many AgentCommands to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgentCommand without action
+   */
+  export type AgentCommandDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentCommand
+     */
+    select?: AgentCommandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentCommand
+     */
+    omit?: AgentCommandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentCommandInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model UserPreference
    */
 
@@ -8244,6 +9470,7 @@ export namespace Prisma {
     font_size: number | null
     font_family: string | null
     mono_font_family: string | null
+    rail_position: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -8264,6 +9491,7 @@ export namespace Prisma {
     font_size: number | null
     font_family: string | null
     mono_font_family: string | null
+    rail_position: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -8284,6 +9512,7 @@ export namespace Prisma {
     font_size: number
     font_family: number
     mono_font_family: number
+    rail_position: number
     notification_settings: number
     shortcut_settings: number
     created_at: number
@@ -8318,6 +9547,7 @@ export namespace Prisma {
     font_size?: true
     font_family?: true
     mono_font_family?: true
+    rail_position?: true
     created_at?: true
     updated_at?: true
   }
@@ -8338,6 +9568,7 @@ export namespace Prisma {
     font_size?: true
     font_family?: true
     mono_font_family?: true
+    rail_position?: true
     created_at?: true
     updated_at?: true
   }
@@ -8358,6 +9589,7 @@ export namespace Prisma {
     font_size?: true
     font_family?: true
     mono_font_family?: true
+    rail_position?: true
     notification_settings?: true
     shortcut_settings?: true
     created_at?: true
@@ -8467,6 +9699,7 @@ export namespace Prisma {
     font_size: number
     font_family: string
     mono_font_family: string
+    rail_position: string
     notification_settings: JsonValue | null
     shortcut_settings: JsonValue | null
     created_at: Date
@@ -8508,6 +9741,7 @@ export namespace Prisma {
     font_size?: boolean
     font_family?: boolean
     mono_font_family?: boolean
+    rail_position?: boolean
     notification_settings?: boolean
     shortcut_settings?: boolean
     created_at?: boolean
@@ -8531,6 +9765,7 @@ export namespace Prisma {
     font_size?: boolean
     font_family?: boolean
     mono_font_family?: boolean
+    rail_position?: boolean
     notification_settings?: boolean
     shortcut_settings?: boolean
     created_at?: boolean
@@ -8554,6 +9789,7 @@ export namespace Prisma {
     font_size?: boolean
     font_family?: boolean
     mono_font_family?: boolean
+    rail_position?: boolean
     notification_settings?: boolean
     shortcut_settings?: boolean
     created_at?: boolean
@@ -8577,13 +9813,14 @@ export namespace Prisma {
     font_size?: boolean
     font_family?: boolean
     mono_font_family?: boolean
+    rail_position?: boolean
     notification_settings?: boolean
     shortcut_settings?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type UserPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "active_organization_id" | "git_name" | "git_email" | "preferred_agent" | "default_branch" | "idle_threshold_seconds" | "confirm_destructive" | "theme" | "theme_preset" | "accent_color" | "font_size" | "font_family" | "mono_font_family" | "notification_settings" | "shortcut_settings" | "created_at" | "updated_at", ExtArgs["result"]["userPreference"]>
+  export type UserPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "active_organization_id" | "git_name" | "git_email" | "preferred_agent" | "default_branch" | "idle_threshold_seconds" | "confirm_destructive" | "theme" | "theme_preset" | "accent_color" | "font_size" | "font_family" | "mono_font_family" | "rail_position" | "notification_settings" | "shortcut_settings" | "created_at" | "updated_at", ExtArgs["result"]["userPreference"]>
   export type UserPreferenceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -8615,6 +9852,10 @@ export namespace Prisma {
       font_size: number
       font_family: string
       mono_font_family: string
+      /**
+       * Edge of the workspace the project rail is docked to: left | right | top | bottom
+       */
+      rail_position: string
       /**
        * Partial override of the notification defaults (see users/constants/notification-settings.constants.ts); null = defaults
        */
@@ -9064,6 +10305,7 @@ export namespace Prisma {
     readonly font_size: FieldRef<"UserPreference", 'Int'>
     readonly font_family: FieldRef<"UserPreference", 'String'>
     readonly mono_font_family: FieldRef<"UserPreference", 'String'>
+    readonly rail_position: FieldRef<"UserPreference", 'String'>
     readonly notification_settings: FieldRef<"UserPreference", 'Json'>
     readonly shortcut_settings: FieldRef<"UserPreference", 'Json'>
     readonly created_at: FieldRef<"UserPreference", 'DateTime'>
@@ -30786,6 +32028,20 @@ export namespace Prisma {
   export type GitIdentityScalarFieldEnum = (typeof GitIdentityScalarFieldEnum)[keyof typeof GitIdentityScalarFieldEnum]
 
 
+  export const AgentCommandScalarFieldEnum: {
+    id: 'id',
+    user_id: 'user_id',
+    agent_type: 'agent_type',
+    name: 'name',
+    command: 'command',
+    is_default: 'is_default',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type AgentCommandScalarFieldEnum = (typeof AgentCommandScalarFieldEnum)[keyof typeof AgentCommandScalarFieldEnum]
+
+
   export const UserPreferenceScalarFieldEnum: {
     id: 'id',
     user_id: 'user_id',
@@ -30802,6 +32058,7 @@ export namespace Prisma {
     font_size: 'font_size',
     font_family: 'font_family',
     mono_font_family: 'mono_font_family',
+    rail_position: 'rail_position',
     notification_settings: 'notification_settings',
     shortcut_settings: 'shortcut_settings',
     created_at: 'created_at',
@@ -31459,6 +32716,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionListRelationFilter
     activities?: ActivityListRelationFilter
     git_identities?: GitIdentityListRelationFilter
+    agent_commands?: AgentCommandListRelationFilter
     skill_favorites?: SkillFavoriteListRelationFilter
     workspace_layouts?: WorkspaceLayoutPresetListRelationFilter
     workspace_layout_state?: XOR<WorkspaceLayoutStateNullableScalarRelationFilter, WorkspaceLayoutStateWhereInput> | null
@@ -31481,6 +32739,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionOrderByRelationAggregateInput
     activities?: ActivityOrderByRelationAggregateInput
     git_identities?: GitIdentityOrderByRelationAggregateInput
+    agent_commands?: AgentCommandOrderByRelationAggregateInput
     skill_favorites?: SkillFavoriteOrderByRelationAggregateInput
     workspace_layouts?: WorkspaceLayoutPresetOrderByRelationAggregateInput
     workspace_layout_state?: WorkspaceLayoutStateOrderByWithRelationInput
@@ -31506,6 +32765,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionListRelationFilter
     activities?: ActivityListRelationFilter
     git_identities?: GitIdentityListRelationFilter
+    agent_commands?: AgentCommandListRelationFilter
     skill_favorites?: SkillFavoriteListRelationFilter
     workspace_layouts?: WorkspaceLayoutPresetListRelationFilter
     workspace_layout_state?: XOR<WorkspaceLayoutStateNullableScalarRelationFilter, WorkspaceLayoutStateWhereInput> | null
@@ -31746,6 +33006,77 @@ export namespace Prisma {
     updated_at?: DateTimeWithAggregatesFilter<"GitIdentity"> | Date | string
   }
 
+  export type AgentCommandWhereInput = {
+    AND?: AgentCommandWhereInput | AgentCommandWhereInput[]
+    OR?: AgentCommandWhereInput[]
+    NOT?: AgentCommandWhereInput | AgentCommandWhereInput[]
+    id?: StringFilter<"AgentCommand"> | string
+    user_id?: StringFilter<"AgentCommand"> | string
+    agent_type?: EnumAgentTypeFilter<"AgentCommand"> | $Enums.AgentType
+    name?: StringFilter<"AgentCommand"> | string
+    command?: StringFilter<"AgentCommand"> | string
+    is_default?: BoolFilter<"AgentCommand"> | boolean
+    created_at?: DateTimeFilter<"AgentCommand"> | Date | string
+    updated_at?: DateTimeFilter<"AgentCommand"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type AgentCommandOrderByWithRelationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    agent_type?: SortOrder
+    name?: SortOrder
+    command?: SortOrder
+    is_default?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type AgentCommandWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    user_id_agent_type_name?: AgentCommandUser_idAgent_typeNameCompoundUniqueInput
+    AND?: AgentCommandWhereInput | AgentCommandWhereInput[]
+    OR?: AgentCommandWhereInput[]
+    NOT?: AgentCommandWhereInput | AgentCommandWhereInput[]
+    user_id?: StringFilter<"AgentCommand"> | string
+    agent_type?: EnumAgentTypeFilter<"AgentCommand"> | $Enums.AgentType
+    name?: StringFilter<"AgentCommand"> | string
+    command?: StringFilter<"AgentCommand"> | string
+    is_default?: BoolFilter<"AgentCommand"> | boolean
+    created_at?: DateTimeFilter<"AgentCommand"> | Date | string
+    updated_at?: DateTimeFilter<"AgentCommand"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "user_id_agent_type_name">
+
+  export type AgentCommandOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    agent_type?: SortOrder
+    name?: SortOrder
+    command?: SortOrder
+    is_default?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: AgentCommandCountOrderByAggregateInput
+    _max?: AgentCommandMaxOrderByAggregateInput
+    _min?: AgentCommandMinOrderByAggregateInput
+  }
+
+  export type AgentCommandScalarWhereWithAggregatesInput = {
+    AND?: AgentCommandScalarWhereWithAggregatesInput | AgentCommandScalarWhereWithAggregatesInput[]
+    OR?: AgentCommandScalarWhereWithAggregatesInput[]
+    NOT?: AgentCommandScalarWhereWithAggregatesInput | AgentCommandScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AgentCommand"> | string
+    user_id?: StringWithAggregatesFilter<"AgentCommand"> | string
+    agent_type?: EnumAgentTypeWithAggregatesFilter<"AgentCommand"> | $Enums.AgentType
+    name?: StringWithAggregatesFilter<"AgentCommand"> | string
+    command?: StringWithAggregatesFilter<"AgentCommand"> | string
+    is_default?: BoolWithAggregatesFilter<"AgentCommand"> | boolean
+    created_at?: DateTimeWithAggregatesFilter<"AgentCommand"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"AgentCommand"> | Date | string
+  }
+
   export type UserPreferenceWhereInput = {
     AND?: UserPreferenceWhereInput | UserPreferenceWhereInput[]
     OR?: UserPreferenceWhereInput[]
@@ -31765,6 +33096,7 @@ export namespace Prisma {
     font_size?: IntFilter<"UserPreference"> | number
     font_family?: StringFilter<"UserPreference"> | string
     mono_font_family?: StringFilter<"UserPreference"> | string
+    rail_position?: StringFilter<"UserPreference"> | string
     notification_settings?: JsonNullableFilter<"UserPreference">
     shortcut_settings?: JsonNullableFilter<"UserPreference">
     created_at?: DateTimeFilter<"UserPreference"> | Date | string
@@ -31788,6 +33120,7 @@ export namespace Prisma {
     font_size?: SortOrder
     font_family?: SortOrder
     mono_font_family?: SortOrder
+    rail_position?: SortOrder
     notification_settings?: SortOrderInput | SortOrder
     shortcut_settings?: SortOrderInput | SortOrder
     created_at?: SortOrder
@@ -31814,6 +33147,7 @@ export namespace Prisma {
     font_size?: IntFilter<"UserPreference"> | number
     font_family?: StringFilter<"UserPreference"> | string
     mono_font_family?: StringFilter<"UserPreference"> | string
+    rail_position?: StringFilter<"UserPreference"> | string
     notification_settings?: JsonNullableFilter<"UserPreference">
     shortcut_settings?: JsonNullableFilter<"UserPreference">
     created_at?: DateTimeFilter<"UserPreference"> | Date | string
@@ -31837,6 +33171,7 @@ export namespace Prisma {
     font_size?: SortOrder
     font_family?: SortOrder
     mono_font_family?: SortOrder
+    rail_position?: SortOrder
     notification_settings?: SortOrderInput | SortOrder
     shortcut_settings?: SortOrderInput | SortOrder
     created_at?: SortOrder
@@ -31867,6 +33202,7 @@ export namespace Prisma {
     font_size?: IntWithAggregatesFilter<"UserPreference"> | number
     font_family?: StringWithAggregatesFilter<"UserPreference"> | string
     mono_font_family?: StringWithAggregatesFilter<"UserPreference"> | string
+    rail_position?: StringWithAggregatesFilter<"UserPreference"> | string
     notification_settings?: JsonNullableWithAggregatesFilter<"UserPreference">
     shortcut_settings?: JsonNullableWithAggregatesFilter<"UserPreference">
     created_at?: DateTimeWithAggregatesFilter<"UserPreference"> | Date | string
@@ -33445,6 +34781,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
@@ -33467,6 +34804,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
@@ -33489,6 +34827,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
@@ -33511,6 +34850,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
@@ -33774,6 +35114,82 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AgentCommandCreateInput = {
+    id?: string
+    agent_type: $Enums.AgentType
+    name: string
+    command: string
+    is_default?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutAgent_commandsInput
+  }
+
+  export type AgentCommandUncheckedCreateInput = {
+    id?: string
+    user_id: string
+    agent_type: $Enums.AgentType
+    name: string
+    command: string
+    is_default?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AgentCommandUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    agent_type?: EnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType
+    name?: StringFieldUpdateOperationsInput | string
+    command?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAgent_commandsNestedInput
+  }
+
+  export type AgentCommandUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    agent_type?: EnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType
+    name?: StringFieldUpdateOperationsInput | string
+    command?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentCommandCreateManyInput = {
+    id?: string
+    user_id: string
+    agent_type: $Enums.AgentType
+    name: string
+    command: string
+    is_default?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AgentCommandUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    agent_type?: EnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType
+    name?: StringFieldUpdateOperationsInput | string
+    command?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentCommandUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    agent_type?: EnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType
+    name?: StringFieldUpdateOperationsInput | string
+    command?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserPreferenceCreateInput = {
     id?: string
     active_organization_id?: string | null
@@ -33789,6 +35205,7 @@ export namespace Prisma {
     font_size?: number
     font_family?: string
     mono_font_family?: string
+    rail_position?: string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
     shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
@@ -33812,6 +35229,7 @@ export namespace Prisma {
     font_size?: number
     font_family?: string
     mono_font_family?: string
+    rail_position?: string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
     shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
@@ -33833,6 +35251,7 @@ export namespace Prisma {
     font_size?: IntFieldUpdateOperationsInput | number
     font_family?: StringFieldUpdateOperationsInput | string
     mono_font_family?: StringFieldUpdateOperationsInput | string
+    rail_position?: StringFieldUpdateOperationsInput | string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
     shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33856,6 +35275,7 @@ export namespace Prisma {
     font_size?: IntFieldUpdateOperationsInput | number
     font_family?: StringFieldUpdateOperationsInput | string
     mono_font_family?: StringFieldUpdateOperationsInput | string
+    rail_position?: StringFieldUpdateOperationsInput | string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
     shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33878,6 +35298,7 @@ export namespace Prisma {
     font_size?: number
     font_family?: string
     mono_font_family?: string
+    rail_position?: string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
     shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
@@ -33899,6 +35320,7 @@ export namespace Prisma {
     font_size?: IntFieldUpdateOperationsInput | number
     font_family?: StringFieldUpdateOperationsInput | string
     mono_font_family?: StringFieldUpdateOperationsInput | string
+    rail_position?: StringFieldUpdateOperationsInput | string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
     shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33921,6 +35343,7 @@ export namespace Prisma {
     font_size?: IntFieldUpdateOperationsInput | number
     font_family?: StringFieldUpdateOperationsInput | string
     mono_font_family?: StringFieldUpdateOperationsInput | string
+    rail_position?: StringFieldUpdateOperationsInput | string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
     shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35698,6 +37121,12 @@ export namespace Prisma {
     none?: GitIdentityWhereInput
   }
 
+  export type AgentCommandListRelationFilter = {
+    every?: AgentCommandWhereInput
+    some?: AgentCommandWhereInput
+    none?: AgentCommandWhereInput
+  }
+
   export type SkillFavoriteListRelationFilter = {
     every?: SkillFavoriteWhereInput
     some?: SkillFavoriteWhereInput
@@ -35741,6 +37170,10 @@ export namespace Prisma {
   }
 
   export type GitIdentityOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AgentCommandOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -36050,6 +37483,55 @@ export namespace Prisma {
     notIn?: $Enums.AgentType[] | ListEnumAgentTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumAgentTypeFilter<$PrismaModel> | $Enums.AgentType
   }
+
+  export type AgentCommandUser_idAgent_typeNameCompoundUniqueInput = {
+    user_id: string
+    agent_type: $Enums.AgentType
+    name: string
+  }
+
+  export type AgentCommandCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    agent_type?: SortOrder
+    name?: SortOrder
+    command?: SortOrder
+    is_default?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type AgentCommandMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    agent_type?: SortOrder
+    name?: SortOrder
+    command?: SortOrder
+    is_default?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type AgentCommandMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    agent_type?: SortOrder
+    name?: SortOrder
+    command?: SortOrder
+    is_default?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type EnumAgentTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AgentType | EnumAgentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.AgentType[] | ListEnumAgentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AgentType[] | ListEnumAgentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumAgentTypeWithAggregatesFilter<$PrismaModel> | $Enums.AgentType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAgentTypeFilter<$PrismaModel>
+    _max?: NestedEnumAgentTypeFilter<$PrismaModel>
+  }
   export type JsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -36090,6 +37572,7 @@ export namespace Prisma {
     font_size?: SortOrder
     font_family?: SortOrder
     mono_font_family?: SortOrder
+    rail_position?: SortOrder
     notification_settings?: SortOrder
     shortcut_settings?: SortOrder
     created_at?: SortOrder
@@ -36117,6 +37600,7 @@ export namespace Prisma {
     font_size?: SortOrder
     font_family?: SortOrder
     mono_font_family?: SortOrder
+    rail_position?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -36137,6 +37621,7 @@ export namespace Prisma {
     font_size?: SortOrder
     font_family?: SortOrder
     mono_font_family?: SortOrder
+    rail_position?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -36144,16 +37629,6 @@ export namespace Prisma {
   export type UserPreferenceSumOrderByAggregateInput = {
     idle_threshold_seconds?: SortOrder
     font_size?: SortOrder
-  }
-
-  export type EnumAgentTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.AgentType | EnumAgentTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.AgentType[] | ListEnumAgentTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AgentType[] | ListEnumAgentTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumAgentTypeWithAggregatesFilter<$PrismaModel> | $Enums.AgentType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumAgentTypeFilter<$PrismaModel>
-    _max?: NestedEnumAgentTypeFilter<$PrismaModel>
   }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -37455,6 +38930,13 @@ export namespace Prisma {
     connect?: GitIdentityWhereUniqueInput | GitIdentityWhereUniqueInput[]
   }
 
+  export type AgentCommandCreateNestedManyWithoutUserInput = {
+    create?: XOR<AgentCommandCreateWithoutUserInput, AgentCommandUncheckedCreateWithoutUserInput> | AgentCommandCreateWithoutUserInput[] | AgentCommandUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AgentCommandCreateOrConnectWithoutUserInput | AgentCommandCreateOrConnectWithoutUserInput[]
+    createMany?: AgentCommandCreateManyUserInputEnvelope
+    connect?: AgentCommandWhereUniqueInput | AgentCommandWhereUniqueInput[]
+  }
+
   export type SkillFavoriteCreateNestedManyWithoutUserInput = {
     create?: XOR<SkillFavoriteCreateWithoutUserInput, SkillFavoriteUncheckedCreateWithoutUserInput> | SkillFavoriteCreateWithoutUserInput[] | SkillFavoriteUncheckedCreateWithoutUserInput[]
     connectOrCreate?: SkillFavoriteCreateOrConnectWithoutUserInput | SkillFavoriteCreateOrConnectWithoutUserInput[]
@@ -37521,6 +39003,13 @@ export namespace Prisma {
     connectOrCreate?: GitIdentityCreateOrConnectWithoutUserInput | GitIdentityCreateOrConnectWithoutUserInput[]
     createMany?: GitIdentityCreateManyUserInputEnvelope
     connect?: GitIdentityWhereUniqueInput | GitIdentityWhereUniqueInput[]
+  }
+
+  export type AgentCommandUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<AgentCommandCreateWithoutUserInput, AgentCommandUncheckedCreateWithoutUserInput> | AgentCommandCreateWithoutUserInput[] | AgentCommandUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AgentCommandCreateOrConnectWithoutUserInput | AgentCommandCreateOrConnectWithoutUserInput[]
+    createMany?: AgentCommandCreateManyUserInputEnvelope
+    connect?: AgentCommandWhereUniqueInput | AgentCommandWhereUniqueInput[]
   }
 
   export type SkillFavoriteUncheckedCreateNestedManyWithoutUserInput = {
@@ -37651,6 +39140,20 @@ export namespace Prisma {
     update?: GitIdentityUpdateWithWhereUniqueWithoutUserInput | GitIdentityUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: GitIdentityUpdateManyWithWhereWithoutUserInput | GitIdentityUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: GitIdentityScalarWhereInput | GitIdentityScalarWhereInput[]
+  }
+
+  export type AgentCommandUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AgentCommandCreateWithoutUserInput, AgentCommandUncheckedCreateWithoutUserInput> | AgentCommandCreateWithoutUserInput[] | AgentCommandUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AgentCommandCreateOrConnectWithoutUserInput | AgentCommandCreateOrConnectWithoutUserInput[]
+    upsert?: AgentCommandUpsertWithWhereUniqueWithoutUserInput | AgentCommandUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AgentCommandCreateManyUserInputEnvelope
+    set?: AgentCommandWhereUniqueInput | AgentCommandWhereUniqueInput[]
+    disconnect?: AgentCommandWhereUniqueInput | AgentCommandWhereUniqueInput[]
+    delete?: AgentCommandWhereUniqueInput | AgentCommandWhereUniqueInput[]
+    connect?: AgentCommandWhereUniqueInput | AgentCommandWhereUniqueInput[]
+    update?: AgentCommandUpdateWithWhereUniqueWithoutUserInput | AgentCommandUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AgentCommandUpdateManyWithWhereWithoutUserInput | AgentCommandUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AgentCommandScalarWhereInput | AgentCommandScalarWhereInput[]
   }
 
   export type SkillFavoriteUpdateManyWithoutUserNestedInput = {
@@ -37785,6 +39288,20 @@ export namespace Prisma {
     deleteMany?: GitIdentityScalarWhereInput | GitIdentityScalarWhereInput[]
   }
 
+  export type AgentCommandUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AgentCommandCreateWithoutUserInput, AgentCommandUncheckedCreateWithoutUserInput> | AgentCommandCreateWithoutUserInput[] | AgentCommandUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AgentCommandCreateOrConnectWithoutUserInput | AgentCommandCreateOrConnectWithoutUserInput[]
+    upsert?: AgentCommandUpsertWithWhereUniqueWithoutUserInput | AgentCommandUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AgentCommandCreateManyUserInputEnvelope
+    set?: AgentCommandWhereUniqueInput | AgentCommandWhereUniqueInput[]
+    disconnect?: AgentCommandWhereUniqueInput | AgentCommandWhereUniqueInput[]
+    delete?: AgentCommandWhereUniqueInput | AgentCommandWhereUniqueInput[]
+    connect?: AgentCommandWhereUniqueInput | AgentCommandWhereUniqueInput[]
+    update?: AgentCommandUpdateWithWhereUniqueWithoutUserInput | AgentCommandUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AgentCommandUpdateManyWithWhereWithoutUserInput | AgentCommandUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AgentCommandScalarWhereInput | AgentCommandScalarWhereInput[]
+  }
+
   export type SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<SkillFavoriteCreateWithoutUserInput, SkillFavoriteUncheckedCreateWithoutUserInput> | SkillFavoriteCreateWithoutUserInput[] | SkillFavoriteUncheckedCreateWithoutUserInput[]
     connectOrCreate?: SkillFavoriteCreateOrConnectWithoutUserInput | SkillFavoriteCreateOrConnectWithoutUserInput[]
@@ -37871,14 +39388,28 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGit_identitiesInput, UserUpdateWithoutGit_identitiesInput>, UserUncheckedUpdateWithoutGit_identitiesInput>
   }
 
-  export type UserCreateNestedOneWithoutPreferenceInput = {
-    create?: XOR<UserCreateWithoutPreferenceInput, UserUncheckedCreateWithoutPreferenceInput>
-    connectOrCreate?: UserCreateOrConnectWithoutPreferenceInput
+  export type UserCreateNestedOneWithoutAgent_commandsInput = {
+    create?: XOR<UserCreateWithoutAgent_commandsInput, UserUncheckedCreateWithoutAgent_commandsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAgent_commandsInput
     connect?: UserWhereUniqueInput
   }
 
   export type EnumAgentTypeFieldUpdateOperationsInput = {
     set?: $Enums.AgentType
+  }
+
+  export type UserUpdateOneRequiredWithoutAgent_commandsNestedInput = {
+    create?: XOR<UserCreateWithoutAgent_commandsInput, UserUncheckedCreateWithoutAgent_commandsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAgent_commandsInput
+    upsert?: UserUpsertWithoutAgent_commandsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAgent_commandsInput, UserUpdateWithoutAgent_commandsInput>, UserUncheckedUpdateWithoutAgent_commandsInput>
+  }
+
+  export type UserCreateNestedOneWithoutPreferenceInput = {
+    create?: XOR<UserCreateWithoutPreferenceInput, UserUncheckedCreateWithoutPreferenceInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPreferenceInput
+    connect?: UserWhereUniqueInput
   }
 
   export type UserUpdateOneRequiredWithoutPreferenceNestedInput = {
@@ -40018,6 +41549,7 @@ export namespace Prisma {
     font_size?: number
     font_family?: string
     mono_font_family?: string
+    rail_position?: string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
     shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
@@ -40039,6 +41571,7 @@ export namespace Prisma {
     font_size?: number
     font_family?: string
     mono_font_family?: string
+    rail_position?: string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
     shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
@@ -40218,6 +41751,36 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type AgentCommandCreateWithoutUserInput = {
+    id?: string
+    agent_type: $Enums.AgentType
+    name: string
+    command: string
+    is_default?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AgentCommandUncheckedCreateWithoutUserInput = {
+    id?: string
+    agent_type: $Enums.AgentType
+    name: string
+    command: string
+    is_default?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AgentCommandCreateOrConnectWithoutUserInput = {
+    where: AgentCommandWhereUniqueInput
+    create: XOR<AgentCommandCreateWithoutUserInput, AgentCommandUncheckedCreateWithoutUserInput>
+  }
+
+  export type AgentCommandCreateManyUserInputEnvelope = {
+    data: AgentCommandCreateManyUserInput | AgentCommandCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type SkillFavoriteCreateWithoutUserInput = {
     id?: string
     target_kind: $Enums.SkillFavoriteKind
@@ -40380,6 +41943,7 @@ export namespace Prisma {
     font_size?: IntFieldUpdateOperationsInput | number
     font_family?: StringFieldUpdateOperationsInput | string
     mono_font_family?: StringFieldUpdateOperationsInput | string
+    rail_position?: StringFieldUpdateOperationsInput | string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
     shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40401,6 +41965,7 @@ export namespace Prisma {
     font_size?: IntFieldUpdateOperationsInput | number
     font_family?: StringFieldUpdateOperationsInput | string
     mono_font_family?: StringFieldUpdateOperationsInput | string
+    rail_position?: StringFieldUpdateOperationsInput | string
     notification_settings?: NullableJsonNullValueInput | InputJsonValue
     shortcut_settings?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40546,6 +42111,36 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"GitIdentity"> | Date | string
   }
 
+  export type AgentCommandUpsertWithWhereUniqueWithoutUserInput = {
+    where: AgentCommandWhereUniqueInput
+    update: XOR<AgentCommandUpdateWithoutUserInput, AgentCommandUncheckedUpdateWithoutUserInput>
+    create: XOR<AgentCommandCreateWithoutUserInput, AgentCommandUncheckedCreateWithoutUserInput>
+  }
+
+  export type AgentCommandUpdateWithWhereUniqueWithoutUserInput = {
+    where: AgentCommandWhereUniqueInput
+    data: XOR<AgentCommandUpdateWithoutUserInput, AgentCommandUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AgentCommandUpdateManyWithWhereWithoutUserInput = {
+    where: AgentCommandScalarWhereInput
+    data: XOR<AgentCommandUpdateManyMutationInput, AgentCommandUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type AgentCommandScalarWhereInput = {
+    AND?: AgentCommandScalarWhereInput | AgentCommandScalarWhereInput[]
+    OR?: AgentCommandScalarWhereInput[]
+    NOT?: AgentCommandScalarWhereInput | AgentCommandScalarWhereInput[]
+    id?: StringFilter<"AgentCommand"> | string
+    user_id?: StringFilter<"AgentCommand"> | string
+    agent_type?: EnumAgentTypeFilter<"AgentCommand"> | $Enums.AgentType
+    name?: StringFilter<"AgentCommand"> | string
+    command?: StringFilter<"AgentCommand"> | string
+    is_default?: BoolFilter<"AgentCommand"> | boolean
+    created_at?: DateTimeFilter<"AgentCommand"> | Date | string
+    updated_at?: DateTimeFilter<"AgentCommand"> | Date | string
+  }
+
   export type SkillFavoriteUpsertWithWhereUniqueWithoutUserInput = {
     where: SkillFavoriteWhereUniqueInput
     update: XOR<SkillFavoriteUpdateWithoutUserInput, SkillFavoriteUncheckedUpdateWithoutUserInput>
@@ -40646,6 +42241,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
@@ -40667,6 +42263,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
@@ -40704,6 +42301,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
@@ -40725,6 +42323,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
@@ -40746,6 +42345,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
@@ -40767,6 +42367,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
@@ -40804,6 +42405,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
@@ -40825,6 +42427,111 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
+    skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutAgent_commandsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
+    activities?: ActivityCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutAgent_commandsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutAgent_commandsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAgent_commandsInput, UserUncheckedCreateWithoutAgent_commandsInput>
+  }
+
+  export type UserUpsertWithoutAgent_commandsInput = {
+    update: XOR<UserUpdateWithoutAgent_commandsInput, UserUncheckedUpdateWithoutAgent_commandsInput>
+    create: XOR<UserCreateWithoutAgent_commandsInput, UserUncheckedCreateWithoutAgent_commandsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAgent_commandsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAgent_commandsInput, UserUncheckedUpdateWithoutAgent_commandsInput>
+  }
+
+  export type UserUpdateWithoutAgent_commandsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
+    activities?: ActivityUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAgent_commandsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
@@ -40846,6 +42553,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
@@ -40867,6 +42575,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
@@ -40904,6 +42613,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
@@ -40925,6 +42635,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
@@ -40947,6 +42658,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
@@ -40968,6 +42680,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
@@ -41029,6 +42742,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
@@ -41050,6 +42764,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
@@ -41098,6 +42813,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
   }
@@ -41119,6 +42835,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
   }
@@ -41185,6 +42902,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
   }
@@ -41206,6 +42924,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -42249,6 +43968,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
@@ -42270,6 +43990,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
@@ -42387,6 +44108,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
@@ -42408,6 +44130,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
@@ -43859,6 +45582,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
@@ -43880,6 +45604,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
@@ -44186,6 +45911,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
@@ -44207,6 +45933,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
@@ -44390,6 +46117,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
@@ -44411,6 +46139,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
@@ -44590,6 +46319,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
@@ -44611,6 +46341,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
@@ -44746,6 +46477,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
@@ -44767,6 +46499,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
@@ -44967,6 +46700,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
@@ -44988,6 +46722,7 @@ export namespace Prisma {
     connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
@@ -45157,6 +46892,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
@@ -45178,6 +46914,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
@@ -45256,6 +46993,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
@@ -45277,6 +47015,7 @@ export namespace Prisma {
     agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
@@ -45399,6 +47138,16 @@ export namespace Prisma {
     label: string
     name: string
     email: string
+    is_default?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AgentCommandCreateManyUserInput = {
+    id?: string
+    agent_type: $Enums.AgentType
+    name: string
+    command: string
     is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -45656,6 +47405,36 @@ export namespace Prisma {
     label?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentCommandUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    agent_type?: EnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType
+    name?: StringFieldUpdateOperationsInput | string
+    command?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentCommandUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    agent_type?: EnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType
+    name?: StringFieldUpdateOperationsInput | string
+    command?: StringFieldUpdateOperationsInput | string
+    is_default?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentCommandUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    agent_type?: EnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType
+    name?: StringFieldUpdateOperationsInput | string
+    command?: StringFieldUpdateOperationsInput | string
     is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
