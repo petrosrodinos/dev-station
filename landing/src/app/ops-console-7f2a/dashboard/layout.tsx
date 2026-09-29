@@ -34,7 +34,15 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
         if (hydrated && !allowed) router.replace(Routes.admin.login);
     }, [hydrated, allowed, router]);
 
-    if (!hydrated || !allowed) return null;
+    if (!hydrated || !allowed) {
+        // TEMP debug readout — replaces the silent `return null` so we can see which
+        // condition is actually false instead of guessing from a blank page.
+        return (
+            <pre className="p-4 text-xs">
+                {JSON.stringify({ hydrated, isLoggedIn, role, allowed }, null, 2)}
+            </pre>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-background">

@@ -15,7 +15,6 @@ import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
 import { useResolvedShortcuts } from "@/features/users/hooks/use-shortcuts";
 import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
 import { formatComboParts } from "@/lib/shortcuts.utils";
-import { cn } from "@/lib/utils";
 import { ProcessStatuses, type PreviewBounds } from "@shared/contract";
 
 interface PreviewPanelProps {

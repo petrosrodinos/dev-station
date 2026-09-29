@@ -13,8 +13,6 @@ import {
 } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 import { RequirePermission } from "@/components/access/require-permission";
-import { ProjectAvatar } from "@/components/ui/project-avatar";
-import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProjectTabOptions, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
@@ -72,33 +70,6 @@ const ProjectTabHeader: FC<IDockviewPanelHeaderProps<{ tab: ProjectTab }>> = ({ 
       >
         <X className="size-3" />
       </button>
-    </div>
-  );
-};
-
-/** Project name + repo path, shown at the left of the tab strip (and on the setup page, which has no dock). */
-export const ProjectIdentity: FC<{ project: Project }> = ({ project }) => (
-  <div className="flex min-w-0 items-center gap-2 pr-2">
-    <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="sm" />
-    <div className="flex min-w-0 items-baseline gap-1.5">
-      <span className="truncate text-[0.8125rem] font-semibold">{project.name}</span>
-      {(project.repository || project.sub_path) && (
-        <span className="hidden truncate text-[0.7188rem] text-muted-foreground @lg:inline">
-          {project.repository && <>{project.repository.full_name ?? project.repository.clone_url}</>}
-          {project.sub_path && <>{project.repository ? " · " : ""}{project.sub_path}</>}
-        </span>
-      )}
-    </div>
-  </div>
-);
-
-/** Only the dock's first group carries the identity; `leftHeaderActionsComponent` renders once per group. */
-const IdentityHeader: FC<IDockviewHeaderActionsProps> = ({ containerApi, group }) => {
-  const project = useProjectContext();
-  if (containerApi.groups[0]?.id !== group.id) return null;
-  return (
-    <div className="flex h-10 min-w-0 max-w-[45%] items-center border-r pl-3">
-      <ProjectIdentity project={project} />
     </div>
   );
 };
@@ -406,7 +377,6 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
       defaultTabComponent={ProjectTabHeader}
       tabComponents={tabComponents}
       rightHeaderActionsComponent={AddTabMenu}
-      leftHeaderActionsComponent={IdentityHeader}
       disableTabsOverflowList
       onReady={onReady}
     />
