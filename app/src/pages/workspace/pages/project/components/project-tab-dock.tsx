@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FC } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Plus, X } from "lucide-react";
+import { Globe, Plus, X } from "lucide-react";
 import {
   DockviewReact,
   type DockviewApi,
@@ -13,18 +13,26 @@ import {
 } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 import { RequirePermission } from "@/components/access/require-permission";
+import { ProjectAvatar } from "@/components/ui/project-avatar";
+import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProjectTabOptions, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { filterByAccess } from "@/lib/access.utils";
-import { useWorkspaceStore } from "@/stores/workspace";
+import { isDesktop } from "@/lib/desktop";
+import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
 import { TAB_ICONS, TAB_PAGES, tabPermission } from "../pages/tab-pages";
+import { useProjectContext } from "../hooks/use-project-context";
+import { PreviewPanel } from "./preview-panel";
 
 const TAB_PANEL_COMPONENT = "project-tab";
 const tabPanelId = (tab: string) => `project-tab:${tab}`;
+const PREVIEW_PANEL_COMPONENT = "project-preview";
+const PREVIEW_PANEL_ID = "project-preview";
+const PREVIEW_DEFAULT_WIDTH = 480;
 const TAB_LABEL = new Map(ProjectTabOptions.map((t) => [t.id, t.label]));
 
 /**
@@ -68,6 +76,70 @@ const ProjectTabHeader: FC<IDockviewPanelHeaderProps<{ tab: ProjectTab }>> = ({ 
   );
 };
 
+/** Project name + repo path, shown at the left of the tab strip (and on the setup page, which has no dock). */
+export const ProjectIdentity: FC<{ project: Project }> = ({ project }) => (
+  <div className="flex min-w-0 items-center gap-2 pr-2">
+    <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="sm" />
+    <div className="flex min-w-0 items-baseline gap-1.5">
+      <span className="truncate text-[0.8125rem] font-semibold">{project.name}</span>
+      {(project.repository || project.sub_path) && (
+        <span className="hidden truncate text-[0.7188rem] text-muted-foreground @lg:inline">
+          {project.repository && <>{project.repository.full_name ?? project.repository.clone_url}</>}
+          {project.sub_path && <>{project.repository ? " · " : ""}{project.sub_path}</>}
+        </span>
+      )}
+    </div>
+  </div>
+);
+
+/** Only the dock's first group carries the identity; `leftHeaderActionsComponent` renders once per group. */
+const IdentityHeader: FC<IDockviewHeaderActionsProps> = ({ containerApi, group }) => {
+  const project = useProjectContext();
+  if (containerApi.groups[0]?.id !== group.id) return null;
+  return (
+    <div className="flex h-10 min-w-0 max-w-[45%] items-center border-r pl-3">
+      <ProjectIdentity project={project} />
+    </div>
+  );
+};
+
+/** Tab for the preview panel: not a route section, so it has no URL tab, just a title and close. */
+const PreviewTabHeader: FC<IDockviewPanelHeaderProps> = ({ api }) => {
+  const [active, setActive] = useState(api.isActive);
+  useEffect(() => {
+    const disposable = api.onDidActiveChange(() => setActive(api.isActive));
+    return () => disposable.dispose();
+  }, [api]);
+  return (
+    <div
+      className={cn(
+        "group flex h-10 shrink-0 cursor-pointer select-none items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent px-2.5 text-[0.8125rem] font-medium text-muted-foreground hover:text-foreground",
+        active && "border-foreground text-foreground",
+      )}
+      title="Preview"
+    >
+      <Globe className="size-3.5 shrink-0" />
+      <span>Preview</span>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          api.close();
+        }}
+        aria-label="Close Preview"
+        className="flex size-4 shrink-0 items-center justify-center rounded-xs text-ash opacity-0 hover:bg-surface-card hover:text-foreground group-hover:opacity-100"
+      >
+        <X className="size-3" />
+      </button>
+    </div>
+  );
+};
+
+const PreviewDockPanel: FC = () => {
+  const project = useProjectContext();
+  const expanded = useWorkspaceStore((s) => s.preview_by_project[project.id]?.previewExpanded) ?? false;
+  return <PreviewPanel project={project} expanded={expanded} />;
+};
+
 /**
  * Project tab pages as dockable views (docking system spec §G Phase 2): every open tab (Overview,
  * Git, Files, Terminal, Sessions, Skills, Integrations) is its own dock panel instead of a single
@@ -90,6 +162,11 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   // Read once — captured by `onReady`'s first (and only) call below, not meant to re-apply mid-session.
   const savedLayout = useWorkspaceStore((s) => s.project_dock_layout[projectId]);
   const saveProjectDockLayout = useWorkspaceStore((s) => s.saveProjectDockLayout);
+  const previewOpen = useWorkspaceStore((s) => s.preview_by_project[projectId]?.previewOpen) ?? DEFAULT_PREVIEW_PREFS.previewOpen;
+  const previewExpanded = useWorkspaceStore((s) => s.preview_by_project[projectId]?.previewExpanded) ?? DEFAULT_PREVIEW_PREFS.previewExpanded;
+  const previewWidth = useWorkspaceStore((s) => s.preview_by_project[projectId]?.previewWidth) ?? DEFAULT_PREVIEW_PREFS.previewWidth;
+  const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
+  const previewAvailable = isDesktop();
   // Suppresses the URL-sync/close listeners below while we're programmatically rebuilding the tree
   // from a saved layout — otherwise restoring fires the same events a user action would (a batch of
   // `onDidActivePanelChange`s mid-restore would spuriously `navigate()` away from the deep-linked tab).
@@ -105,7 +182,8 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   const closedTabs = permittedTabs.filter((t) => !wantedTabs.includes(t));
 
   const AddTabMenu = useCallback<FC<IDockviewHeaderActionsProps>>(() => {
-    if (!closedTabs.length) return null;
+    const previewClosed = previewAvailable && !previewOpen;
+    if (!closedTabs.length && !previewClosed) return null;
     return (
       <DropdownMenu>
         <Tooltip>
@@ -132,11 +210,17 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
               </DropdownMenuItem>
             );
           })}
+          {previewClosed && (
+            <DropdownMenuItem onSelect={() => setProjectPreview(projectId, { previewOpen: true })} className="gap-2">
+              <Globe className="size-3.5" />
+              Preview
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [closedTabs.join("|"), projectId]);
+  }, [closedTabs.join("|"), projectId, previewOpen, previewAvailable]);
 
   // Each split pane gets a fixed pixel height from dockview's layout engine, not a page-flowing one,
   // so a page taller than its pane (e.g. Overview, Files) would just clip with no way to reach the
@@ -165,12 +249,17 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   // to git status, permissions, etc., so it re-renders often), visible as the whole dock — tab strip
   // and every split pane — constantly jittering. Memoizing keeps the identity stable across renders
   // unless the panel component itself changes.
-  const components: IDockviewReactProps["components"] = useMemo(() => ({ [TAB_PANEL_COMPONENT]: TabPanel }), [TabPanel]);
+  const components: IDockviewReactProps["components"] = useMemo(() => ({ [TAB_PANEL_COMPONENT]: TabPanel, [PREVIEW_PANEL_COMPONENT]: PreviewDockPanel }), [TabPanel]);
+  const tabComponents: IDockviewReactProps["tabComponents"] = useMemo(() => ({ [PREVIEW_PANEL_COMPONENT]: PreviewTabHeader }), []);
 
   const onReady = useCallback((event: DockviewReadyEvent) => {
     apiRef.current = event.api;
     event.api.onDidRemovePanel((panel) => {
       if (restoringRef.current) return;
+      if (panel.id === PREVIEW_PANEL_ID) {
+        setProjectPreview(projectId, { previewOpen: false, previewExpanded: false });
+        return;
+      }
       if (!panel.id.startsWith("project-tab:")) return;
       const tab = panel.id.slice("project-tab:".length);
       closeProjectTab(projectId, tab);
@@ -222,7 +311,7 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
     const wantedIds = new Set(wantedTabs.map(tabPanelId));
 
     for (const panel of api.panels) {
-      if (!wantedIds.has(panel.id)) panel.api.close();
+      if (panel.id !== PREVIEW_PANEL_ID && !wantedIds.has(panel.id)) panel.api.close();
     }
     let anchor = api.panels.find((p) => wantedIds.has(p.id));
     // Every permitted tab opens at once on first visit (see `openTabs` above). Without `inactive`,
@@ -248,6 +337,40 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wantedTabs.join("|")]);
+
+  // The preview is a panel of this dock (so it can be dragged/split like any tab), mirroring the
+  // existing `previewOpen` flag that the header button, shortcut and "Preview" service action set.
+  useEffect(() => {
+    const api = apiRef.current;
+    if (!api) return;
+    const existing = api.getPanel(PREVIEW_PANEL_ID);
+    if (previewOpen && previewAvailable && !existing) {
+      const reference = api.activePanel ?? api.panels[0];
+      try {
+        api.addPanel({
+          id: PREVIEW_PANEL_ID,
+          component: PREVIEW_PANEL_COMPONENT,
+          tabComponent: PREVIEW_PANEL_COMPONENT,
+          title: "Preview",
+          position: reference ? { referencePanel: reference.id, direction: "right" } : undefined,
+          initialWidth: previewWidth || PREVIEW_DEFAULT_WIDTH,
+        });
+      } catch (error) {
+        console.error("Failed to open the preview panel", error);
+      }
+    } else if ((!previewOpen || !previewAvailable) && existing) {
+      existing.api.close();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewOpen, previewAvailable]);
+
+  // Review layout: the preview's group fills the project area (the AI panel keeps its own side).
+  useEffect(() => {
+    const panel = apiRef.current?.getPanel(PREVIEW_PANEL_ID);
+    if (!panel) return;
+    if (previewExpanded && !panel.api.isMaximized()) panel.api.maximize();
+    else if (!previewExpanded && panel.api.isMaximized()) panel.api.exitMaximized();
+  }, [previewExpanded, previewOpen]);
 
   // Navigating to a different tab (nav click) focuses that tab's panel, opening it if needed.
   useEffect(() => {
@@ -281,7 +404,9 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
       className="dockview-theme-abyss project-tab-dock h-full"
       components={components}
       defaultTabComponent={ProjectTabHeader}
+      tabComponents={tabComponents}
       rightHeaderActionsComponent={AddTabMenu}
+      leftHeaderActionsComponent={IdentityHeader}
       disableTabsOverflowList
       onReady={onReady}
     />

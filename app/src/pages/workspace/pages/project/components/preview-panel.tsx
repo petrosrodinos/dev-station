@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FC, type PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type FC } from "react";
 import { ArrowLeft, ArrowRight, Code2, ExternalLink, Globe, Maximize2, Minimize2, Play, RotateCw, TriangleAlert, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -18,16 +18,16 @@ import { formatComboParts } from "@/lib/shortcuts.utils";
 import { cn } from "@/lib/utils";
 import { ProcessStatuses, type PreviewBounds } from "@shared/contract";
 
-const MIN_WIDTH = 280;
-const MAX_WIDTH_RATIO = 0.75;
-
 interface PreviewPanelProps {
   project: Project;
-  /** Review layout: fill the project area instead of docking at a fixed width. */
+  /** Review layout: the preview's dock group is maximized over the rest of the project area. */
   expanded?: boolean;
 }
 
-/** Docked preview of a running localhost service, rendered by a native view that main positions over the body placeholder. */
+/**
+ * Preview of a running localhost service, rendered by a native view that main positions over the body
+ * placeholder. Lives in the project dock as a regular panel, so it can be dragged and split anywhere.
+ */
 export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false }) => {
   const projectId = project.id;
   const prefs = useWorkspaceStore((s) => s.preview_by_project[projectId]) ?? DEFAULT_PREVIEW_PREFS;
@@ -40,8 +40,6 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false 
   const bodyRef = useRef<HTMLDivElement>(null);
   const overlayOpen = useOverlayOpen(bodyRef);
   const lastBounds = useRef<PreviewBounds | null>(null);
-  const [dragWidth, setDragWidth] = useState<number | null>(null);
-  const dragging = dragWidth !== null;
 
   const services = useMemo(
     () =>
@@ -60,7 +58,7 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false 
   const url = selected?.url ?? null;
   const stopped = !!selected && !selected.running;
   const failed = !!state?.error;
-  const visible = !!url && !overlayOpen && !dragging && !failed;
+  const visible = !!url && !overlayOpen && !failed;
 
   const measure = useCallback((): PreviewBounds | null => {
     const el = bodyRef.current;
@@ -101,28 +99,6 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false 
     return () => cancelAnimationFrame(frame);
   }, [visible, actions, measure]);
 
-  const clampWidth = (w: number) => Math.round(Math.max(MIN_WIDTH, Math.min(w, window.innerWidth * MAX_WIDTH_RATIO)));
-
-  const onDragStart = (e: ReactPointerEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startWidth = prefs.previewWidth;
-    let latest = startWidth;
-    const move = (ev: PointerEvent) => {
-      latest = clampWidth(startWidth + (startX - ev.clientX));
-      setDragWidth(latest);
-    };
-    const up = () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-      setProjectPreview(projectId, { previewWidth: latest });
-      setDragWidth(null);
-    };
-    setDragWidth(startWidth);
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
-  };
-
   const startFirst = () => {
     const target = services.find((s) => !s.running && s.service.kind === ServiceKinds.FRONTEND) ?? services.find((s) => !s.running);
     if (target) start.mutate({ projectId, service: target.service, siblings: project.services });
@@ -134,20 +110,7 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false 
   const displayUrl = state?.url || url || "";
 
   return (
-    <aside
-      className={cn("relative flex flex-col bg-background", expanded ? "min-w-0 flex-1 border-t" : "shrink-0 border-l")}
-      style={expanded ? undefined : { width: dragWidth ?? prefs.previewWidth }}
-      aria-label="Preview"
-    >
-      {!expanded && (
-        <div
-          role="separator"
-          aria-orientation="vertical"
-          aria-label="Resize preview"
-          onPointerDown={onDragStart}
-          className="absolute inset-y-0 -left-1 z-10 w-2 cursor-col-resize hover:bg-hairline-strong/40"
-        />
-      )}
+    <div className="relative flex h-full min-w-0 flex-col bg-background" aria-label="Preview">
       <div className="flex shrink-0 items-center gap-1 border-b px-2 py-1.5">
         {runningWithUrl.length > 1 && selected && (
           <Select value={selected.service.id} onValueChange={(id) => setProjectPreview(projectId, { previewServiceId: id })}>
@@ -225,7 +188,7 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false 
           />
         )}
       </div>
-    </aside>
+    </div>
   );
 };
 
