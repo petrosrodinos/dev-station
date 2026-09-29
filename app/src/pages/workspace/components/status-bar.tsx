@@ -94,13 +94,15 @@ export function StatusBar() {
   return (
     <footer className="flex h-8 shrink-0 items-center gap-3 sm:gap-4 overflow-hidden border-t bg-canvas px-4 text-xs text-muted-foreground">
       <Popover open={processesOpen} onOpenChange={setProcessesOpen}>
-        <PopoverTrigger asChild>
-          <button className="flex shrink-0 items-center gap-1.5 whitespace-nowrap hover:text-foreground" disabled={!sortedProcesses.length}>
-            <ActivityIcon className="size-3.5" />
-            {runningProcesses} process{runningProcesses === 1 ? "" : "es"} running
-            {activeAgents > 0 && <span className="text-foreground">· {activeAgents} agent{activeAgents === 1 ? "" : "s"} active</span>}
-          </button>
-        </PopoverTrigger>
+        <PopoverTrigger
+          render={
+            <button className="flex shrink-0 items-center gap-1.5 whitespace-nowrap hover:text-foreground" disabled={!sortedProcesses.length}>
+              <ActivityIcon className="size-3.5" />
+              {runningProcesses} process{runningProcesses === 1 ? "" : "es"} running
+              {activeAgents > 0 && <span className="text-foreground">· {activeAgents} agent{activeAgents === 1 ? "" : "s"} active</span>}
+            </button>
+          }
+        />
         <PopoverContent side="top" align="start" className="w-[min(380px,calc(100vw-1rem))] p-0">
           <div className="border-b px-3 py-2 text-[0.8125rem] font-medium">Processes</div>
           <div className="max-h-96 overflow-y-auto">
@@ -125,17 +127,19 @@ export function StatusBar() {
                     </button>
                     {isDesktop() && running && (
                       <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-7 shrink-0 text-muted-foreground"
-                            aria-label="Stop"
-                            onClick={() => stop.mutate(processKey(p.project_id, p.service_id))}
-                          >
-                            <Square className="size-3.5" />
-                          </Button>
-                        </TooltipTrigger>
+                        <TooltipTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 shrink-0 text-muted-foreground"
+                              aria-label="Stop"
+                              onClick={() => stop.mutate(processKey(p.project_id, p.service_id))}
+                            >
+                              <Square className="size-3.5" />
+                            </Button>
+                          }
+                        />
                         <TooltipContent>Stop</TooltipContent>
                       </Tooltip>
                     )}
@@ -154,12 +158,14 @@ export function StatusBar() {
         </div>
       )}
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button className="flex min-w-0 flex-1 items-center gap-2 text-left hover:text-foreground">
-            <Bell className="size-3.5 shrink-0" />
-            <span className="truncate">{latestItem ? `${formatTimelineTime(latestItem.created_at)} · ${latestItem.message}` : "No recent activity"}</span>
-          </button>
-        </PopoverTrigger>
+        <PopoverTrigger
+          render={
+            <button className="flex min-w-0 flex-1 items-center gap-2 text-left hover:text-foreground">
+              <Bell className="size-3.5 shrink-0" />
+              <span className="truncate">{latestItem ? `${formatTimelineTime(latestItem.created_at)} · ${latestItem.message}` : "No recent activity"}</span>
+            </button>
+          }
+        />
         <PopoverContent side="top" align="start" className="w-[min(420px,calc(100vw-1rem))] p-0">
           <div className="flex items-center justify-between border-b px-3 py-2">
             <span className="text-[0.8125rem] font-medium">Activity</span>
@@ -198,24 +204,28 @@ export function StatusBar() {
         </PopoverContent>
       </Popover>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <button onClick={copyPath} className="flex items-center gap-1.5 whitespace-nowrap font-mono text-ash hover:text-foreground max-lg:hidden" aria-label="Copy current path">
-            <span className="max-w-64 truncate">{location.pathname}</span>
-            <Copy className="size-3" />
-          </button>
-        </TooltipTrigger>
+        <TooltipTrigger
+          render={
+            <button onClick={copyPath} className="flex items-center gap-1.5 whitespace-nowrap font-mono text-ash hover:text-foreground max-lg:hidden" aria-label="Copy current path">
+              <span className="max-w-64 truncate">{location.pathname}</span>
+              <Copy className="size-3" />
+            </button>
+          }
+        />
         <TooltipContent>Copy path — share with an AI agent to point it at this page</TooltipContent>
       </Tooltip>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => updateAvailable && navigate(Routes.workspace.settings_section(SettingsSections.GENERAL))}
-            className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-ash max-md:hidden hover:text-foreground"
-          >
-            {updateAvailable && <span className="size-1.5 rounded-full bg-info" />}
-            {environments.APP_NAME} · v{appInfo?.version ?? environments.APP_VERSION}
-          </button>
-        </TooltipTrigger>
+        <TooltipTrigger
+          render={
+            <button
+              onClick={() => updateAvailable && navigate(Routes.workspace.settings_section(SettingsSections.GENERAL))}
+              className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-ash max-md:hidden hover:text-foreground"
+            >
+              {updateAvailable && <span className="size-1.5 rounded-full bg-info" />}
+              {environments.APP_NAME} · v{appInfo?.version ?? environments.APP_VERSION}
+            </button>
+          }
+        />
         {updateAvailable && <TooltipContent>Update available — v{latestRelease?.version}</TooltipContent>}
       </Tooltip>
     </footer>

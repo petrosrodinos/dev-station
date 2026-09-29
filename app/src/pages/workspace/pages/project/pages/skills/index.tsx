@@ -177,11 +177,13 @@ const SkillsTab: FC = () => {
                     </Button>
                     {s.source === "custom" && (
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="size-6" aria-label={`Actions for ${s.name}`} onClick={(e) => e.stopPropagation()}>
-                            <MoreHorizontal className="size-3.5" />
-                          </Button>
-                        </DropdownMenuTrigger>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button variant="ghost" size="icon" className="size-6" aria-label={`Actions for ${s.name}`} onClick={(e) => e.stopPropagation()}>
+                              <MoreHorizontal className="size-3.5" />
+                            </Button>
+                          }
+                        />
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onSelect={() => setSkillDialog({ editId: s.id })}>Edit</DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive" onSelect={() => setRemoving(s)}>

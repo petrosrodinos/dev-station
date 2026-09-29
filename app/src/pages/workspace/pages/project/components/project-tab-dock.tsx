@@ -109,13 +109,17 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
     return (
       <DropdownMenu>
         <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <button className="flex h-10 w-9 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Open a section">
-                <Plus className="size-3.5" />
-              </button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
+          <TooltipTrigger
+            render={
+              <DropdownMenuTrigger
+                render={
+                  <button className="flex h-10 w-9 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Open a section">
+                    <Plus className="size-3.5" />
+                  </button>
+                }
+              />
+            }
+          />
           <TooltipContent>Open a section</TooltipContent>
         </Tooltip>
         <DropdownMenuContent align="end">

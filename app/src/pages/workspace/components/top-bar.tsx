@@ -115,31 +115,37 @@ export function TopBar() {
 
       <div className="app-no-drag flex items-center gap-0.5">
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" disabled={!canGoBack} onClick={goBack} aria-label="Go back">
-              <ArrowLeft className="size-4" />
-            </Button>
-          </TooltipTrigger>
+          <TooltipTrigger
+            render={
+              <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" disabled={!canGoBack} onClick={goBack} aria-label="Go back">
+                <ArrowLeft className="size-4" />
+              </Button>
+            }
+          />
           <TooltipContent>Back</TooltipContent>
         </Tooltip>
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" disabled={!canGoForward} onClick={goForward} aria-label="Go forward">
-              <ArrowRight className="size-4" />
-            </Button>
-          </TooltipTrigger>
+          <TooltipTrigger
+            render={
+              <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" disabled={!canGoForward} onClick={goForward} aria-label="Go forward">
+                <ArrowRight className="size-4" />
+              </Button>
+            }
+          />
           <TooltipContent>Forward</TooltipContent>
         </Tooltip>
       </div>
 
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className="app-no-drag flex h-7 min-w-0 items-center gap-1.5 rounded-sm px-2 text-[0.7813rem] font-medium text-body hover:bg-surface-elevated">
-            <Building2 className="size-3.5 text-muted-foreground" />
-            <span className="max-w-24 truncate sm:max-w-48">{organization?.name ?? "Select organization"}</span>
-            <ChevronDown className="size-3 text-muted-foreground" />
-          </button>
-        </DropdownMenuTrigger>
+        <DropdownMenuTrigger
+          render={
+            <button className="app-no-drag flex h-7 min-w-0 items-center gap-1.5 rounded-sm px-2 text-[0.7813rem] font-medium text-body hover:bg-surface-elevated">
+              <Building2 className="size-3.5 text-muted-foreground" />
+              <span className="max-w-24 truncate sm:max-w-48">{organization?.name ?? "Select organization"}</span>
+              <ChevronDown className="size-3 text-muted-foreground" />
+            </button>
+          }
+        />
         <DropdownMenuContent align="start" className="w-64">
           <DropdownMenuLabel className="text-xs text-muted-foreground">Organizations</DropdownMenuLabel>
           {me?.organizations.map((org) => (
@@ -179,38 +185,46 @@ export function TopBar() {
 
       <div className="app-no-drag flex items-center gap-1">
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={toggleFullScreen} aria-label={isFullScreen ? "Exit full screen" : "Enter full screen"}>
-              {isFullScreen ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
-            </Button>
-          </TooltipTrigger>
+          <TooltipTrigger
+            render={
+              <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={toggleFullScreen} aria-label={isFullScreen ? "Exit full screen" : "Enter full screen"}>
+                {isFullScreen ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
+              </Button>
+            }
+          />
           <TooltipContent>{isFullScreen ? "Exit full screen" : "Enter full screen"}{isDesktop() ? " (F11)" : ""}</TooltipContent>
         </Tooltip>
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={() => setShortcutsOpen(true)} aria-label="Keyboard shortcuts">
-              <Keyboard className="size-4" />
-            </Button>
-          </TooltipTrigger>
+          <TooltipTrigger
+            render={
+              <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={() => setShortcutsOpen(true)} aria-label="Keyboard shortcuts">
+                <Keyboard className="size-4" />
+              </Button>
+            }
+          />
           <TooltipContent>Keyboard shortcuts</TooltipContent>
         </Tooltip>
         <LayoutMenu />
         {can(PermissionKeys.AI_USE_AGENTS) && (
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className={cn("size-7 text-muted-foreground", aiPanelOpen && "text-foreground")} onClick={() => setAiPanelOpen(!aiPanelOpen)} aria-label="Toggle AI panel">
-                <PanelRight className="size-4" />
-              </Button>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <Button variant="ghost" size="icon" className={cn("size-7 text-muted-foreground", aiPanelOpen && "text-foreground")} onClick={() => setAiPanelOpen(!aiPanelOpen)} aria-label="Toggle AI panel">
+                  <PanelRight className="size-4" />
+                </Button>
+              }
+            />
             <TooltipContent>Toggle AI panel{aiPanelCombo ? ` (${formatComboParts(aiPanelCombo).join(" ")})` : ""}</TooltipContent>
           </Tooltip>
         )}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="ml-1 flex size-7 items-center justify-center rounded-full border bg-surface-card text-[0.6875rem] font-semibold" aria-label="Account">
-              {generateInitials(me?.full_name || me?.email)}
-            </button>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <button className="ml-1 flex size-7 items-center justify-center rounded-full border bg-surface-card text-[0.6875rem] font-semibold" aria-label="Account">
+                {generateInitials(me?.full_name || me?.email)}
+              </button>
+            }
+          />
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
               <div className="truncate text-sm">{me?.full_name || "Account"}</div>

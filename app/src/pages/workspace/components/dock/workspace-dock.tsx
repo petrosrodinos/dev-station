@@ -1,30 +1,26 @@
 import { useCallback, useEffect, useRef, type FC } from "react";
 import { Outlet } from "react-router-dom";
-import { History } from "lucide-react";
 import {
   DockviewReact,
   type DockviewApi,
   type DockviewReadyEvent,
-  type IDockviewHeaderActionsProps,
-  type IDockviewPanelHeaderProps,
   type IDockviewPanelProps,
   type IDockviewReactProps,
 } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AiPanel } from "../ai-panel";
 import { useSessionGroups } from "../../hooks/use-session-groups";
-import { AiPanelModes, useWorkspaceStore } from "@/stores/workspace";
+import { useWorkspaceStore } from "@/stores/workspace";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { useDockApi } from "../../context/dock-api-context";
 import { useLayoutPersistence } from "@/features/workspace-layouts/hooks/use-layout-persistence";
-import { cn } from "@/lib/utils";
 
 export const MAIN_CONTENT_PANEL_ID = "main-content";
 export const AI_PANEL_ID = "ai-panel";
 const AI_PANEL_MIN_WIDTH = 320;
 const AI_PANEL_DEFAULT_WIDTH = 420;
+const AI_PANEL_DEFAULT_HEIGHT = 360;
 
 /** Routed project/workspace content — unchanged from the previous fixed shell. */
 const MainContentPanel: FC<IDockviewPanelProps> = () => (
@@ -33,58 +29,15 @@ const MainContentPanel: FC<IDockviewPanelProps> = () => (
   </main>
 );
 
-/**
- * No close button: this is the app's routed content, not a closable document. Closing it used to
- * leave the dock (and, once saved, every future launch) without an anchor panel at all, which
- * crashed the whole app on restore — see the `ensureMainContent` self-heal below for the other
- * half of that fix.
- */
-const MainContentTab: FC<IDockviewPanelHeaderProps> = () => (
-  <div className="flex h-9 items-center px-3 text-[0.7813rem] font-medium text-muted-foreground">Workspace</div>
-);
-
 /** Thin adapter: resolves the session groups the existing AiPanel component expects. */
 const AiPanelDockPanel: FC<IDockviewPanelProps> = () => {
   const groups = useSessionGroups();
   return <AiPanel groups={groups} />;
 };
 
-/**
- * The history toggle used to live in its own always-visible row inside `AiPanel`, alongside a
- * "New" button — dead weight once there was nothing to review. It lives on the AI panel's own dock
- * tab now instead (`rightHeaderActionsComponent` renders once per group, so every group gets this;
- * bail out for any group whose active panel isn't the AI panel, i.e. `main-content`'s).
- */
-const AiPanelHeaderActions: FC<IDockviewHeaderActionsProps> = ({ activePanel }) => {
-  const mode = useWorkspaceStore((s) => s.ai_panel_mode);
-  const setMode = useWorkspaceStore((s) => s.setAiPanelMode);
-  if (activePanel?.id !== AI_PANEL_ID) return null;
-  const history = mode === AiPanelModes.SESSIONS;
-  const label = history ? "Back to open sessions" : "Session history";
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          onClick={() => setMode(history ? AiPanelModes.TERMINAL : AiPanelModes.SESSIONS)}
-          aria-label={label}
-          aria-pressed={history}
-          className={cn("flex h-10 w-9 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground", history && "text-foreground")}
-        >
-          <History className="size-3.5" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
-  );
-};
-
 const components: IDockviewReactProps["components"] = {
   [MAIN_CONTENT_PANEL_ID]: MainContentPanel,
   [AI_PANEL_ID]: AiPanelDockPanel,
-};
-
-const tabComponents: IDockviewReactProps["tabComponents"] = {
-  [MAIN_CONTENT_PANEL_ID]: MainContentTab,
 };
 
 /**
@@ -93,6 +46,30 @@ const tabComponents: IDockviewReactProps["tabComponents"] = {
  * behaviorally equivalent to the previous shell — free drag-to-dock/split, tab groups, named
  * presets, and floating panels land in later phases (see plan `giggly-growing-heron.md`).
  */
+export const AiPanelDockSides = {
+  LEFT: "left",
+  RIGHT: "right",
+  TOP: "top",
+  BOTTOM: "bottom",
+} as const;
+export type AiPanelDockSide = (typeof AiPanelDockSides)[keyof typeof AiPanelDockSides];
+
+/**
+ * The dock's tab strip is hidden (see `.workspace-dock` in index.css), so drag-to-dock is gone; this
+ * is how the AI panel changes sides instead — it re-splits next to the main content panel.
+ */
+export const moveAiPanel = (api: DockviewApi, side: AiPanelDockSide) => {
+  const ai = api.getPanel(AI_PANEL_ID);
+  const main = api.getPanel(MAIN_CONTENT_PANEL_ID);
+  if (!ai || !main) return;
+  try {
+    ai.api.moveTo({ group: main.group, position: side });
+    ai.api.setSize(side === "left" || side === "right" ? { width: AI_PANEL_DEFAULT_WIDTH } : { height: AI_PANEL_DEFAULT_HEIGHT });
+  } catch (error) {
+    console.error("Failed to move the AI panel", error);
+  }
+};
+
 export const WorkspaceDock: FC = () => {
   const apiRef = useRef<DockviewApi | null>(null);
   const { api, setApi } = useDockApi();
@@ -131,21 +108,32 @@ export const WorkspaceDock: FC = () => {
     [ensureMainContent],
   );
 
+  /**
+   * The tab strip ("Workspace" / "AI panel") spent a full row on labels for two panels that are never
+   * closed or re-ordered by hand. Panels move via the Layout menu instead, and the AI panel carries its
+   * own header (history toggle + review pill).
+   */
+  const hideTabStrips = useCallback((api: DockviewApi) => {
+    for (const group of api.groups) if (!group.header.hidden) group.header.hidden = true;
+  }, []);
+
   const onReady = useCallback(
     (event: DockviewReadyEvent) => {
       apiRef.current = event.api;
       ensureMainContent(event.api);
+      hideTabStrips(event.api);
       if (aiPanelOpenRef.current) addAiPanel(event.api);
       // Self-heal: whatever changed the layout (user closing a panel, a restored/corrupted saved
       // preset, a future bug) can never leave the dock without its anchor panel — this is what
       // actually fixes a previously-saved broken layout, not just prevents a new one.
       event.api.onDidLayoutChange(() => {
         ensureMainContent(event.api);
+        hideTabStrips(event.api);
         if (aiPanelOpenRef.current && !event.api.getPanel(AI_PANEL_ID)) addAiPanel(event.api);
       });
       setApi(event.api);
     },
-    [addAiPanel, ensureMainContent, setApi],
+    [addAiPanel, ensureMainContent, hideTabStrips, setApi],
   );
 
   // Keep the AI panel's dock presence in sync with the existing `ai_panel_open` toggle/permission gate.
@@ -161,8 +149,6 @@ export const WorkspaceDock: FC = () => {
     <DockviewReact
       className="dockview-theme-abyss min-w-0 flex-1"
       components={components}
-      tabComponents={tabComponents}
-      rightHeaderActionsComponent={AiPanelHeaderActions}
       onReady={onReady}
     />
   );

@@ -104,11 +104,13 @@ export function GitIdentitiesSection() {
               </Badge>
             )}
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="ml-auto size-7 shrink-0" aria-label={`Actions for ${i.label}`}>
-                  <MoreHorizontal className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="ghost" size="icon" className="ml-auto size-7 shrink-0" aria-label={`Actions for ${i.label}`}>
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                }
+              />
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onSelect={() => openDialog(i)}>Edit</DropdownMenuItem>
                 {!i.is_default && <DropdownMenuItem onSelect={() => update.mutate({ id: i.id, is_default: true })}>Make default</DropdownMenuItem>}

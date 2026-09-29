@@ -51,9 +51,7 @@ export default function LandingPage() {
               <Button size="lg" onClick={() => navigate(Routes.auth.sign_in)}>
                 Sign in
               </Button>
-              <Button variant="ghost" size="lg" asChild>
-                <a href="#workflow">See how it works</a>
-              </Button>
+              <Button variant="ghost" size="lg" render={<a href="#workflow">See how it works</a>} />
             </div>
           </div>
 

@@ -48,17 +48,19 @@ function RowAction({
 }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-7 text-muted-foreground"
-          onClick={onClick}
-          aria-label={label}
-        >
-          {children}
-        </Button>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7 text-muted-foreground"
+            onClick={onClick}
+            aria-label={label}
+          >
+            {children}
+          </Button>
+        }
+      />
       <TooltipContent>{label}</TooltipContent>
     </Tooltip>
   );
@@ -123,12 +125,14 @@ export function ShortcutsSettings() {
   const conflictIcon = (id: string) =>
     conflicting.has(id) && (
       <Tooltip>
-        <TooltipTrigger asChild>
-          <AlertTriangle
-            className="size-3.5 text-warning"
-            aria-label="Shortcut conflict"
-          />
-        </TooltipTrigger>
+        <TooltipTrigger
+          render={
+            <AlertTriangle
+              className="size-3.5 text-warning"
+              aria-label="Shortcut conflict"
+            />
+          }
+        />
         <TooltipContent>
           Another shortcut uses the same keys. Change one of them.
         </TooltipContent>

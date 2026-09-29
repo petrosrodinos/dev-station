@@ -116,20 +116,22 @@ const GitTab: FC = () => {
                   </span>
                   {can(PermissionKeys.GIT_COMMIT) && (
                     <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-6 text-muted-foreground opacity-0 hover:text-danger group-hover:opacity-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDiscardTarget([f.path]);
-                          }}
-                          aria-label="Discard changes"
-                        >
-                          <Undo2 className="size-3.5" />
-                        </Button>
-                      </TooltipTrigger>
+                      <TooltipTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-6 text-muted-foreground opacity-0 hover:text-danger group-hover:opacity-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDiscardTarget([f.path]);
+                            }}
+                            aria-label="Discard changes"
+                          >
+                            <Undo2 className="size-3.5" />
+                          </Button>
+                        }
+                      />
                       <TooltipContent>Discard changes</TooltipContent>
                     </Tooltip>
                   )}

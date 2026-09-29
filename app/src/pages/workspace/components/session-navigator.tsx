@@ -70,18 +70,20 @@ export function SessionNavigator({ groups, activeId, onOpen }: SessionNavigatorP
         {groups.groups.map((group) => (
           <div key={group.project.id} className="group/project flex shrink-0 items-stretch border-r">
             <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => selectProject(group.project)}
-                  className={cn(
-                    "flex max-w-28 items-center gap-1.5 pl-2 pr-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.4px] text-muted-foreground hover:text-foreground",
-                    group.project.id === activeProjectId && "text-foreground",
-                  )}
-                >
-                  <ProjectFlag color={group.project.color} className="h-3.5" />
-                  <span className="truncate">{group.project.name}</span>
-                </button>
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <button
+                    onClick={() => selectProject(group.project)}
+                    className={cn(
+                      "flex max-w-28 items-center gap-1.5 pl-2 pr-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.4px] text-muted-foreground hover:text-foreground",
+                      group.project.id === activeProjectId && "text-foreground",
+                    )}
+                  >
+                    <ProjectFlag color={group.project.color} className="h-3.5" />
+                    <span className="truncate">{group.project.name}</span>
+                  </button>
+                }
+              />
               <TooltipContent>
                 {group.project.name} · {group.sessions.length} session{group.sessions.length === 1 ? "" : "s"}
                 {group.ready > 0 && ` · ${group.ready} ready for review`}

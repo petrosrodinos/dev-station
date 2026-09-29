@@ -21,7 +21,7 @@ import { AccentPicker } from "./theme/accent-picker";
 
 function FontSelect({ label, options, value, onChange }: { label: string; options: FontOption[]; value: string; onChange: (id: string) => void }) {
   return (
-    <Select value={value} onValueChange={onChange}>
+    <Select value={value} onValueChange={(v) => v !== null && onChange(v)}>
       <SelectTrigger className="w-full @xl:w-56" aria-label={label}>
         <SelectValue />
       </SelectTrigger>
@@ -78,7 +78,14 @@ export function ThemeSettings() {
         </SettingsRow>
         <SettingsRow label="Font size" description={`${MIN_FONT_SIZE}–${MAX_FONT_SIZE}px. Default is ${DEFAULT_FONT_SIZE}px.`}>
           <div className="flex w-full items-center gap-3">
-            <Slider aria-label="Font size" min={MIN_FONT_SIZE} max={MAX_FONT_SIZE} step={1} value={[values.font_size]} onValueChange={([font_size]) => change({ font_size })} />
+            <Slider
+              aria-label="Font size"
+              min={MIN_FONT_SIZE}
+              max={MAX_FONT_SIZE}
+              step={1}
+              value={[values.font_size]}
+              onValueChange={(v) => change({ font_size: Array.isArray(v) ? v[0] : v })}
+            />
             <span className="w-10 shrink-0 text-right font-mono text-xs text-muted-foreground">{values.font_size}px</span>
           </div>
         </SettingsRow>

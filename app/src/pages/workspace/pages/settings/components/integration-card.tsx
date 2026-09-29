@@ -103,11 +103,13 @@ export function IntegrationCard({ integration }: { integration: Integration }) {
                 </div>
               </div>
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8 shrink-0 text-muted-foreground" aria-label="Connection actions">
-                    <MoreHorizontal className="size-3.5" />
-                  </Button>
-                </DropdownMenuTrigger>
+                <DropdownMenuTrigger
+                  render={
+                    <Button variant="ghost" size="icon" className="size-8 shrink-0 text-muted-foreground" aria-label="Connection actions">
+                      <MoreHorizontal className="size-3.5" />
+                    </Button>
+                  }
+                />
                 <DropdownMenuContent align="end">
                   {can(PermissionKeys.INTEGRATIONS_VIEW) && (
                     <DropdownMenuItem className="gap-2" onSelect={() => refresh.mutate(c.id)}>

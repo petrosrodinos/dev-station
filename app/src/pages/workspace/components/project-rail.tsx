@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { AlertTriangle, Building2, CloudDownload, FolderOpen, FolderSearch, LayoutGrid, Link2, Pencil, Plug, Plus, Settings, Trash2 } from "lucide-react";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
@@ -19,6 +19,8 @@ import { useAgentSessions } from "@/features/agent-sessions/hooks/use-agent-sess
 import { ProjectLocalStateOptions } from "@/config/constants/dropdowns/projects/project-local-state.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { useWorkspaceStore } from "@/stores/workspace";
+import { isHorizontalRail, type RailPosition } from "@/config/constants/dropdowns/settings/rail-position.options";
+import { useRailPosition } from "@/features/users/hooks/use-rail-position";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
 import { Routes } from "@/routes/routes";
@@ -29,8 +31,28 @@ import { jumpToSession } from "@/lib/session-navigation.utils";
 import { cn } from "@/lib/utils";
 import { EditorTargets, ProjectLocalStates, type ProjectLocalState } from "@shared/contract";
 
+type TipSide = "left" | "right" | "top" | "bottom";
+
+/** Tooltips open away from the edge the rail is docked to, so they never cover the workspace. */
+const TOOLTIP_SIDE: Record<RailPosition, TipSide> = {
+  left: "right",
+  right: "left",
+  top: "bottom",
+  bottom: "top",
+};
+
+const RAIL_EDGE_BORDER: Record<RailPosition, string> = {
+  left: "border-r",
+  right: "border-l",
+  top: "border-b",
+  bottom: "border-t",
+};
+
 /** Slack-style project rail (Spec §5) with attention badges (Spec §13/§27) and local-state treatment (Spec §26). */
 export function ProjectRail() {
+  const { position } = useRailPosition();
+  const horizontal = isHorizontalRail(position);
+  const tipSide = TOOLTIP_SIDE[position];
   const navigate = useNavigate();
   const { data: projects, isPending } = useGetProjects();
   const { data: localStates } = useProjectLocalStates();
@@ -89,25 +111,34 @@ export function ProjectRail() {
   };
 
   return (
-    <aside className="flex w-16 shrink-0 flex-col items-center border-r bg-canvas py-2" aria-label="Projects">
-      <div className="flex flex-col items-center gap-1 pb-1">
-        <RailButton label="Home" onClick={goHome} active={onHome}>
+    <aside
+      className={cn("flex shrink-0 items-center bg-canvas", RAIL_EDGE_BORDER[position], horizontal ? "h-16 w-full flex-row px-2" : "w-16 flex-col py-2")}
+      aria-label="Projects"
+    >
+      <div className={cn("flex items-center gap-1", horizontal ? "flex-row pr-1" : "flex-col pb-1")}>
+        <RailButton label="Home" onClick={goHome} active={onHome} tipSide={tipSide}>
           <LayoutGrid className="size-4" />
         </RailButton>
-        <div className="mt-1 h-px w-7 bg-border" />
+        <div className={cn("bg-border", horizontal ? "ml-1 h-7 w-px" : "mt-1 h-px w-7")} />
       </div>
 
-      <div className="flex w-full flex-1 flex-col items-center gap-1 overflow-y-auto overflow-x-hidden pb-2">
+      <div
+        className={cn(
+          "flex flex-1 items-center gap-1",
+          horizontal ? "h-full min-w-0 flex-row overflow-x-auto overflow-y-hidden pr-2" : "w-full flex-col overflow-y-auto overflow-x-hidden pb-2",
+        )}
+      >
         {isPending &&
           Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="size-10 shrink-0 rounded-full" />)}
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-          <SortableContext items={(projects ?? []).map((p) => p.id)} strategy={verticalListSortingStrategy}>
+          <SortableContext items={(projects ?? []).map((p) => p.id)} strategy={horizontal ? horizontalListSortingStrategy : verticalListSortingStrategy}>
             {(projects ?? []).map((project) => (
               <RailItem
                 key={project.id}
                 project={project}
                 active={project.id === activeProjectId}
+                position={position}
                 localState={isDesktop() ? localStates?.[project.id] ?? null : null}
                 attention={attentionByProject.get(project.id)?.length ?? 0}
                 canEdit={can(PermissionKeys.PROJECTS_EDIT)}
@@ -126,35 +157,40 @@ export function ProjectRail() {
 
         {can(PermissionKeys.PROJECTS_CREATE) && (
           <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => openProjectDialog(null)}
-                className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-lg border border-dashed text-ash hover:border-hairline-strong hover:text-foreground"
-                aria-label="Add project"
-              >
-                <Plus className="size-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">Add project</TooltipContent>
+            <TooltipTrigger
+              render={
+                <button
+                  onClick={() => openProjectDialog(null)}
+                  className={cn(
+                    "flex size-10 shrink-0 items-center justify-center rounded-lg border border-dashed text-ash hover:border-hairline-strong hover:text-foreground",
+                    horizontal ? "ml-1" : "mt-1",
+                  )}
+                  aria-label="Add project"
+                >
+                  <Plus className="size-4" />
+                </button>
+              }
+            />
+            <TooltipContent side={tipSide}>Add project</TooltipContent>
           </Tooltip>
         )}
       </div>
 
-      <div className="flex flex-col items-center gap-1.5 pt-1">
-        <div className="mb-1 h-px w-7 bg-border" />
+      <div className={cn("flex items-center gap-1.5", horizontal ? "flex-row pl-1" : "flex-col pt-1")}>
+        <div className={cn("bg-border", horizontal ? "mr-1 h-7 w-px" : "mb-1 h-px w-7")} />
         {importedCount > 0 && (
-          <RailButton label={`Set up imported projects (${importedCount})`} onClick={() => navigate(Routes.workspace.imported)}>
+          <RailButton label={`Set up imported projects (${importedCount})`} onClick={() => navigate(Routes.workspace.imported)} tipSide={tipSide}>
             <CloudDownload className="size-4" />
             <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-info px-1 text-[0.625rem] font-bold text-[#04121b]">{importedCount}</span>
           </RailButton>
         )}
-        <RailButton label="Integrations" onClick={() => navigate(Routes.workspace.integrations)}>
+        <RailButton label="Integrations" onClick={() => navigate(Routes.workspace.integrations)} tipSide={tipSide}>
           <Plug className="size-4" />
         </RailButton>
-        <RailButton label="Organization" onClick={() => navigate(Routes.workspace.settings_section(SettingsSections.ORGANIZATION))}>
+        <RailButton label="Organization" onClick={() => navigate(Routes.workspace.settings_section(SettingsSections.ORGANIZATION))} tipSide={tipSide}>
           <Building2 className="size-4" />
         </RailButton>
-        <RailButton label="Settings" onClick={() => navigate(Routes.workspace.settings)}>
+        <RailButton label="Settings" onClick={() => navigate(Routes.workspace.settings)} tipSide={tipSide}>
           <Settings className="size-4" />
         </RailButton>
       </div>
@@ -174,20 +210,22 @@ export function ProjectRail() {
   );
 }
 
-function RailButton({ label, onClick, active, children }: { label: string; onClick: () => void; active?: boolean; children: React.ReactNode }) {
+function RailButton({ label, onClick, active, tipSide, children }: { label: string; onClick: () => void; active?: boolean; tipSide: TipSide; children: React.ReactNode }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          onClick={onClick}
-          aria-label={label}
-          aria-current={active ? "page" : undefined}
-          className={cn("relative flex size-10 items-center justify-center rounded-lg bg-surface-elevated text-muted-foreground hover:text-foreground", active && "text-foreground ring-1 ring-hairline-strong")}
-        >
-          {children}
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="right">{label}</TooltipContent>
+      <TooltipTrigger
+        render={
+          <button
+            onClick={onClick}
+            aria-label={label}
+            aria-current={active ? "page" : undefined}
+            className={cn("relative flex size-10 items-center justify-center rounded-lg bg-surface-elevated text-muted-foreground hover:text-foreground", active && "text-foreground ring-1 ring-hairline-strong")}
+          >
+            {children}
+          </button>
+        }
+      />
+      <TooltipContent side={tipSide}>{label}</TooltipContent>
     </Tooltip>
   );
 }
@@ -195,6 +233,7 @@ function RailButton({ label, onClick, active, children }: { label: string; onCli
 interface RailItemProps {
   project: Project;
   active: boolean;
+  position: RailPosition;
   localState: ProjectLocalState | null;
   attention: number;
   canEdit: boolean;
@@ -208,8 +247,9 @@ interface RailItemProps {
   onRemove: () => void;
 }
 
-function RailItem({ project, active, localState, attention, canEdit, canDelete, onSelect, onBadge, onEdit, onSetup, onReveal, onOpenEditor, onRemove }: RailItemProps) {
+function RailItem({ project, active, position, localState, attention, canEdit, canDelete, onSelect, onBadge, onEdit, onSetup, onReveal, onOpenEditor, onRemove }: RailItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: project.id, disabled: !canEdit });
+  const horizontal = isHorizontalRail(position);
   const imported = localState === ProjectLocalStates.IMPORTED;
   const missing = localState === ProjectLocalStates.MISSING;
   const isLocal = localState === ProjectLocalStates.LOCAL;
@@ -217,42 +257,60 @@ function RailItem({ project, active, localState, attention, canEdit, canDelete, 
   return (
     <ContextMenu>
       <Tooltip>
-        <ContextMenuTrigger asChild>
-          <TooltipTrigger asChild>
-            <div
-              ref={setNodeRef}
-              style={{ transform: CSS.Translate.toString(transform), transition }}
-              className={cn("relative flex w-full justify-center", isDragging && "z-10 opacity-60")}
-            >
-              <span className={cn("absolute left-0 top-1/2 w-[3px] -translate-y-1/2 rounded-r-sm bg-foreground transition-all", active ? "h-5" : "h-0")} />
-              <button
-                {...attributes}
-                {...listeners}
-                onClick={onSelect}
-                aria-label={project.name}
-                aria-current={active ? "page" : undefined}
-                className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              >
-                <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="lg" muted={imported} className={cn(active && "rounded-lg")} />
-              </button>
-              {attention > 0 && (
-                <button
-                  onClick={onBadge}
-                  className="absolute -top-0.5 right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[0.625rem] font-bold text-[#1a0505] ring-2 ring-canvas"
-                  aria-label={`${attention} session${attention > 1 ? "s need" : " needs"} attention`}
+        <ContextMenuTrigger
+          render={
+            <TooltipTrigger
+              render={
+                <div
+                  ref={setNodeRef}
+                  style={{ transform: CSS.Translate.toString(transform), transition }}
+                  className={cn("relative flex justify-center", horizontal ? "h-full items-center" : "w-full", isDragging && "z-10 opacity-60")}
                 >
-                  {attention}
-                </button>
-              )}
-              {missing && (
-                <span className="absolute -bottom-0.5 right-2 flex size-4 items-center justify-center rounded-full bg-warning text-[#1a1200] ring-2 ring-canvas">
-                  <AlertTriangle className="size-2.5" />
-                </span>
-              )}
-            </div>
-          </TooltipTrigger>
-        </ContextMenuTrigger>
-        <TooltipContent side="right" className="max-w-60">
+                  <span
+                    className={cn(
+                      "absolute rounded-sm bg-foreground transition-all",
+                      horizontal ? "bottom-0 left-1/2 h-[3px] -translate-x-1/2" : "left-0 top-1/2 w-[3px] -translate-y-1/2",
+                      horizontal ? (active ? "w-5" : "w-0") : active ? "h-5" : "h-0",
+                    )}
+                  />
+                  <button
+                    {...attributes}
+                    {...listeners}
+                    onClick={onSelect}
+                    aria-label={project.name}
+                    aria-current={active ? "page" : undefined}
+                    className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  >
+                    <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="lg" muted={imported} className={cn(active && "rounded-lg")} />
+                  </button>
+                  {attention > 0 && (
+                    <button
+                      onClick={onBadge}
+                      className={cn(
+                        "absolute -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[0.625rem] font-bold text-[#1a0505] ring-2 ring-canvas",
+                        horizontal ? "right-0" : "right-2",
+                      )}
+                      aria-label={`${attention} session${attention > 1 ? "s need" : " needs"} attention`}
+                    >
+                      {attention}
+                    </button>
+                  )}
+                  {missing && (
+                    <span
+                      className={cn(
+                        "absolute -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-warning text-[#1a1200] ring-2 ring-canvas",
+                        horizontal ? "right-0" : "right-2",
+                      )}
+                    >
+                      <AlertTriangle className="size-2.5" />
+                    </span>
+                  )}
+                </div>
+              }
+            />
+          }
+        />
+        <TooltipContent side={TOOLTIP_SIDE[position]} className="max-w-60">
           <div className="font-medium">{project.name}</div>
           {localState && localState !== ProjectLocalStates.LOCAL && (
             <div className="text-[0.6875rem] opacity-70">{getDropdownOptionLabel(ProjectLocalStateOptions, localState)}</div>

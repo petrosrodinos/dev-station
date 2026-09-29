@@ -116,11 +116,13 @@ export function SessionTerminalPanel({
         )}
         {(hasAgentActions || canFloat || canDelete) && (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-7 shrink-0 text-muted-foreground" aria-label="Session options">
-                <MoreHorizontal className="size-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon" className="size-7 shrink-0 text-muted-foreground" aria-label="Session options">
+                  <MoreHorizontal className="size-3.5" />
+                </Button>
+              }
+            />
             <DropdownMenuContent align="end">
               {hasAgentActions && runtime && (
                 <>
@@ -178,11 +180,13 @@ export function SessionTerminalPanel({
 function PanelIconButton({ label, onClick, disabled, children }: { label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon" className={cn("size-7 text-muted-foreground")} onClick={onClick} disabled={disabled} aria-label={label}>
-          {children}
-        </Button>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <Button variant="ghost" size="icon" className={cn("size-7 text-muted-foreground")} onClick={onClick} disabled={disabled} aria-label={label}>
+            {children}
+          </Button>
+        }
+      />
       <TooltipContent>{label}</TooltipContent>
     </Tooltip>
   );

@@ -1,0 +1,29 @@
+{
+  "name": "@dev-station/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    "./components/ui/*": "./src/components/ui/*.tsx",
+    "./lib/utils": "./src/lib/utils.ts",
+    "./hooks/*": "./src/hooks/*.ts",
+    "./styles.css": "./src/styles/theme.css"
+  },
+  "peerDependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "@base-ui/react": "^1.7.0",
+    "tailwind-merge": "^3.3.1",
+    "clsx": "^2.1.1",
+    "class-variance-authority": "^0.7.1",
+    "lucide-react": ">=0.518.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "typescript": "~5.8.3"
+  }
+}

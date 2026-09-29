@@ -81,11 +81,13 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
   const nextButton = (autoFocus: boolean) =>
     remaining > 0 ? (
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Button size="sm" variant={done ? "default" : "ghost"} className="h-8 shrink-0 gap-1.5" onClick={onNext} autoFocus={autoFocus}>
-            {done ? `Next review (${remaining})` : "Skip"} <ArrowRight className="size-3.5" />
-          </Button>
-        </TooltipTrigger>
+        <TooltipTrigger
+          render={
+            <Button size="sm" variant={done ? "default" : "ghost"} className="h-8 shrink-0 gap-1.5" onClick={onNext} autoFocus={autoFocus}>
+              {done ? `Next review (${remaining})` : "Skip"} <ArrowRight className="size-3.5" />
+            </Button>
+          }
+        />
         <TooltipContent className="flex items-center gap-2">
           Next session to review {nextCombo && <ShortcutKeys combo={nextCombo} />}
         </TooltipContent>

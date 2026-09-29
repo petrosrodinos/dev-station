@@ -13,7 +13,7 @@ function App() {
         <ErrorBoundary>
             <BrowserRouter>
                 <QueryProvider>
-                    <TooltipProvider delayDuration={250}>
+                    <TooltipProvider delay={250}>
                         <AppUpdateGate>
                             <AuthGate>
                                 <AppRoutes />
