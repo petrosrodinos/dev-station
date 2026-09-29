@@ -224,6 +224,7 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
       components={components}
       defaultTabComponent={ProjectTabHeader}
       rightHeaderActionsComponent={AddTabMenu}
+      disableTabsOverflowList
       onReady={onReady}
     />
   );

@@ -1,17 +1,13 @@
 import { useEffect, useRef, useState, type FC } from "react";
-import { Navigate, NavLink, Outlet, useLocation, useParams } from "react-router-dom";
-import { ChevronDown, ExternalLink, GitBranch, Minimize2, PanelRight } from "lucide-react";
+import { Navigate, Outlet, useLocation, useParams } from "react-router-dom";
+import { Minimize2, PanelRight } from "lucide-react";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useProject } from "@/features/projects/hooks/use-projects";
 import { useProjectLocalState } from "@/features/local-workspace/hooks/use-local-workspace";
-import { useGitStatus } from "@/features/git/hooks/use-git";
-import { useOpenInEditor } from "@/features/files/hooks/use-files";
-import { EditorTargetOptions } from "@/config/constants/dropdowns/settings/editor-target.options";
 import { ProjectTabOptions, ProjectTabs, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
@@ -35,8 +31,6 @@ const ProjectLayout: FC = () => {
   const { project, isPending } = useProject(projectId);
   const localState = useProjectLocalState(projectId);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
-  const { data: git } = useGitStatus(projectId ?? null);
-  const openInEditor = useOpenInEditor();
   const onSetup = location.pathname.endsWith("/setup");
   const previewOpen = useWorkspaceStore((s) => (projectId ? s.preview_by_project[projectId]?.previewOpen : false)) ?? DEFAULT_PREVIEW_PREFS.previewOpen;
   const previewExpanded = useWorkspaceStore((s) => (projectId ? s.preview_by_project[projectId]?.previewExpanded : false)) ?? DEFAULT_PREVIEW_PREFS.previewExpanded;
@@ -102,55 +96,33 @@ const ProjectLayout: FC = () => {
   return (
     <ProjectContext.Provider value={project}>
     <div className="@container flex h-full min-h-0 flex-col">
-      <div className="shrink-0 px-4 pt-4">
-        <div className="mb-3 flex items-center gap-3">
-          <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="md" />
-          <div className="min-w-0">
-            <div className="truncate text-lg font-medium leading-tight">{project.name}</div>
-            <div className="truncate text-[0.7813rem] text-muted-foreground">
+      {/* One compact row instead of the previous two-line stacked block (avatar + title on one
+          line, subtitle below, plus its own top padding) — name and repo share a line, and the
+          repo/sub_path detail drops entirely below `@lg` where there's no room to spare. */}
+      <div className="flex h-11 shrink-0 items-center gap-2.5 px-4">
+        <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="sm" />
+        <div className="flex min-w-0 items-baseline gap-1.5">
+          <span className="truncate text-[0.8125rem] font-semibold">{project.name}</span>
+          {(project.repository || project.sub_path) && (
+            <span className="hidden truncate text-[0.7188rem] text-muted-foreground @lg:inline">
               {project.repository && <>{project.repository.full_name ?? project.repository.clone_url}</>}
               {project.sub_path && <>{project.repository ? " · " : ""}{project.sub_path}</>}
-            </div>
-          </div>
-          <div className="ml-auto flex shrink-0 items-center gap-2">
-            {git?.branch && (
-              <NavLink
-                to={Routes.workspace.project_tab(project.id, ProjectTabs.GIT)}
-                title={git.branch}
-                className="inline-flex h-[30px] max-w-[9rem] items-center gap-1.5 rounded-md border bg-surface-elevated px-2.5 font-mono text-[0.7813rem] font-medium hover:border-hairline-strong @2xl:max-w-[16rem]"
-              >
-                <GitBranch className="size-3.5 shrink-0" /> <span className="hidden truncate @md:inline">{git.branch}</span>
-              </NavLink>
-            )}
-            {previewAvailable && (
-              <Button
-                variant="outline"
-                size="sm"
-                className={cn("h-[30px] gap-1.5", previewOpen && "border-hairline-strong bg-accent")}
-                aria-pressed={previewOpen}
-                title="Toggle preview (Ctrl+Shift+P)"
-                onClick={() => setProjectPreview(project.id, { previewOpen: !previewOpen })}
-              >
-                <PanelRight className="size-3.5" /> <span className="hidden @xl:inline">Preview</span>
-              </Button>
-            )}
-            {localState === ProjectLocalStates.LOCAL && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-[30px] gap-1.5">
-                    <ExternalLink className="size-3.5" /> <span className="hidden @xl:inline">Open in</span> <ChevronDown className="size-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {EditorTargetOptions.map((o) => (
-                    <DropdownMenuItem key={o.id} onSelect={() => openInEditor.mutate({ projectId: project.id, editor: o.id })}>
-                      {o.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
+            </span>
+          )}
+        </div>
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          {previewAvailable && (
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn("h-7 gap-1.5", previewOpen && "border-hairline-strong bg-accent")}
+              aria-pressed={previewOpen}
+              title="Toggle preview (Ctrl+Shift+P)"
+              onClick={() => setProjectPreview(project.id, { previewOpen: !previewOpen })}
+            >
+              <PanelRight className="size-3.5" /> <span className="hidden @xl:inline">Preview</span>
+            </Button>
+          )}
         </div>
       </div>
       <div ref={bodyRef} className="flex min-h-0 flex-1">
