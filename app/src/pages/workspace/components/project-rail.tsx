@@ -20,6 +20,7 @@ import { ProjectLocalStateOptions } from "@/config/constants/dropdowns/projects/
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { isHorizontalRail, type RailPosition } from "@/config/constants/dropdowns/settings/rail-position.options";
+import { PlacementMenu } from "./placement-menu";
 import { useRailPosition } from "@/features/users/hooks/use-rail-position";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
@@ -111,6 +112,7 @@ export function ProjectRail() {
   };
 
   return (
+    <PlacementMenu>
     <aside
       className={cn("flex shrink-0 items-center bg-canvas", RAIL_EDGE_BORDER[position], horizontal ? "h-16 w-full flex-row px-2" : "w-16 flex-col py-2")}
       aria-label="Projects"
@@ -207,6 +209,7 @@ export function ProjectRail() {
         icon={<Trash2 className="size-5" />}
       />
     </aside>
+    </PlacementMenu>
   );
 }
 
@@ -264,7 +267,8 @@ function RailItem({ project, active, position, localState, attention, canEdit, c
                 <div
                   ref={setNodeRef}
                   style={{ transform: CSS.Translate.toString(transform), transition }}
-                  className={cn("relative flex justify-center", horizontal ? "h-full items-center" : "w-full", isDragging && "z-10 opacity-60")}
+                  onContextMenu={(e) => e.stopPropagation()}
+              className={cn("relative flex justify-center", horizontal ? "h-full items-center" : "w-full", isDragging && "z-10 opacity-60")}
                 >
                   <span
                     className={cn(

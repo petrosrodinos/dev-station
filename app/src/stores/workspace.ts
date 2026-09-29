@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
+import type { RailPosition } from "@/config/constants/dropdowns/settings/rail-position.options";
 import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
 
 /** Every project tab starts open (matches the old always-visible nav) until the user closes one. */
@@ -32,6 +33,8 @@ interface WorkspaceState {
     active_session_id: string | null;
     ai_panel_mode: AiPanelMode;
     ai_panel_open: boolean;
+    /** Sidebar edge chosen on this device; wins over the account value so a move applies even if the save fails. */
+    rail_position: RailPosition | null;
     /** Sessions that finished/await input and haven't been looked at yet (drives nav-rail badges). */
     attention_session_ids: string[];
     /** Sessions the user reviewed (committed or marked reviewed) since the agent last finished. */
@@ -54,6 +57,7 @@ interface WorkspaceActions {
     setActiveSession(id: string | null): void;
     setAiPanelMode(mode: AiPanelMode): void;
     setAiPanelOpen(open: boolean): void;
+    setRailPosition(position: RailPosition | null): void;
     markAttention(id: string): void;
     clearAttention(id: string): void;
     markReviewed(id: string): void;
@@ -73,6 +77,7 @@ const initialValues: WorkspaceState = {
     active_session_id: null,
     ai_panel_mode: AiPanelModes.TERMINAL,
     ai_panel_open: true,
+    rail_position: null,
     attention_session_ids: [],
     reviewed_session_ids: [],
     session_by_project: {},
@@ -115,6 +120,7 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                     set((s) => ({ active_session_id: id, attention_session_ids: id ? s.attention_session_ids.filter((x) => x !== id) : s.attention_session_ids })),
                 setAiPanelMode: (mode) => set({ ai_panel_mode: mode }),
                 setAiPanelOpen: (open) => set({ ai_panel_open: open }),
+                setRailPosition: (position) => set({ rail_position: position }),
                 markAttention: (id) =>
                     set((s) => (s.attention_session_ids.includes(id) ? s : { attention_session_ids: [...s.attention_session_ids, id] })),
                 clearAttention: (id) => set((s) => ({ attention_session_ids: s.attention_session_ids.filter((x) => x !== id) })),
