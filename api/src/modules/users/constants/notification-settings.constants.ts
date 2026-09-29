@@ -8,7 +8,13 @@ export const NOTIFICATION_EVENT_TYPES = [
   'GIT_PULL',
 ] as const;
 
-export const NOTIFICATION_CHANNELS = ['badge', 'feed', 'os', 'toast'] as const;
+export const NOTIFICATION_CHANNELS = [
+  'badge',
+  'feed',
+  'os',
+  'toast',
+  'sound',
+] as const;
 
 export type NotificationEventType = (typeof NOTIFICATION_EVENT_TYPES)[number];
 export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
@@ -25,17 +31,18 @@ const flags = (
   feed: boolean,
   os: boolean,
   toast: boolean,
-): NotificationChannelFlags => ({ badge, feed, os, toast });
+  sound: boolean,
+): NotificationChannelFlags => ({ badge, feed, os, toast, sound });
 
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   enabled: true,
   events: {
-    AGENT_FINISHED: flags(true, true, false, true),
-    AGENT_AWAITING_INPUT: flags(true, true, true, true),
-    AGENT_CRASHED: flags(true, true, true, true),
-    SERVICE_CRASHED: flags(false, true, true, true),
-    GIT_COMMIT: flags(false, true, false, true),
-    GIT_PUSH: flags(false, true, false, true),
-    GIT_PULL: flags(false, true, false, true),
+    AGENT_FINISHED: flags(true, true, false, true, true),
+    AGENT_AWAITING_INPUT: flags(true, true, true, true, true),
+    AGENT_CRASHED: flags(true, true, true, true, true),
+    SERVICE_CRASHED: flags(false, true, true, true, false),
+    GIT_COMMIT: flags(false, true, false, true, false),
+    GIT_PUSH: flags(false, true, false, true, false),
+    GIT_PULL: flags(false, true, false, true, false),
   },
 };

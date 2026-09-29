@@ -10,7 +10,7 @@ import { useGetPreferences, useUpdatePreferences } from "@/features/users/hooks/
 import { NotificationChannels } from "@/features/users/interfaces/users.interfaces";
 import { notificationSettingsSchema, type NotificationSettingsFormData } from "@/features/users/validation-schemas/notification-settings.schema";
 import { DEFAULT_NOTIFICATION_SETTINGS } from "@/features/users/utils/notification-settings.utils";
-import { showOsNotification } from "@/features/users/services/notifications.services";
+import { playNotificationSound, showOsNotification } from "@/features/users/services/notifications.services";
 import { NotificationChannelDescriptionOptions, NotificationChannelOptions } from "@/config/constants/dropdowns/notifications/notification-channel.options";
 import { NotificationEventDescriptionOptions, NotificationEventOptions } from "@/config/constants/dropdowns/notifications/notification-event.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
@@ -36,6 +36,15 @@ export function NotificationSettings() {
       if (!shown) toast({ title: "Desktop notifications are not supported on this system", variant: "error" });
     } catch (error) {
       toast({ title: "Could not send test notification", description: error instanceof Error ? error.message : undefined, variant: "error" });
+    }
+  };
+
+  const sendTestSound = async () => {
+    try {
+      const played = await playNotificationSound();
+      if (!played) toast({ title: "Sound notifications are not supported on this system", variant: "error" });
+    } catch (error) {
+      toast({ title: "Could not play test sound", description: error instanceof Error ? error.message : undefined, variant: "error" });
     }
   };
 
@@ -98,6 +107,9 @@ export function NotificationSettings() {
             </div>
 
             <div className="mt-3 flex items-center justify-end gap-2">
+              <Button type="button" variant="outline" onClick={sendTestSound}>
+                Play test sound
+              </Button>
               {desktop && (
                 <Button type="button" variant="outline" onClick={sendTest}>
                   Send test notification

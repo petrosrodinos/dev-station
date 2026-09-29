@@ -36,6 +36,7 @@ export const NotificationChannels = {
     FEED: "feed",
     OS: "os",
     TOAST: "toast",
+    SOUND: "sound",
 } as const;
 export type NotificationChannel = (typeof NotificationChannels)[keyof typeof NotificationChannels];
 

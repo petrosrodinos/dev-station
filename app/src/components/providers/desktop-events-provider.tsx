@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Routes } from "@/routes/routes";
 import { NotificationChannels, NotificationEventTypes, type NotificationEventType, type UserPreference } from "@/features/users/interfaces/users.interfaces";
 import { shouldNotify } from "@/features/users/utils/notification-settings.utils";
-import { showOsNotification } from "@/features/users/services/notifications.services";
+import { playNotificationSound, showOsNotification } from "@/features/users/services/notifications.services";
 import { getNotificationEventLabel } from "@/config/constants/dropdowns/notifications/notification-event.options";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useWorkspaceStore } from "@/stores/workspace";
@@ -128,6 +128,9 @@ export function DesktopEventsProvider() {
         if ((!viewing || !document.hasFocus()) && shouldNotify(settings, attention.type, NotificationChannels.OS)) {
           void showOsNotification({ title: `${session.name} ${attention.verb}`, body: getNotificationEventLabel(attention.type), project_id: session.project_id, session_id: session.id }).catch(() => undefined);
         }
+        if (!viewing && shouldNotify(settings, attention.type, NotificationChannels.SOUND)) {
+          void playNotificationSound().catch(() => undefined);
+        }
       }
       if (session.status === AgentRuntimeStatuses.RUNNING) {
         // The agent picked up new work, so whatever was reviewed before needs a fresh look when it finishes.
@@ -168,6 +171,9 @@ export function DesktopEventsProvider() {
         }
         if (shouldNotify(getSettings(), NotificationEventTypes.SERVICE_CRASHED, NotificationChannels.OS)) {
           void showOsNotification({ title: `${event.process.name} crashed`, body: `Exit code ${event.process.exit_code ?? "?"}`, project_id: event.process.project_id }).catch(() => undefined);
+        }
+        if (shouldNotify(getSettings(), NotificationEventTypes.SERVICE_CRASHED, NotificationChannels.SOUND)) {
+          void playNotificationSound().catch(() => undefined);
         }
       }
     };
