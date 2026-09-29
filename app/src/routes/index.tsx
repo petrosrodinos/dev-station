@@ -11,6 +11,7 @@ import ProjectLayout from "@/pages/workspace/pages/project/layout";
 import ProjectTabPage from "@/pages/workspace/pages/project";
 import ProjectSetupPage from "@/pages/workspace/pages/project/pages/setup";
 import LandingPage from "@/pages/landing";
+import FloatingPanelPage from "@/pages/floating";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RequirePermission } from "@/components/access/require-permission";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
@@ -68,6 +69,15 @@ export default function AppRoutes() {
                     element={
                         <ProtectedRoute loggedIn>
                             <AcceptInvitationPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path={RoutePatterns.floating}
+                    element={
+                        <ProtectedRoute loggedIn>
+                            <FloatingPanelPage />
                         </ProtectedRoute>
                     }
                 />

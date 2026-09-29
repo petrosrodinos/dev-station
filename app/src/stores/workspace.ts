@@ -36,6 +36,8 @@ interface WorkspaceState {
     session_by_project: Record<string, string>;
     /** Per-project preview panel state (open, width in px, previewed service). */
     preview_by_project: Record<string, ProjectPreviewPrefs>;
+    /** Which project tabs are open as dock panels, per project (Phase 2 of the docking system: project tab pages became dockable). */
+    open_project_tabs: Record<string, string[]>;
 }
 
 interface WorkspaceActions {
@@ -52,6 +54,8 @@ interface WorkspaceActions {
     clearReviewed(id: string): void;
     rememberProjectSession(projectId: string, sessionId: string): void;
     setProjectPreview(projectId: string, patch: Partial<ProjectPreviewPrefs>): void;
+    openProjectTab(projectId: string, tab: string): void;
+    closeProjectTab(projectId: string, tab: string): void;
     reset(): void;
 }
 
@@ -66,6 +70,7 @@ const initialValues: WorkspaceState = {
     reviewed_session_ids: [],
     session_by_project: {},
     preview_by_project: {},
+    open_project_tabs: {},
 };
 
 const STORE_KEY = "workspace";
@@ -119,6 +124,15 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                             ...s.preview_by_project,
                             [projectId]: { ...DEFAULT_PREVIEW_PREFS, ...s.preview_by_project[projectId], ...patch },
                         },
+                    })),
+                openProjectTab: (projectId, tab) =>
+                    set((s) => {
+                        const open = s.open_project_tabs[projectId] ?? [];
+                        return open.includes(tab) ? s : { open_project_tabs: { ...s.open_project_tabs, [projectId]: [...open, tab] } };
+                    }),
+                closeProjectTab: (projectId, tab) =>
+                    set((s) => ({
+                        open_project_tabs: { ...s.open_project_tabs, [projectId]: (s.open_project_tabs[projectId] ?? []).filter((t) => t !== tab) },
                     })),
                 reset: () => set(initialValues),
             }),

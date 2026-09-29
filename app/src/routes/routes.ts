@@ -13,6 +13,8 @@ export const Routes = {
     invitations: {
         accept: (token: string) => `/invite?token=${encodeURIComponent(token)}`,
     },
+    /** Bare window a floated dock panel opens into (docking system §C) — no shell chrome. */
+    floating: "/floating",
     workspace: {
         root: "/workspace",
         project: (id: string) => `/workspace/projects/${id}`,
@@ -34,6 +36,7 @@ export const RoutePatterns = {
     sign_in: "sign-in",
     sign_up: "sign-up",
     invite: "/invite",
+    floating: "/floating",
     workspace: "/workspace",
     project: "projects/:projectId",
     project_tab: ":tab",
