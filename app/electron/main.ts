@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { registerIpc } from "./ipc/register";
 import { setTrustedSenderCheck } from "./ipc/handle";
 import { agentManager } from "./managers/agent-manager";
+import { floatingPanelManager } from "./managers/floating-panel-manager";
 import { previewManager } from "./managers/preview-manager";
 import { processManager } from "./managers/process-manager";
 import { terminalManager } from "./managers/terminal-manager";
@@ -119,6 +120,7 @@ app.whenReady().then(() => {
   session.defaultSession.setPermissionRequestHandler((_wc, permission, callback) => callback(permission === "clipboard-sanitized-write"));
   setTrustedSenderCheck((event) => isTrustedUrl(event.senderFrame?.url));
   if (!DEV_SERVER_URL) serveRenderer();
+  floatingPanelManager.configure(APP_ORIGIN, DEV_SERVER_URL, isTrustedUrl);
   registerIpc();
   createWindow();
   logger.info(`Dev Station ${app.getVersion()} started`);
@@ -145,6 +147,7 @@ app.on("before-quit", (event) => {
   };
 
   attempt("previews", () => previewManager.destroyAll());
+  attempt("floating panels", () => floatingPanelManager.closeAll());
   attempt("agents", () => agentManager.stopAll());
   attempt("terminals", () => terminalManager.killAll());
   processManager

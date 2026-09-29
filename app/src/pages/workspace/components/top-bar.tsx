@@ -33,6 +33,7 @@ import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
 import { CreateOrganizationDialog } from "./create-organization-dialog";
 import { ShortcutsDialog } from "./shortcuts-dialog";
+import { LayoutMenu } from "./layout-menu";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -193,6 +194,7 @@ export function TopBar() {
           </TooltipTrigger>
           <TooltipContent>Keyboard shortcuts</TooltipContent>
         </Tooltip>
+        <LayoutMenu />
         {can(PermissionKeys.AI_USE_AGENTS) && (
           <Tooltip>
             <TooltipTrigger asChild>

@@ -14,6 +14,8 @@ import { AgentSessionsModule } from './modules/agent-sessions/agent-sessions.mod
 import { ActivitiesModule } from './modules/activities/activities.module';
 import { GitIdentitiesModule } from './modules/git-identities/git-identities.module';
 import { SkillsModule } from './modules/skills/skills.module';
+import { WorkspaceLayoutsModule } from './modules/workspace-layouts/workspace-layouts.module';
+import { AppReleasesModule } from './modules/app-releases/app-releases.module';
 import { AccessModule } from './shared/services/access/access.module';
 
 @Module({
@@ -32,6 +34,8 @@ import { AccessModule } from './shared/services/access/access.module';
     ActivitiesModule,
     GitIdentitiesModule,
     SkillsModule,
+    WorkspaceLayoutsModule,
+    AppReleasesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

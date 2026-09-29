@@ -16,6 +16,8 @@ import { ProjectTabOptions, ProjectTabs, type ProjectTab } from "@/config/consta
 import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { PreviewPanel } from "./components/preview-panel";
+import { ProjectTabDock } from "./components/project-tab-dock";
+import { ProjectContext } from "./hooks/use-project-context";
 import { Routes } from "@/routes/routes";
 import { isDesktop } from "@/lib/desktop";
 import { filterByAccess } from "@/lib/access.utils";
@@ -109,6 +111,7 @@ const ProjectLayout: FC = () => {
   if (needsSetup && !onSetup) return <Navigate to={Routes.workspace.project_setup(project.id)} replace />;
 
   return (
+    <ProjectContext.Provider value={project}>
     <div className="@container flex h-full min-h-0 flex-col">
       <div className="shrink-0 px-4 pt-4">
         <div className="mb-3 flex items-center gap-3">
@@ -197,7 +200,7 @@ const ProjectLayout: FC = () => {
       <div ref={bodyRef} className="flex min-h-0 flex-1">
         {!drawerMode && (
           <div className="@container min-h-0 min-w-0 flex-1 overflow-y-auto">
-            <Outlet context={{ project }} />
+            {onSetup ? <Outlet context={{ project }} /> : <ProjectTabDock key={project.id} projectId={project.id} routeTab={currentTab} />}
           </div>
         )}
         {previewOpen && previewAvailable && <PreviewPanel key={project.id} project={project} expanded={reviewLayout} />}
@@ -221,11 +224,12 @@ const ProjectLayout: FC = () => {
             )}
           </div>
           <div className="@container min-h-0 flex-1 overflow-y-auto">
-            <Outlet context={{ project }} />
+            <ProjectTabDock key={project.id} projectId={project.id} routeTab={currentTab} />
           </div>
         </SheetContent>
       </Sheet>
     </div>
+    </ProjectContext.Provider>
   );
 };
 
