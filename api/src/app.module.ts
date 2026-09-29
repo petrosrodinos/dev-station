@@ -17,6 +17,7 @@ import { AgentCommandsModule } from './modules/agent-commands/agent-commands.mod
 import { SkillsModule } from './modules/skills/skills.module';
 import { WorkspaceLayoutsModule } from './modules/workspace-layouts/workspace-layouts.module';
 import { AppReleasesModule } from './modules/app-releases/app-releases.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { AccessModule } from './shared/services/access/access.module';
 
 @Module({
@@ -38,6 +39,7 @@ import { AccessModule } from './shared/services/access/access.module';
     SkillsModule,
     WorkspaceLayoutsModule,
     AppReleasesModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

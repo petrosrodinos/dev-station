@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes as RouterRoutes } from "react-router-dom";
 import { Routes, RoutePatterns } from "@/routes/routes";
 import ProtectedRoute from "@/routes/protected-route";
+import AdminRoute from "@/routes/admin-route";
 import AuthLayout from "@/pages/auth/layout";
 import SignIn from "@/pages/auth/pages/sign-in";
 import SignUp from "@/pages/auth/pages/sign-up";
@@ -12,6 +13,7 @@ import ProjectTabPage from "@/pages/workspace/pages/project";
 import ProjectSetupPage from "@/pages/workspace/pages/project/pages/setup";
 import LandingPage from "@/pages/landing";
 import FloatingPanelPage from "@/pages/floating";
+import AdminLoginPage from "@/pages/admin/pages/login";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RequirePermission } from "@/components/access/require-permission";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
@@ -22,6 +24,10 @@ import { useAuthStore } from "@/stores/auth";
 const SettingsPage = lazy(() => import("@/pages/workspace/pages/settings"));
 const ImportedProjectsPage = lazy(() => import("@/pages/workspace/pages/imported"));
 const AcceptInvitationPage = lazy(() => import("@/pages/invite"));
+const AdminLayout = lazy(() => import("@/pages/admin/layout"));
+const AdminOverviewPage = lazy(() => import("@/pages/admin/pages/overview"));
+const AdminUsersPage = lazy(() => import("@/pages/admin/pages/users"));
+const AdminReleasesPage = lazy(() => import("@/pages/admin/pages/releases"));
 
 /**
  * Marketing landing page on the web. In the desktop app there's no one to market to —
@@ -81,6 +87,22 @@ export default function AppRoutes() {
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Hidden admin console — never linked from nav; unreachable without the exact URL. */}
+                <Route path={RoutePatterns.admin_login} element={<AdminLoginPage />} />
+                <Route
+                    path={RoutePatterns.admin_dashboard}
+                    element={
+                        <AdminRoute>
+                            <AdminLayout />
+                        </AdminRoute>
+                    }
+                >
+                    <Route index element={<Navigate to={Routes.admin.overview} replace />} />
+                    <Route path={RoutePatterns.admin_overview} element={<AdminOverviewPage />} />
+                    <Route path={RoutePatterns.admin_users} element={<AdminUsersPage />} />
+                    <Route path={RoutePatterns.admin_releases} element={<AdminReleasesPage />} />
+                </Route>
 
                 <Route
                     path={RoutePatterns.workspace}
