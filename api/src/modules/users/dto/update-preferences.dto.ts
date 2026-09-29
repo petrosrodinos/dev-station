@@ -90,6 +90,11 @@ export class UpdatePreferencesDto {
   @Matches(/^[a-z0-9-]+$/)
   mono_font_family?: string;
 
+  @ApiProperty({ required: false, enum: ['left', 'right', 'top', 'bottom'] })
+  @IsOptional()
+  @IsIn(['left', 'right', 'top', 'bottom'])
+  rail_position?: string;
+
   @ApiProperty({
     required: false,
     description:

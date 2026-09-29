@@ -82,6 +82,7 @@ export interface UserPreference {
     font_size: number;
     font_family: string;
     mono_font_family: string;
+    rail_position: string;
     notification_settings: NotificationSettings;
     shortcut_settings: ShortcutSettings;
 }

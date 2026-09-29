@@ -17,7 +17,18 @@ import { ProjectDialog } from "./components/project-dialog";
 import { ShortcutsPracticeDialog } from "./components/shortcuts-practice-dialog";
 import { useGlobalShortcuts } from "./hooks/use-global-shortcuts";
 import { useSessionGroups } from "./hooks/use-session-groups";
+import type { RailPosition } from "@/config/constants/dropdowns/settings/rail-position.options";
+import { useRailPosition } from "@/features/users/hooks/use-rail-position";
+import { cn } from "@/lib/utils";
 import { useProjectSessionMemory } from "./hooks/use-project-session-memory";
+
+/** The rail stays first in the DOM; flex direction moves it to the chosen edge. */
+const RAIL_FLEX: Record<RailPosition, string> = {
+  left: "flex-row",
+  right: "flex-row-reverse",
+  top: "flex-col",
+  bottom: "flex-col-reverse",
+};
 
 /**
  * Desktop workspace shell (Spec §4):
@@ -32,6 +43,7 @@ const WorkspaceLayout: FC = () => {
   useShortcutsHydration();
   useLayoutHydration();
   useFloatingPanelsSync();
+  const { position: railPosition } = useRailPosition();
 
   return (
     <OrganizationBootstrap>
@@ -39,7 +51,7 @@ const WorkspaceLayout: FC = () => {
       <DockApiProvider>
         <div className="flex h-screen flex-col bg-canvas text-foreground">
           <TopBar />
-          <div className="flex min-h-0 flex-1">
+          <div className={cn("flex min-h-0 flex-1", RAIL_FLEX[railPosition])}>
             <ProjectRail />
             <WorkspaceDock />
           </div>
