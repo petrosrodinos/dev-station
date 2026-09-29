@@ -1,5 +1,56 @@
 # Electron Distribution, Updates and Version Tracking
 
+## Status (2026-09-29)
+
+Windows distribution, auto-update and version tracking are **implemented** —
+see the design spec at
+[`docs/superpowers/specs/2026-09-29-app-distribution-and-updates-design.md`](superpowers/specs/2026-09-29-app-distribution-and-updates-design.md)
+for the full design, and `api/src/modules/app-releases/` for the API module.
+macOS, code signing, and public release hosting are deferred (see
+"What's left" below). The rest of this doc is the general reference material
+the design was based on.
+
+### What's built
+
+- **Packaging**: `electron-builder` (`app/package.json` → `build`) produces
+  an unsigned NSIS installer, `publish: github` pointed at
+  `petrosrodinos/dev-station`, fixed `artifactName` for a predictable
+  download URL.
+- **CI**: `.github/workflows/release.yml` — tag `vX.Y.Z` → build → publish to
+  GitHub Releases → PATCH the API's latest-release record.
+- **Auto-update**: `app/electron/managers/update-manager.ts` wraps
+  `electron-updater` (checks on launch + every 4h); manual check/download/
+  restart controls live in Settings → General → About; a status-bar badge
+  shows when an update is available.
+- **Version enforcement**: the app pings `GET /app-releases/latest` and hard-
+  blocks (full-screen, pre-login too) when running below the API's
+  `min_version` for the platform.
+- **Adoption tracking**: `POST /app-releases/ping` on every boot upserts an
+  `AppInstall` row (device id, platform, arch, version); `GET /app-releases/
+  download` is the stable public download link, and counts downloads.
+
+### What's left (manual, one-time)
+
+1. Add GitHub Actions secret `RELEASE_PUBLISH_TOKEN` and variable
+   `RELEASE_API_URL` to the repo.
+2. Set the matching `RELEASE_PUBLISH_TOKEN` on the real API deployment.
+3. Apply the `app_releases`/`app_installs` migration
+   (`api/prisma/migrations/20260929200000_app_releases`) to whichever
+   Postgres is actually run.
+4. Cut a first tagged release so `app_releases` has a row — until then,
+   `/app-releases/latest` 404s and the app skips version-checking (fails
+   open).
+5. Set `min_version` by hand (PATCH `/app-releases/:platform`) when shipping
+   a breaking change — nothing sets it automatically.
+6. Make the repo/releases public (or move hosting to R2/generic) before
+   auto-update or the download link work for anyone outside the GitHub org —
+   private release assets aren't publicly downloadable.
+7. macOS build/signing/notarization and Windows code signing (Azure Trusted
+   Signing) are not started; CI ships an unsigned build, so Windows
+   SmartScreen will warn users until signing is added.
+
+---
+
 ## Recommended setup
 
 **electron-builder + GitHub Releases + electron-updater + a small download page.**
