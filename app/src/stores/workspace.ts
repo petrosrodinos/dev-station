@@ -1,5 +1,9 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
+import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
+
+/** Every project tab starts open (matches the old always-visible nav) until the user closes one. */
+const ALL_PROJECT_TAB_IDS: string[] = Object.values(ProjectTabs);
 
 // UI/navigation state of the workspace shell. Persisted per device so project context survives restarts.
 
@@ -127,13 +131,16 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                     })),
                 openProjectTab: (projectId, tab) =>
                     set((s) => {
-                        const open = s.open_project_tabs[projectId] ?? [];
+                        const open = s.open_project_tabs[projectId] ?? ALL_PROJECT_TAB_IDS;
                         return open.includes(tab) ? s : { open_project_tabs: { ...s.open_project_tabs, [projectId]: [...open, tab] } };
                     }),
                 closeProjectTab: (projectId, tab) =>
-                    set((s) => ({
-                        open_project_tabs: { ...s.open_project_tabs, [projectId]: (s.open_project_tabs[projectId] ?? []).filter((t) => t !== tab) },
-                    })),
+                    set((s) => {
+                        // Materialize the default (all tabs) before removing one, otherwise the first-ever
+                        // close would wipe every other tab instead of just this one.
+                        const open = s.open_project_tabs[projectId] ?? ALL_PROJECT_TAB_IDS;
+                        return { open_project_tabs: { ...s.open_project_tabs, [projectId]: open.filter((t) => t !== tab) } };
+                    }),
                 reset: () => set(initialValues),
             }),
             { name: STORE_KEY },
