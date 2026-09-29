@@ -22,6 +22,7 @@ import { AiPanelModes, useWorkspaceStore } from "@/stores/workspace";
 import { useRuntimeStore } from "@/stores/runtime";
 import { Routes } from "@/routes/routes";
 import { SessionContextMenu } from "./session-context-menu";
+import { PlacementMenu } from "./placement-menu";
 import { SessionNavigator } from "./session-navigator";
 import { SessionTerminalStage } from "./session-terminal-stage";
 import { nextReviewSession, type SessionGroups, type SessionItem } from "../hooks/use-session-groups";
@@ -52,6 +53,7 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
 
   return (
     <aside className="flex h-full min-w-0 flex-col bg-surface" aria-label="AI panel">
+      <PlacementMenu>
       <div className="flex h-9 shrink-0 items-center gap-2 border-b px-2">
         {groups.ready.length > 0 && !history ? (
           <Tooltip>
@@ -89,6 +91,7 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
           <TooltipContent>{historyLabel}</TooltipContent>
         </Tooltip>
       </div>
+      </PlacementMenu>
       <div className="flex min-h-0 flex-1 flex-col">
         {history ? (
           <SessionList />
