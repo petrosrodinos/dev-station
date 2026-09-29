@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Activity as ActivityIcon, Bell, Copy, GitBranch } from "lucide-react";
+import { Activity as ActivityIcon, Bell, Copy, GitBranch, Square } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { StatusDot } from "@/components/ui/status-dot";
 import { useGetActivities } from "@/features/activities/hooks/use-activities";
 import type { Activity } from "@/features/activities/interfaces/activities.interfaces";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
@@ -13,14 +15,16 @@ import { useGetPreferences } from "@/features/users/hooks/use-users";
 import { NotificationChannels } from "@/features/users/interfaces/users.interfaces";
 import { shouldNotify } from "@/features/users/utils/notification-settings.utils";
 import { useGitStatus } from "@/features/git/hooks/use-git";
-import { useRunningProcessCount } from "@/features/processes/hooks/use-processes";
+import { processKey, useRunningProcessCount, useStopService } from "@/features/processes/hooks/use-processes";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useWorkspaceStore } from "@/stores/workspace";
-import { formatTimelineTime } from "@/lib/date";
-import { isAgentActive } from "@/lib/status";
+import { formatTimelineTime, formatRelative } from "@/lib/date";
+import { isAgentActive, processStatusDot } from "@/lib/status";
+import { isDesktop } from "@/lib/desktop";
 import { toast } from "@/hooks/use-toast";
 import { environments } from "@/config/environments";
 import { Routes } from "@/routes/routes";
+import { ProcessStatuses } from "@shared/contract";
 
 const Scopes = { PROJECT: "project", ALL: "all" } as const;
 type Scope = (typeof Scopes)[keyof typeof Scopes];
@@ -33,10 +37,13 @@ export function StatusBar() {
   const openSessionTab = useWorkspaceStore((s) => s.openSessionTab);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
   const runningProcesses = useRunningProcessCount();
+  const processes = useRuntimeStore((s) => Object.values(s.processes));
   const activeAgents = useRuntimeStore((s) => Object.values(s.agents).filter((a) => a.alive && isAgentActive(a.status)).length);
   const { data: git } = useGitStatus(activeProjectId, { refetchInterval: 15_000 });
   const { data: projects } = useGetProjects();
+  const stop = useStopService();
   const [open, setOpen] = useState(false);
+  const [processesOpen, setProcessesOpen] = useState(false);
   const [scope, setScope] = useState<Scope>(Scopes.PROJECT);
   const projectScoped = scope === Scopes.PROJECT && !!activeProjectId;
   const { data: preferences } = useGetPreferences();
@@ -66,13 +73,72 @@ export function StatusBar() {
     setOpen(false);
   };
 
+  const openProcessProject = (projectId: string) => {
+    setActiveProject(projectId);
+    navigate(Routes.workspace.project(projectId));
+    setProcessesOpen(false);
+  };
+
+  const sortedProcesses = useMemo(
+    () => [...processes].sort((a, b) => Number(b.status === ProcessStatuses.RUNNING) - Number(a.status === ProcessStatuses.RUNNING) || a.name.localeCompare(b.name)),
+    [processes],
+  );
+
   return (
     <footer className="flex h-8 shrink-0 items-center gap-3 sm:gap-4 overflow-hidden border-t bg-canvas px-4 text-xs text-muted-foreground">
-      <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-        <ActivityIcon className="size-3.5" />
-        {runningProcesses} process{runningProcesses === 1 ? "" : "es"} running
-        {activeAgents > 0 && <span className="text-foreground">· {activeAgents} agent{activeAgents === 1 ? "" : "s"} active</span>}
-      </div>
+      <Popover open={processesOpen} onOpenChange={setProcessesOpen}>
+        <PopoverTrigger asChild>
+          <button className="flex shrink-0 items-center gap-1.5 whitespace-nowrap hover:text-foreground" disabled={!sortedProcesses.length}>
+            <ActivityIcon className="size-3.5" />
+            {runningProcesses} process{runningProcesses === 1 ? "" : "es"} running
+            {activeAgents > 0 && <span className="text-foreground">· {activeAgents} agent{activeAgents === 1 ? "" : "s"} active</span>}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent side="top" align="start" className="w-[min(380px,calc(100vw-1rem))] p-0">
+          <div className="border-b px-3 py-2 text-[0.8125rem] font-medium">Processes</div>
+          <div className="max-h-96 overflow-y-auto">
+            {!sortedProcesses.length ? (
+              <EmptyState title="No processes" description="Start a service from a project's overview to see it here." />
+            ) : (
+              sortedProcesses.map((p) => {
+                const project = projectById.get(p.project_id);
+                const running = p.status === ProcessStatuses.RUNNING;
+                return (
+                  <div key={p.key} className="flex items-center gap-2.5 border-b border-hairline-soft px-3 py-2 text-[0.7813rem] last:border-b-0 hover:bg-surface-elevated">
+                    <StatusDot status={processStatusDot(p.status)} />
+                    <button onClick={() => openProcessProject(p.project_id)} className="min-w-0 flex-1 text-left">
+                      <div className="flex items-center gap-1.5">
+                        <span className="truncate font-medium text-body">{p.name}</span>
+                        {project && <span className="truncate text-ash">— {project.name}</span>}
+                      </div>
+                      <div className="truncate font-mono text-[0.6875rem] text-ash">
+                        {running && p.started_at ? `started ${formatRelative(p.started_at)}` : p.status.toLowerCase()}
+                        {running && p.port ? ` · :${p.port}` : ""}
+                      </div>
+                    </button>
+                    {isDesktop() && running && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7 shrink-0 text-muted-foreground"
+                            aria-label="Stop"
+                            onClick={() => stop.mutate(processKey(p.project_id, p.service_id))}
+                          >
+                            <Square className="size-3.5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Stop</TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
       {git?.branch && (
         <div className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-ash max-sm:hidden">
           <GitBranch className="size-3.5" />
