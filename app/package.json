@@ -115,7 +115,8 @@
     "publish": {
       "provider": "github",
       "owner": "logiqdevai",
-      "repo": "dev-agents-releases"
+      "repo": "dev-agents-releases",
+      "releaseType": "release"
     },
     "win": {
       "target": [
