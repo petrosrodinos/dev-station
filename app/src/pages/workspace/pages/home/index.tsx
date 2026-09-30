@@ -8,6 +8,7 @@ import { StatusDot } from "@/components/ui/status-dot";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CardGridSkeleton } from "@/components/ui/list-skeleton";
+import { AttentionPanel } from "./components/attention-panel";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { useProjectLocalStates } from "@/features/local-workspace/hooks/use-local-workspace";
@@ -85,6 +86,7 @@ const WorkspaceHomePage: FC = () => {
           )}
         </div>
       </div>
+      <AttentionPanel projects={projects} localStates={localStates} />
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
         {projects.map((p) => (
           <ProjectCard key={p.id} project={p} localState={localStates?.[p.id] ?? null} />
