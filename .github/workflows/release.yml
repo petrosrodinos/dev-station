@@ -21,9 +21,6 @@ permissions:
 jobs:
   build-and-publish:
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: app
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,15 +30,20 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
-          cache-dependency-path: app/package-lock.json
+          # This is an npm workspaces monorepo — install from the root lockfile, not a
+          # per-package one (a stale standalone app/package-lock.json previously shadowed it
+          # here and pulled in outdated/mismatched dependency versions).
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Build renderer + main
+        working-directory: app
         run: npm run build
 
       - name: Publish to GitHub Releases
+        working-directory: app
         env:
           # PAT from the releases account (logiqdevai/dev-agents-releases) — GITHUB_TOKEN can't
           # write outside this repo, so a same-repo token doesn't work here.
