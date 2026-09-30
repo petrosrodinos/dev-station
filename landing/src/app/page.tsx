@@ -3,8 +3,9 @@ import type { CSSProperties } from "react";
 import Link from "next/link";
 import { environments } from "@/config/environments";
 import { Routes } from "@/routes/routes";
+import { SiteNav } from "@/components/layout/site-nav";
+import { SiteFooter } from "@/components/layout/site-footer";
 
-const signInUrl = `${environments.appUrl}${Routes.app.signIn}`;
 const signUpUrl = `${environments.appUrl}${Routes.app.signUp}`;
 
 export default function Home() {
@@ -12,25 +13,7 @@ export default function Home() {
     <div className="landing">
 <div className="stripes" aria-hidden="true"><i /><i /><i /></div>
 
-<nav>
-  <div className="wrap">
-    <a className="logo" href="#top" aria-label="Dev Station home">
-      <svg viewBox="0 0 24 24" fill="none"><rect x="1" y="1" width="22" height="22" rx="6" fill="#121212" stroke="#242728"/><path d="M6 8l4 4-4 4" stroke="#ff6161" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12.5 16H18" stroke="#fff" strokeWidth="2" strokeLinecap="round"/></svg>
-      Dev Station
-    </a>
-    <div className="nav-links">
-      <a href="#workspace">Workspace</a>
-      <a href="#features">Features</a>
-      <a href="#workflow">Workflow</a>
-      <a href="#integrations">Integrations</a>
-      <Link href={Routes.downloads}>Download</Link>
-    </div>
-    <div className="nav-cta">
-        <a className="btn btn-ghost" href={signInUrl}>Sign in</a>
-        <a className="btn btn-primary" href={signUpUrl}>Sign up</a>
-      </div>
-  </div>
-</nav>
+<SiteNav />
 
 <main id="top">
 <header className="wrap hero">
@@ -262,22 +245,7 @@ export default function Home() {
 </section>
 </main>
 
-<footer>
-  <div className="wrap">
-    <div>
-      <a className="logo" href="#top">
-        <svg viewBox="0 0 24 24" fill="none"><rect x="1" y="1" width="22" height="22" rx="6" fill="#121212" stroke="#242728"/><path d="M6 8l4 4-4 4" stroke="#ff6161" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12.5 16H18" stroke="#fff" strokeWidth="2" strokeLinecap="round"/></svg>
-        Dev Station
-      </a>
-      <p className="tag">One workspace for client projects, dev services, AI agents and Git.</p>
-    </div>
-    <div className="cols2">
-      <div><h5>Product</h5><ul><li><a href="#workspace">Workspace</a></li><li><a href="#features">Features</a></li><li><a href="#workflow">Workflow</a></li></ul></div>
-      <div><h5>Integrations</h5><ul><li><a href="#integrations">GitHub</a></li><li><a href="#integrations">Linear</a></li><li><a href="#integrations">Notion</a></li></ul></div>
-      <div><h5>Agents</h5><ul><li><a href="#features">Claude Code</a></li><li><a href="#features">Cursor CLI</a></li></ul></div>
-    </div>
-  </div>
-</footer>
+<SiteFooter />
     </div>
   );
 }
