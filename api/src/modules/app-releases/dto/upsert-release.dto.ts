@@ -31,9 +31,13 @@ export class UpsertReleaseDto {
   @MaxLength(30)
   min_version?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({
+    required: false,
+    description:
+      'Rich text (HTML) — rendered as-is on the public downloads page.',
+  })
   @IsOptional()
   @IsString()
-  @MaxLength(2000)
+  @MaxLength(20000)
   release_notes?: string;
 }

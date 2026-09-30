@@ -1,6 +1,7 @@
 // Centralized frontend paths — used as <Link href>, router.push(), and redirect() targets.
 export const Routes = {
   home: "/",
+  downloads: "/downloads",
   /** Paths on the Dev Station web app (`NEXT_APP_URL`) — keep in sync with `app/src/routes/routes.ts`. */
   app: {
     signIn: "/auth/sign-in",
