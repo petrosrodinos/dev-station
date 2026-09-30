@@ -42,6 +42,25 @@ jobs:
         working-directory: app
         run: npm run build
 
+      - name: Ensure the release tag exists on the releases repo
+        # electron-builder's releaseType: "release" (non-draft) requires the tag to already
+        # exist as a real ref on the *target* repo — unlike a draft, GitHub won't auto-create
+        # it, and since the releases repo's git history is unrelated to this one, electron-
+        # builder has no commit there to anchor a new tag to. Create it explicitly first.
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TARGET_TOKEN }}
+          RELEASES_REPO: logiqdevai/dev-agents-releases # keep in sync with app/package.json's build.publish
+        run: |
+          if gh api "repos/${RELEASES_REPO}/git/refs/tags/${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            echo "Tag ${GITHUB_REF_NAME} already exists on ${RELEASES_REPO}"
+          else
+            default_branch=$(gh api "repos/${RELEASES_REPO}" --jq .default_branch)
+            head_sha=$(gh api "repos/${RELEASES_REPO}/git/refs/heads/${default_branch}" --jq .object.sha)
+            gh api "repos/${RELEASES_REPO}/git/refs" -f ref="refs/tags/${GITHUB_REF_NAME}" -f sha="${head_sha}"
+            echo "Created tag ${GITHUB_REF_NAME} on ${RELEASES_REPO} at ${head_sha}"
+          fi
+
       - name: Publish to GitHub Releases
         working-directory: app
         env:
