@@ -1,5 +1,6 @@
 import "./landing.css";
 import type { CSSProperties } from "react";
+import Link from "next/link";
 import { environments } from "@/config/environments";
 import { Routes } from "@/routes/routes";
 
@@ -22,6 +23,7 @@ export default function Home() {
       <a href="#features">Features</a>
       <a href="#workflow">Workflow</a>
       <a href="#integrations">Integrations</a>
+      <Link href={Routes.downloads}>Download</Link>
     </div>
     <div className="nav-cta">
         <a className="btn btn-ghost" href={signInUrl}>Sign in</a>
@@ -37,6 +39,7 @@ export default function Home() {
   <p className="lead">Dev Station is the desktop app for agencies juggling many codebases. Start services, hand Linear issues to an AI agent, review the diff and push, then jump to the next client in one keystroke.</p>
   <div className="cta">
     <a className="btn btn-primary btn-lg" href={signUpUrl}>Get started free</a>
+    <Link className="btn btn-ghost btn-lg" href={Routes.downloads}>Download the app</Link>
     <a className="btn btn-ghost btn-lg" href="#workspace">See the workspace</a>
   </div>
   <p className="fine">Windows, macOS and Linux. Built on Electron.</p>

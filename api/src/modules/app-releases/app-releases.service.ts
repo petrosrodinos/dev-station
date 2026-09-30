@@ -40,6 +40,21 @@ export class AppReleasesService {
     };
   }
 
+  /** Every platform's current release — public, used by the landing site's downloads page. */
+  getAll() {
+    return this.prisma.appRelease.findMany({
+      orderBy: { platform: 'asc' },
+      select: {
+        platform: true,
+        version: true,
+        download_url: true,
+        min_version: true,
+        release_notes: true,
+        published_at: true,
+      },
+    });
+  }
+
   /** Returns the download URL and bumps the counter — used by the public download redirect. */
   async recordDownload(platform: string): Promise<string> {
     const existing = await this.prisma.appRelease.findUnique({

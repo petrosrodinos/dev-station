@@ -40,6 +40,15 @@ export class AppReleasesController {
     return this.appReleasesService.getLatest(platform);
   }
 
+  @Get()
+  @ApiOperation({
+    summary: "Every platform's current release — public downloads page",
+  })
+  @ApiResponse({ status: 200, type: AppReleaseEntity, isArray: true })
+  getAll() {
+    return this.appReleasesService.getAll();
+  }
+
   @Get('download')
   @ApiOperation({
     summary: 'Stable download link — redirects to the latest installer',
