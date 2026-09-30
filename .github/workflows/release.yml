@@ -40,6 +40,12 @@ jobs:
 
       - name: Build renderer + main
         working-directory: app
+        env:
+          # Baked into the renderer bundle at build time by Vite (see src/config/environments) —
+          # hardcoded for now until these are wired up as repo variables.
+          VITE_API_URL: "https://api.devstation.logiqdev.com"
+          VITE_APP_URL: "https://app.devstation.logiqdev.com"
+          VITE_LANDING_URL: "https://devstation.logiqdev.com"
         run: npm run build
 
       - name: Ensure the release tag exists on the releases repo
