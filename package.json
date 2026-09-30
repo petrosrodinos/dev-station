@@ -4,5 +4,9 @@
     "app",
     "landing",
     "packages/*"
-  ]
+  ],
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.46.2",
+    "@esbuild/linux-x64": "0.25.8"
+  }
 }
