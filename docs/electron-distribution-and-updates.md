@@ -13,11 +13,13 @@ the design was based on.
 ### What's built
 
 - **Packaging**: `electron-builder` (`app/package.json` → `build`) produces
-  an unsigned NSIS installer, `publish: github` pointed at
-  `petrosrodinos/dev-station`, fixed `artifactName` for a predictable
-  download URL.
+  an unsigned NSIS installer, `publish: github` pointed at a separate
+  releases-only account/repo (`logiqdevai/dev-agents-releases`, not the
+  source repo), fixed `artifactName` for a predictable download URL.
 - **CI**: `.github/workflows/release.yml` — tag `vX.Y.Z` → build → publish to
-  GitHub Releases → PATCH the API's latest-release record.
+  that releases repo using `RELEASE_TARGET_TOKEN` (a PAT from the releases
+  account — the default `GITHUB_TOKEN` can't write cross-account) → PATCH the
+  API's latest-release record.
 - **Auto-update**: `app/electron/managers/update-manager.ts` wraps
   `electron-updater` (checks on launch + every 4h); manual check/download/
   restart controls live in Settings → General → About; a status-bar badge
@@ -42,9 +44,9 @@ the design was based on.
    open).
 5. Set `min_version` by hand (PATCH `/app-releases/:platform`) when shipping
    a breaking change — nothing sets it automatically.
-6. Make the repo/releases public (or move hosting to R2/generic) before
-   auto-update or the download link work for anyone outside the GitHub org —
-   private release assets aren't publicly downloadable.
+6. ~~Make the repo/releases public~~ — done: releases now publish to a
+   separate, already-public account/repo (`logiqdevai/dev-agents-releases`)
+   instead of the source repo, so assets are publicly downloadable.
 7. macOS build/signing/notarization and Windows code signing (Azure Trusted
    Signing) are not started; CI ships an unsigned build, so Windows
    SmartScreen will warn users until signing is added.

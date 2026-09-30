@@ -114,8 +114,8 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "petrosrodinos",
-      "repo": "dev-station"
+      "owner": "logiqdevai",
+      "repo": "dev-agents-releases"
     },
     "win": {
       "target": [
