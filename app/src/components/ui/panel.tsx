@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 // Mockup-style card: hairline border, 10px radius, no shadow, header row + body.
 
 export function Panel({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <Card className={cn("rounded-lg shadow-none", className)} {...props} />;
+  return <Card className={cn("gap-0 rounded-lg py-0 shadow-none", className)} {...props} />;
 }
 
 interface PanelHeaderProps {
