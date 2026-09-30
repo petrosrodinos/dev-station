@@ -10,7 +10,13 @@ const withElectron = process.env.ELECTRON !== "false";
 const nativeExternals = ["node-pty", "tree-kill"];
 
 export default defineConfig({
-  base: "./",
+  // Electron loads the build via file://, so assets need relative paths ("./"). The web build
+  // is served over http(s) with client-side routing (BrowserRouter) at nested paths like
+  // /auth/sign-in, so it needs an absolute base — otherwise relative asset URLs resolve against
+  // the current route path, 404, and the SPA fallback serves index.html for them instead of the
+  // JS, which fails with "Expected a JavaScript-or-Wasm module script but the server responded
+  // with a MIME type of text/html".
+  base: withElectron ? "./" : "/",
   plugins: [
     react(),
     tailwindcss(),
