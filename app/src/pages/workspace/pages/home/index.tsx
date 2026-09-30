@@ -1,6 +1,9 @@
 import type { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useNavigate } from "react-router-dom";
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Bot, CloudDownload, FolderGit2, GitBranch, Plug, Plus } from "lucide-react";
 import { Panel } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
@@ -9,7 +12,7 @@ import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CardGridSkeleton } from "@/components/ui/list-skeleton";
 import { AttentionPanel } from "./components/attention-panel";
-import { useGetProjects } from "@/features/projects/hooks/use-projects";
+import { useGetProjects, useReorderProjects } from "@/features/projects/hooks/use-projects";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { useProjectLocalStates } from "@/features/local-workspace/hooks/use-local-workspace";
 import { useGitStatus } from "@/features/git/hooks/use-git";
@@ -36,7 +39,16 @@ const WorkspaceHomePage: FC = () => {
   const { organization } = useCurrentOrganization();
   const openProjectDialog = useDialogsStore((s) => s.openProjectDialog);
   const { can } = usePermissions();
+  const reorder = useReorderProjects();
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const importedCount = Object.values(localStates ?? {}).filter((s) => s === ProjectLocalStates.IMPORTED).length;
+
+  const canReorder = can(PermissionKeys.PROJECTS_EDIT);
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id || !projects) return;
+    const ids = projects.map((p) => p.id);
+    reorder.mutate(arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id))));
+  };
 
   if (isPending) return <CardGridSkeleton cards={6} className="p-6" />;
 
@@ -87,14 +99,34 @@ const WorkspaceHomePage: FC = () => {
         </div>
       </div>
       <AttentionPanel projects={projects} localStates={localStates} />
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
-        {projects.map((p) => (
-          <ProjectCard key={p.id} project={p} localState={localStates?.[p.id] ?? null} />
-        ))}
-      </div>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <SortableContext items={projects.map((p) => p.id)} strategy={rectSortingStrategy}>
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
+            {projects.map((p) => (
+              <SortableProjectCard key={p.id} project={p} localState={localStates?.[p.id] ?? null} sortable={canReorder} />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 };
+
+/** Drag anywhere on the card to reorder; a click (no movement) still opens the project. */
+function SortableProjectCard({ project, localState, sortable }: { project: Project; localState: ProjectLocalState | null; sortable: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: project.id, disabled: !sortable });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
+      className={isDragging ? "relative z-10 opacity-70" : undefined}
+      {...attributes}
+      {...listeners}
+    >
+      <ProjectCard project={project} localState={localState} />
+    </div>
+  );
+}
 
 function ProjectCard({ project, localState }: { project: Project; localState: ProjectLocalState | null }) {
   const navigate = useNavigate();

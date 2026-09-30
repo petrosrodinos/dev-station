@@ -91,6 +91,15 @@
   }
 }
 @media (prefers-reduced-motion: no-preference) {
+  .rail-avatar {
+    transition: transform 0.18s ease-out;
+  }
+  .rail-avatar-trigger:hover .rail-avatar {
+    transform: scale(1.08);
+  }
+  .rail-avatar-trigger:active .rail-avatar {
+    transform: scale(1.02);
+  }
   .animate-confetti {
     animation: confetti-fall 2.4s ease-in both;
   }
