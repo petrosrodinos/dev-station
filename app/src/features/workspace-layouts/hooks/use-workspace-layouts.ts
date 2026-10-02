@@ -8,6 +8,7 @@ import {
     getLayouts,
     updateLayout,
     updateLayoutState,
+    updateProjectDockLayout,
 } from "../services/workspace-layouts.services";
 
 const LAYOUTS_KEY = ["workspace-layouts"];
@@ -68,5 +69,19 @@ export const useUpdateLayoutState = () => {
         mutationFn: updateLayoutState,
         onSuccess: () => queryClient.invalidateQueries({ queryKey: LAYOUT_STATE_KEY }),
         onError: (error: Error) => toast({ title: "Could not save layout state", description: error.message, variant: "error" }),
+    });
+};
+
+/**
+ * Background sync for a project's dock arrangement — the local Zustand store (`workspace.ts`) is
+ * already the working copy, so a failed save here loses nothing locally and doesn't need a toast,
+ * just enough to surface in the console for debugging.
+ */
+export const useUpdateProjectDockLayout = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: updateProjectDockLayout,
+        onSuccess: (state) => queryClient.setQueryData(LAYOUT_STATE_KEY, state),
+        onError: (error: Error) => console.error("Failed to sync project dock layout", error),
     });
 };

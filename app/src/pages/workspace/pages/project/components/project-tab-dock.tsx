@@ -20,6 +20,7 @@ import { usePermissions } from "@/features/organizations/hooks/use-organizations
 import { filterByAccess } from "@/lib/access.utils";
 import { isDesktop } from "@/lib/desktop";
 import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
+import { useGetLayoutState, useUpdateProjectDockLayout } from "@/features/workspace-layouts/hooks/use-workspace-layouts";
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
 import { TAB_ICONS, TAB_PAGES, tabPermission } from "../pages/tab-pages";
@@ -131,8 +132,15 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   const openProjectTab = useWorkspaceStore((s) => s.openProjectTab);
   const closeProjectTab = useWorkspaceStore((s) => s.closeProjectTab);
   // Read once — captured by `onReady`'s first (and only) call below, not meant to re-apply mid-session.
-  const savedLayout = useWorkspaceStore((s) => s.project_dock_layout[projectId]);
+  // Prefers the backend's copy (follows the account across devices/reinstalls) over this device's
+  // local cache, falling back to local when the server hasn't loaded yet (e.g. first project opened
+  // this session) or has nothing saved for this project.
+  const localSavedLayout = useWorkspaceStore((s) => s.project_dock_layout[projectId]);
+  const { data: layoutState } = useGetLayoutState();
+  const serverSavedLayout = layoutState?.project_dock_layout?.[projectId];
+  const savedLayout = serverSavedLayout ?? localSavedLayout;
   const saveProjectDockLayout = useWorkspaceStore((s) => s.saveProjectDockLayout);
+  const { mutate: syncProjectDockLayout } = useUpdateProjectDockLayout();
   const previewOpen = useWorkspaceStore((s) => s.preview_by_project[projectId]?.previewOpen) ?? DEFAULT_PREVIEW_PREFS.previewOpen;
   const previewExpanded = useWorkspaceStore((s) => s.preview_by_project[projectId]?.previewExpanded) ?? DEFAULT_PREVIEW_PREFS.previewExpanded;
   const previewWidth = useWorkspaceStore((s) => s.preview_by_project[projectId]?.previewWidth) ?? DEFAULT_PREVIEW_PREFS.previewWidth;
@@ -143,6 +151,12 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   // `onDidActivePanelChange`s mid-restore would spuriously `navigate()` away from the deep-linked tab).
   const restoringRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Last known-good `api.toJSON()` snapshot, updated synchronously on every real layout change —
+  // NOT read fresh at flush time, because dockview-react disposes its `DockviewApi` in its own
+  // unmount effect, which React runs before this component's unmount effect; calling `api.toJSON()`
+  // from that later cleanup reads a disposed instance (every group's panels already cleared, tree
+  // shape left intact), silently saving a gutted layout over the real one on every project switch.
+  const lastLayoutRef = useRef<Record<string, unknown> | null>(null);
 
   // Every permitted tab starts open (matches the old always-visible nav); once the user closes one
   // the store remembers an explicit list instead. Either way, stay within what's actually permitted.
@@ -247,16 +261,23 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
     });
     // Debounce-save the dock arrangement (splits/groups/sizes) itself — the store's `open_project_tabs`
     // already remembers *which* tabs are open, but not how they were split/arranged, which is what
-    // actually gets lost when rearranging panels without this.
+    // actually gets lost when rearranging panels without this. The snapshot itself is taken
+    // synchronously, right here, while `event.api` is definitely still alive — only the store/network
+    // writes are debounced, so a disposed api is never read (see `lastLayoutRef` above).
     event.api.onDidLayoutChange(() => {
       if (restoringRef.current) return;
+      let layout: Record<string, unknown>;
+      try {
+        layout = event.api.toJSON() as unknown as Record<string, unknown>;
+      } catch (error) {
+        console.error("Failed to snapshot the project dock layout", error);
+        return;
+      }
+      lastLayoutRef.current = layout;
       clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => {
-        try {
-          saveProjectDockLayout(projectId, event.api.toJSON() as unknown as Record<string, unknown>);
-        } catch (error) {
-          console.error("Failed to save the project dock layout", error);
-        }
+        saveProjectDockLayout(projectId, layout);
+        syncProjectDockLayout({ project_id: projectId, layout });
       }, 500);
     });
     // Restore the saved arrangement once, before the tab-reconciliation effect below seeds any
@@ -266,6 +287,7 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
       restoringRef.current = true;
       try {
         event.api.fromJSON(savedLayout as unknown as SerializedDockview);
+        lastLayoutRef.current = savedLayout;
       } catch (error) {
         console.error("Couldn't restore the saved project dock layout — seeding it fresh instead", error);
       } finally {
@@ -353,17 +375,16 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   }, [projectId, routeTab]);
 
   // Flush the last, still-debounced layout change on unmount (e.g. navigating to another project
-  // right after a drag) instead of dropping it on the floor.
+  // right after a drag) instead of dropping it on the floor. Uses the snapshot already cached in
+  // `lastLayoutRef` rather than calling `api.toJSON()` here — `DockviewReact`'s own unmount effect
+  // (a child of this component) disposes `api` before this cleanup runs, so a fresh `toJSON()` call
+  // at this point would read a disposed, panel-less instance and save a gutted layout over the real one.
   useEffect(() => {
     return () => {
       clearTimeout(saveTimerRef.current);
-      const api = apiRef.current;
-      if (!api) return;
-      try {
-        saveProjectDockLayout(projectId, api.toJSON() as unknown as Record<string, unknown>);
-      } catch (error) {
-        console.error("Failed to flush the project dock layout on unmount", error);
-      }
+      if (!lastLayoutRef.current) return;
+      saveProjectDockLayout(projectId, lastLayoutRef.current);
+      syncProjectDockLayout({ project_id: projectId, layout: lastLayoutRef.current });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

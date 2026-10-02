@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import type { DockviewApi, SerializedDockview } from "dockview-react";
 import { useLayoutStore } from "@/stores/layout";
+import { useWorkspaceStore } from "@/stores/workspace";
 import { useGetLayoutState, useGetLayouts, useUpdateLayout } from "./use-workspace-layouts";
 
 const SAVE_DEBOUNCE_MS = 500;
@@ -88,4 +89,27 @@ export const useLayoutPersistence = (api: DockviewApi | null) => {
     },
     [flush],
   );
+};
+
+/**
+ * Switches the active preset automatically when the active project changes, if that project has
+ * one remembered (`rememberProjectPreset`, written today only from the Layout menu's manual
+ * `switchTo`). Without this, `preset_by_project` was write-only — it recorded a per-project
+ * preference that nothing ever read back on a plain project switch, only on a manual re-pick from
+ * the menu. Converges on its own (no ref/guard needed): once applied, `active_preset_id` matches
+ * the remembered value and the condition below goes false, and a manual switch always rewrites
+ * `preset_by_project` for the current project in the same action (see `layout-menu.tsx`'s
+ * `switchTo`), so this can never fight a deliberate pick.
+ */
+export const useProjectPresetAutoApply = () => {
+  const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
+  const presetByProject = useLayoutStore((s) => s.preset_by_project);
+  const activePresetId = useLayoutStore((s) => s.active_preset_id);
+  const setActivePreset = useLayoutStore((s) => s.setActivePreset);
+
+  useEffect(() => {
+    if (!activeProjectId) return;
+    const remembered = presetByProject[activeProjectId];
+    if (remembered && remembered !== activePresetId) setActivePreset(remembered);
+  }, [activeProjectId, presetByProject, activePresetId, setActivePreset]);
 };

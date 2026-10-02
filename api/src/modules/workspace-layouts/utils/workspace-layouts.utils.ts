@@ -52,3 +52,15 @@ export function resolvePresetByProject(
   }
   return result;
 }
+
+/** Defensive read: an unreadable/legacy `project_dock_layout` blob resolves to an empty map, never a crash. */
+export function resolveProjectDockLayout(
+  stored: unknown,
+): Record<string, Record<string, unknown>> {
+  if (!isRecord(stored)) return {};
+  const result: Record<string, Record<string, unknown>> = {};
+  for (const [projectId, layout] of Object.entries(stored)) {
+    if (isRecord(layout)) result[projectId] = layout;
+  }
+  return result;
+}

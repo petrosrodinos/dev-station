@@ -18,6 +18,7 @@ export const ApiRoutes = {
         prefix: "/users/me/layouts",
         by_id: (id: string) => `/users/me/layouts/${id}`,
         state: "/users/me/layout-state",
+        project_dock_layout: "/users/me/layout-state/project-dock-layout",
     },
     gitIdentities: {
         prefix: "/git-identities",

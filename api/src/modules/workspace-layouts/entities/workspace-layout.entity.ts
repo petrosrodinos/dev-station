@@ -18,5 +18,10 @@ export class WorkspaceLayoutStateEntity {
   @ApiProperty({ nullable: true }) active_preset_id: string | null;
   @ApiProperty({ type: Object, description: 'Record<projectId, presetId>' })
   preset_by_project: Record<string, string>;
+  @ApiProperty({
+    type: Object,
+    description: 'Record<projectId, SerializedDockview>',
+  })
+  project_dock_layout: Record<string, Record<string, unknown>>;
   @ApiProperty() updated_at: Date;
 }

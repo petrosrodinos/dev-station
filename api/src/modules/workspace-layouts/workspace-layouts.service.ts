@@ -14,10 +14,12 @@ import {
   CURRENT_LAYOUT_VERSION,
   DEFAULT_LAYOUT_PRESET_NAME,
 } from './constants/workspace-layouts.constants';
+import { UpdateProjectDockLayoutDto } from './dto/update-project-dock-layout.dto';
 import {
   assertValidFloating,
   assertValidLayout,
   resolvePresetByProject,
+  resolveProjectDockLayout,
 } from './utils/workspace-layouts.utils';
 
 @Injectable()
@@ -164,6 +166,7 @@ export class WorkspaceLayoutsService {
     return {
       ...state,
       preset_by_project: resolvePresetByProject(state.preset_by_project),
+      project_dock_layout: resolveProjectDockLayout(state.project_dock_layout),
     };
   }
 
@@ -196,6 +199,30 @@ export class WorkspaceLayoutsService {
     return {
       ...state,
       preset_by_project: resolvePresetByProject(state.preset_by_project),
+      project_dock_layout: resolveProjectDockLayout(state.project_dock_layout),
+    };
+  }
+
+  /** Saves one project's tab-dock split/tab arrangement, independent of the named preset system above. */
+  async updateProjectDockLayout(
+    userId: string,
+    dto: UpdateProjectDockLayoutDto,
+  ) {
+    const layout = assertValidLayout(dto.layout);
+    const current = await this.getState(userId);
+    const nextMap = {
+      ...current.project_dock_layout,
+      [dto.project_id]: layout,
+    };
+
+    const state = await this.prisma.workspaceLayoutState.update({
+      where: { user_id: userId },
+      data: { project_dock_layout: nextMap as Prisma.InputJsonValue },
+    });
+    return {
+      ...state,
+      preset_by_project: resolvePresetByProject(state.preset_by_project),
+      project_dock_layout: resolveProjectDockLayout(state.project_dock_layout),
     };
   }
 }

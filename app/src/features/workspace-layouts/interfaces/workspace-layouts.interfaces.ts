@@ -25,6 +25,8 @@ export interface WorkspaceLayoutState {
     user_id: string;
     active_preset_id: string | null;
     preset_by_project: Record<string, string>;
+    /** Record<projectId, SerializedDockview> — the per-project tab dock's own split/tab arrangement. */
+    project_dock_layout: Record<string, Record<string, unknown>>;
     updated_at: string;
 }
 
@@ -44,4 +46,9 @@ export interface UpdateLayoutStateDto {
     active_preset_id?: string;
     project_id?: string;
     preset_id?: string;
+}
+
+export interface UpdateProjectDockLayoutDto {
+    project_id: string;
+    layout: Record<string, unknown>;
 }

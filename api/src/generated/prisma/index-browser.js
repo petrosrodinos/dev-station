@@ -215,6 +215,7 @@ exports.Prisma.WorkspaceLayoutStateScalarFieldEnum = {
   user_id: 'user_id',
   active_preset_id: 'active_preset_id',
   preset_by_project: 'preset_by_project',
+  project_dock_layout: 'project_dock_layout',
   updated_at: 'updated_at'
 };
 
