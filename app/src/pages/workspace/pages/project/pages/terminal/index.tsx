@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, type FC } from "react";
-import { Plus, SquareTerminal } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FC } from "react";
+import { Plus, SquareTerminal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   DockviewReact,
   type DockviewApi,
   type DockviewReadyEvent,
+  type IDockviewPanelHeaderProps,
   type IDockviewPanelProps,
   type IDockviewReactProps,
 } from "dockview-react";
@@ -14,10 +15,46 @@ import { useCreateTerminal, useKillTerminal, useProjectTerminals } from "@/featu
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { isDesktop } from "@/lib/desktop";
+import { cn } from "@/lib/utils";
 import { useProjectContext } from "../../hooks/use-project-context";
 import { ShellTerminalPanel } from "./shell-terminal-panel";
 
 const SHELL_PANEL_COMPONENT = "shell-terminal";
+
+/** Custom tab so middle-click-to-close works here too (dockview's own default tab has no such support). */
+const ShellTabHeader: FC<IDockviewPanelHeaderProps> = ({ api }) => {
+  const [active, setActive] = useState(api.isActive);
+  useEffect(() => {
+    const disposable = api.onDidActiveChange(() => setActive(api.isActive));
+    return () => disposable.dispose();
+  }, [api]);
+
+  return (
+    <div
+      role="tab"
+      className={cn(
+        "group flex h-9 shrink-0 cursor-pointer select-none items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground",
+        active && "border-foreground text-foreground",
+      )}
+      title={api.title}
+      onMouseDown={(e) => e.button === 1 && e.preventDefault()}
+      onAuxClick={(e) => e.button === 1 && api.close()}
+    >
+      <SquareTerminal className="size-3.5 shrink-0" />
+      <span className="max-w-32 truncate">{api.title}</span>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          api.close();
+        }}
+        aria-label={`Close ${api.title}`}
+        className="flex size-4 shrink-0 items-center justify-center rounded-xs text-ash opacity-0 hover:bg-surface-card hover:text-foreground group-hover:opacity-100"
+      >
+        <X className="size-3" />
+      </button>
+    </div>
+  );
+};
 const shellPanelId = (terminalId: string) => `shell:${terminalId}`;
 
 /**
@@ -102,7 +139,7 @@ const TerminalTab: FC = () => {
       )}
       <div className="min-h-0 flex-1 overflow-hidden rounded-lg border bg-terminal">
         {terminals.length ? (
-          <DockviewReact className="dockview-theme-abyss h-full" components={components} onReady={onReady} />
+          <DockviewReact className="dockview-theme-abyss h-full" components={components} defaultTabComponent={ShellTabHeader} onReady={onReady} />
         ) : (
           <EmptyState
             className="h-full"

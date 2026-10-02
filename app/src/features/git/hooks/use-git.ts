@@ -89,7 +89,13 @@ export const useGitPull = () =>
     useGitMutation({ mutationFn: ({ projectId }: { projectId: string }) => gitPull(projectId), success: () => "Pull completed", failure: "Pull failed", activity: ActivityTypes.GIT_PULL, event: NotificationEventTypes.GIT_PULL });
 
 export const useGitPush = () =>
-    useGitMutation({ mutationFn: ({ projectId }: { projectId: string }) => gitPush(projectId), success: () => "Push completed", failure: "Push failed", activity: ActivityTypes.GIT_PUSH, event: NotificationEventTypes.GIT_PUSH });
+    useGitMutation({
+        mutationFn: ({ projectId }: { projectId: string }) => gitPush(projectId),
+        success: (_vars, result) => (result.pushed ? "Push completed" : "Nothing to push — already up to date"),
+        failure: "Push failed",
+        activity: ActivityTypes.GIT_PUSH,
+        event: NotificationEventTypes.GIT_PUSH,
+    });
 
 export const useGitCommit = () =>
     useGitMutation({
