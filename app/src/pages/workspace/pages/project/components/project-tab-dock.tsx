@@ -19,7 +19,7 @@ import { ProjectTabOptions, type ProjectTab } from "@/config/constants/dropdowns
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { filterByAccess } from "@/lib/access.utils";
 import { isDesktop } from "@/lib/desktop";
-import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
+import { DEFAULT_OPEN_PROJECT_TAB_IDS, DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
 import { useGetLayoutState, useUpdateProjectDockLayout } from "@/features/workspace-layouts/hooks/use-workspace-layouts";
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
@@ -28,11 +28,13 @@ import { useProjectContext } from "../hooks/use-project-context";
 import { PreviewPanel } from "./preview-panel";
 
 const TAB_PANEL_COMPONENT = "project-tab";
-const tabPanelId = (tab: string) => `project-tab:${tab}`;
+const TAB_PANEL_PREFIX = "project-tab:";
+const tabPanelId = (tab: string) => `${TAB_PANEL_PREFIX}${tab}`;
 const PREVIEW_PANEL_COMPONENT = "project-preview";
 const PREVIEW_PANEL_ID = "project-preview";
 const PREVIEW_DEFAULT_WIDTH = 480;
 const TAB_LABEL = new Map(ProjectTabOptions.map((t) => [t.id, t.label]));
+const countOpenProjectTabs = (containerApi: DockviewApi) => containerApi.panels.filter((p) => p.id.startsWith(TAB_PANEL_PREFIX)).length;
 
 /**
  * Custom tab renderer so the dock's own tab strip looks and behaves like the rest of the app
@@ -41,15 +43,29 @@ const TAB_LABEL = new Map(ProjectTabOptions.map((t) => [t.id, t.label]));
  * `project/layout.tsx`; there is now exactly one tab bar for a project, and it's the real,
  * reorderable/splittable dock tab strip).
  */
-const ProjectTabHeader: FC<IDockviewPanelHeaderProps<{ tab: ProjectTab }>> = ({ api, params }) => {
+const ProjectTabHeader: FC<IDockviewPanelHeaderProps<{ tab: ProjectTab }>> = ({ api, containerApi, params }) => {
   const [active, setActive] = useState(api.isActive);
   useEffect(() => {
     const disposable = api.onDidActiveChange(() => setActive(api.isActive));
     return () => disposable.dispose();
   }, [api]);
 
+  // Closing the last open project tab would leave the dock with no group header left to reopen one
+  // from (the "+" menu lives in a group's header bar) — so once only one remains, its close control
+  // disappears instead of letting the user strand themselves with nothing to click.
+  const [isLastTab, setIsLastTab] = useState(() => countOpenProjectTabs(containerApi) <= 1);
+  useEffect(() => {
+    const recompute = () => setIsLastTab(countOpenProjectTabs(containerApi) <= 1);
+    recompute();
+    const disposable = containerApi.onDidLayoutChange(recompute);
+    return () => disposable.dispose();
+  }, [containerApi]);
+
   const Icon = TAB_ICONS[params.tab];
   const label = TAB_LABEL.get(params.tab) ?? params.tab;
+  const close = () => {
+    if (!isLastTab) api.close();
+  };
 
   return (
     <div
@@ -58,19 +74,23 @@ const ProjectTabHeader: FC<IDockviewPanelHeaderProps<{ tab: ProjectTab }>> = ({ 
         active && "border-foreground text-foreground",
       )}
       title={label}
+      onMouseDown={(e) => e.button === 1 && e.preventDefault()}
+      onAuxClick={(e) => e.button === 1 && close()}
     >
       <Icon className="size-3.5 shrink-0" />
       <span>{label}</span>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          api.close();
-        }}
-        aria-label={`Close ${label}`}
-        className="flex size-4 shrink-0 items-center justify-center rounded-xs text-ash opacity-0 hover:bg-surface-card hover:text-foreground group-hover:opacity-100"
-      >
-        <X className="size-3" />
-      </button>
+      {!isLastTab && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            close();
+          }}
+          aria-label={`Close ${label}`}
+          className="flex size-4 shrink-0 items-center justify-center rounded-xs text-ash opacity-0 hover:bg-surface-card hover:text-foreground group-hover:opacity-100"
+        >
+          <X className="size-3" />
+        </button>
+      )}
     </div>
   );
 };
@@ -89,6 +109,8 @@ const PreviewTabHeader: FC<IDockviewPanelHeaderProps> = ({ api }) => {
         active && "border-foreground text-foreground",
       )}
       title="Preview"
+      onMouseDown={(e) => e.button === 1 && e.preventDefault()}
+      onAuxClick={(e) => e.button === 1 && api.close()}
     >
       <Globe className="size-3.5 shrink-0" />
       <span>Preview</span>
@@ -158,9 +180,10 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   // shape left intact), silently saving a gutted layout over the real one on every project switch.
   const lastLayoutRef = useRef<Record<string, unknown> | null>(null);
 
-  // Every permitted tab starts open (matches the old always-visible nav); once the user closes one
-  // the store remembers an explicit list instead. Either way, stay within what's actually permitted.
-  const openTabs = (storedOpenTabs ?? permittedTabs).filter((t) => permittedTabs.includes(t as ProjectTab));
+  // Overview/Git/Files/Integrations start open; Terminal/AI Sessions/Skills stay closed until picked
+  // from the "+" menu. Once the user opens/closes anything, the store remembers an explicit list
+  // instead. Either way, stay within what's actually permitted.
+  const openTabs = (storedOpenTabs ?? DEFAULT_OPEN_PROJECT_TAB_IDS).filter((t) => permittedTabs.includes(t as ProjectTab));
   // The route's current tab is always considered "open" — this is what makes today's exact
   // single-tab navigation still work unless the user explicitly splits another tab alongside it.
   const wantedTabs = openTabs.includes(routeTab) ? openTabs : [...openTabs, routeTab];
@@ -245,8 +268,8 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
         setProjectPreview(projectId, { previewOpen: false, previewExpanded: false });
         return;
       }
-      if (!panel.id.startsWith("project-tab:")) return;
-      const tab = panel.id.slice("project-tab:".length);
+      if (!panel.id.startsWith(TAB_PANEL_PREFIX)) return;
+      const tab = panel.id.slice(TAB_PANEL_PREFIX.length);
       closeProjectTab(projectId, tab);
       // Closing the tab that matches the current URL: fall back to Overview rather than leaving a dangling route.
       if (tab === routeTabRef.current) navigateRef.current(Routes.workspace.project(projectId));
@@ -255,8 +278,8 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
     // refresh, and the drawer/preview logic (which read `routeTab`) all stay correct.
     event.api.onDidActivePanelChange(({ panel }) => {
       if (restoringRef.current) return;
-      if (!panel?.id.startsWith("project-tab:")) return;
-      const tab = panel.id.slice("project-tab:".length) as ProjectTab;
+      if (!panel?.id.startsWith(TAB_PANEL_PREFIX)) return;
+      const tab = panel.id.slice(TAB_PANEL_PREFIX.length) as ProjectTab;
       if (tab !== routeTabRef.current) navigateRef.current(Routes.workspace.project_tab(projectId, tab));
     });
     // Debounce-save the dock arrangement (splits/groups/sizes) itself — the store's `open_project_tabs`
@@ -333,6 +356,10 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
 
   // The preview is a panel of this dock (so it can be dragged/split like any tab), mirroring the
   // existing `previewOpen` flag that the header button, shortcut and "Preview" service action set.
+  // Joins the same tab group as Overview/Git/Files/etc. (`direction: "within"`) instead of
+  // auto-splitting into its own column — it opens as another tab in that row, same as the rest,
+  // rather than looking like a separate pane bolted on the side. Still freely draggable into its own
+  // split afterward like any tab, same as before.
   useEffect(() => {
     const api = apiRef.current;
     if (!api) return;
@@ -345,7 +372,7 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
           component: PREVIEW_PANEL_COMPONENT,
           tabComponent: PREVIEW_PANEL_COMPONENT,
           title: "Preview",
-          position: reference ? { referencePanel: reference.id, direction: "right" } : undefined,
+          position: reference ? { referencePanel: reference.id, direction: "within" } : undefined,
           initialWidth: previewWidth || PREVIEW_DEFAULT_WIDTH,
         });
       } catch (error) {
@@ -357,12 +384,18 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [previewOpen, previewAvailable]);
 
-  // Review layout: the preview's group fills the project area (the AI panel keeps its own side).
+  // Review layout: brings Preview to the front of its tab group and, if the user has split it out
+  // into its own group (dragging it, same as any tab), also maximizes that group over the rest of
+  // the project area — the AI panel keeps its own side regardless, since that's a separate dock.
   useEffect(() => {
     const panel = apiRef.current?.getPanel(PREVIEW_PANEL_ID);
     if (!panel) return;
-    if (previewExpanded && !panel.api.isMaximized()) panel.api.maximize();
-    else if (!previewExpanded && panel.api.isMaximized()) panel.api.exitMaximized();
+    if (previewExpanded) {
+      panel.api.setActive();
+      if (!panel.api.isMaximized()) panel.api.maximize();
+    } else if (panel.api.isMaximized()) {
+      panel.api.exitMaximized();
+    }
   }, [previewExpanded, previewOpen]);
 
   // Navigating to a different tab (nav click) focuses that tab's panel, opening it if needed.

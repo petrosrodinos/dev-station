@@ -553,7 +553,7 @@ export interface DevStationBridge {
     stashes(projectId: string): Promise<GitStashEntry[]>;
     fetch(projectId: string): Promise<string>;
     pull(projectId: string): Promise<string>;
-    push(projectId: string): Promise<string>;
+    push(projectId: string): Promise<{ pushed: boolean; output: string }>;
     commit(projectId: string, input: { message: string; paths?: string[]; name?: string | null; email?: string | null }): Promise<{ sha: string; output: string }>;
     checkout(projectId: string, branch: string): Promise<string>;
     createBranch(projectId: string, name: string, checkout: boolean): Promise<string>;

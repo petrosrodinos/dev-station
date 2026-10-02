@@ -285,7 +285,11 @@ class GitManager {
     if (!s.branch) throw new IpcError("Cannot push from a detached HEAD.");
     const args = s.upstream ? ["push"] : ["push", "--set-upstream", "origin", s.branch];
     const r = await run(cwd, args, { timeoutMs: 300_000 });
-    return (r.stderr || r.stdout).trim() || "Pushed";
+    const output = (r.stderr || r.stdout).trim() || "Pushed";
+    // Git reports a no-op push via this exact message (localized builds aside) rather than a
+    // distinct exit code, so it's the only reliable signal that nothing was actually sent.
+    const pushed = !/up-to-date|up to date/i.test(output);
+    return { pushed, output };
   }
 
   async commit(cwd: string, message: string, paths: string[] | undefined, identity: { name?: string | null; email?: string | null }) {

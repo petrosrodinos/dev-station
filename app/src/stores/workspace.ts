@@ -3,8 +3,12 @@ import { devtools, persist } from "zustand/middleware";
 import type { RailPosition } from "@/config/constants/dropdowns/settings/rail-position.options";
 import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
 
-/** Every project tab starts open (matches the old always-visible nav) until the user closes one. */
-const ALL_PROJECT_TAB_IDS: string[] = Object.values(ProjectTabs);
+/**
+ * Tabs a project starts with open, before the user has opened/closed anything (the rest — Terminal,
+ * AI Sessions, Skills — stay closed until picked from the dock's "+" menu, keeping a fresh project
+ * from opening every section at once).
+ */
+export const DEFAULT_OPEN_PROJECT_TAB_IDS: string[] = [ProjectTabs.OVERVIEW, ProjectTabs.GIT, ProjectTabs.FILES, ProjectTabs.INTEGRATIONS];
 
 // UI/navigation state of the workspace shell. Persisted per device so project context survives restarts.
 
@@ -141,14 +145,14 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                     })),
                 openProjectTab: (projectId, tab) =>
                     set((s) => {
-                        const open = s.open_project_tabs[projectId] ?? ALL_PROJECT_TAB_IDS;
+                        const open = s.open_project_tabs[projectId] ?? DEFAULT_OPEN_PROJECT_TAB_IDS;
                         return open.includes(tab) ? s : { open_project_tabs: { ...s.open_project_tabs, [projectId]: [...open, tab] } };
                     }),
                 closeProjectTab: (projectId, tab) =>
                     set((s) => {
-                        // Materialize the default (all tabs) before removing one, otherwise the first-ever
-                        // close would wipe every other tab instead of just this one.
-                        const open = s.open_project_tabs[projectId] ?? ALL_PROJECT_TAB_IDS;
+                        // Materialize the default set before removing one, otherwise the first-ever close
+                        // would wipe every other default tab instead of just this one.
+                        const open = s.open_project_tabs[projectId] ?? DEFAULT_OPEN_PROJECT_TAB_IDS;
                         return { open_project_tabs: { ...s.open_project_tabs, [projectId]: open.filter((t) => t !== tab) } };
                     }),
                 saveProjectDockLayout: (projectId, layout) =>

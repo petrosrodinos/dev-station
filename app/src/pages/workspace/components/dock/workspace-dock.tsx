@@ -55,6 +55,25 @@ export const WorkspaceDock: FC = () => {
   useLayoutPersistence(api);
   useProjectPresetAutoApply();
 
+  /**
+   * Removes any leftover group with zero panels (e.g. a manually-edited saved preset with a group a
+   * panel was once dragged out of and never cleaned up) — otherwise it just sits there as dead,
+   * unremovable empty space next to the real panels. Leaves at least one group alone so the dock is
+   * never left with nothing to anchor to.
+   */
+  const pruneEmptyGroups = useCallback((api: DockviewApi) => {
+    if (api.groups.length <= 1) return;
+    for (const group of api.groups) {
+      if (group.panels.length === 0) {
+        try {
+          api.removeGroup(group);
+        } catch (error) {
+          console.error("Failed to remove an empty dock group", error);
+        }
+      }
+    }
+  }, []);
+
   /** Re-adds the routed-content panel if it's ever missing (user closed it, or a saved/corrupted layout lacked it). */
   const ensureMainContent = useCallback((api: DockviewApi) => {
     if (api.getPanel(MAIN_CONTENT_PANEL_ID)) return;
@@ -96,6 +115,7 @@ export const WorkspaceDock: FC = () => {
   const onReady = useCallback(
     (event: DockviewReadyEvent) => {
       apiRef.current = event.api;
+      pruneEmptyGroups(event.api);
       ensureMainContent(event.api);
       hideTabStrips(event.api);
       if (aiPanelOpenRef.current) addAiPanel(event.api);
@@ -103,13 +123,14 @@ export const WorkspaceDock: FC = () => {
       // preset, a future bug) can never leave the dock without its anchor panel — this is what
       // actually fixes a previously-saved broken layout, not just prevents a new one.
       event.api.onDidLayoutChange(() => {
+        pruneEmptyGroups(event.api);
         ensureMainContent(event.api);
         hideTabStrips(event.api);
         if (aiPanelOpenRef.current && !event.api.getPanel(AI_PANEL_ID)) addAiPanel(event.api);
       });
       setApi(event.api);
     },
-    [addAiPanel, ensureMainContent, hideTabStrips, setApi],
+    [addAiPanel, ensureMainContent, hideTabStrips, pruneEmptyGroups, setApi],
   );
 
   // Keep the AI panel's dock presence in sync with the existing `ai_panel_open` toggle/permission gate.
