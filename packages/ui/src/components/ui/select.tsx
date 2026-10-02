@@ -6,7 +6,44 @@ import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { cn } from "../../lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
-const Select = SelectPrimitive.Root
+function isSelectItemElement(
+  node: React.ReactNode
+): node is React.ReactElement<SelectPrimitive.Item.Props> {
+  return React.isValidElement(node) && node.type === SelectItem
+}
+
+function collectSelectItems(
+  node: React.ReactNode
+): { label: React.ReactNode; value: unknown }[] {
+  if (Array.isArray(node)) {
+    return node.flatMap(collectSelectItems)
+  }
+  if (!React.isValidElement(node)) {
+    return []
+  }
+  if (isSelectItemElement(node)) {
+    return [{ label: node.props.children, value: node.props.value }]
+  }
+  const children = (node.props as { children?: React.ReactNode })?.children
+  return children ? collectSelectItems(children) : []
+}
+
+function Select<Value = unknown, Multiple extends boolean | undefined = false>({
+  items,
+  children,
+  ...props
+}: SelectPrimitive.Root.Props<Value, Multiple>) {
+  // Base UI only maps value -> label via `items`; without it, the trigger shows the raw value until the popup has mounted once.
+  const derivedItems = React.useMemo(
+    () => items ?? collectSelectItems(children),
+    [items, children]
+  )
+  return (
+    <SelectPrimitive.Root items={derivedItems} {...props}>
+      {children}
+    </SelectPrimitive.Root>
+  )
+}
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (
