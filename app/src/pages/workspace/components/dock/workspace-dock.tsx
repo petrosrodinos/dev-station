@@ -14,7 +14,7 @@ import { useWorkspaceStore } from "@/stores/workspace";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { useDockApi } from "../../context/dock-api-context";
-import { useLayoutPersistence } from "@/features/workspace-layouts/hooks/use-layout-persistence";
+import { useLayoutPersistence, useProjectPresetAutoApply } from "@/features/workspace-layouts/hooks/use-layout-persistence";
 
 export const MAIN_CONTENT_PANEL_ID = "main-content";
 export const AI_PANEL_ID = "ai-panel";
@@ -53,6 +53,7 @@ export const WorkspaceDock: FC = () => {
   const aiPanelOpenRef = useRef(aiPanelOpen);
   aiPanelOpenRef.current = aiPanelOpen;
   useLayoutPersistence(api);
+  useProjectPresetAutoApply();
 
   /** Re-adds the routed-content panel if it's ever missing (user closed it, or a saved/corrupted layout lacked it). */
   const ensureMainContent = useCallback((api: DockviewApi) => {

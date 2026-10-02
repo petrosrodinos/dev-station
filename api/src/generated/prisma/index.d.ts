@@ -11933,6 +11933,7 @@ export namespace Prisma {
     user_id: number
     active_preset_id: number
     preset_by_project: number
+    project_dock_layout: number
     updated_at: number
     _all: number
   }
@@ -11957,6 +11958,7 @@ export namespace Prisma {
     user_id?: true
     active_preset_id?: true
     preset_by_project?: true
+    project_dock_layout?: true
     updated_at?: true
     _all?: true
   }
@@ -12038,6 +12040,7 @@ export namespace Prisma {
     user_id: string
     active_preset_id: string | null
     preset_by_project: JsonValue
+    project_dock_layout: JsonValue
     updated_at: Date
     _count: WorkspaceLayoutStateCountAggregateOutputType | null
     _min: WorkspaceLayoutStateMinAggregateOutputType | null
@@ -12063,6 +12066,7 @@ export namespace Prisma {
     user_id?: boolean
     active_preset_id?: boolean
     preset_by_project?: boolean
+    project_dock_layout?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     active_preset?: boolean | WorkspaceLayoutState$active_presetArgs<ExtArgs>
@@ -12073,6 +12077,7 @@ export namespace Prisma {
     user_id?: boolean
     active_preset_id?: boolean
     preset_by_project?: boolean
+    project_dock_layout?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     active_preset?: boolean | WorkspaceLayoutState$active_presetArgs<ExtArgs>
@@ -12083,6 +12088,7 @@ export namespace Prisma {
     user_id?: boolean
     active_preset_id?: boolean
     preset_by_project?: boolean
+    project_dock_layout?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     active_preset?: boolean | WorkspaceLayoutState$active_presetArgs<ExtArgs>
@@ -12093,10 +12099,11 @@ export namespace Prisma {
     user_id?: boolean
     active_preset_id?: boolean
     preset_by_project?: boolean
+    project_dock_layout?: boolean
     updated_at?: boolean
   }
 
-  export type WorkspaceLayoutStateOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "active_preset_id" | "preset_by_project" | "updated_at", ExtArgs["result"]["workspaceLayoutState"]>
+  export type WorkspaceLayoutStateOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "active_preset_id" | "preset_by_project" | "project_dock_layout" | "updated_at", ExtArgs["result"]["workspaceLayoutState"]>
   export type WorkspaceLayoutStateInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     active_preset?: boolean | WorkspaceLayoutState$active_presetArgs<ExtArgs>
@@ -12125,6 +12132,12 @@ export namespace Prisma {
        * client-side shape exactly, so no translation layer is needed.
        */
       preset_by_project: Prisma.JsonValue
+      /**
+       * Record<projectId, SerializedDockview> — the per-project tab dock's own split/tab arrangement
+       * (distinct from the named presets above, which are for the outer main-content/AI-panel split).
+       * Mirrors the client's `workspace.ts` project_dock_layout shape so it can round-trip as-is.
+       */
+      project_dock_layout: Prisma.JsonValue
       updated_at: Date
     }, ExtArgs["result"]["workspaceLayoutState"]>
     composites: {}
@@ -12555,6 +12568,7 @@ export namespace Prisma {
     readonly user_id: FieldRef<"WorkspaceLayoutState", 'String'>
     readonly active_preset_id: FieldRef<"WorkspaceLayoutState", 'String'>
     readonly preset_by_project: FieldRef<"WorkspaceLayoutState", 'Json'>
+    readonly project_dock_layout: FieldRef<"WorkspaceLayoutState", 'Json'>
     readonly updated_at: FieldRef<"WorkspaceLayoutState", 'DateTime'>
   }
     
@@ -32088,6 +32102,7 @@ export namespace Prisma {
     user_id: 'user_id',
     active_preset_id: 'active_preset_id',
     preset_by_project: 'preset_by_project',
+    project_dock_layout: 'project_dock_layout',
     updated_at: 'updated_at'
   };
 
@@ -33298,6 +33313,7 @@ export namespace Prisma {
     user_id?: StringFilter<"WorkspaceLayoutState"> | string
     active_preset_id?: StringNullableFilter<"WorkspaceLayoutState"> | string | null
     preset_by_project?: JsonFilter<"WorkspaceLayoutState">
+    project_dock_layout?: JsonFilter<"WorkspaceLayoutState">
     updated_at?: DateTimeFilter<"WorkspaceLayoutState"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     active_preset?: XOR<WorkspaceLayoutPresetNullableScalarRelationFilter, WorkspaceLayoutPresetWhereInput> | null
@@ -33308,6 +33324,7 @@ export namespace Prisma {
     user_id?: SortOrder
     active_preset_id?: SortOrderInput | SortOrder
     preset_by_project?: SortOrder
+    project_dock_layout?: SortOrder
     updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
     active_preset?: WorkspaceLayoutPresetOrderByWithRelationInput
@@ -33321,6 +33338,7 @@ export namespace Prisma {
     NOT?: WorkspaceLayoutStateWhereInput | WorkspaceLayoutStateWhereInput[]
     active_preset_id?: StringNullableFilter<"WorkspaceLayoutState"> | string | null
     preset_by_project?: JsonFilter<"WorkspaceLayoutState">
+    project_dock_layout?: JsonFilter<"WorkspaceLayoutState">
     updated_at?: DateTimeFilter<"WorkspaceLayoutState"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     active_preset?: XOR<WorkspaceLayoutPresetNullableScalarRelationFilter, WorkspaceLayoutPresetWhereInput> | null
@@ -33331,6 +33349,7 @@ export namespace Prisma {
     user_id?: SortOrder
     active_preset_id?: SortOrderInput | SortOrder
     preset_by_project?: SortOrder
+    project_dock_layout?: SortOrder
     updated_at?: SortOrder
     _count?: WorkspaceLayoutStateCountOrderByAggregateInput
     _max?: WorkspaceLayoutStateMaxOrderByAggregateInput
@@ -33345,6 +33364,7 @@ export namespace Prisma {
     user_id?: StringWithAggregatesFilter<"WorkspaceLayoutState"> | string
     active_preset_id?: StringNullableWithAggregatesFilter<"WorkspaceLayoutState"> | string | null
     preset_by_project?: JsonWithAggregatesFilter<"WorkspaceLayoutState">
+    project_dock_layout?: JsonWithAggregatesFilter<"WorkspaceLayoutState">
     updated_at?: DateTimeWithAggregatesFilter<"WorkspaceLayoutState"> | Date | string
   }
 
@@ -35440,6 +35460,7 @@ export namespace Prisma {
   export type WorkspaceLayoutStateCreateInput = {
     id?: string
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutWorkspace_layout_stateInput
     active_preset?: WorkspaceLayoutPresetCreateNestedOneWithoutStateInput
@@ -35450,12 +35471,14 @@ export namespace Prisma {
     user_id: string
     active_preset_id?: string | null
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: Date | string
   }
 
   export type WorkspaceLayoutStateUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutWorkspace_layout_stateNestedInput
     active_preset?: WorkspaceLayoutPresetUpdateOneWithoutStateNestedInput
@@ -35466,6 +35489,7 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     active_preset_id?: NullableStringFieldUpdateOperationsInput | string | null
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -35474,12 +35498,14 @@ export namespace Prisma {
     user_id: string
     active_preset_id?: string | null
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: Date | string
   }
 
   export type WorkspaceLayoutStateUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -35488,6 +35514,7 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     active_preset_id?: NullableStringFieldUpdateOperationsInput | string | null
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -37771,6 +37798,7 @@ export namespace Prisma {
     user_id?: SortOrder
     active_preset_id?: SortOrder
     preset_by_project?: SortOrder
+    project_dock_layout?: SortOrder
     updated_at?: SortOrder
   }
 
@@ -41844,6 +41872,7 @@ export namespace Prisma {
   export type WorkspaceLayoutStateCreateWithoutUserInput = {
     id?: string
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: Date | string
     active_preset?: WorkspaceLayoutPresetCreateNestedOneWithoutStateInput
   }
@@ -41852,6 +41881,7 @@ export namespace Prisma {
     id?: string
     active_preset_id?: string | null
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: Date | string
   }
 
@@ -42214,6 +42244,7 @@ export namespace Prisma {
   export type WorkspaceLayoutStateUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     active_preset?: WorkspaceLayoutPresetUpdateOneWithoutStateNestedInput
   }
@@ -42222,6 +42253,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     active_preset_id?: NullableStringFieldUpdateOperationsInput | string | null
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -42693,6 +42725,7 @@ export namespace Prisma {
   export type WorkspaceLayoutStateCreateWithoutActive_presetInput = {
     id?: string
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutWorkspace_layout_stateInput
   }
@@ -42701,6 +42734,7 @@ export namespace Prisma {
     id?: string
     user_id: string
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: Date | string
   }
 
@@ -42793,6 +42827,7 @@ export namespace Prisma {
     user_id?: StringFilter<"WorkspaceLayoutState"> | string
     active_preset_id?: StringNullableFilter<"WorkspaceLayoutState"> | string | null
     preset_by_project?: JsonFilter<"WorkspaceLayoutState">
+    project_dock_layout?: JsonFilter<"WorkspaceLayoutState">
     updated_at?: DateTimeFilter<"WorkspaceLayoutState"> | Date | string
   }
 
@@ -47503,12 +47538,14 @@ export namespace Prisma {
     id?: string
     user_id: string
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: Date | string
   }
 
   export type WorkspaceLayoutStateUpdateWithoutActive_presetInput = {
     id?: StringFieldUpdateOperationsInput | string
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutWorkspace_layout_stateNestedInput
   }
@@ -47517,6 +47554,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -47524,6 +47562,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     preset_by_project?: JsonNullValueInput | InputJsonValue
+    project_dock_layout?: JsonNullValueInput | InputJsonValue
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

@@ -313,13 +313,17 @@ model WorkspaceLayoutPreset {
 /// with no project open. Separate from UserPreference (changes far more often than the rest of
 /// that row) and from WorkspaceLayoutPreset (this isn't a preset itself).
 model WorkspaceLayoutState {
-  id                String   @id @default(uuid())
-  user_id           String   @unique
-  active_preset_id  String?
+  id                  String   @id @default(uuid())
+  user_id             String   @unique
+  active_preset_id    String?
   /// Record<projectId, presetId> — mirrors the existing preview_by_project/session_by_project
   /// client-side shape exactly, so no translation layer is needed.
-  preset_by_project Json     @default("{}")
-  updated_at        DateTime @updatedAt
+  preset_by_project   Json     @default("{}")
+  /// Record<projectId, SerializedDockview> — the per-project tab dock's own split/tab arrangement
+  /// (distinct from the named presets above, which are for the outer main-content/AI-panel split).
+  /// Mirrors the client's `workspace.ts` project_dock_layout shape so it can round-trip as-is.
+  project_dock_layout Json     @default("{}")
+  updated_at          DateTime @updatedAt
 
   user          User                   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   active_preset WorkspaceLayoutPreset? @relation(fields: [active_preset_id], references: [id], onDelete: SetNull)

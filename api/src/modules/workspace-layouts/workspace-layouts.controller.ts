@@ -21,6 +21,7 @@ import { WorkspaceLayoutsService } from './workspace-layouts.service';
 import { CreateLayoutDto } from './dto/create-layout.dto';
 import { UpdateLayoutDto } from './dto/update-layout.dto';
 import { UpdateLayoutStateDto } from './dto/update-layout-state.dto';
+import { UpdateProjectDockLayoutDto } from './dto/update-project-dock-layout.dto';
 import {
   WorkspaceLayoutPresetEntity,
   WorkspaceLayoutStateEntity,
@@ -98,5 +99,17 @@ export class WorkspaceLayoutsController {
     @Body() dto: UpdateLayoutStateDto,
   ) {
     return this.layoutsService.updateState(userId, dto);
+  }
+
+  @Patch('layout-state/project-dock-layout')
+  @ApiOperation({
+    summary: "Save one project's tab-dock split/tab arrangement",
+  })
+  @ApiResponse({ status: 200, type: WorkspaceLayoutStateEntity })
+  updateProjectDockLayout(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateProjectDockLayoutDto,
+  ) {
+    return this.layoutsService.updateProjectDockLayout(userId, dto);
   }
 }

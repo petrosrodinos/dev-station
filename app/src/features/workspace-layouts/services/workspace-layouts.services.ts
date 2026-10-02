@@ -4,6 +4,7 @@ import type {
     CreateLayoutDto,
     UpdateLayoutDto,
     UpdateLayoutStateDto,
+    UpdateProjectDockLayoutDto,
     WorkspaceLayoutPreset,
     WorkspaceLayoutState,
 } from "../interfaces/workspace-layouts.interfaces";
@@ -58,5 +59,14 @@ export const updateLayoutState = async (dto: UpdateLayoutStateDto): Promise<Work
         return response.data;
     } catch (error) {
         throw new Error(getApiErrorMessage(error, "Failed to save your layout state."));
+    }
+};
+
+export const updateProjectDockLayout = async (dto: UpdateProjectDockLayoutDto): Promise<WorkspaceLayoutState> => {
+    try {
+        const response = await axiosInstance.patch<WorkspaceLayoutState>(ApiRoutes.workspaceLayouts.project_dock_layout, dto);
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to save this project's panel layout."));
     }
 };
