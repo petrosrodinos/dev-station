@@ -14,6 +14,7 @@ import { useProjectLocalStates, useWorkspaceConfig } from "@/features/local-work
 import { useAgentAdapters, useStartAgentSession } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { buildIssuePrompt, sessionNameFromPrompt } from "@/features/agent-sessions/utils/issue-prompt.utils";
 import { useAgentCommands } from "@/features/agent-commands/hooks/use-agent-commands";
+import { findDefaultCommand } from "@/features/agent-commands/utils/agent-commands.utils";
 import { useGetPreferences } from "@/features/users/hooks/use-users";
 import { IntegrationProviders } from "@/features/integrations/interfaces/integrations.interfaces";
 import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
@@ -49,15 +50,23 @@ export function NewSessionDialog() {
   useEffect(() => {
     if (!state.open) return;
     const project = projects?.find((p) => p.id === state.project_id);
+    const agent = (project?.preferred_agent ?? preferences?.preferred_agent ?? AgentTypes.CLAUDE_CODE) as AgentType;
     form.reset({
       project_id: state.project_id ?? "",
-      agent_type: (project?.preferred_agent ?? preferences?.preferred_agent ?? AgentTypes.CLAUDE_CODE) as AgentType,
-      command_id: DEFAULT_COMMAND,
+      agent_type: agent,
+      command_id: findDefaultCommand(allCommands ?? [], agent)?.id ?? DEFAULT_COMMAND,
       name: issue ? `${issue.identifier} ${issue.title}`.slice(0, 120) : "",
       prompt: state.initial_prompt ?? "",
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.open]);
+
+  // Commands can load after the dialog opens; preset the saved default unless the user already chose one.
+  useEffect(() => {
+    if (!state.open || form.getFieldState("command_id").isDirty) return;
+    form.setValue("command_id", findDefaultCommand(allCommands ?? [], form.getValues("agent_type"))?.id ?? DEFAULT_COMMAND);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.open, allCommands]);
 
   const agentType = form.watch("agent_type");
   const adapter = adapters?.find((a) => a.type === agentType);
@@ -155,12 +164,12 @@ export function NewSessionDialog() {
                       <FormLabel>Command</FormLabel>
                       <Select value={field.value ?? DEFAULT_COMMAND} onValueChange={field.onChange}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value={DEFAULT_COMMAND}>{defaultCommand ? `Default — ${defaultCommand.name}` : `Default — ${adapter?.executable ?? getAgentTypeLabel(agentType)}`}</SelectItem>
+                        <SelectContent alignItemWithTrigger={false}>
+                          {!defaultCommand && <SelectItem value={DEFAULT_COMMAND}>{`Default — ${adapter?.executable ?? getAgentTypeLabel(agentType)}`}</SelectItem>}
                           {agentCommands.map((c) => (
                             <SelectItem key={c.id} value={c.id}>
                               {c.name} <span className="font-mono text-xs text-muted-foreground">{c.command}</span>

@@ -1,5 +1,7 @@
 import { useCallback } from "react";
 import { useStartAgentSession } from "./use-agent-sessions";
+import { useAgentCommands } from "@/features/agent-commands/hooks/use-agent-commands";
+import { findDefaultCommand } from "@/features/agent-commands/utils/agent-commands.utils";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
 import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
 import { useGetPreferences } from "@/features/users/hooks/use-users";
@@ -18,6 +20,7 @@ export const useQuickStartSession = () => {
   const { data: projects } = useGetProjects();
   const { data: preferences } = useGetPreferences();
   const { data: workspaceConfig } = useWorkspaceConfig();
+  const { data: allCommands } = useAgentCommands();
 
   return useCallback(
     (projectId: string | null) => {
@@ -32,11 +35,12 @@ export const useQuickStartSession = () => {
         agent_type: agentType,
         name: `${getAgentTypeLabel(agentType)} session`,
         prompt: null,
+        command_id: findDefaultCommand(allCommands ?? [], agentType)?.id,
         device_id: workspaceConfig?.device_id ?? null,
         idle_threshold_seconds: preferences?.idle_threshold_seconds,
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [projects, preferences, workspaceConfig, start.mutate],
+    [projects, preferences, workspaceConfig, allCommands, start.mutate],
   );
 };

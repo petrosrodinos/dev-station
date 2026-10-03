@@ -24,6 +24,7 @@ import { jumpToSession } from "@/lib/session-navigation.utils";
 import { formatRelative } from "@/lib/date";
 import { AiPanelModes, useWorkspaceStore } from "@/stores/workspace";
 import { useRuntimeStore } from "@/stores/runtime";
+import { useDialogsStore } from "@/stores/dialogs";
 import { Routes } from "@/routes/routes";
 import { DeleteSessionsDialog, SessionContextMenu } from "./session-context-menu";
 import { PlacementMenu, PlacementTargets } from "./placement-menu";
@@ -131,6 +132,8 @@ function SessionList() {
   const attention = useWorkspaceStore((s) => s.attention_session_ids);
   const openSessionTab = useWorkspaceStore((s) => s.openSessionTab);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
+  const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
+  const openNewSession = useDialogsStore((s) => s.openNewSession);
 
   // Same "grouped by project, in rail order" shape as the open-tabs row (`use-session-groups.ts`),
   // just built straight from every session instead of only the ones open in this workspace — a
@@ -154,7 +157,22 @@ function SessionList() {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (isPending) return <ListSkeleton rows={8} />;
-  if (!data?.data.length) return <EmptyState className="flex-1" icon={<Bot />} title="No AI sessions yet" description="Sessions from every project appear here." />;
+  if (!data?.data.length)
+    return (
+      <EmptyState
+        className="flex-1"
+        icon={<Bot />}
+        title="No AI sessions yet"
+        description="Sessions from every project appear here."
+        action={
+          can(PermissionKeys.AI_START_AGENTS) && (
+            <Button size="sm" onClick={() => openNewSession({ project_id: activeProjectId })}>
+              New AI session
+            </Button>
+          )
+        }
+      />
+    );
 
   const open = (s: AgentSession) => {
     setActiveProject(s.project_id);
