@@ -55,7 +55,7 @@ export default async function DownloadsPage() {
                 <header className="wrap dl-hero">
                     <span className="eyebrow"><b>v{releases[0]?.version ?? "—"}</b> latest build</span>
                     <h1>Download Dev Station</h1>
-                    <p className="lead">One workspace for every client project. Pick your platform below — installers are unsigned for now, see the notes at the bottom.</p>
+                    <p className="lead">Your projects, agents, terminals and previews in one workspace. Pick your platform below — installers are unsigned for now, see the notes at the bottom.</p>
                 </header>
 
                 <section style={{ paddingTop: 0 }}>
