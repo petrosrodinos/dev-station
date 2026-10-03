@@ -44,40 +44,45 @@ export const AttentionPanel: FC<{ projects: Project[]; localStates: Record<strin
     };
 
     return (
-        <Panel>
+        <Panel className="@container overflow-hidden">
             <PanelHeader
                 title={
                     <>
-                        Needs attention
-                        {sorted.length > 0 && <span className="rounded-xs bg-surface-elevated px-1.5 py-0.5 text-[0.6875rem] text-muted-foreground">{sorted.length}</span>}
+                        <span className="truncate">Needs attention</span>
+                        {sorted.length > 0 && <span className="shrink-0 rounded-xs bg-surface-elevated px-1.5 py-0.5 text-[0.6875rem] text-muted-foreground">{sorted.length}</span>}
                     </>
                 }
                 actions={
                     <Button variant="outline" size="sm" className="gap-1.5" disabled={sync.isPending} onClick={() => sync.mutate(localProjects)}>
                         <RefreshCw className={cn("size-3.5", sync.isPending && "animate-spin")} />
-                        {sync.isPending ? "Syncing…" : fastForwardable > 0 ? `Sync all (${fastForwardable} to update)` : "Sync all"}
+                        {sync.isPending ? "Syncing…" : "Sync all"}
+                        {!sync.isPending && fastForwardable > 0 && <span className="hidden @lg:inline">({fastForwardable} to update)</span>}
                     </Button>
                 }
             />
             {sorted.length === 0 ? (
-                <div className="flex items-center gap-2 px-4 py-3 text-[0.8125rem] text-muted-foreground">
-                    <CheckCircle2 className="size-4 text-success" /> All {localProjects.length} project{localProjects.length === 1 ? " is" : "s are"} clean, pushed and up to date.
+                <div className="flex items-start gap-2 px-4 py-3 text-[0.8125rem] text-muted-foreground">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" /> All {localProjects.length} project{localProjects.length === 1 ? " is" : "s are"} clean, pushed and up to date.
                 </div>
             ) : (
-                <ul className="divide-y divide-hairline-soft">
+                <ul className="max-h-80 divide-y divide-hairline-soft overflow-y-auto">
                     {sorted.map(({ project, reasons }) => (
                         <li key={project.id}>
-                            <button type="button" onClick={() => open(project.id)} className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-elevated">
+                            <button
+                                type="button"
+                                onClick={() => open(project.id)}
+                                className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1.5 px-3 py-2.5 text-left transition-colors hover:bg-surface-elevated @2xl:grid-cols-[auto_10rem_minmax(0,1fr)_auto] @2xl:items-center @2xl:px-4"
+                            >
                                 <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="sm" />
-                                <span className="w-40 shrink-0 truncate text-[0.8125rem] font-medium">{project.name}</span>
-                                <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+                                <span className="truncate self-center text-[0.8125rem] font-medium">{project.name}</span>
+                                <ChevronRight className="size-4 self-center text-ash @2xl:order-last" />
+                                <span className="col-start-2 col-end-4 flex flex-wrap items-center gap-1.5 @2xl:col-auto">
                                     {reasons.map((r) => (
-                                        <span key={r.kind} className={cn("rounded-xs px-2 py-0.5 text-[0.6875rem]", KIND_TONE[r.kind])}>
+                                        <span key={r.kind} className={cn("whitespace-nowrap rounded-xs px-2 py-0.5 text-[0.6875rem]", KIND_TONE[r.kind])}>
                                             {r.count} · {getDropdownOptionLabel(AttentionKindOptions, r.kind)}
                                         </span>
                                     ))}
                                 </span>
-                                <ChevronRight className="size-4 shrink-0 text-ash" />
                             </button>
                         </li>
                     ))}

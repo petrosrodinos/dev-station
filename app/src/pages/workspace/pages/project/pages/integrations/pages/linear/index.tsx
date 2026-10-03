@@ -8,7 +8,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
-import { useGetLinearIssues } from "@/features/integrations/hooks/use-integrations";
+import { useGetLinearIssues, useProviderConnections } from "@/features/integrations/hooks/use-integrations";
+import { IntegrationProviders } from "@/features/integrations/interfaces/integrations.interfaces";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { cn } from "@/lib/utils";
 import { useProjectContext } from "../../../../hooks/use-project-context";
@@ -25,14 +26,17 @@ const LinearTab: FC = () => {
   const [configuring, setConfiguring] = useState(false);
   const debounced = useDebouncedValue(search, 350);
   const selectedId = params.get("issue");
-  const { data: issues, isPending, isError, error, isFetching } = useGetLinearIssues(project.linear_connection_id, {
+  const { connections } = useProviderConnections(IntegrationProviders.LINEAR);
+  // With a single connected workspace there's nothing to choose — show its issues directly.
+  const connectionId = project.linear_connection_id ?? (connections.length === 1 ? connections[0].id : null);
+  const { data: issues, isPending, isError, error, isFetching } = useGetLinearIssues(connectionId, {
     team_id: project.linear_team_id,
     project_id: project.linear_project_id,
     search: debounced || undefined,
     include_completed: includeCompleted,
   });
 
-  if (!project.linear_connection_id || configuring) {
+  if (!connectionId || configuring) {
     return (
       <div className="p-4">
         <LinearSettingsCard project={project} onDone={() => setConfiguring(false)} />
