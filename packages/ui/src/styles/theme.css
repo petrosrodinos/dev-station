@@ -14,6 +14,9 @@
 @theme inline {
   --font-sans: var(--app-font-sans, "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
   --font-mono: var(--app-font-mono, "JetBrains Mono", "SF Mono", "Cascadia Code", ui-monospace, Menlo, Consolas, monospace);
+  /* Mono text is commands/paths/code: show every character literally. Without this the inherited
+     body "calt"/"liga" makes JetBrains Mono draw `--` as one joined dash (looks like `-`). */
+  --font-mono--font-feature-settings: "liga" 0, "calt" 0;
 
   --radius-xs: 4px;
   --radius-sm: 6px;

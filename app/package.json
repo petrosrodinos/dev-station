@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:debug": "cross-env DEV_STATION_REMOTE_DEBUGGING_PORT=9222 vite",
     "dev:web": "cross-env ELECTRON=false vite",
     "typecheck": "tsc -b",
     "build": "tsc -b && vite build",
