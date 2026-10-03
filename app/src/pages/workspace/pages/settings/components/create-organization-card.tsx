@@ -11,7 +11,7 @@ export function CreateOrganizationCard() {
     <Panel>
       <PanelHeader title="Create a new organization" />
       <PanelBody>
-        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="flex flex-col items-start gap-3 @md:flex-row @md:items-center @md:justify-between @md:gap-4">
           <p className="text-xs text-muted-foreground">Start a separate organization with its own members, roles and projects.</p>
           <Button type="button" variant="secondary" className="shrink-0" onClick={() => setOpen(true)}>
             <Plus className="size-3.5" /> New organization

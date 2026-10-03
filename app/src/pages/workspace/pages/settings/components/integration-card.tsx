@@ -50,62 +50,69 @@ export function IntegrationCard({ integration }: { integration: Integration }) {
   }, [pending.map((c) => c.id).join(",")]);
 
   return (
-    <Panel className="p-4">
-      <div className="flex flex-wrap items-start gap-3">
+    <Panel className="@container p-4">
+      <div className="flex flex-col gap-3 @md:flex-row @md:items-start">
         <div className="flex min-w-0 flex-1 items-start gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-card">
             <Icon className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="truncate text-sm font-medium">{integration.name}</span>
+              <span className="text-sm font-medium">{integration.name}</span>
               {active.length ? (
-                <Badge className="shrink-0 whitespace-nowrap bg-success-soft text-success hover:bg-success-soft">{active.length} connected</Badge>
+                <Badge className="whitespace-nowrap bg-success-soft text-success hover:bg-success-soft">{active.length} connected</Badge>
               ) : (
-                <Badge variant="secondary" className="shrink-0 whitespace-nowrap">
+                <Badge variant="secondary" className="whitespace-nowrap">
                   {supported ? "Not connected" : "Coming soon"}
                 </Badge>
               )}
             </div>
-            <div className="mt-0.5 text-[0.7813rem] text-muted-foreground">{integration.description || getIntegrationProviderDescription(integration.provider)}</div>
+            <p className="mt-1 text-[0.7813rem] leading-relaxed text-muted-foreground">{integration.description || getIntegrationProviderDescription(integration.provider)}</p>
           </div>
         </div>
         {can(PermissionKeys.INTEGRATIONS_CONNECT) && supported && (
-          <Button size="sm" variant="outline" className="shrink-0 gap-1.5" disabled={!integration.available} onClick={() => setConnecting(true)}>
+          <Button size="sm" variant="outline" className="w-full shrink-0 gap-1.5 @md:w-auto" disabled={!integration.available} onClick={() => setConnecting(true)}>
             <Plus className="size-3.5" /> Connect account
           </Button>
         )}
       </div>
 
       {integration.connections.length > 0 && (
-        <div className="mt-3 border-t">
+        <div className="mt-4 overflow-hidden rounded-md border border-hairline-soft">
           {integration.connections.map((c) => (
-            <div key={c.id} className="flex items-center gap-3 border-b border-hairline-soft py-2.5 last:border-b-0">
+            <div key={c.id} className="flex items-start gap-3 border-b border-hairline-soft px-3 py-2.5 last:border-b-0">
               <StatusDot
-                className="shrink-0"
+                className="mt-1.5 shrink-0"
                 status={c.status === ConnectionStatuses.ACTIVE ? "running" : c.status === ConnectionStatuses.INITIATED ? "awaiting" : "crashed"}
                 title={getDropdownOptionLabel(ConnectionStatusOptions, c.status)}
               />
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="truncate text-[0.8125rem] font-medium">{c.label}</span>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="text-[0.8125rem] font-medium [overflow-wrap:anywhere]">{c.label}</span>
                   {c.is_default && (
-                    <Badge variant="secondary" className="h-5 shrink-0 px-1.5 text-[0.6875rem]">
+                    <Badge variant="secondary" className="h-5 px-1.5 text-[0.6875rem]">
                       Default
                     </Badge>
                   )}
                   {c.status !== ConnectionStatuses.ACTIVE && (
-                    <span className="shrink-0 text-[0.6875rem] font-medium text-warning">{getDropdownOptionLabel(ConnectionStatusOptions, c.status)}</span>
+                    <span className="text-[0.6875rem] font-medium text-warning">{getDropdownOptionLabel(ConnectionStatusOptions, c.status)}</span>
                   )}
                 </div>
-                <div className="truncate text-[0.75rem] text-muted-foreground">
-                  {[c.external_account, c.user?.full_name ?? c.user?.email, formatRelative(c.created_at)].filter(Boolean).join(" · ")}
+                <div className="mt-0.5 flex flex-wrap gap-x-1.5 text-[0.75rem] text-muted-foreground">
+                  {[c.external_account, c.user?.full_name ?? c.user?.email, `Connected ${formatRelative(c.created_at)}`]
+                    .filter(Boolean)
+                    .map((part, i) => (
+                      <span key={i} className="[overflow-wrap:anywhere]">
+                        {i > 0 && <span className="mr-1.5 text-ash">·</span>}
+                        {part}
+                      </span>
+                    ))}
                 </div>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
-                    <Button variant="ghost" size="icon" className="size-8 shrink-0 text-muted-foreground" aria-label="Connection actions">
+                    <Button variant="ghost" size="icon" className="-my-1 size-8 shrink-0 text-muted-foreground" aria-label="Connection actions">
                       <MoreHorizontal className="size-3.5" />
                     </Button>
                   }

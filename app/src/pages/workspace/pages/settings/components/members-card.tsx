@@ -43,35 +43,23 @@ export function MembersCard() {
           const isMe = m.user.id === me?.id;
           const editable = canManage && !!actor && canModifyMember(actor, { user_id: m.user.id, rank: m.role.rank });
           return (
-            <div key={m.id} className="flex flex-wrap items-center gap-3 border-b border-hairline-soft px-4 py-3 last:border-b-0">
+            <div
+              key={m.id}
+              className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b border-hairline-soft px-4 py-3 last:border-b-0 @lg:grid-cols-[auto_minmax(0,1fr)_10rem_auto]"
+            >
               <div className="flex size-8 shrink-0 items-center justify-center rounded-full border bg-surface-card text-[0.6875rem] font-semibold">{generateInitials(m.user.full_name || m.user.email)}</div>
-              <div className="min-w-0 flex-1 basis-40">
-                <div className="truncate text-[0.8125rem] font-medium">
+              <div className="min-w-0">
+                <div className="text-[0.8125rem] font-medium [overflow-wrap:anywhere]">
                   {m.user.full_name ?? m.user.email} {isMe && <span className="text-muted-foreground">(you)</span>}
                 </div>
-                <div className="truncate text-xs text-muted-foreground">
-                  {m.user.email} · joined {formatRelative(m.joined_at)}
+                <div className="flex flex-wrap gap-x-1.5 text-xs text-muted-foreground">
+                  <span className="[overflow-wrap:anywhere]">{m.user.email}</span>
+                  <span>
+                    <span className="mr-1.5 text-ash">·</span>joined {formatRelative(m.joined_at)}
+                  </span>
                 </div>
               </div>
-              <div className="ml-auto flex shrink-0 items-center gap-3">
-                {editable ? (
-                  <Select value={m.role.id} onValueChange={(role_id) => role_id && updateRole.mutate({ memberId: m.id, role_id })}>
-                    <SelectTrigger className="h-8 w-40" aria-label={`Role for ${m.user.email}`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roles?.filter((r) => r.id === m.role.id || (actor && canAssignRole(actor, r))).map((r) => (
-                        <SelectItem key={r.id} value={r.id}>
-                          {r.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Badge variant="secondary" className={cn("font-medium", ROLE_BADGE[m.role.key])}>
-                    {m.role.name}
-                  </Badge>
-                )}
+              <div className="@lg:order-last">
                 {editable ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger
@@ -88,7 +76,27 @@ export function MembersCard() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <span className="w-8" />
+                  <span className="block w-8" />
+                )}
+              </div>
+              <div className="col-start-2 col-end-4 @lg:col-auto">
+                {editable ? (
+                  <Select value={m.role.id} onValueChange={(role_id) => role_id && updateRole.mutate({ memberId: m.id, role_id })}>
+                    <SelectTrigger className="h-8 w-full" aria-label={`Role for ${m.user.email}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles?.filter((r) => r.id === m.role.id || (actor && canAssignRole(actor, r))).map((r) => (
+                        <SelectItem key={r.id} value={r.id}>
+                          {r.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Badge variant="secondary" className={cn("font-medium", ROLE_BADGE[m.role.key])}>
+                    {m.role.name}
+                  </Badge>
                 )}
               </div>
             </div>

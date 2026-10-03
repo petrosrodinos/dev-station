@@ -22,12 +22,12 @@ export function OrganizationNameCard() {
       <PanelHeader title="Settings" />
       <PanelBody>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((d) => update.mutate(d))} className="flex items-start gap-2">
+          <form onSubmit={form.handleSubmit((d) => update.mutate(d))} className="flex flex-col gap-2 @md:flex-row @md:items-start">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem className="max-w-sm flex-1">
+                <FormItem className="w-full @md:max-w-sm @md:flex-1">
                   <FormControl>
                     <Input aria-label="Organization name" {...field} />
                   </FormControl>

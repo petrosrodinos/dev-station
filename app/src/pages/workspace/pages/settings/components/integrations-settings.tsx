@@ -16,7 +16,7 @@ export function IntegrationsSettings() {
       />
       <div className="space-y-4">
         {isPending ? (
-          <CardGridSkeleton cards={4} />
+          <CardGridSkeleton cards={4} className="xl:grid-cols-1 @2xl:grid-cols-2" />
         ) : isError ? (
           <EmptyState
             icon={<Plug />}
