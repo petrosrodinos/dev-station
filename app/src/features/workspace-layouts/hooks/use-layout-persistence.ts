@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import type { DockviewApi, SerializedDockview } from "dockview-react";
 import { useLayoutStore } from "@/stores/layout";
 import { useWorkspaceStore } from "@/stores/workspace";
-import { useGetLayoutState, useGetLayouts, useUpdateLayout } from "./use-workspace-layouts";
+import { useGetLayoutState, useGetLayouts } from "./use-workspace-layouts";
+import { applyOuterSizes, sameOuterShape, type SerializedOuterLayout } from "../utils/outer-layout.utils";
 
 const SAVE_DEBOUNCE_MS = 500;
+const HOME_CONTEXT = "home";
 
 /** Pulls the account's active preset/per-project map onto this device until it diverges locally. Mount once. */
 export const useLayoutHydration = () => {
@@ -24,92 +26,87 @@ export const useLayoutHydration = () => {
 };
 
 /**
- * Debounce-then-PATCH persistence for the dock tree (mirrors `use-appearance.ts` exactly, but
- * `onDidLayoutChange` fires continuously during a drag/resize rather than on discrete user
- * actions, so the trailing debounce is the only thing standing between this and spamming the API).
- * Also applies the active preset's saved layout onto the dock whenever it changes, with a
- * corrupted/invalid-layout recovery path: a bad `fromJSON` call is swallowed, leaving whatever
- * arrangement the dock already had rather than crashing (see docking system spec §G).
+ * Remembers the outer main/AI-panel split per context: each project keeps its own geometry, and the
+ * home screen keeps its own. Switching the active project first writes the outgoing context's live
+ * layout, then applies the incoming context's stored layout (or the default when it has none).
+ * Saves are debounced because `onDidLayoutChange` fires continuously during a drag; the pending
+ * save records its own context so a late event can never land in the wrong project.
  */
-export const useLayoutPersistence = (api: DockviewApi | null) => {
+export const useLayoutPersistence = (api: DockviewApi | null, resetToDefault: (api: DockviewApi) => void) => {
+  const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
+  const context = activeProjectId ?? HOME_CONTEXT;
   const activePresetId = useLayoutStore((s) => s.active_preset_id);
+  const saveOuterLayout = useLayoutStore((s) => s.saveOuterLayout);
   const markDirty = useLayoutStore((s) => s.markDirty);
   const markClean = useLayoutStore((s) => s.markClean);
   const { data: presets } = useGetLayouts();
-  const { mutate: save } = useUpdateLayout();
 
+  const contextRef = useRef<string | null>(null);
   const applyingRef = useRef(false);
+  const pendingRef = useRef<{ context: string; layout: Record<string, unknown> } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const appliedPresetId = useRef<string | null>(null);
+  const presetLayoutRef = useRef<Record<string, unknown> | undefined>(undefined);
+  presetLayoutRef.current = presets?.find((p) => p.id === activePresetId)?.layout;
 
-  const flush = useCallback(() => {
-    if (!api || !activePresetId) return;
-    try {
-      const layout = api.toJSON();
-      const floating = useLayoutStore.getState().floating;
-      save({ id: activePresetId, dto: { layout: layout as unknown as Record<string, unknown>, floating } });
-      markClean();
-    } catch (error) {
-      console.error("Failed to serialize the dock layout for saving", error);
+  const commitPending = useCallback(() => {
+    clearTimeout(timer.current);
+    const pending = pendingRef.current;
+    if (!pending) return;
+    pendingRef.current = null;
+    saveOuterLayout(pending.context, pending.layout);
+    const preset = presetLayoutRef.current;
+    if (preset && JSON.stringify(preset) === JSON.stringify(pending.layout)) markClean();
+    else markDirty();
+  }, [saveOuterLayout, markClean, markDirty]);
+
+  // Switching context: write the outgoing layout first, while the dock still holds it. Layout effect, so
+  // the incoming geometry is in place before the browser paints (no flash of the previous project).
+  useLayoutEffect(() => {
+    if (!api) return;
+    const previous = contextRef.current;
+    if (previous !== null && previous !== context) {
+      clearTimeout(timer.current);
+      pendingRef.current = null;
+      try {
+        saveOuterLayout(previous, api.toJSON() as unknown as Record<string, unknown>);
+      } catch (error) {
+        console.error("Failed to save the outgoing panel layout", error);
+      }
     }
-  }, [api, activePresetId, save, markClean]);
+    contextRef.current = context;
 
-  // Restore the active preset's saved layout whenever the preset changes (switch, or first hydrate).
-  useEffect(() => {
-    if (!api || !activePresetId || !presets) return;
-    if (appliedPresetId.current === activePresetId) return;
-    const preset = presets.find((p) => p.id === activePresetId);
-    appliedPresetId.current = activePresetId;
-    if (!preset || !Object.keys(preset.layout).length) return; // empty/seed layout — keep the dock's current (already-seeded) arrangement
+    const stored = useLayoutStore.getState().outer_layout_by_project[context] as SerializedOuterLayout | undefined;
     applyingRef.current = true;
     try {
-      api.fromJSON(preset.layout as unknown as SerializedDockview);
+      if (stored?.grid) {
+        // Same panels in the same arrangement (the normal case): only resize. Rebuilding would remount
+        // the whole project page and the AI panel's nested terminal dock on every switch.
+        if (sameOuterShape(stored, api.toJSON())) applyOuterSizes(api, stored);
+        else api.fromJSON(stored as unknown as SerializedDockview);
+      } else resetToDefault(api);
     } catch (error) {
-      console.error("Couldn't restore the saved layout — keeping the current arrangement", error);
+      console.error("Couldn't restore the saved panel layout — using the default", error);
+      resetToDefault(api);
     } finally {
       applyingRef.current = false;
     }
-  }, [api, activePresetId, presets]);
+  }, [api, context, saveOuterLayout, resetToDefault]);
 
   useEffect(() => {
     if (!api) return;
     const disposable = api.onDidLayoutChange(() => {
-      if (applyingRef.current) return;
-      markDirty();
+      if (applyingRef.current || !contextRef.current) return;
+      try {
+        pendingRef.current = { context: contextRef.current, layout: api.toJSON() as unknown as Record<string, unknown> };
+      } catch (error) {
+        console.error("Failed to serialize the dock layout for saving", error);
+        return;
+      }
       clearTimeout(timer.current);
-      timer.current = setTimeout(flush, SAVE_DEBOUNCE_MS);
+      timer.current = setTimeout(commitPending, SAVE_DEBOUNCE_MS);
     });
     return () => disposable.dispose();
-  }, [api, flush, markDirty]);
+  }, [api, commitPending]);
 
-  useEffect(
-    () => () => {
-      clearTimeout(timer.current);
-      flush();
-    },
-    [flush],
-  );
-};
-
-/**
- * Switches the active preset automatically when the active project changes, if that project has
- * one remembered (`rememberProjectPreset`, written today only from the Layout menu's manual
- * `switchTo`). Without this, `preset_by_project` was write-only — it recorded a per-project
- * preference that nothing ever read back on a plain project switch, only on a manual re-pick from
- * the menu. Converges on its own (no ref/guard needed): once applied, `active_preset_id` matches
- * the remembered value and the condition below goes false, and a manual switch always rewrites
- * `preset_by_project` for the current project in the same action (see `layout-menu.tsx`'s
- * `switchTo`), so this can never fight a deliberate pick.
- */
-export const useProjectPresetAutoApply = () => {
-  const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
-  const presetByProject = useLayoutStore((s) => s.preset_by_project);
-  const activePresetId = useLayoutStore((s) => s.active_preset_id);
-  const setActivePreset = useLayoutStore((s) => s.setActivePreset);
-
-  useEffect(() => {
-    if (!activeProjectId) return;
-    const remembered = presetByProject[activeProjectId];
-    if (remembered && remembered !== activePresetId) setActivePreset(remembered);
-  }, [activeProjectId, presetByProject, activePresetId, setActivePreset]);
+  useEffect(() => () => commitPending(), [commitPending]);
 };

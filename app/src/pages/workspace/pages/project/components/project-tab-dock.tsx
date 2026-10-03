@@ -15,7 +15,7 @@ import "dockview-react/dist/styles/dockview.css";
 import { RequirePermission } from "@/components/access/require-permission";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ProjectTabOptions, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
+import { ProjectTabOptions, ProjectTabs, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { filterByAccess } from "@/lib/access.utils";
 import { isDesktop } from "@/lib/desktop";
@@ -141,13 +141,17 @@ const PreviewDockPanel: FC = () => {
  * `routeTab` for deep-linking/back-forward, kept in sync in both directions: navigating updates
  * which panel is focused, and focusing a panel (by clicking its tab or after a drag) updates the URL.
  */
-export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = ({ projectId, routeTab }) => {
+export const ProjectTabDock: FC<{ projectId: string; routeTab?: ProjectTab }> = ({ projectId, routeTab }) => {
   const navigate = useNavigate();
   const navigateRef = useRef(navigate);
   navigateRef.current = navigate;
   const routeTabRef = useRef(routeTab);
   routeTabRef.current = routeTab;
   const apiRef = useRef<DockviewApi | null>(null);
+  // Dockview disposes its api in a passive effect, after React has already detached this container
+  // from the page. A dock whose container is detached is being torn down, not used, so nothing it
+  // reports at that point may be saved (its layout is already gutted by then).
+  const containerRef = useRef<HTMLDivElement>(null);
   const { can } = usePermissions();
   const permittedTabs = filterByAccess(ProjectTabOptions, can).map((t) => t.id);
   const storedOpenTabs = useWorkspaceStore((s) => s.open_project_tabs[projectId]);
@@ -160,7 +164,9 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   const localSavedLayout = useWorkspaceStore((s) => s.project_dock_layout[projectId]);
   const { data: layoutState } = useGetLayoutState();
   const serverSavedLayout = layoutState?.project_dock_layout?.[projectId];
-  const savedLayout = serverSavedLayout ?? localSavedLayout;
+  // The local copy is written on every change, so it is at least as recent as the server's; the
+  // server copy is only the fallback for a device that has never seen this project.
+  const savedLayout = localSavedLayout && Object.keys(localSavedLayout).length ? localSavedLayout : serverSavedLayout;
   const saveProjectDockLayout = useWorkspaceStore((s) => s.saveProjectDockLayout);
   const { mutate: syncProjectDockLayout } = useUpdateProjectDockLayout();
   const previewOpen = useWorkspaceStore((s) => s.preview_by_project[projectId]?.previewOpen) ?? DEFAULT_PREVIEW_PREFS.previewOpen;
@@ -186,7 +192,7 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   const openTabs = (storedOpenTabs ?? DEFAULT_OPEN_PROJECT_TAB_IDS).filter((t) => permittedTabs.includes(t as ProjectTab));
   // The route's current tab is always considered "open" — this is what makes today's exact
   // single-tab navigation still work unless the user explicitly splits another tab alongside it.
-  const wantedTabs = openTabs.includes(routeTab) ? openTabs : [...openTabs, routeTab];
+  const wantedTabs = routeTab && !openTabs.includes(routeTab) ? [...openTabs, routeTab] : openTabs;
   const closedTabs = permittedTabs.filter((t) => !wantedTabs.includes(t));
 
   const AddTabMenu = useCallback<FC<IDockviewHeaderActionsProps>>(() => {
@@ -263,7 +269,7 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   const onReady = useCallback((event: DockviewReadyEvent) => {
     apiRef.current = event.api;
     event.api.onDidRemovePanel((panel) => {
-      if (restoringRef.current) return;
+      if (restoringRef.current || !containerRef.current?.isConnected) return;
       if (panel.id === PREVIEW_PANEL_ID) {
         setProjectPreview(projectId, { previewOpen: false, previewExpanded: false });
         return;
@@ -274,21 +280,11 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
       // Closing the tab that matches the current URL: fall back to Overview rather than leaving a dangling route.
       if (tab === routeTabRef.current) navigateRef.current(Routes.workspace.project(projectId));
     });
-    // Clicking a tab (or a drag landing it active) navigates the URL to match, so deep-linking,
-    // refresh, and the drawer/preview logic (which read `routeTab`) all stay correct.
-    event.api.onDidActivePanelChange(({ panel }) => {
-      if (restoringRef.current) return;
-      if (!panel?.id.startsWith(TAB_PANEL_PREFIX)) return;
-      const tab = panel.id.slice(TAB_PANEL_PREFIX.length) as ProjectTab;
-      if (tab !== routeTabRef.current) navigateRef.current(Routes.workspace.project_tab(projectId, tab));
-    });
-    // Debounce-save the dock arrangement (splits/groups/sizes) itself — the store's `open_project_tabs`
-    // already remembers *which* tabs are open, but not how they were split/arranged, which is what
-    // actually gets lost when rearranging panels without this. The snapshot itself is taken
-    // synchronously, right here, while `event.api` is definitely still alive — only the store/network
-    // writes are debounced, so a disposed api is never read (see `lastLayoutRef` above).
-    event.api.onDidLayoutChange(() => {
-      if (restoringRef.current) return;
+    // Debounce-save the dock arrangement (splits/groups/sizes/active tab). The snapshot is taken
+    // synchronously while `event.api` is alive; only the store/network writes are debounced, so a
+    // disposed api is never read (see `lastLayoutRef` above).
+    const scheduleSave = () => {
+      if (restoringRef.current || !containerRef.current?.isConnected) return;
       let layout: Record<string, unknown>;
       try {
         layout = event.api.toJSON() as unknown as Record<string, unknown>;
@@ -302,6 +298,18 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
         saveProjectDockLayout(projectId, layout);
         syncProjectDockLayout({ project_id: projectId, layout });
       }, 500);
+    };
+    event.api.onDidLayoutChange(scheduleSave);
+    // Focusing a tab moves no geometry, so it does not fire onDidLayoutChange — but the saved tree
+    // records which view is active per group, so every focus change has to be saved too, or a
+    // later restore brings back a stale tab (or Preview, which has no URL of its own).
+    event.api.onDidActivePanelChange(({ panel }) => {
+      if (restoringRef.current || !containerRef.current?.isConnected) return;
+      if (panel?.id.startsWith(TAB_PANEL_PREFIX)) {
+        const tab = panel.id.slice(TAB_PANEL_PREFIX.length) as ProjectTab;
+        if (tab !== routeTabRef.current) navigateRef.current(Routes.workspace.project_tab(projectId, tab));
+      }
+      scheduleSave();
     });
     // Restore the saved arrangement once, before the tab-reconciliation effect below seeds any
     // panels itself — a corrupt/stale save is swallowed (falls through to the normal seeding path)
@@ -337,7 +345,8 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
     // visit. `inactive` is only honored once a group already has a panel, so process the tab
     // matching the current URL first — it naturally becomes the group's initial active panel, and
     // every other tab added afterward is correctly inactive from the start.
-    const orderedTabs = [routeTab, ...wantedTabs.filter((t) => t !== routeTab)];
+    const seedTab = routeTabRef.current ?? ProjectTabs.OVERVIEW;
+    const orderedTabs = [seedTab, ...wantedTabs.filter((t) => t !== seedTab)];
     for (const tab of orderedTabs) {
       const id = tabPanelId(tab);
       if (existingIds.has(id) || !wantedIds.has(id)) continue;
@@ -347,10 +356,11 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
         title: TAB_LABEL.get(tab as ProjectTab) ?? tab,
         params: { tab: tab as ProjectTab },
         position: anchor ? { referencePanel: anchor.id, direction: "within" } : undefined,
-        inactive: tab !== routeTabRef.current,
+        inactive: tab !== seedTab,
       });
       anchor ??= panel;
     }
+    if (!routeTabRef.current && !api.activePanel) api.getPanel(tabPanelId(ProjectTabs.OVERVIEW))?.api.setActive();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wantedTabs.join("|")]);
 
@@ -399,9 +409,11 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
   }, [previewExpanded, previewOpen]);
 
   // Navigating to a different tab (nav click) focuses that tab's panel, opening it if needed.
+  // Only an explicit tab in the URL focuses a panel; the bare project URL leaves the dock on the
+  // panel it saved (URL-as-source-of-truth here is what made every project snap back to Overview).
   useEffect(() => {
     const api = apiRef.current;
-    if (!api) return;
+    if (!api || !routeTab) return;
     openProjectTab(projectId, routeTab);
     api.getPanel(tabPanelId(routeTab))?.api.setActive();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -422,17 +434,19 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab: ProjectTab }> = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!TAB_PAGES[routeTab]) return <Navigate to={Routes.workspace.project(projectId)} replace />;
+  if (routeTab && !TAB_PAGES[routeTab]) return <Navigate to={Routes.workspace.project(projectId)} replace />;
 
   return (
-    <DockviewReact
-      className="dockview-theme-abyss project-tab-dock h-full"
-      components={components}
-      defaultTabComponent={ProjectTabHeader}
-      tabComponents={tabComponents}
-      rightHeaderActionsComponent={AddTabMenu}
-      disableTabsOverflowList
-      onReady={onReady}
-    />
+    <div ref={containerRef} className="h-full min-h-0">
+      <DockviewReact
+        className="dockview-theme-abyss project-tab-dock h-full"
+        components={components}
+        defaultTabComponent={ProjectTabHeader}
+        tabComponents={tabComponents}
+        rightHeaderActionsComponent={AddTabMenu}
+        disableTabsOverflowList
+        onReady={onReady}
+      />
+    </div>
   );
 };

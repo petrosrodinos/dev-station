@@ -1,35 +1,25 @@
 import { useState, useEffect, useRef, type WheelEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, ExternalLink, FileDiff, MoreHorizontal, PictureInPicture2, Plus, RotateCw, Square, Trash2, X } from "lucide-react";
+import { Check, Plus, X } from "lucide-react";
 import { StatusDot } from "@/components/ui/status-dot";
 import { ProjectFlag } from "@/components/ui/project-avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import {
-  useCloseSessionTab,
-  useOpenAgentExternally,
-  useRestartAgentSession,
-  useStopAgentSession,
-} from "@/features/agent-sessions/hooks/use-agent-sessions";
+import { useCloseSessionTab } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { SessionReviewStates } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { SessionReviewStateOptions } from "@/config/constants/dropdowns/agents/session-review-state.options";
 import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
-import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
-import { projectRouteKeepingTab } from "@/lib/project-route.utils";
 import { isAgentActive, reviewStateDot } from "@/lib/status";
-import { getBridge, isDesktop } from "@/lib/desktop";
 import { useWorkspaceStore } from "@/stores/workspace";
-import { useLayoutStore } from "@/stores/layout";
 import { useQuickStartSession } from "@/features/agent-sessions/hooks/use-quick-start-session";
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
 import type { SessionGroups, SessionItem } from "../hooks/use-session-groups";
 import { CloseSessionDialog } from "./close-session-dialog";
-import { DeleteSessionDialog, SessionContextMenu } from "./session-context-menu";
+import { SessionContextMenu } from "./session-context-menu";
 import { PlacementMenu, PlacementTargets } from "./placement-menu";
 
 interface SessionNavigatorProps {
@@ -67,7 +57,7 @@ export function SessionNavigator({ groups, activeId, onOpen }: SessionNavigatorP
 
   const selectProject = (project: Project) => {
     setActiveProject(project.id);
-    navigate(projectRouteKeepingTab(project.id, window.location.pathname));
+    navigate(Routes.workspace.project(project.id));
   };
 
   // A mouse wheel scrolls the row sideways.
@@ -143,33 +133,10 @@ interface SessionTabProps {
 }
 
 function SessionTab({ item, active, onOpen, onClose }: SessionTabProps) {
-  const navigate = useNavigate();
-  const { can } = usePermissions();
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const restart = useRestartAgentSession();
-  const stop = useStopAgentSession();
-  const openExternal = useOpenAgentExternally();
-  const addFloating = useLayoutStore((s) => s.addFloating);
-
   const state = item.review_state;
   const label = getDropdownOptionLabel(SessionReviewStateOptions, state);
   const ready = state === SessionReviewStates.READY;
   const done = state === SessionReviewStates.REVIEWED || state === SessionReviewStates.COMMITTED;
-  const runtime = item.runtime;
-  const hasAgentActions = !!runtime && can(PermissionKeys.AI_USE_AGENTS);
-  const hasChanges = !!item.changes && item.changes.files_changed > 0;
-  const canFloat = isDesktop();
-  const canDelete = !!item.session && can(PermissionKeys.AI_USE_AGENTS);
-  const hasMenu = hasAgentActions || hasChanges || canFloat || canDelete;
-
-  // Ported from the per-session terminal header this used to live in (see `session-terminal-panel.tsx`)
-  // — relocated here so it stays reachable for a background tab too, not only the focused session's.
-  const floatPanel = () => {
-    if (!isDesktop()) return;
-    const panelId = `session:${item.id}`;
-    void getBridge().layout.openFloatingPanel({ panelId, componentType: "session-terminal", params: { sessionId: item.id }, title: item.name });
-    addFloating({ panelId, componentType: "session-terminal", params: { sessionId: item.id }, bounds: { x: 0, y: 0, width: 640, height: 480 } });
-  };
 
   const tab = (
     <div
@@ -198,69 +165,21 @@ function SessionTab({ item, active, onOpen, onClose }: SessionTabProps) {
         <StatusDot status={reviewStateDot(state)} title={label} className={cn(item.unseen && "animate-pulse")} />
       )}
       <span className={cn("min-w-0 flex-1 truncate", (ready || item.unseen) && "font-semibold")}>{item.name}</span>
-      <div className={cn("flex shrink-0 items-center opacity-0 group-hover:opacity-100", active && "opacity-100")}>
-        {hasMenu && (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <button
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex size-4 shrink-0 items-center justify-center rounded-xs text-ash hover:bg-surface-card hover:text-foreground"
-                  aria-label={`${item.name} options`}
-                >
-                  <MoreHorizontal className="size-3" />
-                </button>
-              }
-            />
-            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-              {hasChanges && (
-                <DropdownMenuItem onSelect={() => navigate(Routes.workspace.project_tab(item.project_id, ProjectTabs.GIT))}>
-                  <FileDiff className="size-3.5" /> Review changes
-                </DropdownMenuItem>
-              )}
-              {hasAgentActions && runtime && (
-                <>
-                  <DropdownMenuItem onSelect={() => restart.mutate(runtime.id)} disabled={restart.isPending}>
-                    <RotateCw className="size-3.5" /> Restart
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => stop.mutate(runtime.id)} disabled={!runtime.alive || stop.isPending}>
-                    <Square className="size-3.5" /> Stop
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => openExternal.mutate(runtime.id)}>
-                    <ExternalLink className="size-3.5" /> Open in external terminal
-                  </DropdownMenuItem>
-                </>
-              )}
-              {canFloat && (
-                <DropdownMenuItem onSelect={floatPanel}>
-                  <PictureInPicture2 className="size-3.5" /> Float in its own window
-                </DropdownMenuItem>
-              )}
-              {canDelete && (
-                <>
-                  {(hasAgentActions || hasChanges || canFloat) && <DropdownMenuSeparator />}
-                  <DropdownMenuItem className="text-danger focus:text-danger" onSelect={() => setConfirmDelete(true)}>
-                    <Trash2 className="size-3.5" /> Delete session
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-        {onClose && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }}
-            className="flex size-4 shrink-0 items-center justify-center rounded-xs text-ash hover:bg-surface-card hover:text-foreground"
-            aria-label={`Close ${item.name}`}
-          >
-            <X className="size-3" />
-          </button>
-        )}
-      </div>
-      {item.session && canDelete && <DeleteSessionDialog session={item.session} open={confirmDelete} onOpenChange={setConfirmDelete} />}
+      {onClose && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          className={cn(
+            "flex size-4 shrink-0 items-center justify-center rounded-xs text-ash opacity-0 hover:bg-surface-card hover:text-foreground group-hover:opacity-100",
+            active && "opacity-100",
+          )}
+          aria-label={`Close ${item.name}`}
+        >
+          <X className="size-3" />
+        </button>
+      )}
     </div>
   );
 

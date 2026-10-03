@@ -1,10 +1,10 @@
-import { useEffect, type FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import { Navigate, Outlet, useLocation, useParams } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useProject } from "@/features/projects/hooks/use-projects";
 import { useProjectLocalState } from "@/features/local-workspace/hooks/use-local-workspace";
-import { ProjectTabs, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
+import { type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { ProjectTabDock } from "./components/project-tab-dock";
 import { ProjectContext } from "./hooks/use-project-context";
@@ -23,7 +23,18 @@ const ProjectLayout: FC = () => {
   const localState = useProjectLocalState(projectId);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
   const onSetup = location.pathname.endsWith("/setup");
-  const currentTab = (tabParam ?? ProjectTabs.OVERVIEW) as ProjectTab;
+  // Undefined on the bare project URL: the dock then shows whatever tab/panel it last saved for this project.
+  const currentTab = tabParam as ProjectTab | undefined;
+
+  // The dock for a project mounts one frame after the switch, not in the same commit. That commit
+  // removes the previous project's dock immediately (no lingering tab row), and the heavy new mount
+  // runs as a separate, fast render that can fade in.
+  const [dockProjectId, setDockProjectId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!projectId) return;
+    const frame = requestAnimationFrame(() => setDockProjectId(projectId));
+    return () => cancelAnimationFrame(frame);
+  }, [projectId]);
 
   useEffect(() => {
     if (projectId) setActiveProject(projectId);
@@ -58,7 +69,18 @@ const ProjectLayout: FC = () => {
           instead (see `ProjectTabDock`'s `TabPanel`), so this level must not also clip or scroll it.
           The preview is a panel inside that dock, not a column here, so it moves like any tab. */}
       <div className={cn("@container min-h-0 min-w-0 flex-1", onSetup ? "overflow-y-auto" : "overflow-hidden")}>
-        {onSetup ? <Outlet context={{ project }} /> : <ProjectTabDock key={project.id} projectId={project.id} routeTab={currentTab} />}
+        {onSetup ? (
+          <Outlet context={{ project }} />
+        ) : dockProjectId === project.id ? (
+          <div key={project.id} className="h-full animate-in fade-in duration-200">
+            <ProjectTabDock key={project.id} projectId={project.id} routeTab={currentTab} />
+          </div>
+        ) : (
+          <div className="flex h-full flex-col gap-3 p-4">
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="min-h-0 flex-1 w-full" />
+          </div>
+        )}
       </div>
     </div>
     </ProjectContext.Provider>

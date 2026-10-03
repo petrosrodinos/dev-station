@@ -1,7 +1,7 @@
 import type { NavigateFunction } from "react-router-dom";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
-import { projectRouteKeepingTab } from "@/lib/project-route.utils";
 import { isDesktop } from "@/lib/desktop";
+import { Routes } from "@/routes/routes";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useWorkspaceStore } from "@/stores/workspace";
 
@@ -20,7 +20,7 @@ export function jumpToSession(sessionId: string, navigate: NavigateFunction, opt
   const projectId = useRuntimeStore.getState().agents[sessionId]?.project_id ?? options.fallbackProjectId;
   if (!projectId) return false;
   workspace.setActiveProject(projectId);
-  navigate(projectRouteKeepingTab(projectId, window.location.pathname));
+  navigate(Routes.workspace.project(projectId));
   workspace.openSessionTab(sessionId);
 
   const project = options.review?.projects?.find((p) => p.id === projectId);

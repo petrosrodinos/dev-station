@@ -18,6 +18,8 @@ interface LayoutState {
     customized: boolean;
     /** Real-OS-window floating panels for the active preset (see docking system spec §C). */
     floating: FloatingPanelBounds[];
+    /** Record<projectId | "home", DockviewApi.toJSON()> — the outer main/AI-panel split, remembered per project. */
+    outer_layout_by_project: Record<string, Record<string, unknown>>;
 }
 
 interface LayoutActions {
@@ -28,6 +30,7 @@ interface LayoutActions {
     setFloating(floating: FloatingPanelBounds[]): void;
     addFloating(entry: FloatingPanelBounds): void;
     removeFloating(panelId: string): void;
+    saveOuterLayout(context: string, layout: Record<string, unknown>): void;
     hydrateFromServer(values: Pick<LayoutState, "active_preset_id" | "preset_by_project">): void;
 }
 
@@ -37,6 +40,7 @@ const initialValues: LayoutState = {
     dirty: false,
     customized: false,
     floating: [],
+    outer_layout_by_project: {},
 };
 
 const STORE_KEY = "layout";
@@ -54,6 +58,7 @@ export const useLayoutStore = create<LayoutState & LayoutActions>()(
             addFloating: (entry) =>
                 set((s) => ({ floating: [...s.floating.filter((f) => f.panelId !== entry.panelId), entry], customized: true, dirty: true })),
             removeFloating: (panelId) => set((s) => ({ floating: s.floating.filter((f) => f.panelId !== panelId), dirty: true })),
+            saveOuterLayout: (context, layout) => set((s) => ({ outer_layout_by_project: { ...s.outer_layout_by_project, [context]: layout } })),
             hydrateFromServer: (values) => set({ ...values, dirty: false }),
         }),
         { name: STORE_KEY },

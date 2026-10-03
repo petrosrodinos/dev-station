@@ -33,7 +33,6 @@ import {
   useUpdateLayoutState,
 } from "@/features/workspace-layouts/hooks/use-workspace-layouts";
 import { useLayoutStore } from "@/stores/layout";
-import { useWorkspaceStore } from "@/stores/workspace";
 import { RailPositionOptions, type RailPosition } from "@/config/constants/dropdowns/settings/rail-position.options";
 import { useRailPosition } from "@/features/users/hooks/use-rail-position";
 import { useDockApi } from "../context/dock-api-context";
@@ -53,8 +52,6 @@ export function LayoutMenu() {
   const dirty = useLayoutStore((s) => s.dirty);
   const setActivePreset = useLayoutStore((s) => s.setActivePreset);
   const markClean = useLayoutStore((s) => s.markClean);
-  const rememberProjectPreset = useLayoutStore((s) => s.rememberProjectPreset);
-  const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
   const { position: railPosition, setPosition: setRailPosition } = useRailPosition();
 
   const create = useCreateLayout();
@@ -69,9 +66,16 @@ export function LayoutMenu() {
   const activePreset = presets?.find((p) => p.id === activePresetId);
 
   const switchTo = (id: string) => {
+    const preset = presets?.find((p) => p.id === id);
     setActivePreset(id);
-    if (activeProjectId) rememberProjectPreset(activeProjectId, id);
-    updateState.mutate({ active_preset_id: id, ...(activeProjectId ? { project_id: activeProjectId, preset_id: id } : {}) });
+    if (api && preset && Object.keys(preset.layout).length) {
+      try {
+        api.fromJSON(preset.layout as unknown as SerializedDockview);
+      } catch {
+        // Corrupted saved layout — leave the current arrangement as-is.
+      }
+    }
+    updateState.mutate({ active_preset_id: id });
   };
 
   const saveAsNew = () => {

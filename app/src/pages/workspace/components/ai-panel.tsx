@@ -24,6 +24,7 @@ import { Routes } from "@/routes/routes";
 import { SessionContextMenu } from "./session-context-menu";
 import { PlacementMenu, PlacementTargets } from "./placement-menu";
 import { SessionNavigator } from "./session-navigator";
+import { SessionActionsMenu } from "./session-actions-menu";
 import { SessionTerminalStage } from "./session-terminal-stage";
 import { nextReviewSession, type SessionGroups, type SessionItem } from "../hooks/use-session-groups";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
   const { data: projects } = useGetProjects();
   const nextCombo = useResolvedShortcuts().find((s) => s.id === ShortcutActions.GO_TO_FINISHED_SESSION)?.combo;
   const history = mode === AiPanelModes.SESSIONS;
+  const activeItem = groups.ordered.find((i) => i.id === activeId) ?? null;
   const setMode = useWorkspaceStore((s) => s.setAiPanelMode);
   const historyLabel = history ? "Back to open sessions" : "Session history";
 
@@ -75,21 +77,24 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
         ) : (
           <span className="px-1 text-[0.7813rem] font-medium text-muted-foreground">{history ? "Session history" : "AI sessions"}</span>
         )}
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <button
-                onClick={() => setMode(history ? AiPanelModes.TERMINAL : AiPanelModes.SESSIONS)}
-                aria-label={historyLabel}
-                aria-pressed={history}
-                className={cn("ml-auto flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground", history && "bg-accent text-foreground")}
-              >
-                <History className="size-3.5" />
-              </button>
-            }
-          />
-          <TooltipContent>{historyLabel}</TooltipContent>
-        </Tooltip>
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          <SessionActionsMenu item={activeItem} />
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  onClick={() => setMode(history ? AiPanelModes.TERMINAL : AiPanelModes.SESSIONS)}
+                  aria-label={historyLabel}
+                  aria-pressed={history}
+                  className={cn("flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground", history && "bg-accent text-foreground")}
+                >
+                  <History className="size-3.5" />
+                </button>
+              }
+            />
+            <TooltipContent>{historyLabel}</TooltipContent>
+          </Tooltip>
+        </div>
       </div>
       </PlacementMenu>
       <div className="flex min-h-0 flex-1 flex-col">
