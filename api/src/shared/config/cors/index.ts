@@ -1,7 +1,7 @@
 export const LOCAL_CORS_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:5174',
-  'http://localhost:3001',
+  'http://localhost:3003',
 ];
 
 export function parseCorsUrls(value: unknown): string[] | undefined {
