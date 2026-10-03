@@ -32,7 +32,7 @@ export function IntegrationsSettings() {
                 environment). Connections are unavailable until then.
               </div>
             )}
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-2">
               {data?.map((integration) => (
                 <IntegrationCard
                   key={integration.provider}
