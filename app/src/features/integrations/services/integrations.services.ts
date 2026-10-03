@@ -15,6 +15,8 @@ import type {
     UpdateLinearIssueDto,
     NotionPage,
     NotionPageContent,
+    CreateNotionPageDto,
+    UpdateNotionPageDto,
 } from "../interfaces/integrations.interfaces";
 
 export const getIntegrations = async (): Promise<Integration[]> => {
@@ -155,5 +157,31 @@ export const getNotionPage = async (connectionId: string, pageId: string): Promi
         return response.data;
     } catch (error) {
         throw new Error(getApiErrorMessage(error, "Failed to load the Notion page."));
+    }
+};
+
+export const createNotionPage = async ({ connectionId, ...dto }: CreateNotionPageDto & { connectionId: string }): Promise<NotionPageContent> => {
+    try {
+        const response = await axiosInstance.post<NotionPageContent>(ApiRoutes.integrations.notion_pages(connectionId), dto);
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to create the Notion page."));
+    }
+};
+
+export const updateNotionPage = async ({ connectionId, pageId, ...dto }: UpdateNotionPageDto & { connectionId: string; pageId: string }): Promise<NotionPageContent> => {
+    try {
+        const response = await axiosInstance.patch<NotionPageContent>(ApiRoutes.integrations.notion_page(connectionId, pageId), dto);
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to save the Notion page."));
+    }
+};
+
+export const archiveNotionPage = async ({ connectionId, pageId }: { connectionId: string; pageId: string }): Promise<void> => {
+    try {
+        await axiosInstance.delete(ApiRoutes.integrations.notion_page(connectionId, pageId));
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to archive the Notion page."));
     }
 };

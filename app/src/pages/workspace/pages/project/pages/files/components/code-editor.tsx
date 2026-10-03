@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { useFileContent, useSaveFile } from "@/features/files/hooks/use-files";
+import { useResolvedTheme } from "@/hooks/use-resolved-theme";
 import { cn } from "@/lib/utils";
 
 const EXT_LANGUAGE: Record<string, () => Extension> = {
@@ -29,17 +30,6 @@ function languageFor(path: string): Extension[] {
   const ext = path.split(".").pop()?.toLowerCase() ?? "";
   const factory = EXT_LANGUAGE[ext];
   return factory ? [factory()] : [];
-}
-
-/** Follows the resolved <html> theme class rather than the raw setting, so it stays correct for "system" and for changes made elsewhere (e.g. Settings). */
-function useResolvedTheme(): "light" | "dark" {
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
-  useEffect(() => {
-    const observer = new MutationObserver(() => setDark(document.documentElement.classList.contains("dark")));
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
-  }, []);
-  return dark ? "dark" : "light";
 }
 
 /** In-app viewer/editor for text files, backed by the local filesystem bridge (Spec §11). */

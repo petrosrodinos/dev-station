@@ -16,8 +16,10 @@ import {
 import {
   ComposioConnectedAccount,
   ComposioConnectionRequest,
+  ComposioProxyResult,
   ComposioToolResult,
   ExecuteToolInput,
+  ProxyRequestInput,
 } from '../interfaces/composio.interface';
 
 /**
@@ -146,6 +148,24 @@ export class ComposioService {
     if (!result.successful) {
       throw new BadGatewayException({
         message: result.error || `${input.tool} failed`,
+        code: ErrorCodes.Integrations.PROVIDER_ERROR,
+      });
+    }
+    return result.data;
+  }
+
+  /** Calls the provider's REST API directly with the connected account's auth — for endpoints no Composio tool covers. */
+  async proxy<T = unknown>(input: ProxyRequestInput): Promise<T> {
+    const result = await this.request<ComposioProxyResult<T>>(
+      'post',
+      '/tools/execute/proxy',
+      input,
+    );
+
+    if (result.status >= 400) {
+      const body = result.data as { message?: string } | undefined;
+      throw new BadGatewayException({
+        message: body?.message || `${input.method} ${input.endpoint} failed`,
         code: ErrorCodes.Integrations.PROVIDER_ERROR,
       });
     }

@@ -35,6 +35,8 @@ import { NotionIntegrationService } from './services/notion-integration.service'
 import { CreateConnectionDto } from './dto/create-connection.dto';
 import { UpdateConnectionDto } from './dto/update-connection.dto';
 import { UpdateLinearIssueDto } from './dto/update-linear-issue.dto';
+import { CreateNotionPageDto } from './dto/create-notion-page.dto';
+import { UpdateNotionPageDto } from './dto/update-notion-page.dto';
 import {
   GithubRepositoriesQuerySchema,
   GithubRepositoriesQueryType,
@@ -261,7 +263,8 @@ export class IntegrationsController {
   @Patch('linear/:connectionId/issues/:issueId')
   @RequirePermissions(PermissionKey.PROJECTS_EDIT)
   @ApiOperation({
-    summary: 'Update a Linear issue (status, assignee, priority, title, description)',
+    summary:
+      'Update a Linear issue (status, assignee, priority, title, description)',
   })
   async updateLinearIssue(
     @CurrentMembership('organization_id') organizationId: string,
@@ -311,5 +314,56 @@ export class IntegrationsController {
       IntegrationProvider.NOTION,
     );
     return this.notion.getPage(connection, pageId);
+  }
+
+  @Post('notion/:connectionId/pages')
+  @RequirePermissions(PermissionKey.PROJECTS_EDIT)
+  @ApiOperation({ summary: 'Create a Notion page under a parent page' })
+  @ApiResponse({ status: 201, type: NotionPageContentEntity })
+  async createNotionPage(
+    @CurrentMembership('organization_id') organizationId: string,
+    @Param('connectionId', ParseUUIDPipe) connectionId: string,
+    @Body() dto: CreateNotionPageDto,
+  ) {
+    const connection = await this.integrationsService.getActiveConnection(
+      organizationId,
+      connectionId,
+      IntegrationProvider.NOTION,
+    );
+    return this.notion.createPage(connection, dto);
+  }
+
+  @Patch('notion/:connectionId/pages/:pageId')
+  @RequirePermissions(PermissionKey.PROJECTS_EDIT)
+  @ApiOperation({ summary: 'Update a Notion page title and/or markdown body' })
+  @ApiResponse({ status: 200, type: NotionPageContentEntity })
+  async updateNotionPage(
+    @CurrentMembership('organization_id') organizationId: string,
+    @Param('connectionId', ParseUUIDPipe) connectionId: string,
+    @Param('pageId', ExternalIdValidationPipe) pageId: string,
+    @Body() dto: UpdateNotionPageDto,
+  ) {
+    const connection = await this.integrationsService.getActiveConnection(
+      organizationId,
+      connectionId,
+      IntegrationProvider.NOTION,
+    );
+    return this.notion.updatePage(connection, pageId, dto);
+  }
+
+  @Delete('notion/:connectionId/pages/:pageId')
+  @RequirePermissions(PermissionKey.PROJECTS_EDIT)
+  @ApiOperation({ summary: 'Archive (move to trash) a Notion page' })
+  async archiveNotionPage(
+    @CurrentMembership('organization_id') organizationId: string,
+    @Param('connectionId', ParseUUIDPipe) connectionId: string,
+    @Param('pageId', ExternalIdValidationPipe) pageId: string,
+  ) {
+    const connection = await this.integrationsService.getActiveConnection(
+      organizationId,
+      connectionId,
+      IntegrationProvider.NOTION,
+    );
+    await this.notion.archivePage(connection, pageId);
   }
 }

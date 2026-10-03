@@ -79,5 +79,11 @@ export class NotionPageContentEntity {
   @ApiProperty() id: string;
   @ApiProperty() title: string;
   @ApiProperty({ nullable: true }) url: string | null;
+  @ApiProperty({ nullable: true }) last_edited_time: string | null;
   @ApiProperty() markdown: string;
+  @ApiProperty({
+    description:
+      'False when the markdown is truncated or omits unsupported blocks — saving it would lose content',
+  })
+  editable: boolean;
 }
