@@ -463,10 +463,26 @@ export interface OpenFloatingPanelInput {
   componentType: string;
   params: Record<string, unknown>;
   title: string;
+  /** Floating window to add the panel to; a window with this id is opened when none exists yet. */
+  windowId: string;
   bounds?: Partial<FloatingWindowBounds>;
 }
 
-/** Fired when a floating panel's window is closed, so the renderer can re-dock or drop it. */
+/** One dock panel hosted by a floating window. */
+export interface FloatingWindowPanel {
+  panelId: string;
+  componentType: string;
+  params: Record<string, unknown>;
+  title: string;
+}
+
+/** Full panel list of one floating window; pushed after every change so a late subscriber can't miss one. */
+export interface FloatingWindowSnapshot {
+  windowId: string;
+  panels: FloatingWindowPanel[];
+}
+
+/** Fired when a floating panel is docked back (closed from its window, or its window closed). */
 export interface FloatingPanelClosedEvent {
   panelId: string;
   bounds: FloatingWindowBounds;
@@ -619,10 +635,12 @@ export interface DevStationBridge {
     onState(cb: (e: PreviewState) => void): Unsubscribe;
   };
   layout: {
-    /** Pops a panel out into its own OS window, loading this same renderer at a bare `/floating` route. */
+    /** Pops a panel out into a floating OS window (adding it to that window if it already exists). */
     openFloatingPanel(input: OpenFloatingPanelInput): Promise<void>;
-    /** Closes a floating panel's window programmatically (e.g. "Dock back"). */
+    /** Docks a floating panel back into its project or session (closes its window when it was the last one). */
     closeFloatingPanel(panelId: string): Promise<void>;
+    getFloatingWindow(windowId: string): Promise<FloatingWindowSnapshot>;
+    onFloatingWindowChanged(cb: (e: FloatingWindowSnapshot) => void): Unsubscribe;
     onFloatingPanelClosed(cb: (e: FloatingPanelClosedEvent) => void): Unsubscribe;
   };
   notifications: {
@@ -725,6 +743,8 @@ export const IpcChannels = {
   PREVIEW_STATE: "preview:state",
   LAYOUT_OPEN_FLOATING: "layout:open-floating",
   LAYOUT_CLOSE_FLOATING: "layout:close-floating",
+  LAYOUT_GET_FLOATING_WINDOW: "layout:get-floating-window",
+  LAYOUT_FLOATING_WINDOW_CHANGED: "layout:floating-window-changed",
   LAYOUT_FLOATING_CLOSED: "layout:floating-closed",
   NOTIF_SHOW: "notification:show",
   NOTIF_CLICK: "notification:click",

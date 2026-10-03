@@ -5,6 +5,9 @@ export interface FloatingPanelBounds {
     params: Record<string, unknown>;
     bounds: { x: number; y: number; width: number; height: number };
     displayId?: number;
+    /** The floating window hosting this panel. Entries saved before multi-tab windows have none. */
+    windowId?: string;
+    title?: string;
 }
 
 export interface WorkspaceLayoutPreset {
