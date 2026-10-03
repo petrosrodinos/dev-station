@@ -292,20 +292,89 @@ export class OrganizationsService {
       });
     });
 
+    this.sendInvitationEmail({
+      email,
+      token,
+      organizationName: organization.name,
+      inviterName: inviter?.full_name,
+      roleName: role.name,
+    });
+
+    return { invitation: this.toInvitationView(invitation), token };
+  }
+
+  /** Issue a fresh invite code (the old one stops working), extend the expiry and email it again. */
+  async resendInvitation(
+    actor: OrganizationMembership,
+    userId: string,
+    invitationId: string,
+  ) {
+    const [existing, organization, inviter] = await Promise.all([
+      this.prisma.organizationInvitation.findFirst({
+        where: {
+          id: invitationId,
+          organization_id: actor.organization_id,
+          accepted_at: null,
+          revoked_at: null,
+        },
+        include: { role: { select: { rank: true } } },
+      }),
+      this.prisma.organization.findUnique({
+        where: { id: actor.organization_id },
+      }),
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { full_name: true },
+      }),
+    ]);
+    if (!existing) throw new NotFoundException('Invitation not found');
+    this.access.assertCanAssignRole(actor, { rank: existing.role.rank });
+
+    const token = randomBytes(24).toString('hex');
+    const invitation = await this.prisma.organizationInvitation.update({
+      where: { id: invitationId },
+      data: {
+        token_hash: this.hashToken(token),
+        expires_at: new Date(Date.now() + INVITATION_TTL_MS),
+      },
+      include: {
+        role: { select: { id: true, name: true, key: true, rank: true } },
+      },
+    });
+
+    this.sendInvitationEmail({
+      email: invitation.email,
+      token,
+      organizationName: organization.name,
+      inviterName: inviter?.full_name,
+      roleName: invitation.role.name,
+    });
+
+    return { invitation: this.toInvitationView(invitation), token };
+  }
+
+  /** Fire-and-forget: a failed email never fails the invite (the code is also returned to the inviter). */
+  private sendInvitationEmail(params: {
+    email: string;
+    token: string;
+    organizationName: string;
+    inviterName?: string | null;
+    roleName: string;
+  }) {
     setImmediate(async () => {
       try {
         const template = EmailConfig.templates.organization_invitation;
         await this.mailService.sendEmail({
-          to: email,
+          to: params.email,
           from: EmailConfig.email_addresses.alert,
-          subject: template.subject(organization.name),
+          subject: template.subject(params.organizationName),
           template_id: template.template_id,
           dynamic_template_data: {
-            organizationName: organization.name,
-            inviterName: inviter?.full_name,
-            roleName: role.name,
-            email,
-            token,
+            organizationName: params.organizationName,
+            inviterName: params.inviterName,
+            roleName: params.roleName,
+            email: params.email,
+            token: params.token,
             expiresInDays: INVITATION_TTL_MS / (24 * 60 * 60 * 1000),
           },
         });
@@ -313,8 +382,6 @@ export class OrganizationsService {
         this.logger.warn(`Invitation email not sent: ${error?.message}`);
       }
     });
-
-    return { invitation: this.toInvitationView(invitation), token };
   }
 
   async revokeInvitation(actor: OrganizationMembership, invitationId: string) {

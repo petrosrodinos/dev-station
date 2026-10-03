@@ -177,6 +177,20 @@ export class CurrentOrganizationController {
     return this.organizationsService.createInvitation(membership, userId, dto);
   }
 
+  @Post('invitations/:id/resend')
+  @RequirePermissions(PermissionKey.ORG_MANAGE_MEMBERS)
+  @ApiOperation({
+    summary: 'Resend an invitation with a fresh invite code and expiry',
+  })
+  @ApiResponse({ status: 201, type: CreatedInvitationEntity })
+  resendInvitation(
+    @CurrentMembership() membership: OrganizationMembership,
+    @CurrentUser('id') userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.organizationsService.resendInvitation(membership, userId, id);
+  }
+
   @Delete('invitations/:id')
   @RequirePermissions(PermissionKey.ORG_MANAGE_MEMBERS)
   @ApiOperation({ summary: 'Revoke an invitation' })

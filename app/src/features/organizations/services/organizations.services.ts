@@ -84,6 +84,15 @@ export const createInvitation = async (dto: CreateInvitationDto): Promise<Create
     }
 };
 
+export const resendInvitation = async (id: string): Promise<CreateInvitationResponse> => {
+    try {
+        const response = await axiosInstance.post<CreateInvitationResponse>(ApiRoutes.organizations.resend_invitation(id));
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to resend the invitation."));
+    }
+};
+
 export const revokeInvitation = async (id: string): Promise<void> => {
     try {
         await axiosInstance.delete(ApiRoutes.organizations.invitation(id));

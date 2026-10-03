@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Copy, Plus, X } from "lucide-react";
+import { Copy, MoreHorizontal, Plus, Send, X } from "lucide-react";
 import { Panel, PanelBody, PanelHeader } from "@/components/ui/panel";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
-import { useCreateInvitation, useGetInvitations, useGetRoles, usePermissions, useRevokeInvitation } from "@/features/organizations/hooks/use-organizations";
+import { useCreateInvitation, useGetInvitations, useGetRoles, usePermissions, useResendInvitation, useRevokeInvitation } from "@/features/organizations/hooks/use-organizations";
 import { SystemRoleKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { formatRelative } from "@/lib/date";
 import { canAssignRole } from "@/lib/access.utils";
@@ -24,13 +25,16 @@ export function InvitationsCard() {
   const roles = allRoles?.filter((r) => actor && canAssignRole(actor, r));
   const create = useCreateInvitation();
   const revoke = useRevokeInvitation();
+  const resend = useResendInvitation();
   const [open, setOpen] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [resentTo, setResentTo] = useState<string | null>(null);
   const [revoking, setRevoking] = useState<string | null>(null);
   const form = useForm<InviteMemberFormData>({ resolver: zodResolver(inviteMemberSchema), defaultValues: { email: "", role_id: "" } });
 
   const openDialog = () => {
     setToken(null);
+    setResentTo(null);
     form.reset({ email: "", role_id: roles?.find((r) => r.key === SystemRoleKeys.DEVELOPER)?.id ?? "" });
     setOpen(true);
   };
@@ -57,12 +61,44 @@ export function InvitationsCard() {
       ) : (
         invitations.map((inv) => (
           <div key={inv.id} className="flex items-center gap-3 border-b border-hairline-soft px-4 py-2.5 text-[0.8125rem] last:border-b-0">
-            <span className="min-w-0 flex-1 truncate">{inv.email}</span>
-            <span className="shrink-0 text-xs text-muted-foreground">{inv.role.name}</span>
-            <span className="hidden shrink-0 text-xs text-ash sm:inline">sent {formatRelative(inv.created_at)}</span>
-            <Button variant="ghost" size="icon" className="size-7 shrink-0 text-muted-foreground" onClick={() => setRevoking(inv.id)} aria-label={`Revoke invitation for ${inv.email}`}>
-              <X className="size-3.5" />
-            </Button>
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5 @lg:flex-row @lg:items-center @lg:gap-3">
+              <span className="min-w-0 [overflow-wrap:anywhere] @lg:flex-1">{inv.email}</span>
+              <span className="flex flex-wrap gap-x-1.5 text-xs">
+                <span className="text-muted-foreground">{inv.role.name}</span>
+                <span className="text-ash">
+                  <span className="mr-1.5">·</span>sent {formatRelative(inv.created_at)}
+                </span>
+              </span>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="ghost" size="icon" className="size-8 shrink-0 text-muted-foreground" loading={resend.isPending && resend.variables === inv.id} aria-label={`Actions for invitation to ${inv.email}`}>
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  className="gap-2"
+                  onSelect={() =>
+                    resend.mutate(inv.id, {
+                      onSuccess: (res) => {
+                        setToken(res.token);
+                        setResentTo(res.invitation.email);
+                        setOpen(true);
+                      },
+                    })
+                  }
+                >
+                  <Send className="size-3.5" /> Resend invitation
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="gap-2 text-danger focus:text-danger" onSelect={() => setRevoking(inv.id)}>
+                  <X className="size-3.5" /> Revoke invitation
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         ))
       )}
@@ -70,9 +106,9 @@ export function InvitationsCard() {
       <Dialog open={open} onOpenChange={(o) => !create.isPending && setOpen(o)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{token ? "Invitation created" : "Invite member"}</DialogTitle>
+            <DialogTitle>{token ? (resentTo ? "Invitation resent" : "Invitation created") : "Invite member"}</DialogTitle>
             <DialogDescription>
-              {token ? "Share this invite code. They can join from Organization → “Join with an invite code”." : "They join with the role you choose; you can change it later."}
+              {token ? `${resentTo ? `A new invite code was emailed to ${resentTo}; the previous code no longer works. ` : ""}Share this invite code. They can join from Organization → “Join with an invite code”.` : "They join with the role you choose; you can change it later."}
             </DialogDescription>
           </DialogHeader>
           {token ? (

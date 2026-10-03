@@ -11,6 +11,7 @@ import {
     getPermissionCatalog,
     getRoles,
     removeMember,
+    resendInvitation,
     revokeInvitation,
     updateCurrentOrganization,
     updateMemberRole,
@@ -130,6 +131,18 @@ export const useCreateInvitation = () => {
             toast({ title: "Invitation created", description: `Invite sent to ${data.invitation.email}`, duration: 2500 });
         },
         onError: (error: Error) => toast({ title: "Could not invite member", description: error.message, variant: "error" }),
+    });
+};
+
+export const useResendInvitation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: resendInvitation,
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ["invitations"] });
+            toast({ title: "Invitation resent", description: `New invite code sent to ${data.invitation.email}`, duration: 2500 });
+        },
+        onError: (error: Error) => toast({ title: "Could not resend invitation", description: error.message, variant: "error" }),
     });
 };
 
