@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ExternalLink, FileDiff, MoreHorizontal, RotateCw, Square, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useOpenAgentExternally, useRestartAgentSession, useStopAgentSession } from "@/features/agent-sessions/hooks/use-agent-sessions";
+import { useOpenAgentExternally, useRelaunchAgentSession, useStopAgentSession } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
@@ -20,7 +20,7 @@ export function SessionActionsMenu({ item }: { item: SessionItem | null }) {
   const navigate = useNavigate();
   const { can } = usePermissions();
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const restart = useRestartAgentSession();
+  const relaunch = useRelaunchAgentSession();
   const stop = useStopAgentSession();
   const openExternal = useOpenAgentExternally();
   const runtime = item?.runtime ?? null;
@@ -61,8 +61,8 @@ export function SessionActionsMenu({ item }: { item: SessionItem | null }) {
             <FileDiff className="size-3.5" /> Review changes
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => runtime && restart.mutate(runtime.id)} disabled={!runtime || !canUseAgents || restart.isPending}>
-            <RotateCw className="size-3.5" /> Restart
+          <DropdownMenuItem onSelect={() => item && relaunch.mutate({ session: item.session, runtime: item.runtime })} disabled={!item?.on_this_device || !canUseAgents || relaunch.isPending}>
+            <RotateCw className="size-3.5" /> {runtime?.alive ? "Restart" : "Resume"}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => runtime && stop.mutate(runtime.id)} disabled={!runtime?.alive || !canUseAgents || stop.isPending}>
             <Square className="size-3.5" /> Stop
