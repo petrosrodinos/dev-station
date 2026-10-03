@@ -95,6 +95,8 @@ const OverviewTab: FC = () => {
       )}
 
       <div className="grid grid-cols-1 gap-4 @4xl:grid-cols-2">
+        <ServicesCard project={project} />
+
         <Panel>
           <PanelHeader title="Project" />
           <PanelBody className="py-2">
@@ -139,8 +141,6 @@ const OverviewTab: FC = () => {
           </PanelBody>
         </Panel>
 
-        <ServicesCard project={project} />
-
         <Panel>
           <PanelHeader
             title="AI sessions"
@@ -152,26 +152,36 @@ const OverviewTab: FC = () => {
               )
             }
           />
-          <PanelBody className="py-1">
+          <PanelBody className="@container p-3">
             {projectSessions.length === 0 ? (
               <div className="py-6 text-center text-[0.8125rem] text-ash">No AI sessions yet</div>
             ) : (
-              projectSessions.slice(0, 6).map((s) => {
-                const status = runtimeAgents[s.id]?.status ?? s.status;
-                return (
-                  <button key={s.id} onClick={() => openSessionTab(s.id)} className="flex w-full items-center gap-2 border-b border-hairline-soft py-2 text-left last:border-b-0 hover:opacity-90">
-                    <StatusDot status={agentStatusDot(status)} />
-                    <span className="flex-1 truncate text-[0.8125rem] font-medium">{s.name}</span>
-                    {s.files_changed > 0 && (
-                      <span className="font-mono text-[0.7188rem]">
-                        <span className="text-success">+{s.additions}</span> <span className="text-danger">-{s.deletions}</span>
-                      </span>
-                    )}
-                    <span className="font-mono text-[0.7188rem] text-muted-foreground">{getAgentTypeLabel(s.agent_type)}</span>
-                    {status === AgentRuntimeStatuses.FINISHED && <span className="text-[0.6875rem] text-info">review</span>}
-                  </button>
-                );
-              })
+              <div className="grid grid-cols-1 gap-2 @md:grid-cols-2">
+                {projectSessions.slice(0, 6).map((s) => {
+                  const status = runtimeAgents[s.id]?.status ?? s.status;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => openSessionTab(s.id)}
+                      className="flex min-w-0 flex-col gap-1.5 rounded-md border border-hairline-soft px-3 py-2.5 text-left transition-colors hover:bg-muted/50"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <StatusDot status={agentStatusDot(status)} />
+                        <span className="flex-1 truncate text-[0.8125rem] font-medium">{s.name}</span>
+                        {status === AgentRuntimeStatuses.FINISHED && <span className="shrink-0 text-[0.6875rem] text-info">review</span>}
+                      </div>
+                      <div className="flex items-center gap-2 pl-4 font-mono text-[0.7188rem]">
+                        <span className="truncate text-muted-foreground">{getAgentTypeLabel(s.agent_type)}</span>
+                        {s.files_changed > 0 && (
+                          <span className="ml-auto shrink-0">
+                            <span className="text-success">+{s.additions}</span> <span className="text-danger">-{s.deletions}</span>
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </PanelBody>
         </Panel>

@@ -79,21 +79,28 @@ export function LinearSettingsCard({ project, onDone }: { project: Project; onDo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Linear account</FormLabel>
-                  <Select value={field.value} onValueChange={(v) => (field.onChange(v), form.setValue("linear_team_id", undefined), form.setValue("linear_project_id", undefined))}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose an account" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {connections.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.label}
-                          {c.external_account ? ` (${c.external_account})` : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {connections.length === 1 ? (
+                    <div className="flex h-9 items-center rounded-md border bg-muted/40 px-3 text-sm">
+                      {connections[0].label}
+                      {connections[0].external_account ? ` (${connections[0].external_account})` : ""}
+                    </div>
+                  ) : (
+                    <Select value={field.value} onValueChange={(v) => (field.onChange(v), form.setValue("linear_team_id", undefined), form.setValue("linear_project_id", undefined))}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose an account" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {connections.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.label}
+                            {c.external_account ? ` (${c.external_account})` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </FormItem>
               )}
             />

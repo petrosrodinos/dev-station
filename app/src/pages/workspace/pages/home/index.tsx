@@ -50,11 +50,11 @@ const WorkspaceHomePage: FC = () => {
     reorder.mutate(arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id))));
   };
 
-  if (isPending) return <CardGridSkeleton cards={6} className="p-6" />;
+  if (isPending) return <CardGridSkeleton cards={6} className="p-4 sm:p-6" />;
 
   if (!projects?.length) {
     return (
-      <div className="flex h-full items-center justify-center p-6">
+      <div className="flex h-full items-center justify-center p-4 sm:p-6">
         <EmptyState
           icon={<FolderGit2 />}
           title={`Welcome to ${organization?.name ?? "your workspace"}`}
@@ -77,18 +77,18 @@ const WorkspaceHomePage: FC = () => {
   }
 
   return (
-    <div className="h-full space-y-4 overflow-y-auto p-6">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-lg font-medium">{organization?.name}</h1>
+    <div className="@container h-full space-y-4 overflow-y-auto p-4 sm:p-6">
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+        <div className="min-w-0">
+          <h1 className="truncate text-lg font-medium">{organization?.name}</h1>
           <p className="text-[0.8125rem] text-muted-foreground">
             {projects.length} project{projects.length === 1 ? "" : "s"} — pick one from the rail or below.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {importedCount > 0 && (
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(Routes.workspace.imported)}>
-              <CloudDownload className="size-3.5" /> Set up {importedCount} imported project{importedCount === 1 ? "" : "s"}
+              <CloudDownload className="size-3.5" /> Set up {importedCount} <span className="hidden sm:inline">imported</span> project{importedCount === 1 ? "" : "s"}
             </Button>
           )}
           {can(PermissionKeys.PROJECTS_CREATE) && (
@@ -101,7 +101,7 @@ const WorkspaceHomePage: FC = () => {
       <AttentionPanel projects={projects} localStates={localStates} />
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={projects.map((p) => p.id)} strategy={rectSortingStrategy}>
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 @3xl:grid-cols-2 @3xl:gap-3 @7xl:grid-cols-3">
             {projects.map((p) => (
               <SortableProjectCard key={p.id} project={p} localState={localStates?.[p.id] ?? null} sortable={canReorder} />
             ))}
@@ -142,7 +142,7 @@ function ProjectCard({ project, localState }: { project: Project; localState: Pr
   };
 
   return (
-    <Panel role="button" tabIndex={0} onClick={open} onKeyDown={(e) => e.key === "Enter" && open()} className="cursor-pointer p-4 transition-colors hover:border-hairline-strong">
+    <Panel role="button" tabIndex={0} onClick={open} onKeyDown={(e) => e.key === "Enter" && open()} className="cursor-pointer px-3 py-2.5 transition-colors @3xl:p-4 hover:border-hairline-strong">
       <div className="flex items-center gap-3">
         <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="md" muted={localState === ProjectLocalStates.IMPORTED} />
         <div className="min-w-0 flex-1">
@@ -151,16 +151,25 @@ function ProjectCard({ project, localState }: { project: Project; localState: Pr
             {project.repository?.full_name ?? "No repository"} · {formatRelative(project.last_activity_at)}
           </div>
         </div>
+        {localState === ProjectLocalStates.LOCAL && (
+          <div className="flex shrink-0 items-center gap-2 font-mono text-[0.7188rem] @3xl:hidden">
+            {git && git.files.length > 0 && <span className="text-warning">{git.files.length}●</span>}
+            {git && git.ahead > 0 && <span className="text-success">↑{git.ahead}</span>}
+            {git && git.behind > 0 && <span className="text-info">↓{git.behind}</span>}
+            {running > 0 && <StatusDot status={processStatusDot(ProcessStatuses.RUNNING)} />}
+            {agents.length > 0 && <Bot className="size-3.5 text-muted-foreground" />}
+          </div>
+        )}
         {localState && localState !== ProjectLocalStates.LOCAL && (
-          <span className="rounded-xs bg-surface-elevated px-2 py-0.5 text-[0.6875rem] text-muted-foreground">{getDropdownOptionLabel(ProjectLocalStateOptions, localState)}</span>
+          <span className="shrink-0 rounded-xs bg-surface-elevated px-2 py-0.5 text-[0.6875rem] text-muted-foreground">{getDropdownOptionLabel(ProjectLocalStateOptions, localState)}</span>
         )}
       </div>
-      {project.description && <p className="mt-2 line-clamp-2 text-[0.7813rem] text-muted-foreground">{project.description}</p>}
+      {project.description && <p className="mt-2 hidden text-[0.7813rem] @3xl:line-clamp-2 text-muted-foreground">{project.description}</p>}
       {localState === ProjectLocalStates.LOCAL && (
-        <div className="mt-3 space-y-1.5 text-[0.7813rem]">
-          <div className="flex items-center gap-2 text-body">
-            <GitBranch className="size-3.5 text-muted-foreground" />
-            <span className="font-mono">{git?.branch ?? "—"}</span>
+        <div className="mt-3 hidden space-y-1.5 text-[0.7813rem] @3xl:block">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-body">
+            <GitBranch className="size-3.5 shrink-0 text-muted-foreground" />
+            <span className="min-w-0 max-w-full truncate font-mono">{git?.branch ?? "—"}</span>
             {git && git.commits > 0 && <span className="text-ash">{git.commits} commit{git.commits === 1 ? "" : "s"}</span>}
             {git && git.files.length > 0 && <span className="text-warning">{git.files.length} changed</span>}
             {git && git.ahead > 0 && <span className="text-success">↑{git.ahead}</span>}

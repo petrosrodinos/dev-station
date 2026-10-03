@@ -1,4 +1,4 @@
-import { useCallback, useState, type FC } from "react";
+import { useCallback, useEffect, useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bot, Copy, ExternalLink, FileText, Info, MoreHorizontal, Pencil, Pin, PinOff, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/ui/panel";
@@ -49,11 +49,18 @@ const NotionTab: FC = () => {
   const [pendingSelectId, setPendingSelectId] = useState<string | null>(null);
   const [newPageOpen, setNewPageOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
-  const connectionId = project.notion_connection_id;
+  // With a single connected workspace there's nothing to choose — use it directly and link it to the project.
+  const soleConnectionId = connections.length === 1 ? connections[0].id : null;
+  const connectionId = project.notion_connection_id ?? soleConnectionId;
   const { data: pages, isPending, isError, error, refetch: refetchPages, isFetching: pagesFetching } = useGetNotionPages(connectionId, debounced);
   const { data: page, isPending: pagePending, refetch: refetchPage, isFetching: pageFetching } = useGetNotionPage(connectionId, selectedId);
   const openNewSession = useDialogsStore((s) => s.openNewSession);
   const onDirtyChange = useCallback((d: boolean) => setDirty(d), []);
+
+  useEffect(() => {
+    if (!project.notion_connection_id && soleConnectionId && canEdit) update.mutate({ id: project.id, notion_connection_id: soleConnectionId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- link once when the sole workspace becomes known
+  }, [project.id, project.notion_connection_id, soleConnectionId, canEdit]);
 
   if (!connectionsPending && connections.length === 0) {
     return (
