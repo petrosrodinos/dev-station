@@ -45,7 +45,7 @@ export function LinearSummaryCard({ project }: { project: Project }) {
             <button
               key={issue.id}
               onClick={() => navigate(Routes.workspace.project_linear_issue(project.id, issue.id))}
-              className="flex w-full items-center gap-2 border-b border-hairline-soft py-2 text-left last:border-b-0"
+              className="-mx-2 flex w-[calc(100%+1rem)] items-center gap-2 rounded-sm border-b border-hairline-soft px-2 py-2 text-left transition-colors last:border-b-0 hover:bg-surface-elevated"
             >
               <span className="w-16 shrink-0 font-mono text-xs text-muted-foreground">{issue.identifier}</span>
               <span className="flex-1 truncate text-[0.8125rem]">{issue.title}</span>

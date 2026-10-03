@@ -31,7 +31,7 @@ export function AccentPicker({ value, onChange }: AccentPickerProps) {
             aria-label={`Accent ${color}`}
             aria-pressed={value === color}
             onClick={() => onChange(color)}
-            className={cn("flex size-6 items-center justify-center rounded-full border border-border outline-none focus-visible:ring-2 focus-visible:ring-ring", value === color && "ring-2 ring-foreground ring-offset-2 ring-offset-background")}
+            className={cn("flex size-6 items-center justify-center rounded-full border border-border outline-none focus-visible:ring-2 focus-visible:ring-ring", "ring-offset-2 ring-offset-background", value === color ? "ring-2 ring-foreground" : "hover:ring-2 hover:ring-hairline-strong")}
             style={{ background: color }}
           >
             {value === color && <Check className="size-3.5 text-white mix-blend-difference" />}
