@@ -5,6 +5,7 @@ import { Check, Minus, Plus, Trash2 } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ export function RolesCard() {
   const remove = useDeleteRole();
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<Role | null>(null);
+  const [mobileRoleId, setMobileRoleId] = useState<string | null>(null);
   const canEdit = can(PermissionKeys.ORG_MANAGE_ROLES);
   const canEditThis = (role: Role) => canEdit && !!actor && canEditRole(actor, role, SystemRoleKeys.OWNER);
   const form = useForm<RoleFormData>({ resolver: zodResolver(roleSchema), defaultValues: { name: "", description: "" } });
@@ -40,8 +42,30 @@ export function RolesCard() {
     update.mutate({ id: role.id, permissions: next });
   };
 
+  const mobileRole = roles?.find((r) => r.id === mobileRoleId) ?? roles?.[0];
+
+  /** One matrix cell: an editable checkbox, or a read-only tick/dash of the same size. */
+  const renderCell = (role: Role, perm: { key: PermissionKey; label: string }) => {
+    const allowed = role.permissions.includes(perm.key);
+    const editable = canEditThis(role) && !!actor && (allowed || canGrantPermission(actor, perm.key));
+    return editable ? (
+      <Checkbox checked={allowed} onCheckedChange={() => toggle(role, perm.key)} aria-label={`${perm.label} for ${role.name}`} className="size-[18px]" />
+    ) : (
+      <span
+        className={
+          allowed
+            ? "flex size-[18px] items-center justify-center rounded-[4px] bg-success-soft text-success"
+            : "flex size-[18px] items-center justify-center rounded-[4px] border bg-surface-card text-stone"
+        }
+        aria-label={`${perm.label} for ${role.name}: ${allowed ? "allowed" : "not allowed"}`}
+      >
+        {allowed ? <Check className="size-3" /> : <Minus className="size-3" />}
+      </span>
+    );
+  };
+
   return (
-    <Panel className="overflow-hidden">
+    <Panel className="@container overflow-hidden">
       <PanelHeader
         title="Roles & permissions"
         actions={
@@ -63,65 +87,101 @@ export function RolesCard() {
       {isPending || !catalog ? (
         <ListSkeleton rows={8} />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-[0.7813rem]">
-            <thead>
-              <tr className="border-b">
-                <th className="px-4 py-2.5 text-left text-[0.7188rem] font-medium uppercase tracking-[0.4px] text-muted-foreground">Capability</th>
-                {roles?.map((r) => (
-                  <th key={r.id} className="px-2 py-2.5 text-center text-[0.7188rem] font-medium uppercase tracking-[0.4px] text-muted-foreground">
-                    <div className="flex items-center justify-center gap-1">
+        <>
+          {/* Narrow panes: pick one role, then a single column of permissions. */}
+          <div className="@2xl:hidden">
+            <div className="flex items-center gap-2 border-b px-4 py-2.5">
+              <Select value={mobileRole?.id ?? ""} onValueChange={(v) => v && setMobileRoleId(v)}>
+                <SelectTrigger className="h-8 min-w-0 flex-1" aria-label="Role">
+                  <SelectValue>
+                    {mobileRole && (
+                      <span className="truncate">
+                        {mobileRole.name} <span className="text-muted-foreground">· {mobileRole.member_count} member{mobileRole.member_count === 1 ? "" : "s"}</span>
+                      </span>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {roles?.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
                       {r.name}
-                      {canEditThis(r) && !r.is_system && (
-                        <button onClick={() => setDeleting(r)} className="text-ash hover:text-danger" aria-label={`Delete role ${r.name}`}>
-                          <Trash2 className="size-3" />
-                        </button>
-                      )}
-                    </div>
-                    <div className="text-[0.625rem] font-normal normal-case tracking-normal text-ash">{r.member_count} member{r.member_count === 1 ? "" : "s"}</div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map(([group, items]) => (
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {mobileRole && canEditThis(mobileRole) && !mobileRole.is_system && (
+                <Button variant="ghost" size="icon" className="size-8 shrink-0 text-ash hover:text-danger" onClick={() => setDeleting(mobileRole)} aria-label={`Delete role ${mobileRole.name}`}>
+                  <Trash2 className="size-3.5" />
+                </Button>
+              )}
+            </div>
+            {mobileRole &&
+              groups.map(([group, items]) => (
                 <Fragment key={group}>
-                  <tr className="bg-surface-elevated/60">
-                    <td colSpan={(roles?.length ?? 0) + 1} className="px-4 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.4px] text-muted-foreground">
-                      {group}
-                    </td>
-                  </tr>
+                  <div className="bg-surface-elevated/60 px-4 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.4px] text-muted-foreground">{group}</div>
                   {items.map((perm) => (
-                    <tr key={perm.key} className="border-b border-hairline-soft">
-                      <td className="min-w-40 px-4 py-2">{perm.label}</td>
-                      {roles?.map((r) => {
-                        const allowed = r.permissions.includes(perm.key);
-                        const editable = canEditThis(r) && !!actor && (allowed || canGrantPermission(actor, perm.key));
-                        return (
-                          <td key={r.id} className="px-2 py-2 text-center">
-                            {editable ? (
-                              <Checkbox checked={allowed} onCheckedChange={() => toggle(r, perm.key)} aria-label={`${perm.label} for ${r.name}`} />
-                            ) : (
-                              <span
-                                className={
-                                  allowed
-                                    ? "inline-flex size-5 items-center justify-center rounded-xs bg-success-soft text-success"
-                                    : "inline-flex size-5 items-center justify-center rounded-xs border bg-surface-card text-stone"
-                                }
-                              >
-                                {allowed ? <Check className="size-3" /> : <Minus className="size-3" />}
-                              </span>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
+                    <div key={perm.key} className="flex items-center justify-between gap-3 border-b border-hairline-soft px-4 py-2.5 text-[0.7813rem] last:border-b-0">
+                      <span className="min-w-0">{perm.label}</span>
+                      <span className="flex w-10 shrink-0 justify-center">{renderCell(mobileRole, perm)}</span>
+                    </div>
                   ))}
                 </Fragment>
               ))}
-            </tbody>
-          </table>
-        </div>
+          </div>
+
+          {/* Wide panes: full matrix, capability column pinned while scrolling sideways. */}
+          <div className="hidden overflow-x-auto @2xl:block">
+            <table className="w-full table-fixed text-[0.7813rem]" style={{ minWidth: `${14 + (roles?.length ?? 0) * 6.5}rem` }}>
+              <colgroup>
+                <col className="w-56" />
+                {roles?.map((r) => <col key={r.id} />)}
+              </colgroup>
+              <thead>
+                <tr className="border-b">
+                  <th className="sticky left-0 z-10 bg-card px-4 py-2.5 text-left text-[0.7188rem] font-medium uppercase tracking-[0.4px] text-muted-foreground">Capability</th>
+                  {roles?.map((r) => (
+                    <th key={r.id} className="px-2 py-2.5 text-center text-[0.7188rem] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="truncate" title={r.name}>
+                          {r.name}
+                        </span>
+                        {canEditThis(r) && !r.is_system && (
+                          <button onClick={() => setDeleting(r)} className="shrink-0 text-ash hover:text-danger" aria-label={`Delete role ${r.name}`}>
+                            <Trash2 className="size-3" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="text-[0.625rem] font-normal normal-case tracking-normal text-ash">
+                        {r.member_count} member{r.member_count === 1 ? "" : "s"}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {groups.map(([group, items]) => (
+                  <Fragment key={group}>
+                    <tr className="bg-surface-elevated/60">
+                      <td colSpan={(roles?.length ?? 0) + 1} className="px-4 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                        {group}
+                      </td>
+                    </tr>
+                    {items.map((perm) => (
+                      <tr key={perm.key} className="border-b border-hairline-soft">
+                        <td className="sticky left-0 z-10 bg-card px-4 py-2">{perm.label}</td>
+                        {roles?.map((r) => (
+                          <td key={r.id} className="px-2 py-2">
+                            <div className="flex justify-center">{renderCell(r, perm)}</div>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <Dialog open={creating} onOpenChange={(o) => !create.isPending && setCreating(o)}>

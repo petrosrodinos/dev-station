@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import { ShortcutKeys } from "@/components/ui/shortcut-keys";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import {
   Tooltip,
   TooltipContent,
@@ -63,6 +62,29 @@ function RowAction({
       />
       <TooltipContent>{label}</TooltipContent>
     </Tooltip>
+  );
+}
+
+/** Label | keys | actions on wide panes; keys drop under the label when narrow. */
+function ShortcutRow({
+  label,
+  keys,
+  actions,
+}: {
+  label: React.ReactNode;
+  keys: React.ReactNode;
+  actions: React.ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 border-b border-hairline-soft px-2 py-2 transition-colors hover:bg-muted/50 @lg:grid-cols-[minmax(0,1fr)_14rem_4.5rem]">
+      <div className="min-w-0 text-[0.8125rem]">{label}</div>
+      <div className="flex min-h-7 justify-end gap-0.5 @lg:order-last">
+        {actions}
+      </div>
+      <div className="col-span-2 flex min-w-0 flex-wrap @lg:col-span-1">
+        {keys}
+      </div>
+    </div>
   );
 }
 
@@ -142,12 +164,12 @@ export function ShortcutsSettings() {
   return (
     <div className="space-y-8">
       <section>
-        <div className="flex flex-col gap-x-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-x-4 @lg:flex-row @lg:items-start @lg:justify-between">
           <SettingsSectionHeader
             title="Keyboard shortcuts"
             description="Change the keys for built-in actions. Synced to your account."
           />
-          <div className="mb-3 flex shrink-0 gap-2 sm:mb-0">
+          <div className="mb-3 flex shrink-0 flex-wrap gap-2 @lg:mb-0">
             <Button
               variant="outline"
               size="sm"
@@ -167,82 +189,76 @@ export function ShortcutsSettings() {
             </Button>
           </div>
         </div>
-        <Table>
-          <TableBody>
-            {ShortcutGroupOptions.map((group) => {
-              const rows = shortcuts.filter(
-                (s) => s.kind === "action" && s.group === group.id,
-              );
-              if (!rows.length) return null;
-              return (
-                <Fragment key={group.id}>
-                  <TableRow className="hover:bg-transparent">
-                    <TableCell
-                      colSpan={3}
-                      className="pb-1 pt-4 text-xs font-medium text-muted-foreground"
-                    >
-                      {group.label}
-                    </TableCell>
-                  </TableRow>
-                  {rows.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell className="text-[0.8125rem]">
-                        <span className="flex flex-wrap items-center gap-2">
-                          {row.label}
-                          {conflictIcon(row.id)}
-                          {!row.rebindable && (
-                            <Badge variant="outline">Fixed</Badge>
-                          )}
+        <div>
+          {ShortcutGroupOptions.map((group) => {
+            const rows = shortcuts.filter(
+              (s) => s.kind === "action" && s.group === group.id,
+            );
+            if (!rows.length) return null;
+            return (
+              <Fragment key={group.id}>
+                <div className="px-2 pb-1 pt-4 text-xs font-medium text-muted-foreground">
+                  {group.label}
+                </div>
+                {rows.map((row) => (
+                  <ShortcutRow
+                    key={row.id}
+                    label={
+                      <span className="flex flex-wrap items-center gap-2">
+                        {row.label}
+                        {conflictIcon(row.id)}
+                        {!row.rebindable && (
+                          <Badge variant="outline">Fixed</Badge>
+                        )}
+                      </span>
+                    }
+                    keys={
+                      row.combo ? (
+                        <ShortcutKeys combo={row.combo} />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">
+                          Not set
                         </span>
-                      </TableCell>
-                      <TableCell className="sm:w-56">
-                        {row.combo ? (
-                          <ShortcutKeys combo={row.combo} />
-                        ) : (
-                          <span className="text-xs text-muted-foreground">
-                            Not set
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="w-16 text-right sm:w-20">
-                        {row.rebindable && (
-                          <span className="inline-flex gap-0.5">
+                      )
+                    }
+                    actions={
+                      row.rebindable && (
+                        <>
+                          <RowAction
+                            label="Change shortcut"
+                            onClick={() => setEditing(row)}
+                          >
+                            <Pencil className="size-3.5" />
+                          </RowAction>
+                          {!row.is_default && (
                             <RowAction
-                              label="Change shortcut"
-                              onClick={() => setEditing(row)}
+                              label="Reset to default"
+                              onClick={() => resetBinding(row.id)}
                             >
-                              <Pencil className="size-3.5" />
+                              <RotateCcw className="size-3.5" />
                             </RowAction>
-                            {!row.is_default && (
-                              <RowAction
-                                label="Reset to default"
-                                onClick={() => resetBinding(row.id)}
-                              >
-                                <RotateCcw className="size-3.5" />
-                              </RowAction>
-                            )}
-                          </span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </Fragment>
-              );
-            })}
-          </TableBody>
-        </Table>
+                          )}
+                        </>
+                      )
+                    }
+                  />
+                ))}
+              </Fragment>
+            );
+          })}
+        </div>
       </section>
 
       {SHOW_CUSTOM_SHORTCUTS && (
         <section>
-          <div className="flex flex-col gap-x-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-x-4 @lg:flex-row @lg:items-start @lg:justify-between">
             <SettingsSectionHeader
               title="Custom shortcuts"
               description="Run an action or open a new AI session with a saved prompt."
             />
             <Button
               size="sm"
-              className="mb-3 gap-2 self-start sm:mb-0"
+              className="mb-3 gap-2 self-start @lg:mb-0"
               disabled={customShortcuts.length >= MAX_CUSTOM_SHORTCUTS}
               onClick={() => setCustomDialog({ open: true, editing: null })}
             >
@@ -254,11 +270,12 @@ export function ShortcutsSettings() {
               No custom shortcuts yet.
             </div>
           ) : (
-            <Table>
-              <TableBody>
-                {customShortcuts.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell className="text-[0.8125rem]">
+            <div>
+              {customShortcuts.map((row) => (
+                <ShortcutRow
+                  key={row.id}
+                  label={
+                    <>
                       <span className="flex items-center gap-2">
                         <span className="truncate">{row.label}</span>
                         {conflictIcon(row.id)}
@@ -268,33 +285,31 @@ export function ShortcutsSettings() {
                           ? describeShortcutTarget(row)
                           : row.custom?.prompt}
                       </span>
-                    </TableCell>
-                    <TableCell className="sm:w-56">
-                      {row.combo && <ShortcutKeys combo={row.combo} />}
-                    </TableCell>
-                    <TableCell className="w-16 text-right sm:w-20">
-                      <span className="inline-flex gap-0.5">
-                        <RowAction
-                          label="Edit shortcut"
-                          onClick={() =>
-                            row.custom &&
-                            setCustomDialog({ open: true, editing: row.custom })
-                          }
-                        >
-                          <Pencil className="size-3.5" />
-                        </RowAction>
-                        <RowAction
-                          label="Delete shortcut"
-                          onClick={() => setDeleting(row.custom ?? null)}
-                        >
-                          <Trash2 className="size-3.5" />
-                        </RowAction>
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </>
+                  }
+                  keys={row.combo && <ShortcutKeys combo={row.combo} />}
+                  actions={
+                    <>
+                      <RowAction
+                        label="Edit shortcut"
+                        onClick={() =>
+                          row.custom &&
+                          setCustomDialog({ open: true, editing: row.custom })
+                        }
+                      >
+                        <Pencil className="size-3.5" />
+                      </RowAction>
+                      <RowAction
+                        label="Delete shortcut"
+                        onClick={() => setDeleting(row.custom ?? null)}
+                      >
+                        <Trash2 className="size-3.5" />
+                      </RowAction>
+                    </>
+                  }
+                />
+              ))}
+            </div>
           )}
         </section>
       )}
