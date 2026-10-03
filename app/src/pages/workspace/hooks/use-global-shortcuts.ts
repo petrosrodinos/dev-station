@@ -13,7 +13,6 @@ import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-ac
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { buildComboIndex, eventToCombo } from "@/lib/shortcuts.utils";
 import { jumpToSession } from "@/lib/session-navigation.utils";
-import { projectRouteKeepingTab } from "@/lib/project-route.utils";
 import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { createTerminal } from "@/features/terminals/services/terminals.services";
 import { useRuntimeStore } from "@/stores/runtime";
@@ -125,7 +124,7 @@ const runShortcutAction = (actionId: string, ctx: ActionContext): boolean => {
       const project = match ? ctx.projects?.[Number(match[1]) - 1] : undefined;
       if (!project) return false;
       ws.setActiveProject(project.id);
-      ctx.navigate(projectRouteKeepingTab(project.id, window.location.pathname));
+      ctx.navigate(Routes.workspace.project(project.id));
       return true;
     }
   }

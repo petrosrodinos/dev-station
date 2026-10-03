@@ -27,7 +27,6 @@ import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
 import { Routes } from "@/routes/routes";
 import { isDesktop } from "@/lib/desktop";
-import { projectRouteKeepingTab } from "@/lib/project-route.utils";
 import { jumpToSession } from "@/lib/session-navigation.utils";
 import { cn } from "@/lib/utils";
 import { EditorTargets, ProjectLocalStates, type ProjectLocalState } from "@shared/contract";
@@ -95,7 +94,7 @@ export function ProjectRail() {
 
   const selectProject = (project: Project) => {
     setActiveProject(project.id);
-    navigate(projectRouteKeepingTab(project.id, pathname));
+    navigate(Routes.workspace.project(project.id));
   };
 
   // The badge opens the latest session that needs attention straight into review.

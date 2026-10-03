@@ -14,7 +14,7 @@ import { useWorkspaceStore } from "@/stores/workspace";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { useDockApi } from "../../context/dock-api-context";
-import { useLayoutPersistence, useProjectPresetAutoApply } from "@/features/workspace-layouts/hooks/use-layout-persistence";
+import { useLayoutPersistence } from "@/features/workspace-layouts/hooks/use-layout-persistence";
 
 export const MAIN_CONTENT_PANEL_ID = "main-content";
 export const AI_PANEL_ID = "ai-panel";
@@ -52,8 +52,11 @@ export const WorkspaceDock: FC = () => {
   const aiPanelOpen = useWorkspaceStore((s) => s.ai_panel_open) && can(PermissionKeys.AI_USE_AGENTS);
   const aiPanelOpenRef = useRef(aiPanelOpen);
   aiPanelOpenRef.current = aiPanelOpen;
-  useLayoutPersistence(api);
-  useProjectPresetAutoApply();
+  /** A context with no saved layout (a project never visited, or home) gets the default AI panel width. */
+  const resetToDefault = useCallback((dock: DockviewApi) => {
+    dock.getPanel(AI_PANEL_ID)?.api.setSize({ width: AI_PANEL_DEFAULT_WIDTH });
+  }, []);
+  useLayoutPersistence(api, resetToDefault);
 
   /**
    * Removes any leftover group with zero panels (e.g. a manually-edited saved preset with a group a
