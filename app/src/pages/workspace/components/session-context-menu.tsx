@@ -4,7 +4,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useDeleteAgentSession, useRenameAgentSession } from "@/features/agent-sessions/hooks/use-agent-sessions";
+import { useDeleteAgentSession, useDeleteAgentSessions, useRenameAgentSession } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import type { AgentSession } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 
 /** Right-click a session (tab or list row) to rename or delete it. */
@@ -96,6 +96,54 @@ export function DeleteSessionDialog({ session, open, onOpenChange }: SessionDial
           </Button>
           <Button variant="destructive" loading={remove.isPending} onClick={() => remove.mutate(session.id, { onSuccess: () => onOpenChange(false) })}>
             Delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+interface DeleteSessionsDialogProps {
+  ids: string[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDeleted?: () => void;
+}
+
+/** Confirms deleting several sessions at once (multi-select in session lists). */
+export function DeleteSessionsDialog({ ids, open, onOpenChange, onDeleted }: DeleteSessionsDialogProps) {
+  const remove = useDeleteAgentSessions();
+  const plural = ids.length === 1 ? "" : "s";
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !remove.isPending && onOpenChange(o)}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            Delete {ids.length} session{plural}?
+          </DialogTitle>
+          <DialogDescription>
+            They will be removed from AI Sessions and their agent processes stopped if running. Activity entries stay in the feed. This can't be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={remove.isPending}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            loading={remove.isPending}
+            disabled={!ids.length}
+            onClick={() =>
+              remove.mutate(ids, {
+                onSuccess: () => {
+                  onOpenChange(false);
+                  onDeleted?.();
+                },
+              })
+            }
+          >
+            Delete {ids.length} session{plural}
           </Button>
         </DialogFooter>
       </DialogContent>

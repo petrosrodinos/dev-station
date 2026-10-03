@@ -1,7 +1,8 @@
-import { useState, type FC } from "react";
-import { Bot, Plus } from "lucide-react";
+import { useEffect, useState, type FC } from "react";
+import { Bot, Plus, Trash2 } from "lucide-react";
 import { Panel } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { StatusDot } from "@/components/ui/status-dot";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
@@ -14,10 +15,13 @@ import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-typ
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { agentStatusDot } from "@/lib/status";
 import { formatDateTime, formatDuration } from "@/lib/date";
+import { cn } from "@/lib/utils";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { useDialogsStore } from "@/stores/dialogs";
 import type { AgentRuntimeStatus } from "@shared/contract";
+import { useRowSelection } from "@/hooks/use-row-selection";
+import { DeleteSessionsDialog } from "@/pages/workspace/components/session-context-menu";
 import { useProjectContext } from "../../hooks/use-project-context";
 
 /** Full session history for the project — find and reopen past sessions (Spec §13). */
@@ -30,6 +34,16 @@ const SessionsTab: FC = () => {
   const openSessionTab = useWorkspaceStore((s) => s.openSessionTab);
   const openNewSession = useDialogsStore((s) => s.openNewSession);
   const { can } = usePermissions();
+  const canDelete = can(PermissionKeys.AI_USE_AGENTS);
+  const rows = data?.data ?? [];
+  const { selected, allSelected, toggle, setAll, clear: clearSelection, onRowClick, onRowMouseDown } = useRowSelection(
+    rows.map((r) => r.id),
+    { enabled: canDelete },
+  );
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Selection is per visible page — drop it when the filter or page changes.
+  useEffect(clearSelection, [status, page, clearSelection]);
 
   return (
     <div className="space-y-3 p-4">
@@ -52,6 +66,17 @@ const SessionsTab: FC = () => {
             ))}
           </SelectContent>
         </Select>
+        {selected.size > 0 && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            {selected.size} selected
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={clearSelection}>
+              Clear
+            </Button>
+            <Button variant="destructive" size="sm" className="h-7 gap-1.5 text-xs" onClick={() => setConfirmDelete(true)}>
+              <Trash2 className="size-3.5" /> Delete
+            </Button>
+          </div>
+        )}
         {can(PermissionKeys.AI_START_AGENTS) && (
           <Button size="sm" className="ml-auto gap-1.5" onClick={() => openNewSession({ project_id: project.id })}>
             <Plus className="size-3.5" /> New session
@@ -68,7 +93,12 @@ const SessionsTab: FC = () => {
           <table className="w-full min-w-[44rem] text-[0.8125rem]">
             <thead>
               <tr className="border-b text-left text-[0.7188rem] uppercase tracking-[0.4px] text-muted-foreground">
-                <th className="px-4 py-2 font-medium">Session</th>
+                {canDelete && (
+                  <th className="w-8 py-2 pl-4">
+                    <Checkbox checked={allSelected} onCheckedChange={(v) => setAll(!!v)} aria-label="Select all sessions" />
+                  </th>
+                )}
+                <th className={cn("py-2 font-medium", canDelete ? "px-2" : "px-4")}>Session</th>
                 <th className="px-2 py-2 font-medium">Agent</th>
                 <th className="px-2 py-2 font-medium">Issue</th>
                 <th className="px-2 py-2 font-medium">Changes</th>
@@ -78,11 +108,23 @@ const SessionsTab: FC = () => {
               </tr>
             </thead>
             <tbody>
-              {data.data.map((s) => {
+              {rows.map((s) => {
                 const st = runtimeAgents[s.id]?.status ?? s.status;
+                const isSelected = selected.has(s.id);
                 return (
-                  <tr key={s.id} onClick={() => openSessionTab(s.id)} className="cursor-pointer border-b border-hairline-soft last:border-b-0 hover:bg-surface-elevated">
-                    <td className="max-w-72 px-4 py-2">
+                  <tr
+                    key={s.id}
+                    onClick={(e) => onRowClick(e, s.id) || openSessionTab(s.id)}
+                    onMouseDown={onRowMouseDown}
+                    aria-selected={isSelected}
+                    className={cn("cursor-pointer border-b border-hairline-soft last:border-b-0 hover:bg-surface-elevated", isSelected && "bg-accent hover:bg-accent")}
+                  >
+                    {canDelete && (
+                      <td className="w-8 py-2 pl-4" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox checked={isSelected} onCheckedChange={() => toggle(s.id)} aria-label={`Select ${s.name}`} />
+                      </td>
+                    )}
+                    <td className={cn("max-w-72 py-2", canDelete ? "px-2" : "px-4")}>
                       <div className="flex items-center gap-2">
                         <StatusDot status={agentStatusDot(st)} title={getDropdownOptionLabel(AgentStatusOptions, st)} />
                         <span className="truncate font-medium">{s.name}</span>
@@ -121,6 +163,8 @@ const SessionsTab: FC = () => {
           </Button>
         </div>
       )}
+
+      <DeleteSessionsDialog ids={[...selected]} open={confirmDelete} onOpenChange={setConfirmDelete} onDeleted={clearSelection} />
     </div>
   );
 };
