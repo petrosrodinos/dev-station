@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FC } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Globe, Plus, X } from "lucide-react";
+import { Globe, PictureInPicture2, Plus, X } from "lucide-react";
 import {
   DockviewReact,
   type DockviewApi,
@@ -18,9 +18,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ProjectTabOptions, ProjectTabs, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { filterByAccess } from "@/lib/access.utils";
-import { isDesktop } from "@/lib/desktop";
+import { getBridge, isDesktop } from "@/lib/desktop";
+import { useLayoutStore } from "@/stores/layout";
 import { DEFAULT_OPEN_PROJECT_TAB_IDS, DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
 import { useGetLayoutState, useUpdateProjectDockLayout } from "@/features/workspace-layouts/hooks/use-workspace-layouts";
+import {
+  PROJECT_TAB_FLOATING_COMPONENT,
+  projectTabFloatingPanelId,
+} from "@/features/workspace-layouts/utils/project-tab-floating.utils";
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
 import { TAB_ICONS, TAB_PAGES, tabPermission } from "../pages/tab-pages";
@@ -44,6 +49,8 @@ const countOpenProjectTabs = (containerApi: DockviewApi) => containerApi.panels.
  * reorderable/splittable dock tab strip).
  */
 const ProjectTabHeader: FC<IDockviewPanelHeaderProps<{ tab: ProjectTab }>> = ({ api, containerApi, params }) => {
+  const project = useProjectContext();
+  const addFloating = useLayoutStore((s) => s.addFloating);
   const [active, setActive] = useState(api.isActive);
   useEffect(() => {
     const disposable = api.onDidActiveChange(() => setActive(api.isActive));
@@ -66,6 +73,16 @@ const ProjectTabHeader: FC<IDockviewPanelHeaderProps<{ tab: ProjectTab }>> = ({ 
   const close = () => {
     if (!isLastTab) api.close();
   };
+  // Floating goes through the same close path as the X (the tab leaves the project's open tabs) and
+  // is then re-opened by `use-floating-panels-sync.ts` when its window closes. Same last-tab guard.
+  const floatInWindow = () => {
+    if (isLastTab) return;
+    const panelId = projectTabFloatingPanelId(project.id, params.tab);
+    const panelParams = { projectId: project.id, tab: params.tab };
+    void getBridge().layout.openFloatingPanel({ panelId, componentType: PROJECT_TAB_FLOATING_COMPONENT, params: panelParams, title: `${label} · ${project.name}` });
+    addFloating({ panelId, componentType: PROJECT_TAB_FLOATING_COMPONENT, params: panelParams, bounds: { x: 0, y: 0, width: 640, height: 480 } });
+    api.close();
+  };
 
   return (
     <div
@@ -79,6 +96,19 @@ const ProjectTabHeader: FC<IDockviewPanelHeaderProps<{ tab: ProjectTab }>> = ({ 
     >
       <Icon className="size-3.5 shrink-0" />
       <span>{label}</span>
+      {!isLastTab && isDesktop() && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            floatInWindow();
+          }}
+          aria-label={`Float ${label} in its own window`}
+          title="Float in its own window"
+          className="flex size-4 shrink-0 items-center justify-center rounded-xs text-ash opacity-0 hover:bg-surface-card hover:text-foreground group-hover:opacity-100"
+        >
+          <PictureInPicture2 className="size-3" />
+        </button>
+      )}
       {!isLastTab && (
         <button
           onClick={(e) => {
@@ -193,7 +223,9 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab?: ProjectTab }> = 
   // The route's current tab is always considered "open" — this is what makes today's exact
   // single-tab navigation still work unless the user explicitly splits another tab alongside it.
   const wantedTabs = routeTab && !openTabs.includes(routeTab) ? [...openTabs, routeTab] : openTabs;
-  const closedTabs = permittedTabs.filter((t) => !wantedTabs.includes(t));
+  const floatingPanels = useLayoutStore((s) => s.floating);
+  const floatingPanelIds = new Set(floatingPanels.map((f) => f.panelId));
+  const closedTabs = permittedTabs.filter((t) => !wantedTabs.includes(t) && !floatingPanelIds.has(projectTabFloatingPanelId(projectId, t)));
 
   const AddTabMenu = useCallback<FC<IDockviewHeaderActionsProps>>(() => {
     const previewClosed = previewAvailable && !previewOpen;
