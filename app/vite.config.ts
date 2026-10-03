@@ -64,7 +64,7 @@ export default defineConfig({
     exclude: ["@dev-station/ui"],
   },
   server: {
-    port: Number(process.env.RENDERER_PORT) || 5173,
+    port: Number(process.env.RENDERER_PORT) || 5174,
     strictPort: true,
   },
   resolve: {
