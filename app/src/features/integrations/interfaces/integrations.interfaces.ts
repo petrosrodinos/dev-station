@@ -133,5 +133,19 @@ export interface NotionPageContent {
     id: string;
     title: string;
     url: string | null;
+    last_edited_time: string | null;
     markdown: string;
+    /** False when Notion's markdown is truncated or skips unsupported blocks — saving the body would lose content. */
+    editable: boolean;
+}
+
+export interface CreateNotionPageDto {
+    parent_id: string;
+    title: string;
+    markdown?: string;
+}
+
+export interface UpdateNotionPageDto {
+    title?: string;
+    markdown?: string;
 }

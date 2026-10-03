@@ -1,5 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+    archiveNotionPage,
+    createNotionPage,
     disconnectConnection,
     getGithubRepositories,
     getIntegrations,
@@ -15,6 +17,7 @@ import {
     refreshConnection,
     updateConnection,
     updateLinearIssue,
+    updateNotionPage,
 } from "../services/integrations.services";
 import type { IntegrationProvider, LinearIssuesQuery } from "../interfaces/integrations.interfaces";
 import { ConnectionStatuses } from "../interfaces/integrations.interfaces";
@@ -174,3 +177,42 @@ export const useGetNotionPage = (connectionId: string | null, pageId: string | n
         enabled: !!connectionId && !!pageId,
         staleTime: 60_000,
     });
+
+export const useCreateNotionPage = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: createNotionPage,
+        onSuccess: (page, { connectionId }) => {
+            queryClient.setQueryData(["notion-page", connectionId, page.id], page);
+            queryClient.invalidateQueries({ queryKey: ["notion-pages", connectionId] });
+            toast({ title: "Page created", duration: 1500 });
+        },
+        onError: (error: Error) => toast({ title: "Could not create page", description: error.message, variant: "error" }),
+    });
+};
+
+export const useUpdateNotionPage = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: updateNotionPage,
+        onSuccess: (page, { connectionId }) => {
+            queryClient.setQueryData(["notion-page", connectionId, page.id], page);
+            queryClient.invalidateQueries({ queryKey: ["notion-pages", connectionId] });
+            toast({ title: "Page saved", duration: 1500 });
+        },
+        onError: (error: Error) => toast({ title: "Could not save page", description: error.message, variant: "error" }),
+    });
+};
+
+export const useArchiveNotionPage = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: archiveNotionPage,
+        onSuccess: (_, { connectionId, pageId }) => {
+            queryClient.removeQueries({ queryKey: ["notion-page", connectionId, pageId] });
+            queryClient.invalidateQueries({ queryKey: ["notion-pages", connectionId] });
+            toast({ title: "Page moved to trash", duration: 1500 });
+        },
+        onError: (error: Error) => toast({ title: "Could not archive page", description: error.message, variant: "error" }),
+    });
+};

@@ -36,3 +36,15 @@ export interface ExecuteToolInput {
   user_id: string;
   arguments: Record<string, unknown>;
 }
+
+export interface ProxyRequestInput {
+  connected_account_id: string;
+  endpoint: string;
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+  body?: unknown;
+}
+
+export interface ComposioProxyResult<T = unknown> {
+  data: T;
+  status: number;
+}
