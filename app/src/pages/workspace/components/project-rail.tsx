@@ -288,7 +288,7 @@ function RailItem({ project, active, position, localState, attention, canEdit, c
                     <button
                       onClick={onBadge}
                       className={cn(
-                        "absolute -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[0.625rem] font-bold text-[#1a0505] ring-2 ring-canvas",
+                        "absolute -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[0.625rem] font-bold text-[#1a0505] ring-2 ring-canvas transition-transform hover:scale-110",
                         horizontal ? "right-0" : "right-2",
                       )}
                       aria-label={`${attention} session${attention > 1 ? "s need" : " needs"} attention`}

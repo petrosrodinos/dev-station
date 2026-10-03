@@ -231,7 +231,7 @@ export function ProjectDialog() {
                       No GitHub account is connected.{" "}
                       <button
                         type="button"
-                        className="text-foreground underline underline-offset-4"
+                        className="text-foreground underline underline-offset-4 hover:text-primary"
                         onClick={() => {
                           close();
                           navigate(Routes.workspace.integrations);

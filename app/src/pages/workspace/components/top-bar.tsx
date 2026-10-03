@@ -1,5 +1,6 @@
 import { useNavigate, useNavigationType } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Keyboard, LogOut, Maximize, Minimize, Moon, PanelRight, Search, Settings, UserRound } from "lucide-react";
+import { AppLogo } from "@/components/brand/app-logo";
 import { Button } from "@/components/ui/button";
 import { ShortcutKeys } from "@/components/ui/shortcut-keys";
 import { Switch } from "@/components/ui/switch";
@@ -76,6 +77,7 @@ export function TopBar() {
   const { can } = usePermissions();
   const aiPanelOpen = useWorkspaceStore((s) => s.ai_panel_open);
   const setAiPanelOpen = useWorkspaceStore((s) => s.setAiPanelOpen);
+  const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
   const setCommandPalette = useDialogsStore((s) => s.setCommandPalette);
   const signOut = useSignOut();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -96,11 +98,14 @@ export function TopBar() {
   return (
     <header className="app-drag flex h-12 shrink-0 items-center gap-3 border-b bg-canvas px-3">
       <button
-        onClick={() => navigate(Routes.workspace.root)}
-        className="app-no-drag flex items-center gap-2 text-[0.8125rem] font-semibold tracking-[0.2px]"
+        onClick={() => {
+          setActiveProject(null);
+          navigate(Routes.workspace.root);
+        }}
+        className="app-no-drag -mx-1.5 flex items-center gap-2 rounded-md px-1.5 py-1 text-[0.8125rem] font-semibold tracking-[0.2px] transition-colors hover:bg-surface-elevated"
         aria-label="Go to workspace home"
       >
-        <span className="size-[18px] rounded-[5px] bg-gradient-to-br from-[#ff5757] to-[#a1131a]" aria-hidden />
+        <AppLogo className="size-5" />
         <span className="hidden md:inline">{environments.APP_NAME}</span>
       </button>
 
@@ -181,7 +186,7 @@ export function TopBar() {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <button className="ml-1 flex size-7 items-center justify-center rounded-full border bg-surface-card text-[0.6875rem] font-semibold" aria-label="Account">
+              <button className="ml-1 flex size-7 items-center justify-center rounded-full border bg-surface-card text-[0.6875rem] font-semibold transition-colors hover:border-hairline-strong hover:bg-surface-elevated" aria-label="Account">
                 {generateInitials(me?.full_name || me?.email)}
               </button>
             }

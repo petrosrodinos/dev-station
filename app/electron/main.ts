@@ -8,6 +8,7 @@ import { floatingPanelManager } from "./managers/floating-panel-manager";
 import { previewManager } from "./managers/preview-manager";
 import { processManager } from "./managers/process-manager";
 import { terminalManager } from "./managers/terminal-manager";
+import { APP_ICON_PATH } from "./utils/app-icon";
 import { logger } from "./utils/logger";
 import { IpcChannels } from "./shared/contract";
 
@@ -58,6 +59,7 @@ function createWindow() {
     minHeight: 640,
     backgroundColor: "#07080a",
     title: "Dev Station",
+    icon: APP_ICON_PATH,
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "default",
     autoHideMenuBar: true,
     show: false,

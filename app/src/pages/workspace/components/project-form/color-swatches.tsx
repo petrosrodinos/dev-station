@@ -18,7 +18,7 @@ export function ColorSwatches({ value, onChange }: { value: string; onChange: (c
           aria-label={c.label}
           title={c.label}
           onClick={() => onChange(c.id)}
-          className={cn("flex size-7 items-center justify-center rounded-full ring-offset-2 ring-offset-background transition", value === c.id && "ring-2 ring-foreground")}
+          className={cn("flex size-7 items-center justify-center rounded-full ring-offset-2 ring-offset-background transition", value === c.id ? "ring-2 ring-foreground" : "hover:ring-2 hover:ring-hairline-strong")}
           style={{ backgroundColor: c.id }}
         >
           {value === c.id && <Check className="size-3.5 text-[#0a0a0a]" />}

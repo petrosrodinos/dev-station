@@ -1,6 +1,7 @@
 import { BrowserWindow, screen, shell } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { APP_ICON_PATH } from "../utils/app-icon";
 import { IpcChannels, type FloatingPanelClosedEvent, type OpenFloatingPanelInput } from "../shared/contract";
 
 // Real-OS-window floating panels (docking system §C): each floated dock panel gets its own
@@ -42,6 +43,7 @@ class FloatingPanelManager {
       minWidth: 320,
       minHeight: 200,
       title: input.title,
+      icon: APP_ICON_PATH,
       backgroundColor: "#07080a",
       webPreferences: {
         preload: path.join(__dirname, "preload.cjs"),

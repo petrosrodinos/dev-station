@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import { AppLogo } from "@/components/brand/app-logo";
 import { environments } from "@/config/environments";
 
 export default function AuthLayout() {
@@ -8,7 +9,7 @@ export default function AuthLayout() {
       <main className="flex flex-1 items-center justify-center overflow-y-auto p-4">
         <div className="w-full max-w-sm space-y-6">
           <div className="flex flex-col items-center gap-3 text-center">
-            <span className="size-10 rounded-[10px] bg-gradient-to-br from-[#ff5757] to-[#a1131a]" aria-hidden />
+            <AppLogo className="size-10" />
             <div>
               <h1 className="text-xl font-semibold">{environments.APP_NAME}</h1>
               <p className="text-[0.8125rem] text-muted-foreground">Projects, processes, AI agents and Git — one workspace.</p>
