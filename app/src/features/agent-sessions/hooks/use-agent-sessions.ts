@@ -153,6 +153,37 @@ export const useDeleteAgentSession = () => {
     });
 };
 
+/** Bulk variant of useDeleteAgentSession — deletes every id independently and reports one toast for the batch. */
+export const useDeleteAgentSessions = () => {
+    const queryClient = useQueryClient();
+    const closeSessionTab = useWorkspaceStore((s) => s.closeSessionTab);
+    const removeAgent = useRuntimeStore((s) => s.removeAgent);
+    return useMutation({
+        mutationFn: async (ids: string[]) => {
+            const results = await Promise.allSettled(
+                ids.map(async (id) => {
+                    if (isDesktop()) await forgetAgentProcess(id).catch(() => undefined);
+                    await deleteAgentSession(id);
+                    return id;
+                }),
+            );
+            const deleted = results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []));
+            const errors = results.flatMap((r) => (r.status === "rejected" ? [r.reason as Error] : []));
+            return { deleted, errors };
+        },
+        onSuccess: ({ deleted, errors }) => {
+            for (const id of deleted) {
+                closeSessionTab(id);
+                removeAgent(id);
+            }
+            queryClient.invalidateQueries({ queryKey: ["agent-sessions"] });
+            queryClient.invalidateQueries({ queryKey: ["activities"] });
+            if (!errors.length) toast({ title: `${deleted.length} session${deleted.length === 1 ? "" : "s"} deleted`, duration: 1500 });
+            else toast({ title: `Could not delete ${errors.length} of ${deleted.length + errors.length} sessions`, description: errors[0]?.message, variant: "error" });
+        },
+    });
+};
+
 /** Takes a session out of the review queue; with a commit sha it also links that commit to the session record. */
 export const useMarkSessionReviewed = () => {
     const queryClient = useQueryClient();

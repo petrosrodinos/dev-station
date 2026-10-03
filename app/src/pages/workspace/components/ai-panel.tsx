@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, CircleCheck, History } from "lucide-react";
+import { Bot, CircleCheck, History, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatusDot } from "@/components/ui/status-dot";
 import { ShortcutKeys } from "@/components/ui/shortcut-keys";
@@ -10,6 +11,9 @@ import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { useAgentSessions } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { SessionReviewStates, type AgentSession } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
+import { useRowSelection } from "@/hooks/use-row-selection";
 import { AgentStatusOptions } from "@/config/constants/dropdowns/agents/agent-status.options";
 import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
 import { useResolvedShortcuts } from "@/features/users/hooks/use-shortcuts";
@@ -21,7 +25,7 @@ import { formatRelative } from "@/lib/date";
 import { AiPanelModes, useWorkspaceStore } from "@/stores/workspace";
 import { useRuntimeStore } from "@/stores/runtime";
 import { Routes } from "@/routes/routes";
-import { SessionContextMenu } from "./session-context-menu";
+import { DeleteSessionsDialog, SessionContextMenu } from "./session-context-menu";
 import { PlacementMenu, PlacementTargets } from "./placement-menu";
 import { SessionNavigator } from "./session-navigator";
 import { SessionActionsMenu } from "./session-actions-menu";
@@ -143,6 +147,12 @@ function SessionList() {
     return result;
   }, [data, projects]);
 
+  const { can } = usePermissions();
+  const canDelete = can(PermissionKeys.AI_USE_AGENTS);
+  const orderedIds = useMemo(() => groups.flatMap((g) => g.sessions.map((s) => s.id)), [groups]);
+  const selection = useRowSelection(orderedIds, { enabled: canDelete });
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   if (isPending) return <ListSkeleton rows={8} />;
   if (!data?.data.length) return <EmptyState className="flex-1" icon={<Bot />} title="No AI sessions yet" description="Sessions from every project appear here." />;
 
@@ -153,6 +163,19 @@ function SessionList() {
   };
 
   return (
+    <>
+    {selection.selected.size > 0 && (
+      <div className="flex h-9 shrink-0 items-center gap-1 border-b bg-surface-elevated px-3 text-xs text-muted-foreground">
+        <span className="font-medium text-foreground">{selection.selected.size} selected</span>
+        <span className="ml-1 hidden text-ash sm:inline">· Shift+click for a range, Ctrl+click to toggle</span>
+        <Button variant="ghost" size="sm" className="ml-auto h-7 text-xs" onClick={selection.clear}>
+          Clear
+        </Button>
+        <Button variant="destructive" size="sm" className="h-7 gap-1.5 text-xs" onClick={() => setConfirmDelete(true)}>
+          <Trash2 className="size-3.5" /> Delete
+        </Button>
+      </div>
+    )}
     <div className="min-h-0 flex-1 overflow-y-auto">
       {groups.map((group) => (
         <div key={group.id}>
@@ -162,11 +185,18 @@ function SessionList() {
           </div>
           {group.sessions.map((s) => {
             const status = runtimeAgents[s.id]?.status ?? s.status;
+            const isSelected = selection.selected.has(s.id);
             return (
               <SessionContextMenu key={s.id} session={s}>
                 <button
-                  onClick={() => open(s)}
-                  className={cn("flex w-full items-center gap-2.5 border-b border-hairline-soft px-4 py-2.5 text-left hover:bg-surface-elevated", s.id === activeId && "bg-surface-card")}
+                  onClick={(e) => selection.onRowClick(e, s.id) || open(s)}
+                  onMouseDown={selection.onRowMouseDown}
+                  aria-pressed={selection.selected.size ? isSelected : undefined}
+                  className={cn(
+                    "flex w-full select-none items-center gap-2.5 border-b border-hairline-soft px-4 py-2.5 text-left hover:bg-surface-elevated",
+                    s.id === activeId && "bg-surface-card",
+                    isSelected && "relative bg-accent before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-foreground hover:bg-accent",
+                  )}
                 >
                   <StatusDot status={agentStatusDot(status)} />
                   <div className="min-w-0 flex-1">
@@ -182,5 +212,7 @@ function SessionList() {
         </div>
       ))}
     </div>
+    <DeleteSessionsDialog ids={[...selection.selected]} open={confirmDelete} onOpenChange={setConfirmDelete} onDeleted={selection.clear} />
+    </>
   );
 }
