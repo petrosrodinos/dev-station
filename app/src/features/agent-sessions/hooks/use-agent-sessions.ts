@@ -25,8 +25,16 @@ export const useAgentAdapters = () => useQuery({ queryKey: ["agent-adapters"], q
 
 export const useAgentCatalog = () => useQuery({ queryKey: ["agent-catalog"], queryFn: getAgentCatalog, staleTime: Infinity });
 
-/** Runtime status on this device wins over the last status the server knows about. */
-export const mergeSessionStatus = (session: AgentSession, runtime?: AgentSessionInfo): AgentRuntimeStatus => runtime?.status ?? session.status;
+/** Sessions whose CLI ran on this device; their process only exists while the app is open. */
+export const ranOnDevice = (session: AgentSession | null, deviceId: string | null | undefined) => !!session?.device_id && session.device_id === deviceId;
+
+/** Runtime status wins; a session that ran here with no live process has stopped. */
+export const mergeSessionStatus = (session: AgentSession | null, runtime: AgentSessionInfo | null | undefined, deviceId: string | null | undefined): AgentRuntimeStatus | null => {
+    if (runtime) return runtime.status;
+    if (!session) return null;
+    const recordedLive = session.status === AgentRuntimeStatuses.RUNNING || session.status === AgentRuntimeStatuses.AWAITING_INPUT;
+    return recordedLive && ranOnDevice(session, deviceId) ? AgentRuntimeStatuses.STOPPED : session.status;
+};
 
 /** A session is "live" on this device when its CLI process is running here. */
 export const useRuntimeAgent = (sessionId: string | null) => useRuntimeStore((s) => (sessionId ? s.agents[sessionId] ?? null : null));
@@ -94,15 +102,30 @@ export const useStopAgentSession = () =>
         onError: (error: Error) => toast({ title: "Could not stop agent", description: error.message, variant: "error" }),
     });
 
-export const useRestartAgentSession = () => {
+/** Restarts a live session in place, or resumes its saved conversation after the app was reopened. */
+export const useRelaunchAgentSession = () => {
+    const queryClient = useQueryClient();
     const upsertAgent = useRuntimeStore((s) => s.upsertAgent);
     return useMutation({
-        mutationFn: restartAgentProcess,
+        mutationFn: async ({ session, runtime }: { session: AgentSession | null; runtime: AgentSessionInfo | null }) => {
+            if (runtime) return restartAgentProcess(runtime.id);
+            if (!session) throw new Error("Session details are still loading.");
+            const commands = await queryClient.fetchQuery({ queryKey: AGENT_COMMANDS_KEY, queryFn: getAgentCommands, staleTime: 60_000 }).catch(() => []);
+            const custom = commands.find((c) => c.agent_type === session.agent_type && c.is_default);
+            return startAgentProcess({
+                session_id: session.id,
+                project_id: session.project_id,
+                agent_type: session.agent_type,
+                command: custom?.command,
+                name: session.name,
+                prompt: null,
+            });
+        },
         onSuccess: (info) => {
             upsertAgent(info);
-            toast({ title: "Agent restarted", duration: 1500 });
+            toast({ title: "Session resumed", duration: 1500 });
         },
-        onError: (error: Error) => toast({ title: "Could not restart agent", description: error.message, variant: "error" }),
+        onError: (error: Error) => toast({ title: "Could not resume session", description: error.message, variant: "error" }),
     });
 };
 

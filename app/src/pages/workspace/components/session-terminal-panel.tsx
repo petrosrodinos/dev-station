@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { Terminal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { XtermTerminal } from "@/components/ui/xterm-terminal";
-import { useAgentSessions, useRuntimeAgent } from "@/features/agent-sessions/hooks/use-agent-sessions";
+import { ranOnDevice, useAgentSessions, useRelaunchAgentSession, useRuntimeAgent } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { useAgentTerminalSource } from "@/features/terminals/hooks/use-terminal-source";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
 import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
@@ -39,10 +40,13 @@ export function SessionTerminalPanel({
   const runtime = useRuntimeAgent(sessionId);
   const source = useAgentTerminalSource(isDesktop() ? sessionId : null);
   const { can } = usePermissions();
+  const relaunch = useRelaunchAgentSession();
 
   const { data: workspaceConfig } = useWorkspaceConfig();
   const session = sessions?.data.find((s) => s.id === sessionId) ?? null;
-  const ranOnThisDevice = !!runtime || (!!session?.device_id && session.device_id === workspaceConfig?.device_id);
+  const ranOnThisDevice = !!runtime || ranOnDevice(session, workspaceConfig?.device_id);
+  const live = !!runtime?.alive;
+  const canUseAgents = can(PermissionKeys.AI_USE_AGENTS);
   const project = projects?.find((p) => p.id === (runtime?.project_id ?? session?.project_id));
   const item = groups.ordered.find((i) => i.id === sessionId) ?? null;
   const remaining = groups.ready.filter((i) => i.id !== sessionId).length;
@@ -57,7 +61,7 @@ export function SessionTerminalPanel({
     <div className="flex h-full min-w-0 flex-col bg-surface">
       <div className="min-h-0 flex-1 bg-terminal">
         {source && ranOnThisDevice ? (
-          <XtermTerminal source={source} sourceKey={sessionId} readOnly={!runtime?.alive || !can(PermissionKeys.AI_USE_AGENTS)} className="h-full" />
+          <XtermTerminal source={source} sourceKey={sessionId} readOnly={!live || !canUseAgents} className="h-full" />
         ) : (
           <EmptyState
             className="h-full"
@@ -67,9 +71,15 @@ export function SessionTerminalPanel({
           />
         )}
       </div>
-      {runtime && !runtime.alive && (
-        <div className="shrink-0 border-t bg-surface px-3 py-2 text-[0.7188rem] text-muted-foreground">
-          Process exited ({runtime.exit_code ?? 0}). Restart to continue in this terminal.
+      {ranOnThisDevice && !live && canUseAgents && (
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t bg-surface px-3 py-2 text-[0.7188rem] text-muted-foreground">
+          <span>
+            {runtime && !runtime.alive ? `Process exited (${runtime.exit_code ?? 0}). ` : "This session has ended. "}
+            Resume to pick up the conversation where it left off.
+          </span>
+          <Button size="sm" variant="outline" disabled={relaunch.isPending} onClick={() => relaunch.mutate({ session, runtime })}>
+            Resume
+          </Button>
         </div>
       )}
       {item && project && <SessionReviewBar key={item.id} item={item} project={project} remaining={remaining} onNext={onNext} />}

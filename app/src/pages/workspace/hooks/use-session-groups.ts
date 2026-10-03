@@ -1,6 +1,7 @@
 import { useMemo } from "react";
-import { useAgentSessions } from "@/features/agent-sessions/hooks/use-agent-sessions";
+import { mergeSessionStatus, ranOnDevice, useAgentSessions } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { SessionReviewStates, type AgentSession, type SessionReviewState } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
+import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { sessionReviewState } from "@/lib/status";
@@ -20,6 +21,8 @@ export interface SessionItem {
   changes: AgentChanges | null;
   session: AgentSession | null;
   runtime: AgentSessionInfo | null;
+  /** Its CLI ran on this device, so it can be restarted or resumed here. */
+  on_this_device: boolean;
 }
 
 export interface SessionGroup {
@@ -43,6 +46,8 @@ export interface SessionGroups {
 export const useSessionGroups = (): SessionGroups => {
   const { data: sessions } = useAgentSessions();
   const { data: projects } = useGetProjects();
+  const { data: workspaceConfig } = useWorkspaceConfig();
+  const deviceId = workspaceConfig?.device_id ?? null;
   const runtimeAgents = useRuntimeStore((s) => s.agents);
   const openIds = useWorkspaceStore((s) => s.open_session_tabs);
   const attention = useWorkspaceStore((s) => s.attention_session_ids);
@@ -58,7 +63,7 @@ export const useSessionGroups = (): SessionGroups => {
       const runtime = runtimeAgents[id] ?? null;
       const projectId = runtime?.project_id ?? session?.project_id;
       if (!projectId) continue;
-      const status = runtime?.status ?? session?.status ?? null;
+      const status = mergeSessionStatus(session, runtime, deviceId);
       // Live sessions on this device are reviewed only when the developer said so; older ones count once a commit is linked.
       const committed = !!session?.commit_sha;
       const isReviewed = reviewed.includes(id) || (committed && !runtime);
@@ -73,6 +78,7 @@ export const useSessionGroups = (): SessionGroups => {
         changes: runtime?.changes ?? (session ? { files_changed: session.files_changed, additions: session.additions, deletions: session.deletions } : null),
         session,
         runtime,
+        on_this_device: !!runtime || ranOnDevice(session, deviceId),
       };
       byProject.set(projectId, [...(byProject.get(projectId) ?? []), item]);
     }
@@ -85,7 +91,7 @@ export const useSessionGroups = (): SessionGroups => {
       });
     const ordered = groups.flatMap((g) => g.sessions);
     return { groups, ordered, ready: ordered.filter((i) => i.review_state === SessionReviewStates.READY) };
-  }, [sessions, projects, runtimeAgents, openIds, attention, reviewed]);
+  }, [sessions, projects, runtimeAgents, openIds, attention, reviewed, deviceId]);
 };
 
 /**

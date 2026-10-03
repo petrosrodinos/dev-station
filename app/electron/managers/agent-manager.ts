@@ -26,6 +26,7 @@ const CHANGE_POLL_MS = 10_000;
 const TITLE_POLL_MS = 5_000;
 const TRANSCRIPT_TAIL_BYTES = 512 * 1024;
 const BRACKETED_PASTE_DELAY_MS = 2500;
+const RESUMED_LINE = "\r\n\x1b[2m— session resumed —\x1b[0m\r\n";
 
 interface ManagedAgent {
   info: AgentSessionInfo;
@@ -114,6 +115,7 @@ class AgentManager {
     const args = needsShell ? ["/d", "/s", "/c", resolved, ...extraArgs, ...sessionArgs, ...adapter.buildArgs(null)] : [...extraArgs, ...sessionArgs, ...adapter.buildArgs(input.prompt)];
     const file = needsShell ? process.env.ComSpec || "cmd.exe" : resolved;
 
+    const prior = existing ? "" : await this.readPersistedScrollback(input.session_id);
     const env = childEnv({ ...input.env, DEV_STATION_SESSION_ID: input.session_id, DEV_STATION_PROJECT_ID: input.project_id }) as Record<string, string>;
     const proc = pty.spawn(file, args, { name: "xterm-256color", cols: input.cols ?? 120, rows: input.rows ?? 32, cwd, env });
 
@@ -133,6 +135,8 @@ class AgentManager {
       awaitingSince: 0,
       stopping: false,
     };
+    if (prior) managed.scrollback.push(prior);
+    if (existing || prior) managed.scrollback.push(RESUMED_LINE);
     managed.pty = proc;
     managed.input = input;
     managed.adapter = adapter;
@@ -207,7 +211,7 @@ class AgentManager {
     const status: AgentRuntimeStatus = managed.stopping ? AgentRuntimeStatuses.STOPPED : exitCode === 0 ? AgentRuntimeStatuses.FINISHED : AgentRuntimeStatuses.CRASHED;
     managed.info = { ...managed.info, alive: false, pid: null, exit_code: exitCode, ended_at: new Date().toISOString() };
     void this.pollChanges(managed).finally(() => {
-      this.transition(managed, status);
+      if (!managed.pty) this.transition(managed, status);
       this.persistScrollback(managed);
     });
   }
@@ -302,7 +306,6 @@ class AgentManager {
         setTimeout(resolve, 3000);
       });
     }
-    s.scrollback.push("\r\n\x1b[2m— session restarted —\x1b[0m\r\n");
     return this.start({ ...s.input, prompt: null });
   }
 
@@ -321,6 +324,10 @@ class AgentManager {
   async scrollback(id: string): Promise<string> {
     const s = this.sessions.get(id);
     if (s) return s.scrollback.toString();
+    return this.readPersistedScrollback(id);
+  }
+
+  private async readPersistedScrollback(id: string): Promise<string> {
     try {
       return await fs.promises.readFile(path.join(this.logDir(), `${path.basename(id)}.log`), "utf8");
     } catch {
