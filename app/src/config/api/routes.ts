@@ -35,6 +35,7 @@ export const ApiRoutes = {
         member: (memberId: string) => `/organizations/current/members/${memberId}`,
         invitations: "/organizations/current/invitations",
         invitation: (id: string) => `/organizations/current/invitations/${id}`,
+        resend_invitation: (id: string) => `/organizations/current/invitations/${id}/resend`,
         accept_invitation: "/organizations/invitations/accept",
         roles: "/organizations/current/roles",
         role: (id: string) => `/organizations/current/roles/${id}`,
