@@ -277,10 +277,12 @@ export function registerIpc() {
         componentType: z.string().min(1).max(100),
         params: z.record(z.string(), z.unknown()),
         title: z.string().max(200),
+        windowId: z.string().min(1).max(200),
         bounds: zFloatingBounds.optional(),
       }),
     ),
     ([input]) => floatingPanelManager.open(input),
   );
-  handle(IpcChannels.LAYOUT_CLOSE_FLOATING, args(z.string().min(1).max(200)), ([panelId]) => floatingPanelManager.close(panelId));
+  handle(IpcChannels.LAYOUT_CLOSE_FLOATING, args(z.string().min(1).max(200)), ([panelId]) => floatingPanelManager.closePanel(panelId));
+  handle(IpcChannels.LAYOUT_GET_FLOATING_WINDOW, args(z.string().min(1).max(200)), ([windowId]) => floatingPanelManager.getWindow(windowId));
 }

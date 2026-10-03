@@ -140,6 +140,8 @@ const bridge: DevStationBridge = {
   layout: {
     openFloatingPanel: (input) => call(C.LAYOUT_OPEN_FLOATING, input),
     closeFloatingPanel: (panelId) => call(C.LAYOUT_CLOSE_FLOATING, panelId),
+    getFloatingWindow: (windowId) => call(C.LAYOUT_GET_FLOATING_WINDOW, windowId),
+    onFloatingWindowChanged: (cb) => on(C.LAYOUT_FLOATING_WINDOW_CHANGED, cb),
     onFloatingPanelClosed: (cb) => on(C.LAYOUT_FLOATING_CLOSED, cb),
   },
   notifications: {

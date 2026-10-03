@@ -18,10 +18,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ProjectTabOptions, ProjectTabs, type ProjectTab } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { filterByAccess } from "@/lib/access.utils";
-import { getBridge, isDesktop } from "@/lib/desktop";
+import { isDesktop } from "@/lib/desktop";
 import { useLayoutStore } from "@/stores/layout";
 import { DEFAULT_OPEN_PROJECT_TAB_IDS, DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
 import { useGetLayoutState, useUpdateProjectDockLayout } from "@/features/workspace-layouts/hooks/use-workspace-layouts";
+import { FloatTargetMenuItems } from "@/features/workspace-layouts/components/float-target-menu-items";
+import { floatPanel } from "@/features/workspace-layouts/utils/float-panel.utils";
 import {
   PROJECT_TAB_FLOATING_COMPONENT,
   projectTabFloatingPanelId,
@@ -50,7 +52,6 @@ const countOpenProjectTabs = (containerApi: DockviewApi) => containerApi.panels.
  */
 const ProjectTabHeader: FC<IDockviewPanelHeaderProps<{ tab: ProjectTab }>> = ({ api, containerApi, params }) => {
   const project = useProjectContext();
-  const addFloating = useLayoutStore((s) => s.addFloating);
   const [active, setActive] = useState(api.isActive);
   useEffect(() => {
     const disposable = api.onDidActiveChange(() => setActive(api.isActive));
@@ -75,12 +76,15 @@ const ProjectTabHeader: FC<IDockviewPanelHeaderProps<{ tab: ProjectTab }>> = ({ 
   };
   // Floating goes through the same close path as the X (the tab leaves the project's open tabs) and
   // is then re-opened by `use-floating-panels-sync.ts` when its window closes. Same last-tab guard.
-  const floatInWindow = () => {
+  const floatInWindow = (windowId: string | undefined) => {
     if (isLastTab) return;
-    const panelId = projectTabFloatingPanelId(project.id, params.tab);
-    const panelParams = { projectId: project.id, tab: params.tab };
-    void getBridge().layout.openFloatingPanel({ panelId, componentType: PROJECT_TAB_FLOATING_COMPONENT, params: panelParams, title: `${label} · ${project.name}` });
-    addFloating({ panelId, componentType: PROJECT_TAB_FLOATING_COMPONENT, params: panelParams, bounds: { x: 0, y: 0, width: 640, height: 480 } });
+    floatPanel({
+      panelId: projectTabFloatingPanelId(project.id, params.tab),
+      componentType: PROJECT_TAB_FLOATING_COMPONENT,
+      params: { projectId: project.id, tab: params.tab },
+      title: `${label} · ${project.name}`,
+      windowId,
+    });
     api.close();
   };
 
@@ -97,17 +101,22 @@ const ProjectTabHeader: FC<IDockviewPanelHeaderProps<{ tab: ProjectTab }>> = ({ 
       <Icon className="size-3.5 shrink-0" />
       <span>{label}</span>
       {!isLastTab && isDesktop() && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            floatInWindow();
-          }}
-          aria-label={`Float ${label} in its own window`}
-          title="Float in its own window"
-          className="flex size-4 shrink-0 items-center justify-center rounded-xs text-ash opacity-0 hover:bg-surface-card hover:text-foreground group-hover:opacity-100"
-        >
-          <PictureInPicture2 className="size-3" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <button
+                aria-label={`Float ${label} in a window`}
+                title="Float in a window"
+                className="flex size-4 shrink-0 items-center justify-center rounded-xs text-ash opacity-0 hover:bg-surface-card hover:text-foreground group-hover:opacity-100"
+              >
+                <PictureInPicture2 className="size-3" />
+              </button>
+            }
+          />
+          <DropdownMenuContent align="start" className="w-max min-w-56">
+            <FloatTargetMenuItems onFloat={floatInWindow} />
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
       {!isLastTab && (
         <button
