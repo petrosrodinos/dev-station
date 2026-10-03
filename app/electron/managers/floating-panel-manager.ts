@@ -44,7 +44,7 @@ class FloatingPanelManager {
       title: input.title,
       backgroundColor: "#07080a",
       webPreferences: {
-        preload: path.join(__dirname, "../preload.cjs"),
+        preload: path.join(__dirname, "preload.cjs"),
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: true,
@@ -59,8 +59,9 @@ class FloatingPanelManager {
       params: JSON.stringify(input.params),
       title: input.title,
     });
-    const target = `${this.devServerUrl ?? this.appOrigin}/floating?${query.toString()}`;
-    void win.loadURL(target);
+    const target = new URL("/floating", this.devServerUrl ?? this.appOrigin);
+    target.search = query.toString();
+    void win.loadURL(target.toString());
 
     // Same navigation lockdown as the main window: only our own renderer may navigate here.
     win.webContents.setWindowOpenHandler(({ url }) => {
