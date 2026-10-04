@@ -67,6 +67,25 @@ jobs:
             echo "Created tag ${GITHUB_REF_NAME} on ${RELEASES_REPO} at ${head_sha}"
           fi
 
+      - name: Create the release as a draft
+        # electron-builder creates a missing release with one POST per artifact, and those uploads run
+        # in parallel, so the second POST fails with 422 already_exists and the job dies after the exe
+        # is already public and before latest.yml is uploaded (v0.1.0, v0.1.1, v0.1.4). Creating a draft
+        # here first makes electron-builder find it on its releases list, so every upload lands on the
+        # same release. The draft stays hidden until the publish step flips it live.
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TARGET_TOKEN }}
+          RELEASES_REPO: logiqdevai/dev-agents-releases # keep in sync with app/package.json's build.publish
+        run: |
+          existing_id=$(gh api "repos/${RELEASES_REPO}/releases?per_page=100" --paginate --jq ".[] | select(.tag_name == \"${GITHUB_REF_NAME}\") | .id")
+          if [ -n "$existing_id" ]; then
+            echo "Release ${GITHUB_REF_NAME} already exists on ${RELEASES_REPO} (id ${existing_id})"
+          else
+            gh release create "$GITHUB_REF_NAME" --repo "$RELEASES_REPO" --draft --verify-tag --title "${GITHUB_REF_NAME#v}" --notes ""
+            echo "Created draft release ${GITHUB_REF_NAME} on ${RELEASES_REPO}"
+          fi
+
       - name: Publish to GitHub Releases
         working-directory: app
         env:
@@ -74,6 +93,15 @@ jobs:
           # write outside this repo, so a same-repo token doesn't work here.
           GH_TOKEN: ${{ secrets.RELEASE_TARGET_TOKEN }}
         run: npx electron-builder --win --publish always
+
+      - name: Publish the release
+        # Flip the draft live only once electron-builder has uploaded every asset (exe, blockmap, latest.yml).
+        # No-op when the release was already published by an earlier attempt.
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TARGET_TOKEN }}
+          RELEASES_REPO: logiqdevai/dev-agents-releases # keep in sync with app/package.json's build.publish
+        run: gh release edit "$GITHUB_REF_NAME" --repo "$RELEASES_REPO" --draft=false
 
       - name: Resolve release version/asset
         id: release
