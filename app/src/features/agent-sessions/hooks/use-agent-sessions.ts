@@ -234,10 +234,8 @@ export const registerAgentSessionMutations = (queryClient: QueryClient) => {
         },
         // Optimistic: the session leaves the review queue immediately, including while offline.
         onMutate: ({ id }) => getWorkspaceStoreState().markReviewed(id),
-        onSuccess: ({ commit_sha }) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["agent-sessions"] });
-            // A commit already announced itself; only a plain "reviewed" needs its own confirmation.
-            if (!commit_sha) toast({ title: "Marked as reviewed", duration: 1200 });
         },
         onError: (error: Error) => toast({ title: "Could not link the commit to this session", description: error.message, variant: "error" }),
     });

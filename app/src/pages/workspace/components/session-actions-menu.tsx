@@ -12,7 +12,7 @@ import { FloatTargetMenuItems } from "@/features/workspace-layouts/components/fl
 import { floatPanel } from "@/features/workspace-layouts/utils/float-panel.utils";
 import { Routes } from "@/routes/routes";
 import { cn } from "@/lib/utils";
-import type { SessionItem } from "../hooks/use-session-groups";
+import type { SessionItem } from "../hooks/use-open-sessions";
 import { DeleteSessionDialog } from "./session-context-menu";
 
 /** Actions for the focused AI session, shown beside the session history toggle. */

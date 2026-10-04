@@ -2,8 +2,6 @@ import { useMemo } from "react";
 import { mergeSessionStatus, ranOnDevice, useAgentSessions } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { SessionReviewStates, type AgentSession, type SessionReviewState } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
-import { useGetProjects } from "@/features/projects/hooks/use-projects";
-import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { sessionReviewState } from "@/lib/status";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useWorkspaceStore } from "@/stores/workspace";
@@ -25,27 +23,19 @@ export interface SessionItem {
   on_this_device: boolean;
 }
 
-export interface SessionGroup {
-  project: Project;
-  sessions: SessionItem[];
-  ready: number;
-}
-
-export interface SessionGroups {
-  groups: SessionGroup[];
-  /** Every listed session in display order (grouped by project, in rail order). */
+export interface OpenSessions {
+  /** Every listed session in display order: the order they were opened. Next/previous steps follow this order too. */
   ordered: SessionItem[];
   /** Sessions ready for review, in display order. */
   ready: SessionItem[];
 }
 
 /**
- * The AI panel's working set: sessions opened in this workspace plus any that need attention,
- * grouped by project in rail order. Runtime state on this device wins over the server copy.
+ * The AI panel's working set: sessions opened in this workspace plus any that need attention, as one
+ * flat list in the order they were opened. Runtime state on this device wins over the server copy.
  */
-export const useSessionGroups = (): SessionGroups => {
+export const useOpenSessions = (): OpenSessions => {
   const { data: sessions } = useAgentSessions();
-  const { data: projects } = useGetProjects();
   const { data: workspaceConfig } = useWorkspaceConfig();
   const deviceId = workspaceConfig?.device_id ?? null;
   const runtimeAgents = useRuntimeStore((s) => s.agents);
@@ -56,7 +46,7 @@ export const useSessionGroups = (): SessionGroups => {
   return useMemo(() => {
     const byId = new Map((sessions?.data ?? []).map((s) => [s.id, s]));
     const ids = [...new Set([...openIds, ...attention])];
-    const byProject = new Map<string, SessionItem[]>();
+    const ordered: SessionItem[] = [];
 
     for (const id of ids) {
       const session = byId.get(id) ?? null;
@@ -67,7 +57,7 @@ export const useSessionGroups = (): SessionGroups => {
       // Live sessions on this device are reviewed only when the developer said so; older ones count once a commit is linked.
       const committed = !!session?.commit_sha;
       const isReviewed = reviewed.includes(id) || (committed && !runtime);
-      const item: SessionItem = {
+      ordered.push({
         id,
         name: session?.name ?? runtime?.name ?? "Session",
         project_id: projectId,
@@ -79,32 +69,24 @@ export const useSessionGroups = (): SessionGroups => {
         session,
         runtime,
         on_this_device: !!runtime || ranOnDevice(session, deviceId),
-      };
-      byProject.set(projectId, [...(byProject.get(projectId) ?? []), item]);
+      });
     }
 
-    const groups: SessionGroup[] = (projects ?? [])
-      .filter((p) => byProject.has(p.id))
-      .map((project) => {
-        const items = byProject.get(project.id)!;
-        return { project, sessions: items, ready: items.filter((i) => i.review_state === SessionReviewStates.READY).length };
-      });
-    const ordered = groups.flatMap((g) => g.sessions);
-    return { groups, ordered, ready: ordered.filter((i) => i.review_state === SessionReviewStates.READY) };
-  }, [sessions, projects, runtimeAgents, openIds, attention, reviewed, deviceId]);
+    return { ordered, ready: ordered.filter((i) => i.review_state === SessionReviewStates.READY) };
+  }, [sessions, runtimeAgents, openIds, attention, reviewed, deviceId]);
 };
 
 /**
  * The session "next review" should open: the most recent unseen one first (what a notification
  * just announced), otherwise the next ready session after `currentId` in display order.
  */
-export const nextReviewSession = (groups: SessionGroups, currentId: string | null, attention: string[]): SessionItem | null => {
-  const byId = new Map(groups.ordered.map((i) => [i.id, i]));
+export const nextReviewSession = (sessions: OpenSessions, currentId: string | null, attention: string[]): SessionItem | null => {
+  const byId = new Map(sessions.ordered.map((i) => [i.id, i]));
   for (let i = attention.length - 1; i >= 0; i--) {
     const item = byId.get(attention[i]);
     if (item && item.id !== currentId) return item;
   }
-  const { ready, ordered } = groups;
+  const { ready, ordered } = sessions;
   if (!ready.length) return null;
   const start = ordered.findIndex((i) => i.id === currentId);
   for (let step = 1; step <= ordered.length; step++) {

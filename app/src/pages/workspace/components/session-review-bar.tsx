@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, ArrowUp, Check, FileDiff, GitCommitHorizontal, TriangleAlert } from "lucide-react";
+import { ArrowRight, ArrowUp, Check, FileDiff, GitCommitHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -20,10 +20,9 @@ import { useResolvedShortcuts } from "@/features/users/hooks/use-shortcuts";
 import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
 import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { commitSchema, type CommitFormData } from "@/pages/workspace/pages/project/validation-schemas/project.schema";
-import { useRuntimeStore } from "@/stores/runtime";
 import { Routes } from "@/routes/routes";
-import { AgentRuntimeStatuses, ProjectLocalStates } from "@shared/contract";
-import type { SessionItem } from "../hooks/use-session-groups";
+import { ProjectLocalStates } from "@shared/contract";
+import type { SessionItem } from "../hooks/use-open-sessions";
 
 interface SessionReviewBarProps {
   item: SessionItem;
@@ -50,9 +49,6 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
   const { data: identities } = useGitIdentities();
   const identity = identities?.find((i) => i.is_default);
   const nextCombo = useResolvedShortcuts().find((s) => s.id === ShortcutActions.GO_TO_FINISHED_SESSION)?.combo;
-  const othersWorking = useRuntimeStore(
-    (s) => Object.values(s.agents).filter((a) => a.project_id === project.id && a.id !== item.id && a.alive && a.status === AgentRuntimeStatuses.RUNNING).length,
-  );
   const { can } = usePermissions();
   const [committedSha, setCommittedSha] = useState<string | null>(null);
   // Focus "Next" only right after the developer finished reviewing here, not when revisiting a reviewed session.
@@ -162,18 +158,6 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
           </button>
         )}
       </div>
-      {canCommit && working && (
-        <div className="flex items-start gap-1.5 text-[0.7188rem] text-warning">
-          <TriangleAlert className="mt-px size-3.5 shrink-0" />
-          This agent is still working — committing now captures its edits so far.
-        </div>
-      )}
-      {canCommit && othersWorking > 0 && (
-        <div className="flex items-start gap-1.5 text-[0.7188rem] text-warning">
-          <TriangleAlert className="mt-px size-3.5 shrink-0" />
-          {othersWorking} other agent{othersWorking === 1 ? " is" : "s are"} still working in this project — their edits so far will be part of this commit.
-        </div>
-      )}
       {canCommit ? (
         <Form {...form}>
           <form
