@@ -96,6 +96,9 @@ const bridge: DevStationBridge = {
     approveCommand: (id, command) => call(C.PROC_APPROVE, id, command),
     onEvent: (cb) => on(C.PROC_EVENT, cb),
   },
+  ports: {
+    kill: (ports) => call(C.PORT_KILL, ports),
+  },
   terminals: {
     list: () => call(C.TERM_LIST),
     create: (id, input) => call(C.TERM_CREATE, id, input),

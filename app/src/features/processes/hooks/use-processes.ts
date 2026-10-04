@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
-import { approveServiceCommand, getProcessLogs, processKey, restartService, startService, stopService } from "../services/processes.services";
+import { approveServiceCommand, getProcessLogs, killPorts, processKey, restartService, startService, stopService } from "../services/processes.services";
 import { useRuntimeStore } from "@/stores/runtime";
 import { getBridgeErrorCode, getErrorMessage } from "@/lib/desktop";
 import { toast } from "@/hooks/use-toast";
@@ -70,6 +70,21 @@ export const useApproveServiceCommand = () =>
         mutationFn: approveServiceCommand,
         onSuccess: () => toast({ title: "Command approved on this device", duration: 1500 }),
         onError: (error: Error) => toast({ title: "Could not approve command", description: error.message, variant: "error" }),
+    });
+
+/** Terminates whatever listens on the given ports and reports what happened. */
+export const useKillPorts = () =>
+    useMutation({
+        mutationFn: killPorts,
+        onSuccess: (results) => {
+            const stuck = results.filter((r) => !r.freed).map((r) => r.port);
+            const freed = results.filter((r) => r.pids.length && r.freed).map((r) => r.port);
+            const idle = results.filter((r) => !r.pids.length).map((r) => r.port);
+            if (stuck.length) toast({ title: `Could not free port${stuck.length > 1 ? "s" : ""} ${stuck.join(", ")}`, description: "The process may need administrator rights.", variant: "error", duration: 6000 });
+            else if (freed.length) toast({ title: `Freed port${freed.length > 1 ? "s" : ""} ${freed.join(", ")}`, description: idle.length ? `Nothing was running on ${idle.join(", ")}.` : undefined, duration: 2500 });
+            else toast({ title: "Nothing was running on those ports", duration: 2500 });
+        },
+        onError: (error: Error) => toast({ title: "Could not free ports", description: error.message, variant: "error" }),
     });
 
 /** Loads the full log backlog from main when a log viewer opens. */
