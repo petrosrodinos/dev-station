@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { copyFilePath, createFile, createFolder, deleteEntry, listDirectory, openFileExternally, openInEditor, readFile, renameEntry, revealFile, searchFiles, writeFile } from "../services/files.services";
+import { copyFilePath, createFile, createFolder, deleteEntry, importExternal, listDirectory, moveEntry, openFileExternally, openInEditor, readFile, renameEntry, revealFile, searchFiles, writeFile } from "../services/files.services";
 import { getEditorTargetLabel } from "@/config/constants/dropdowns/settings/editor-target.options";
 import { toast } from "@/hooks/use-toast";
 
@@ -108,5 +108,26 @@ export const useDeleteEntry = () => {
             toast({ title: "Moved to trash", description: vars.path, duration: 1500 });
         },
         onError: (error: Error) => toast({ title: "Could not delete", description: error.message, variant: "error" }),
+    });
+};
+
+export const useMoveEntry = () => {
+    const invalidate = useInvalidateTree();
+    return useMutation({
+        mutationFn: moveEntry,
+        onSuccess: (_r, vars) => invalidate(vars.projectId),
+        onError: (error: Error) => toast({ title: "Could not move", description: error.message, variant: "error" }),
+    });
+};
+
+export const useImportFiles = () => {
+    const invalidate = useInvalidateTree();
+    return useMutation({
+        mutationFn: importExternal,
+        onSuccess: (created, vars) => {
+            invalidate(vars.projectId);
+            toast({ title: created.length === 1 ? "Added 1 item" : `Added ${created.length} items`, duration: 1500 });
+        },
+        onError: (error: Error) => toast({ title: "Could not add files", description: error.message, variant: "error" }),
     });
 };

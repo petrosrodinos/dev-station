@@ -566,6 +566,12 @@ export interface DevStationBridge {
     createFolder(projectId: string, relPath: string): Promise<string>;
     /** Renames within the same folder; returns the new project-relative path. */
     rename(projectId: string, relPath: string, newName: string): Promise<string>;
+    /** Moves an entry into another project folder ("" = root); returns the new project-relative path. */
+    move(projectId: string, relPath: string, destDir: string): Promise<string>;
+    /** Copies files/folders from anywhere on disk (absolute paths) into a project folder; returns the new relative paths. */
+    importExternal(projectId: string, destDir: string, sourcePaths: string[]): Promise<string[]>;
+    /** Resolves the absolute path of a File from a drag-and-drop event. */
+    pathForFile(file: File): string;
     /** Moves to the OS trash rather than deleting permanently. */
     delete(projectId: string, relPath: string): Promise<void>;
   };
@@ -694,6 +700,8 @@ export const IpcChannels = {
   FILES_CREATE_FILE: "files:create-file",
   FILES_CREATE_FOLDER: "files:create-folder",
   FILES_RENAME: "files:rename",
+  FILES_MOVE: "files:move",
+  FILES_IMPORT: "files:import",
   FILES_DELETE: "files:delete",
   GIT_STATUS: "git:status",
   GIT_FILE_DIFF: "git:file-diff",

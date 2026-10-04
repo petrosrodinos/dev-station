@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
+import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from "electron";
 import type { DevStationBridge, IpcResult } from "./shared/contract";
 import { IpcChannels as C } from "./shared/contract";
 
@@ -65,6 +65,9 @@ const bridge: DevStationBridge = {
     createFile: (id, rel) => call(C.FILES_CREATE_FILE, id, rel),
     createFolder: (id, rel) => call(C.FILES_CREATE_FOLDER, id, rel),
     rename: (id, rel, name) => call(C.FILES_RENAME, id, rel, name),
+    move: (id, rel, destDir) => call(C.FILES_MOVE, id, rel, destDir),
+    importExternal: (id, destDir, sources) => call(C.FILES_IMPORT, id, destDir, sources),
+    pathForFile: (file) => webUtils.getPathForFile(file),
     delete: (id, rel) => call(C.FILES_DELETE, id, rel),
   },
   git: {
