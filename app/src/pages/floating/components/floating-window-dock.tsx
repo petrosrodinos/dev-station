@@ -18,7 +18,6 @@ import { cn } from "@/lib/utils";
 import { ProjectContext } from "@/pages/workspace/pages/project/hooks/use-project-context";
 import { TAB_PAGES, tabPermission } from "@/pages/workspace/pages/project/pages/tab-pages";
 import { SessionTerminalPanel } from "@/pages/workspace/components/session-terminal-panel";
-import { useSessionGroups } from "@/pages/workspace/hooks/use-session-groups";
 
 const PROJECT_TAB_COMPONENT = "project-tab";
 const SESSION_TERMINAL_COMPONENT = "session-terminal";
@@ -40,8 +39,7 @@ const ProjectTabPanel: FC<IDockviewPanelProps<{ projectId: string; tab: ProjectT
 };
 
 const SessionPanel: FC<IDockviewPanelProps<{ sessionId: string }>> = ({ params, api }) => {
-  const groups = useSessionGroups();
-  return <SessionTerminalPanel sessionId={params.sessionId} groups={groups} onNext={() => undefined} panelApi={api} />;
+  return <SessionTerminalPanel sessionId={params.sessionId} onNext={() => undefined} panelApi={api} />;
 };
 
 const DOCK_COMPONENTS: IDockviewReactProps["components"] = {

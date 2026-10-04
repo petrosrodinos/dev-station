@@ -4,7 +4,7 @@ import { Check, Plus, X } from "lucide-react";
 import { StatusDot } from "@/components/ui/status-dot";
 import { ProjectFlag } from "@/components/ui/project-avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useCloseSessionTab } from "@/features/agent-sessions/hooks/use-agent-sessions";
+import { useCloseSessionTab, useMarkSessionReviewed } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { SessionReviewStates } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
@@ -137,6 +137,7 @@ function SessionTab({ item, active, onOpen, onClose }: SessionTabProps) {
   const label = getDropdownOptionLabel(SessionReviewStateOptions, state);
   const ready = state === SessionReviewStates.READY;
   const done = state === SessionReviewStates.REVIEWED || state === SessionReviewStates.COMMITTED;
+  const markReviewed = useMarkSessionReviewed();
 
   const tab = (
     <div
@@ -154,7 +155,7 @@ function SessionTab({ item, active, onOpen, onClose }: SessionTabProps) {
       title={`${item.name} · ${item.agent_type ? getAgentTypeLabel(item.agent_type) : ""} · ${label}`}
       className={cn(
         "group relative flex w-32 shrink-0 cursor-pointer select-none items-center gap-1.5 pl-2 pr-1 text-xs text-body outline-none hover:bg-surface-elevated focus-visible:bg-surface-elevated",
-        ready && "bg-info-soft/60 text-foreground",
+        ready && "bg-info-soft text-foreground",
         done && "text-muted-foreground",
         active && "bg-surface-card text-foreground after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-foreground",
       )}
@@ -165,6 +166,19 @@ function SessionTab({ item, active, onOpen, onClose }: SessionTabProps) {
         <StatusDot status={reviewStateDot(state)} title={label} className={cn(item.unseen && "animate-pulse")} />
       )}
       <span className={cn("min-w-0 flex-1 truncate", (ready || item.unseen) && "font-semibold")}>{item.name}</span>
+      {ready && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            markReviewed.mutate({ id: item.id });
+          }}
+          className="shrink-0 rounded-full bg-info px-1.5 py-px text-[0.625rem] font-bold leading-4 text-[#04121b] hover:brightness-110"
+          aria-label={`Dismiss review badge for ${item.name}`}
+          title="Needs review — click to dismiss"
+        >
+          Review
+        </button>
+      )}
       {onClose && (
         <button
           onClick={(e) => {

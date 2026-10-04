@@ -1,12 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { ChevronRight, Copy, File, Folder, FolderOpen, FilePlus, FolderPlus, FolderSearch, Pencil, SquarePen, Trash2 } from "lucide-react";
+import { ChevronRight, Copy, File, Folder, FolderOpen, FilePlus, FolderPlus, FolderSearch, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useCopyFilePath, useDirectory, useOpenInEditor, useRevealFile } from "@/features/files/hooks/use-files";
+import { useCopyFilePath, useCopyRelativePath, useDirectory, useOpenInEditor, useRevealFile } from "@/features/files/hooks/use-files";
 import { GitFileStateOptions } from "@/config/constants/dropdowns/git/git-file-state.options";
-import { EditorTargetOptions } from "@/config/constants/dropdowns/settings/editor-target.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { cn } from "@/lib/utils";
 import { ENTRY_DRAG_TYPE, setDraggedPath, useTreeDropTarget } from "../hooks/use-tree-drop-target";
@@ -149,6 +148,7 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
   const openInEditor = useOpenInEditor();
   const reveal = useRevealFile();
   const copyPath = useCopyFilePath();
+  const copyRelativePath = useCopyRelativePath();
   const actions = useContext(TreeActionsContext);
 
   return (
@@ -170,21 +170,18 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
               render={
                 <DropdownMenuTrigger
                   render={
-                    <Button variant="ghost" size="icon" className="size-5 text-muted-foreground" onClick={(e) => e.stopPropagation()} aria-label="Open with">
-                      <SquarePen className="size-3" />
+                    <Button variant="ghost" size="icon" className="size-5 text-muted-foreground" onClick={(e) => e.stopPropagation()} aria-label="Copy path">
+                      <Copy className="size-3" />
                     </Button>
                   }
                 />
               }
             />
-            <TooltipContent>Open with</TooltipContent>
+            <TooltipContent>Copy path</TooltipContent>
           </Tooltip>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            {EditorTargetOptions.map((o) => (
-              <DropdownMenuItem key={o.id} onSelect={() => openInEditor.mutate({ projectId, editor: o.id, path: entry.path })}>
-                {o.label}
-              </DropdownMenuItem>
-            ))}
+            <DropdownMenuItem onSelect={() => copyPath.mutate({ projectId, path: entry.path })}>Copy absolute path</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => copyRelativePath.mutate({ path: entry.path })}>Copy relative path</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         {actions && (
@@ -197,9 +194,6 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
             </RowAction>
           </>
         )}
-        <RowAction label="Copy path" onClick={() => copyPath.mutate({ projectId, path: entry.path })}>
-          <Copy className="size-3" />
-        </RowAction>
         <RowAction label="Reveal in file manager" onClick={() => reveal.mutate({ projectId, path: entry.path })}>
           <FolderSearch className="size-3" />
         </RowAction>

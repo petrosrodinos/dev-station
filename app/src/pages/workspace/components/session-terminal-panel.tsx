@@ -11,7 +11,7 @@ import { usePermissions } from "@/features/organizations/hooks/use-organizations
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { isDesktop } from "@/lib/desktop";
 import { SessionReviewBar } from "./session-review-bar";
-import type { SessionGroups } from "../hooks/use-session-groups";
+import { useSessionGroups } from "../hooks/use-session-groups";
 
 /**
  * One agent session's terminal, as a standalone dock panel — every open session gets its own
@@ -26,15 +26,17 @@ import type { SessionGroups } from "../hooks/use-session-groups";
  */
 export function SessionTerminalPanel({
   sessionId,
-  groups,
   onNext,
   panelApi,
 }: {
   sessionId: string;
-  groups: SessionGroups;
   onNext: () => void;
   panelApi?: { setTitle: (title: string) => void };
 }) {
+  // Read live here rather than taking `groups` as a prop: dockview renders panel components on its
+  // own schedule, so a prop snapshot goes stale (wrong review state, or no item at all for a session
+  // opened before the session list caught up) until something unrelated re-renders the panel.
+  const groups = useSessionGroups();
   const { data: sessions } = useAgentSessions();
   const { data: projects } = useGetProjects();
   const runtime = useRuntimeAgent(sessionId);

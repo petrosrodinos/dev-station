@@ -16,6 +16,7 @@ export const openFileExternally = ({ projectId, path }: { projectId: string; pat
 export const openInEditor = ({ projectId, editor, path }: { projectId: string; editor: EditorTarget; path?: string }) =>
     wrap(() => getBridge().files.openInEditor(projectId, editor, path), "Could not open the editor.");
 export const copyFilePath = ({ projectId, path }: { projectId: string; path: string }) => wrap(() => getBridge().files.copyPath(projectId, path), "Could not copy the path.");
+export const copyRelativePath = ({ path }: { path: string }) => wrap(async () => { await navigator.clipboard.writeText(path); return path; }, "Could not copy the path.");
 export const readFile = (projectId: string, path: string): Promise<FileContent> => wrap(() => getBridge().files.readFile(projectId, path), "Could not read the file.");
 export const writeFile = ({ projectId, path, content }: { projectId: string; path: string; content: string }) =>
     wrap(() => getBridge().files.writeFile(projectId, path, content), "Could not save the file.");

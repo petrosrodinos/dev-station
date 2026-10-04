@@ -34,14 +34,16 @@ interface SessionReviewBarProps {
 }
 
 /**
- * Review footer under the agent terminal: what changed, a one-line commit, and the jump to the
- * next session waiting for review. Hidden while the agent is still working.
+ * Review footer under the agent terminal: what changed, a one-line commit, push, and the jump to the
+ * next session waiting for review. Shown whenever the project has uncommitted changes — including
+ * while the agent is working, since its status flips between working and idle many times a turn —
+ * and otherwise only once the session is ready for review or already reviewed.
  */
 export function SessionReviewBar({ item, project, remaining, onNext }: SessionReviewBarProps) {
   const navigate = useNavigate();
   const localState = useProjectLocalState(project.id);
   const isLocal = localState === ProjectLocalStates.LOCAL;
-  const { data: git } = useGitStatus(isLocal ? project.id : null);
+  const { data: git } = useGitStatus(project.id);
   const commit = useGitCommit();
   const push = useGitPush();
   const markReviewed = useMarkSessionReviewed();
@@ -61,7 +63,9 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
   const files = git?.files ?? [];
   const done = !!committedSha || state === SessionReviewStates.REVIEWED || state === SessionReviewStates.COMMITTED;
   const reviewable = state === SessionReviewStates.READY || done;
-  if (state === SessionReviewStates.WORKING || (!reviewable && !files.length)) return null;
+  const working = state === SessionReviewStates.WORKING;
+  const hasChanges = isLocal && files.length > 0;
+  if (!hasChanges && (working || !reviewable)) return null;
 
   // In the review layout the Git tab opens in a drawer over the preview.
   const openDiff = () => navigate(Routes.workspace.project_tab(project.id, ProjectTabs.GIT));
@@ -103,7 +107,7 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
       </Tooltip>
     ) : null;
 
-  if (done) {
+  if (done && !hasChanges) {
     return (
       <div className="flex shrink-0 items-center gap-2 border-t bg-surface px-3 py-2 text-xs">
         <Check className="size-3.5 shrink-0 text-success" />
@@ -123,12 +127,12 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
     );
   }
 
-  const canCommit = isLocal && files.length > 0 && can(PermissionKeys.GIT_COMMIT);
+  const canCommit = hasChanges && can(PermissionKeys.GIT_COMMIT);
 
   return (
     <div className="shrink-0 space-y-2 border-t bg-surface px-3 py-2.5">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        {files.length > 0 ? (
+        {hasChanges ? (
           <>
             <span>
               {files.length} file{files.length === 1 ? "" : "s"} changed{" "}
@@ -158,6 +162,12 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
           </button>
         )}
       </div>
+      {canCommit && working && (
+        <div className="flex items-start gap-1.5 text-[0.7188rem] text-warning">
+          <TriangleAlert className="mt-px size-3.5 shrink-0" />
+          This agent is still working — committing now captures its edits so far.
+        </div>
+      )}
       {canCommit && othersWorking > 0 && (
         <div className="flex items-start gap-1.5 text-[0.7188rem] text-warning">
           <TriangleAlert className="mt-px size-3.5 shrink-0" />
