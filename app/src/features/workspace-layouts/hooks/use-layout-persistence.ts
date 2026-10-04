@@ -75,7 +75,7 @@ export const useLayoutPersistence = (api: DockviewApi | null, resetToDefault: (a
     }
     contextRef.current = context;
 
-    const stored = useLayoutStore.getState().outer_layout_by_project[context] as SerializedOuterLayout | undefined;
+    const stored = useLayoutStore.getState().outer_layout_by_project[context] as unknown as SerializedOuterLayout | undefined;
     applyingRef.current = true;
     try {
       if (stored?.grid) {
