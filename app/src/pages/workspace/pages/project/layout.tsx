@@ -56,7 +56,7 @@ const ProjectLayout: FC = () => {
   }
 
   if (!project) {
-    return <EmptyState className="flex-1" title="Project not found" description="It may have been removed, or it belongs to another organization." />;
+    return <EmptyState className="flex-1" title="Project not found" description="It may have been removed or archived, or it belongs to another organization. Archived projects can be restored from the workspace home." />;
   }
 
   const needsSetup = isDesktop() && (localState === ProjectLocalStates.IMPORTED || localState === ProjectLocalStates.MISSING);

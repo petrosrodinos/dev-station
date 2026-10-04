@@ -300,6 +300,7 @@ exports.Prisma.ProjectScalarFieldEnum = {
   notion_connection_id: 'notion_connection_id',
   notion_root_page_id: 'notion_root_page_id',
   last_activity_at: 'last_activity_at',
+  archived_at: 'archived_at',
   created_by: 'created_by',
   created_at: 'created_at',
   updated_at: 'updated_at'

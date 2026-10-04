@@ -62,6 +62,7 @@ export interface Project {
     notion_connection_id: string | null;
     notion_root_page_id: string | null;
     last_activity_at: string | null;
+    archived_at: string | null;
     created_at: string;
     updated_at: string;
     services: ProjectService[];
@@ -101,6 +102,8 @@ export interface CreateProjectDto {
 }
 
 export interface UpdateProjectDto extends Partial<CreateProjectDto> {
+    /** true archives the project (hidden from the rail), false restores it. */
+    archived?: boolean;
     preferred_agent?: AgentType | null;
     linear_connection_id?: string | null;
     linear_team_id?: string | null;
