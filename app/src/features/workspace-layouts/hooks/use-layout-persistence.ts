@@ -53,6 +53,8 @@ export const useLayoutPersistence = (api: DockviewApi | null, resetToDefault: (a
     const pending = pendingRef.current;
     if (!pending) return;
     pendingRef.current = null;
+    // Full width hides the main panel and stretches the AI panel; that split must not replace the saved one.
+    if (useLayoutStore.getState().ai_full_width) return;
     saveOuterLayout(pending.context, pending.layout);
     const preset = presetLayoutRef.current;
     if (preset && JSON.stringify(preset) === JSON.stringify(pending.layout)) markClean();
@@ -68,7 +70,7 @@ export const useLayoutPersistence = (api: DockviewApi | null, resetToDefault: (a
       clearTimeout(timer.current);
       pendingRef.current = null;
       try {
-        saveOuterLayout(previous, api.toJSON() as unknown as Record<string, unknown>);
+        if (!useLayoutStore.getState().ai_full_width) saveOuterLayout(previous, api.toJSON() as unknown as Record<string, unknown>);
       } catch (error) {
         console.error("Failed to save the outgoing panel layout", error);
       }

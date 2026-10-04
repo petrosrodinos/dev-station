@@ -20,9 +20,12 @@ interface LayoutState {
     floating: FloatingPanelBounds[];
     /** Record<projectId | "home", DockviewApi.toJSON()> — the outer main/AI-panel split, remembered per project. */
     outer_layout_by_project: Record<string, Record<string, unknown>>;
+    /** Hides the main content panel so the AI panel fills the dock. Per device; not part of a saved preset. */
+    ai_full_width: boolean;
 }
 
 interface LayoutActions {
+    setAiFullWidth(on: boolean): void;
     setActivePreset(id: string | null): void;
     rememberProjectPreset(projectId: string, presetId: string): void;
     markDirty(): void;
@@ -41,6 +44,7 @@ const initialValues: LayoutState = {
     customized: false,
     floating: [],
     outer_layout_by_project: {},
+    ai_full_width: false,
 };
 
 const STORE_KEY = "layout";
@@ -49,6 +53,7 @@ export const useLayoutStore = create<LayoutState & LayoutActions>()(
     persist(
         (set) => ({
             ...initialValues,
+            setAiFullWidth: (on) => set({ ai_full_width: on }),
             setActivePreset: (id) => set({ active_preset_id: id, customized: true, dirty: false }),
             rememberProjectPreset: (projectId, presetId) =>
                 set((s) => ({ preset_by_project: { ...s.preset_by_project, [projectId]: presetId }, customized: true })),

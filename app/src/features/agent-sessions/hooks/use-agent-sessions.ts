@@ -96,7 +96,6 @@ export const useStartAgentSession = () => {
             queryClient.invalidateQueries({ queryKey: ["agent-sessions"] });
             queryClient.invalidateQueries({ queryKey: ["activities"] });
             queryClient.invalidateQueries({ queryKey: ["project-issues"] });
-            toast({ title: `${session.name}`, description: "Agent session started", duration: 1500 });
         },
         onError: (error: Error) => {
             queryClient.invalidateQueries({ queryKey: ["agent-sessions"] });
@@ -180,7 +179,6 @@ export const useDeleteAgentSession = () => {
             removeAgent(id);
             queryClient.invalidateQueries({ queryKey: ["agent-sessions"] });
             queryClient.invalidateQueries({ queryKey: ["activities"] });
-            toast({ title: "Session deleted", duration: 1500 });
         },
         onError: (error: Error) => toast({ title: "Could not delete session", description: error.message, variant: "error" }),
     });
@@ -211,8 +209,7 @@ export const useDeleteAgentSessions = () => {
             }
             queryClient.invalidateQueries({ queryKey: ["agent-sessions"] });
             queryClient.invalidateQueries({ queryKey: ["activities"] });
-            if (!errors.length) toast({ title: `${deleted.length} session${deleted.length === 1 ? "" : "s"} deleted`, duration: 1500 });
-            else toast({ title: `Could not delete ${errors.length} of ${deleted.length + errors.length} sessions`, description: errors[0]?.message, variant: "error" });
+            if (errors.length) toast({ title: `Could not delete ${errors.length} of ${deleted.length + errors.length} sessions`, description: errors[0]?.message, variant: "error" });
         },
     });
 };

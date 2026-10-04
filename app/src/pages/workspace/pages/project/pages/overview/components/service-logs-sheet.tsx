@@ -13,6 +13,22 @@ import { cn } from "@/lib/utils";
 const Streams = { ALL: "all", ERRORS: "errors" } as const;
 type Stream = (typeof Streams)[keyof typeof Streams];
 
+const WIDTH_KEY = "service-logs-sheet-width";
+const DEFAULT_WIDTH = 720;
+const MIN_WIDTH = 360;
+
+/** Keeps the sheet readable and leaves a sliver of the page visible on the left. */
+const clampWidth = (width: number) => Math.round(Math.min(Math.max(width, MIN_WIDTH), window.innerWidth * 0.9));
+
+const readStoredWidth = () => {
+  try {
+    const stored = Number(localStorage.getItem(WIDTH_KEY));
+    return Number.isFinite(stored) && stored >= MIN_WIDTH ? stored : DEFAULT_WIDTH;
+  } catch {
+    return DEFAULT_WIDTH;
+  }
+};
+
 /** Process output + error logs with follow mode. */
 export function ServiceLogsSheet({ project, service, onClose }: { project: Project; service: ProjectService | null; onClose: () => void }) {
   const key = service ? processKey(project.id, service.id) : null;
@@ -21,7 +37,17 @@ export function ServiceLogsSheet({ project, service, onClose }: { project: Proje
   const load = useLoadProcessLogs();
   const [stream, setStream] = useState<Stream>(Streams.ALL);
   const [follow, setFollow] = useState(true);
+  const [width, setWidth] = useState(readStoredWidth);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(WIDTH_KEY, String(width));
+    } catch {
+      // Storage can be blocked; the width still applies for this session.
+    }
+  }, [width]);
 
   useEffect(() => {
     if (key) load.mutate(key);
@@ -36,7 +62,26 @@ export function ServiceLogsSheet({ project, service, onClose }: { project: Proje
 
   return (
     <Sheet open={!!service} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="right" className="flex w-[720px] max-w-[90vw] flex-col gap-0 p-0 sm:max-w-[720px]">
+      <SheetContent side="right" className="flex flex-col gap-0 p-0" style={{ width, maxWidth: "90vw" }}>
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize logs panel"
+          aria-valuenow={width}
+          onPointerDown={(e) => {
+            dragging.current = true;
+            e.currentTarget.setPointerCapture(e.pointerId);
+          }}
+          onPointerMove={(e) => {
+            if (dragging.current) setWidth(clampWidth(window.innerWidth - e.clientX));
+          }}
+          onPointerUp={(e) => {
+            dragging.current = false;
+            e.currentTarget.releasePointerCapture(e.pointerId);
+          }}
+          onDoubleClick={() => setWidth(DEFAULT_WIDTH)}
+          className="absolute inset-y-0 left-0 z-10 w-1.5 cursor-col-resize touch-none hover:bg-primary/40 active:bg-primary/60"
+        />
         <SheetHeader className="border-b p-4">
           <SheetTitle className="flex items-center gap-2 text-base">
             <StatusDot status={processStatusDot(proc?.status)} /> {service?.name} logs

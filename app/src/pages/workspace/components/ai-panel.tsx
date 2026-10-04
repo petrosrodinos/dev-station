@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, History, Plus, Trash2 } from "lucide-react";
+import { Bot, History, PanelLeftClose, PanelLeftOpen, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatusDot } from "@/components/ui/status-dot";
@@ -20,6 +20,7 @@ import { agentStatusDot } from "@/lib/status";
 import { jumpToSession } from "@/lib/session-navigation.utils";
 import { formatRelative } from "@/lib/date";
 import { AiPanelModes, useWorkspaceStore } from "@/stores/workspace";
+import { useLayoutStore } from "@/stores/layout";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
 import { Routes } from "@/routes/routes";
@@ -45,6 +46,9 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
   const activeItem = groups.ordered.find((i) => i.id === activeId) ?? null;
   const setMode = useWorkspaceStore((s) => s.setAiPanelMode);
   const historyLabel = history ? "Back to open sessions" : "Session history";
+  const aiFullWidth = useLayoutStore((s) => s.ai_full_width);
+  const setAiFullWidth = useLayoutStore((s) => s.setAiFullWidth);
+  const fullWidthLabel = aiFullWidth ? "Show workspace" : "Full-width AI panel";
   const { can } = usePermissions();
   const openNewSession = useDialogsStore((s) => s.openNewSession);
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
@@ -94,6 +98,21 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
               }
             />
             <TooltipContent>{historyLabel}</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  onClick={() => setAiFullWidth(!aiFullWidth)}
+                  aria-label={fullWidthLabel}
+                  aria-pressed={aiFullWidth}
+                  className={cn("flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground", aiFullWidth && "bg-accent text-foreground")}
+                >
+                  {aiFullWidth ? <PanelLeftOpen className="size-3.5" /> : <PanelLeftClose className="size-3.5" />}
+                </button>
+              }
+            />
+            <TooltipContent>{fullWidthLabel}</TooltipContent>
           </Tooltip>
         </div>
       </div>
