@@ -11,6 +11,7 @@ import "dockview-react/dist/styles/dockview.css";
 import { AiPanel } from "../ai-panel";
 import { useSessionGroups } from "../../hooks/use-session-groups";
 import { useWorkspaceStore } from "@/stores/workspace";
+import { useLayoutStore } from "@/stores/layout";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { useDockApi } from "../../context/dock-api-context";
@@ -52,11 +53,28 @@ export const WorkspaceDock: FC = () => {
   const aiPanelOpen = useWorkspaceStore((s) => s.ai_panel_open) && can(PermissionKeys.AI_USE_AGENTS);
   const aiPanelOpenRef = useRef(aiPanelOpen);
   aiPanelOpenRef.current = aiPanelOpen;
+  const aiFullWidth = useLayoutStore((s) => s.ai_full_width);
+  const aiFullWidthRef = useRef(aiFullWidth);
+  aiFullWidthRef.current = aiFullWidth;
   /** A context with no saved layout (a project never visited, or home) gets the default AI panel width. */
   const resetToDefault = useCallback((dock: DockviewApi) => {
+    // Full width has the AI panel fill the dock; a fixed width here would leave the space beside it empty.
+    if (aiFullWidthRef.current) return;
     dock.getPanel(AI_PANEL_ID)?.api.setSize({ width: AI_PANEL_DEFAULT_WIDTH });
   }, []);
   useLayoutPersistence(api, resetToDefault);
+
+  /**
+   * Full width hides the main content group instead of closing it, so the routed page and its
+   * terminals stay mounted. Runs on every layout change, so presets, project switches and reloads
+   * can't leave the main group visible while full width is on.
+   */
+  const syncMainContentVisibility = useCallback((api: DockviewApi) => {
+    const main = api.getPanel(MAIN_CONTENT_PANEL_ID);
+    if (!main) return;
+    const visible = !(aiFullWidthRef.current && aiPanelOpenRef.current && api.getPanel(AI_PANEL_ID));
+    if (main.group.api.isVisible !== visible) main.group.api.setVisible(visible);
+  }, []);
 
   /**
    * Removes any leftover group with zero panels (e.g. a manually-edited saved preset with a group a
@@ -130,10 +148,12 @@ export const WorkspaceDock: FC = () => {
         ensureMainContent(event.api);
         hideTabStrips(event.api);
         if (aiPanelOpenRef.current && !event.api.getPanel(AI_PANEL_ID)) addAiPanel(event.api);
+        syncMainContentVisibility(event.api);
       });
+      syncMainContentVisibility(event.api);
       setApi(event.api);
     },
-    [addAiPanel, ensureMainContent, hideTabStrips, pruneEmptyGroups, setApi],
+    [addAiPanel, ensureMainContent, hideTabStrips, pruneEmptyGroups, setApi, syncMainContentVisibility],
   );
 
   // Keep the AI panel's dock presence in sync with the existing `ai_panel_open` toggle/permission gate.
@@ -144,6 +164,11 @@ export const WorkspaceDock: FC = () => {
     if (aiPanelOpen && !existing) addAiPanel(api);
     else if (!aiPanelOpen && existing) existing.api.close();
   }, [aiPanelOpen, addAiPanel]);
+
+  useEffect(() => {
+    const api = apiRef.current;
+    if (api) syncMainContentVisibility(api);
+  }, [aiFullWidth, aiPanelOpen, syncMainContentVisibility]);
 
   return (
     <DockviewReact
