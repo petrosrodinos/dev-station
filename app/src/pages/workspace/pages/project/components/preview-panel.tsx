@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type FC } from "react";
-import { ArrowLeft, ArrowRight, Code2, ExternalLink, Globe, Maximize2, Minimize2, Play, RotateCw, TriangleAlert, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Code2, ExternalLink, Globe, Play, RotateCw, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,9 +12,6 @@ import { openUrl } from "@/features/local-workspace/services/local-workspace.ser
 import { useOverlayOpen } from "@/hooks/use-overlay-open";
 import { toast } from "@/hooks/use-toast";
 import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
-import { useResolvedShortcuts } from "@/features/users/hooks/use-shortcuts";
-import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
-import { formatComboParts } from "@/lib/shortcuts.utils";
 import { ProcessStatuses, type PreviewBounds } from "@shared/contract";
 
 interface PreviewPanelProps {
@@ -27,7 +24,7 @@ interface PreviewPanelProps {
  * Preview of a running localhost service, rendered by a native view that main positions over the body
  * placeholder. Lives in the project dock as a regular panel, so it can be dragged and split anywhere.
  */
-export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false }) => {
+export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
   const projectId = project.id;
   const prefs = useWorkspaceStore((s) => s.preview_by_project[projectId]) ?? DEFAULT_PREVIEW_PREFS;
   const setProjectPreview = useWorkspaceStore((s) => s.setProjectPreview);
@@ -103,9 +100,6 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false 
     if (target) start.mutate({ projectId, service: target.service, siblings: project.services });
   };
 
-  const close = () => setProjectPreview(projectId, { previewOpen: false, previewExpanded: false });
-  const layoutCombo = useResolvedShortcuts().find((s) => s.id === ShortcutActions.TOGGLE_REVIEW_LAYOUT)?.combo;
-  const layoutHint = layoutCombo ? ` (${formatComboParts(layoutCombo).join("+")})` : "";
   const displayUrl = state?.url || url || "";
 
   return (
@@ -142,15 +136,6 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project, expanded = false 
         </HeaderButton>
         <HeaderButton label="Open DevTools (Network, Console, ...)" disabled={!url} onClick={() => void actions.toggleDevTools()}>
           <Code2 className="size-3.5" />
-        </HeaderButton>
-        <HeaderButton
-          label={expanded ? `Restore project view${layoutHint}` : `Review layout — preview beside the session${layoutHint}`}
-          onClick={() => setProjectPreview(projectId, { previewExpanded: !expanded })}
-        >
-          {expanded ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
-        </HeaderButton>
-        <HeaderButton label="Close preview" onClick={close}>
-          <X className="size-3.5" />
         </HeaderButton>
       </div>
       {stopped && (

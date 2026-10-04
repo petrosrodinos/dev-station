@@ -18,6 +18,7 @@ import { terminalManager } from "../managers/terminal-manager";
 import { updateManager } from "../managers/update-manager";
 import { workspaceConfig } from "../managers/workspace-config";
 import { clearWhichCache, defaultShell } from "../utils/platform";
+import { killPorts } from "../utils/port-killer";
 import { handle, zAbsPath, zCols, zId, zRelPath, zRows } from "./handle";
 import { IpcError } from "./ipc-error";
 
@@ -192,6 +193,8 @@ export function registerIpc() {
   handle(IpcChannels.PROC_RESTART, args(zId, zServiceSpec), ([id, spec]) => processManager.restart(id, spec), { requires: ["PROJECTS_EDIT"] });
   handle(IpcChannels.PROC_LOGS, args(zId), ([key]) => processManager.logs(key));
   handle(IpcChannels.PROC_APPROVE, args(zId, z.string().min(1).max(2000)), ([id, command]) => processManager.approveCommand(id, command), { requires: ["PROJECTS_EDIT"] });
+
+  handle(IpcChannels.PORT_KILL, args(z.array(z.number().int().min(1).max(65535)).min(1).max(30)), ([ports]) => killPorts(ports), { requires: ["PROJECTS_EDIT"] });
 
   // Terminals ----------------------------------------------------------------------------
   handle(IpcChannels.TERM_LIST, none, () => terminalManager.list());

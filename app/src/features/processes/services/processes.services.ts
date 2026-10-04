@@ -1,4 +1,4 @@
-import type { LogLine, ProcessInfo, ServiceSpec } from "@shared/contract";
+import type { LogLine, PortKillResult, ProcessInfo, ServiceSpec } from "@shared/contract";
 import { getBridge, getErrorMessage } from "@/lib/desktop";
 import type { ProjectService } from "@/features/projects/interfaces/projects.interfaces";
 
@@ -64,5 +64,14 @@ export const approveServiceCommand = async ({ projectId, command }: { projectId:
         await getBridge().processes.approveCommand(projectId, command);
     } catch (error) {
         throw new Error(getErrorMessage(error, "Failed to approve the command."));
+    }
+};
+
+/** Terminates whatever is listening on each of the given ports. */
+export const killPorts = async (ports: number[]): Promise<PortKillResult[]> => {
+    try {
+        return await getBridge().ports.kill(ports);
+    } catch (error) {
+        throw new Error(getErrorMessage(error, "Failed to free ports."));
     }
 };

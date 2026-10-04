@@ -25,6 +25,8 @@ import { Routes } from "@/routes/routes";
 import { AgentRuntimeStatuses, EditorTargets } from "@shared/contract";
 import { useProjectContext } from "../../hooks/use-project-context";
 import { ServicesCard } from "./components/services-card";
+import { PortsCard } from "./components/ports-card";
+import { isDesktop } from "@/lib/desktop";
 import { ProjectActivityCard } from "./components/project-activity-card";
 import { LinearSummaryCard } from "./components/linear-summary-card";
 
@@ -96,6 +98,7 @@ const OverviewTab: FC = () => {
 
       <div className="grid grid-cols-1 gap-4 @4xl:grid-cols-2">
         <ServicesCard project={project} />
+        {isDesktop() && <PortsCard projectId={project.id} />}
 
         <Panel>
           <PanelHeader title="Project" />

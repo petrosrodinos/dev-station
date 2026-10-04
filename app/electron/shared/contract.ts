@@ -340,6 +340,14 @@ export interface LogLine {
   at: number;
 }
 
+export interface PortKillResult {
+  port: number;
+  /** Process ids that were listening on the port when the kill started (empty = nothing was using it). */
+  pids: number[];
+  /** True when nothing is listening on the port any more. */
+  freed: boolean;
+}
+
 export interface ProcessEvent {
   type: "status" | "log";
   process: ProcessInfo;
@@ -590,6 +598,10 @@ export interface DevStationBridge {
     approveCommand(projectId: string, command: string): Promise<void>;
     onEvent(cb: (e: ProcessEvent) => void): Unsubscribe;
   };
+  ports: {
+    /** Terminates whatever is listening on each port. */
+    kill(ports: number[]): Promise<PortKillResult[]>;
+  };
   terminals: {
     list(): Promise<TerminalInfo[]>;
     create(projectId: string, input?: { cols?: number; rows?: number }): Promise<TerminalInfo>;
@@ -708,6 +720,7 @@ export const IpcChannels = {
   PROC_LOGS: "process:logs",
   PROC_APPROVE: "process:approve-command",
   PROC_EVENT: "process:event",
+  PORT_KILL: "port:kill",
   TERM_LIST: "terminal:list",
   TERM_CREATE: "terminal:create",
   TERM_WRITE: "terminal:write",
