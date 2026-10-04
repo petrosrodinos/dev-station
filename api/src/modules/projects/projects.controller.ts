@@ -51,6 +51,7 @@ export class ProjectsController {
   @RequirePermissions(PermissionKey.PROJECTS_VIEW)
   @ApiOperation({ summary: 'All projects of the organization, in rail order' })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'archived', required: false, enum: ['true', 'false'] })
   @ApiResponse({ status: 200, type: ProjectEntity, isArray: true })
   findAll(
     @CurrentMembership('organization_id') organizationId: string,

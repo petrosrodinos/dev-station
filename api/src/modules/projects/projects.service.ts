@@ -50,6 +50,7 @@ export class ProjectsService {
     const projects = await this.prisma.project.findMany({
       where: {
         organization_id: organizationId,
+        archived_at: query.archived === 'true' ? { not: null } : null,
         ...(query.search && {
           name: { contains: query.search, mode: 'insensitive' },
         }),
@@ -168,6 +169,12 @@ export class ProjectsService {
           linear_project_id: dto.linear_project_id,
           notion_connection_id: dto.notion_connection_id,
           notion_root_page_id: dto.notion_root_page_id,
+          archived_at:
+            dto.archived === undefined
+              ? undefined
+              : dto.archived
+                ? new Date()
+                : null,
         },
         include: projectInclude,
       });

@@ -3,13 +3,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { AlertTriangle, CloudDownload, FolderOpen, FolderSearch, LayoutGrid, Link2, Pencil, Plug, Plus, Settings, Trash2 } from "lucide-react";
+import { AlertTriangle, Archive, CloudDownload, FolderOpen, FolderSearch, LayoutGrid, Link2, Pencil, Plug, Plus, Settings, Trash2 } from "lucide-react";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
-import { useDeleteProject, useGetProjects, useReorderProjects } from "@/features/projects/hooks/use-projects";
+import { useArchiveProject, useDeleteProject, useGetProjects, useReorderProjects } from "@/features/projects/hooks/use-projects";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { useProjectLocalStates } from "@/features/local-workspace/hooks/use-local-workspace";
 import { useOpenInEditor, useRevealFile } from "@/features/files/hooks/use-files";
@@ -65,6 +65,7 @@ export function ProjectRail() {
   const { can } = usePermissions();
   const reorder = useReorderProjects();
   const deleteProject = useDeleteProject();
+  const archiveProject = useArchiveProject();
   const reveal = useRevealFile();
   const openInEditor = useOpenInEditor();
   const [removing, setRemoving] = useState<Project | null>(null);
@@ -95,6 +96,12 @@ export function ProjectRail() {
   const selectProject = (project: Project) => {
     setActiveProject(project.id);
     navigate(Routes.workspace.project(project.id));
+  };
+
+  // Archiving is reversible from /workspace, so it needs no confirmation; leaving the project's page avoids a "not found" screen.
+  const archive = (project: Project) => {
+    if (project.id === activeProjectId) goHome();
+    archiveProject.mutate({ id: project.id, archived: true });
   };
 
   // The badge opens the latest session that needs attention straight into review.
@@ -150,6 +157,7 @@ export function ProjectRail() {
                 onSetup={() => navigate(Routes.workspace.project_setup(project.id))}
                 onReveal={() => reveal.mutate({ projectId: project.id, path: "." })}
                 onOpenEditor={() => openInEditor.mutate({ projectId: project.id, editor: EditorTargets.CURSOR })}
+                onArchive={() => archive(project)}
                 onRemove={() => setRemoving(project)}
               />
             ))}
@@ -244,10 +252,11 @@ interface RailItemProps {
   onSetup: () => void;
   onReveal: () => void;
   onOpenEditor: () => void;
+  onArchive: () => void;
   onRemove: () => void;
 }
 
-function RailItem({ project, active, position, localState, attention, canEdit, canDelete, onSelect, onBadge, onEdit, onSetup, onReveal, onOpenEditor, onRemove }: RailItemProps) {
+function RailItem({ project, active, position, localState, attention, canEdit, canDelete, onSelect, onBadge, onEdit, onSetup, onReveal, onOpenEditor, onArchive, onRemove }: RailItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: project.id, disabled: !canEdit });
   const horizontal = isHorizontalRail(position);
   const imported = localState === ProjectLocalStates.IMPORTED;
@@ -337,9 +346,14 @@ function RailItem({ project, active, position, localState, attention, canEdit, c
           </>
         )}
         {canEdit && (
-          <ContextMenuItem onSelect={onEdit} className="gap-2">
-            <Pencil className="size-3.5" /> Edit project…
-          </ContextMenuItem>
+          <>
+            <ContextMenuItem onSelect={onEdit} className="gap-2">
+              <Pencil className="size-3.5" /> Edit project…
+            </ContextMenuItem>
+            <ContextMenuItem onSelect={onArchive} className="gap-2">
+              <Archive className="size-3.5" /> Archive project
+            </ContextMenuItem>
+          </>
         )}
         {canDelete && (
           <>

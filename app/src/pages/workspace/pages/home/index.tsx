@@ -12,6 +12,7 @@ import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CardGridSkeleton } from "@/components/ui/list-skeleton";
 import { AttentionPanel } from "./components/attention-panel";
+import { ArchivedProjectsPanel } from "./components/archived-projects-panel";
 import { useGetProjects, useReorderProjects } from "@/features/projects/hooks/use-projects";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { useProjectLocalStates } from "@/features/local-workspace/hooks/use-local-workspace";
@@ -54,7 +55,7 @@ const WorkspaceHomePage: FC = () => {
 
   if (!projects?.length) {
     return (
-      <div className="flex h-full items-center justify-center p-4 sm:p-6">
+      <div className="flex h-full flex-col items-center justify-center gap-4 overflow-y-auto p-4 sm:p-6">
         <EmptyState
           icon={<FolderGit2 />}
           title={`Welcome to ${organization?.name ?? "your workspace"}`}
@@ -72,6 +73,9 @@ const WorkspaceHomePage: FC = () => {
             </>
           }
         />
+        <div className="w-full max-w-xl">
+          <ArchivedProjectsPanel />
+        </div>
       </div>
     );
   }
@@ -108,6 +112,7 @@ const WorkspaceHomePage: FC = () => {
           </div>
         </SortableContext>
       </DndContext>
+      <ArchivedProjectsPanel />
     </div>
   );
 };

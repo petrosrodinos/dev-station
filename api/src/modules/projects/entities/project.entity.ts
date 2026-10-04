@@ -52,6 +52,7 @@ export class ProjectEntity {
   @ApiProperty({ nullable: true }) notion_connection_id: string | null;
   @ApiProperty({ nullable: true }) notion_root_page_id: string | null;
   @ApiProperty({ nullable: true }) last_activity_at: Date | null;
+  @ApiProperty({ nullable: true }) archived_at: Date | null;
   @ApiProperty() created_at: Date;
   @ApiProperty() updated_at: Date;
   @ApiProperty({ type: ProjectServiceEntity, isArray: true })

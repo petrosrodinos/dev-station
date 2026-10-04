@@ -25,6 +25,7 @@ import { QUEUED_MUTATION_POLICY } from "@/config/query/offline-policy";
 export const ProjectMutationKeys = {
     create: ["projects", "create"],
     update: ["projects", "update"],
+    archive: ["projects", "archive"],
     delete: ["projects", "delete"],
     reorder: ["projects", "reorder"],
     replaceServices: ["projects", "replace-services"],
@@ -33,7 +34,13 @@ export const ProjectMutationKeys = {
 
 export const useGetProjects = () => {
     const orgId = useWorkspaceStore((s) => s.active_organization_id);
-    return useQuery({ queryKey: ["projects", orgId], queryFn: getProjects, enabled: !!orgId });
+    return useQuery({ queryKey: ["projects", orgId], queryFn: () => getProjects(), enabled: !!orgId });
+};
+
+/** Archived projects, listed only where they can be restored (the rail never shows them). */
+export const useGetArchivedProjects = () => {
+    const orgId = useWorkspaceStore((s) => s.active_organization_id);
+    return useQuery({ queryKey: ["projects", orgId, "archived"], queryFn: () => getProjects(true), enabled: !!orgId });
 };
 
 /** Single project resolved from the (already loaded) project list so switching is instant. */
@@ -45,6 +52,8 @@ export const useProject = (projectId: string | null | undefined): { project: Pro
 export const useCreateProject = () => useMutation<Project, Error, CreateProjectDto>({ mutationKey: ProjectMutationKeys.create });
 
 export const useUpdateProject = () => useMutation<Project, Error, UpdateProjectDto & { id: string }>({ mutationKey: ProjectMutationKeys.update });
+
+export const useArchiveProject = () => useMutation<Project, Error, { id: string; archived: boolean }>({ mutationKey: ProjectMutationKeys.archive });
 
 export const useDeleteProject = () => useMutation<void, Error, string>({ mutationKey: ProjectMutationKeys.delete });
 
@@ -84,6 +93,17 @@ export const registerProjectMutations = (queryClient: QueryClient) => {
         onSuccess: () => {
             refreshProjects();
             toast({ title: "Project updated", duration: 1500 });
+        },
+        onError: reportFailure("Could not update project"),
+    });
+
+    queryClient.setMutationDefaults(ProjectMutationKeys.archive, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
+        mutationFn: updateProject,
+        onSuccess: (project) => {
+            refreshProjects();
+            toast({ title: project.archived_at ? "Project archived" : "Project restored", description: project.name, duration: 2000 });
         },
         onError: reportFailure("Could not update project"),
     });

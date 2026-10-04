@@ -20049,6 +20049,7 @@ export namespace Prisma {
     notion_connection_id: string | null
     notion_root_page_id: string | null
     last_activity_at: Date | null
+    archived_at: Date | null
     created_by: string | null
     created_at: Date | null
     updated_at: Date | null
@@ -20072,6 +20073,7 @@ export namespace Prisma {
     notion_connection_id: string | null
     notion_root_page_id: string | null
     last_activity_at: Date | null
+    archived_at: Date | null
     created_by: string | null
     created_at: Date | null
     updated_at: Date | null
@@ -20095,6 +20097,7 @@ export namespace Prisma {
     notion_connection_id: number
     notion_root_page_id: number
     last_activity_at: number
+    archived_at: number
     created_by: number
     created_at: number
     updated_at: number
@@ -20128,6 +20131,7 @@ export namespace Prisma {
     notion_connection_id?: true
     notion_root_page_id?: true
     last_activity_at?: true
+    archived_at?: true
     created_by?: true
     created_at?: true
     updated_at?: true
@@ -20151,6 +20155,7 @@ export namespace Prisma {
     notion_connection_id?: true
     notion_root_page_id?: true
     last_activity_at?: true
+    archived_at?: true
     created_by?: true
     created_at?: true
     updated_at?: true
@@ -20174,6 +20179,7 @@ export namespace Prisma {
     notion_connection_id?: true
     notion_root_page_id?: true
     last_activity_at?: true
+    archived_at?: true
     created_by?: true
     created_at?: true
     updated_at?: true
@@ -20284,6 +20290,7 @@ export namespace Prisma {
     notion_connection_id: string | null
     notion_root_page_id: string | null
     last_activity_at: Date | null
+    archived_at: Date | null
     created_by: string
     created_at: Date
     updated_at: Date
@@ -20326,6 +20333,7 @@ export namespace Prisma {
     notion_connection_id?: boolean
     notion_root_page_id?: boolean
     last_activity_at?: boolean
+    archived_at?: boolean
     created_by?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -20359,6 +20367,7 @@ export namespace Prisma {
     notion_connection_id?: boolean
     notion_root_page_id?: boolean
     last_activity_at?: boolean
+    archived_at?: boolean
     created_by?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -20387,6 +20396,7 @@ export namespace Prisma {
     notion_connection_id?: boolean
     notion_root_page_id?: boolean
     last_activity_at?: boolean
+    archived_at?: boolean
     created_by?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -20415,12 +20425,13 @@ export namespace Prisma {
     notion_connection_id?: boolean
     notion_root_page_id?: boolean
     last_activity_at?: boolean
+    archived_at?: boolean
     created_by?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organization_id" | "repository_id" | "name" | "description" | "color" | "avatar_seed" | "sort_order" | "sub_path" | "preferred_agent" | "github_connection_id" | "linear_connection_id" | "linear_team_id" | "linear_project_id" | "notion_connection_id" | "notion_root_page_id" | "last_activity_at" | "created_by" | "created_at" | "updated_at", ExtArgs["result"]["project"]>
+  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organization_id" | "repository_id" | "name" | "description" | "color" | "avatar_seed" | "sort_order" | "sub_path" | "preferred_agent" | "github_connection_id" | "linear_connection_id" | "linear_team_id" | "linear_project_id" | "notion_connection_id" | "notion_root_page_id" | "last_activity_at" | "archived_at" | "created_by" | "created_at" | "updated_at", ExtArgs["result"]["project"]>
   export type ProjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     repository?: boolean | Project$repositoryArgs<ExtArgs>
@@ -20479,6 +20490,10 @@ export namespace Prisma {
       notion_connection_id: string | null
       notion_root_page_id: string | null
       last_activity_at: Date | null
+      /**
+       * Archived projects keep their data and sessions but are hidden from the rail until restored.
+       */
+      archived_at: Date | null
       created_by: string
       created_at: Date
       updated_at: Date
@@ -20931,6 +20946,7 @@ export namespace Prisma {
     readonly notion_connection_id: FieldRef<"Project", 'String'>
     readonly notion_root_page_id: FieldRef<"Project", 'String'>
     readonly last_activity_at: FieldRef<"Project", 'DateTime'>
+    readonly archived_at: FieldRef<"Project", 'DateTime'>
     readonly created_by: FieldRef<"Project", 'String'>
     readonly created_at: FieldRef<"Project", 'DateTime'>
     readonly updated_at: FieldRef<"Project", 'DateTime'>
@@ -32208,6 +32224,7 @@ export namespace Prisma {
     notion_connection_id: 'notion_connection_id',
     notion_root_page_id: 'notion_root_page_id',
     last_activity_at: 'last_activity_at',
+    archived_at: 'archived_at',
     created_by: 'created_by',
     created_at: 'created_at',
     updated_at: 'updated_at'
@@ -33851,6 +33868,7 @@ export namespace Prisma {
     notion_connection_id?: StringNullableFilter<"Project"> | string | null
     notion_root_page_id?: StringNullableFilter<"Project"> | string | null
     last_activity_at?: DateTimeNullableFilter<"Project"> | Date | string | null
+    archived_at?: DateTimeNullableFilter<"Project"> | Date | string | null
     created_by?: StringFilter<"Project"> | string
     created_at?: DateTimeFilter<"Project"> | Date | string
     updated_at?: DateTimeFilter<"Project"> | Date | string
@@ -33883,6 +33901,7 @@ export namespace Prisma {
     notion_connection_id?: SortOrderInput | SortOrder
     notion_root_page_id?: SortOrderInput | SortOrder
     last_activity_at?: SortOrderInput | SortOrder
+    archived_at?: SortOrderInput | SortOrder
     created_by?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -33918,6 +33937,7 @@ export namespace Prisma {
     notion_connection_id?: StringNullableFilter<"Project"> | string | null
     notion_root_page_id?: StringNullableFilter<"Project"> | string | null
     last_activity_at?: DateTimeNullableFilter<"Project"> | Date | string | null
+    archived_at?: DateTimeNullableFilter<"Project"> | Date | string | null
     created_by?: StringFilter<"Project"> | string
     created_at?: DateTimeFilter<"Project"> | Date | string
     updated_at?: DateTimeFilter<"Project"> | Date | string
@@ -33950,6 +33970,7 @@ export namespace Prisma {
     notion_connection_id?: SortOrderInput | SortOrder
     notion_root_page_id?: SortOrderInput | SortOrder
     last_activity_at?: SortOrderInput | SortOrder
+    archived_at?: SortOrderInput | SortOrder
     created_by?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -33981,6 +34002,7 @@ export namespace Prisma {
     notion_connection_id?: StringNullableWithAggregatesFilter<"Project"> | string | null
     notion_root_page_id?: StringNullableWithAggregatesFilter<"Project"> | string | null
     last_activity_at?: DateTimeNullableWithAggregatesFilter<"Project"> | Date | string | null
+    archived_at?: DateTimeNullableWithAggregatesFilter<"Project"> | Date | string | null
     created_by?: StringWithAggregatesFilter<"Project"> | string
     created_at?: DateTimeWithAggregatesFilter<"Project"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"Project"> | Date | string
@@ -36019,6 +36041,7 @@ export namespace Prisma {
     linear_project_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -36051,6 +36074,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -36073,6 +36097,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36105,6 +36130,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36132,6 +36158,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -36150,6 +36177,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36173,6 +36201,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38226,6 +38255,7 @@ export namespace Prisma {
     notion_connection_id?: SortOrder
     notion_root_page_id?: SortOrder
     last_activity_at?: SortOrder
+    archived_at?: SortOrder
     created_by?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -38253,6 +38283,7 @@ export namespace Prisma {
     notion_connection_id?: SortOrder
     notion_root_page_id?: SortOrder
     last_activity_at?: SortOrder
+    archived_at?: SortOrder
     created_by?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -38276,6 +38307,7 @@ export namespace Prisma {
     notion_connection_id?: SortOrder
     notion_root_page_id?: SortOrder
     last_activity_at?: SortOrder
+    archived_at?: SortOrder
     created_by?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -43112,6 +43144,7 @@ export namespace Prisma {
     linear_project_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -43142,6 +43175,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -43513,6 +43547,7 @@ export namespace Prisma {
     notion_connection_id?: StringNullableFilter<"Project"> | string | null
     notion_root_page_id?: StringNullableFilter<"Project"> | string | null
     last_activity_at?: DateTimeNullableFilter<"Project"> | Date | string | null
+    archived_at?: DateTimeNullableFilter<"Project"> | Date | string | null
     created_by?: StringFilter<"Project"> | string
     created_at?: DateTimeFilter<"Project"> | Date | string
     updated_at?: DateTimeFilter<"Project"> | Date | string
@@ -44467,6 +44502,7 @@ export namespace Prisma {
     linear_project_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -44497,6 +44533,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -45333,6 +45370,7 @@ export namespace Prisma {
     linear_project_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -45364,6 +45402,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -45401,6 +45440,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45432,6 +45472,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45453,6 +45494,7 @@ export namespace Prisma {
     linear_project_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -45484,6 +45526,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -45521,6 +45564,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45552,6 +45596,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45699,6 +45744,7 @@ export namespace Prisma {
     linear_project_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -45729,6 +45775,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -45761,6 +45808,7 @@ export namespace Prisma {
     linear_project_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -45791,6 +45839,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -45823,6 +45872,7 @@ export namespace Prisma {
     linear_project_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -45853,6 +45903,7 @@ export namespace Prisma {
     linear_project_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -46092,6 +46143,7 @@ export namespace Prisma {
     linear_project_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -46123,6 +46175,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -46288,6 +46341,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46319,6 +46373,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46452,6 +46507,7 @@ export namespace Prisma {
     linear_project_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -46483,6 +46539,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -46669,6 +46726,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46700,6 +46758,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47615,6 +47674,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -47817,6 +47877,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47847,6 +47908,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47873,6 +47935,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48257,6 +48320,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -48275,6 +48339,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48305,6 +48370,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48331,6 +48397,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48607,6 +48674,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -48629,6 +48697,7 @@ export namespace Prisma {
     notion_connection_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -48651,6 +48720,7 @@ export namespace Prisma {
     linear_project_id?: string | null
     notion_root_page_id?: string | null
     last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
     created_by: string
     created_at?: Date | string
     updated_at?: Date | string
@@ -48707,6 +48777,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48737,6 +48808,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48763,6 +48835,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48781,6 +48854,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48811,6 +48885,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48837,6 +48912,7 @@ export namespace Prisma {
     notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48855,6 +48931,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48885,6 +48962,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48911,6 +48989,7 @@ export namespace Prisma {
     linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
     notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
     last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_by?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string

@@ -2,9 +2,10 @@ import axiosInstance, { getApiErrorMessage } from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
 import type { CreateProjectDto, LinkProjectIssueDto, Project, ProjectIssueLink, ServiceInput, UpdateProjectDto } from "../interfaces/projects.interfaces";
 
-export const getProjects = async (): Promise<Project[]> => {
+/** Active projects by default; pass `archived` to list the archived ones instead. */
+export const getProjects = async (archived = false): Promise<Project[]> => {
     try {
-        const response = await axiosInstance.get<Project[]>(ApiRoutes.projects.prefix);
+        const response = await axiosInstance.get<Project[]>(ApiRoutes.projects.prefix, { params: archived ? { archived: "true" } : undefined });
         return response.data;
     } catch (error) {
         throw new Error(getApiErrorMessage(error, "Failed to load projects."));
