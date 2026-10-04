@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDeleteAgentSession, useDeleteAgentSessions, useRenameAgentSession } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import type { AgentSession } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
+import { isBlockingMutation, willQueueWrite } from "@/lib/mutation-state";
+import { useCloseWhenParked } from "@/hooks/use-close-when-parked";
 
 /** Right-click a session (tab or list row) to rename or delete it. */
 export function SessionContextMenu({ session, children }: { session: AgentSession; children: ReactNode }) {
@@ -39,6 +41,7 @@ interface SessionDialogProps {
 
 function RenameSessionDialog({ session, open, onOpenChange }: SessionDialogProps) {
   const rename = useRenameAgentSession();
+  useCloseWhenParked(rename, () => onOpenChange(false));
   const [name, setName] = useState(session.name);
   const trimmed = name.trim();
 
@@ -46,13 +49,14 @@ function RenameSessionDialog({ session, open, onOpenChange }: SessionDialogProps
     e.preventDefault();
     if (!trimmed || trimmed === session.name) return onOpenChange(false);
     rename.mutate({ id: session.id, name: trimmed }, { onSuccess: () => onOpenChange(false) });
+    if (willQueueWrite()) onOpenChange(false);
   };
 
   return (
     <Dialog
       open={open}
       onOpenChange={(o) => {
-        if (rename.isPending) return;
+        if (isBlockingMutation(rename)) return;
         if (o) setName(session.name);
         onOpenChange(o);
       }}
@@ -65,7 +69,7 @@ function RenameSessionDialog({ session, open, onOpenChange }: SessionDialogProps
           </DialogHeader>
           <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} autoFocus onFocus={(e) => e.currentTarget.select()} aria-label="Session name" />
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={rename.isPending}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isBlockingMutation(rename)}>
               Cancel
             </Button>
             <Button type="submit" loading={rename.isPending} disabled={!trimmed}>

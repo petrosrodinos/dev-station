@@ -1,15 +1,25 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { createAgentSession, deleteAgentSession, getAgentCatalog, getAgentSessions, updateAgentSession } from "../services/agent-sessions.services";
 import { forgetAgentProcess, getAgentAdapters, openAgentExternally, restartAgentProcess, startAgentProcess, stopAgentProcess } from "../services/agent-runtime.services";
-import type { AgentSession, AgentSessionsQuery, CreateAgentSessionDto } from "../interfaces/agent-sessions.interfaces";
+import type { AgentSession, AgentSessionsQuery, CreateAgentSessionDto, UpdateAgentSessionDto } from "../interfaces/agent-sessions.interfaces";
 import { getAgentCommands } from "@/features/agent-commands/services/agent-commands.services";
 import { AGENT_COMMANDS_KEY } from "@/features/agent-commands/hooks/use-agent-commands";
 import { linkProjectIssue } from "@/features/projects/services/projects.services";
 import { useRuntimeStore } from "@/stores/runtime";
-import { useWorkspaceStore } from "@/stores/workspace";
+import { getWorkspaceStoreState, useWorkspaceStore } from "@/stores/workspace";
 import { isDesktop } from "@/lib/desktop";
 import { toast } from "@/hooks/use-toast";
+import { QUEUED_MUTATION_POLICY } from "@/config/query/offline-policy";
 import { AgentRuntimeStatuses, type AgentRuntimeStatus, type AgentSessionInfo } from "@shared/contract";
+
+/**
+ * Mutation keys for the API-only session writes. Hooks that touch the local agent process (start, stop,
+ * relaunch, close tab, delete) stay inline and are not queued.
+ */
+export const AgentSessionMutationKeys = {
+    markReviewed: ["agent-sessions", "mark-reviewed"],
+    rename: ["agent-sessions", "rename"],
+} as const;
 
 export const useAgentSessions = (query: AgentSessionsQuery = {}) => {
     const orgId = useWorkspaceStore((s) => s.active_organization_id);
@@ -208,15 +218,25 @@ export const useDeleteAgentSessions = () => {
 };
 
 /** Takes a session out of the review queue; with a commit sha it also links that commit to the session record. */
-export const useMarkSessionReviewed = () => {
-    const queryClient = useQueryClient();
-    const markReviewed = useWorkspaceStore((s) => s.markReviewed);
-    return useMutation({
+export const useMarkSessionReviewed = () =>
+    useMutation<{ commit_sha?: string | null }, Error, { id: string; commit_sha?: string | null }>({ mutationKey: AgentSessionMutationKeys.markReviewed });
+
+export const useRenameAgentSession = () =>
+    useMutation<AgentSession, Error, UpdateAgentSessionDto & { id: string }>({ mutationKey: AgentSessionMutationKeys.rename });
+
+export const registerAgentSessionMutations = (queryClient: QueryClient) => {
+    // Session writes share one scope so they replay in the order they were made.
+    const scope = { id: "agent-sessions" };
+
+    queryClient.setMutationDefaults(AgentSessionMutationKeys.markReviewed, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
         mutationFn: async ({ id, commit_sha }: { id: string; commit_sha?: string | null }) => {
             if (commit_sha) await updateAgentSession({ id, commit_sha });
             return { commit_sha };
         },
-        onMutate: ({ id }) => markReviewed(id),
+        // Optimistic: the session leaves the review queue immediately, including while offline.
+        onMutate: ({ id }) => getWorkspaceStoreState().markReviewed(id),
         onSuccess: ({ commit_sha }) => {
             queryClient.invalidateQueries({ queryKey: ["agent-sessions"] });
             // A commit already announced itself; only a plain "reviewed" needs its own confirmation.
@@ -224,11 +244,10 @@ export const useMarkSessionReviewed = () => {
         },
         onError: (error: Error) => toast({ title: "Could not link the commit to this session", description: error.message, variant: "error" }),
     });
-};
 
-export const useRenameAgentSession = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
+    queryClient.setMutationDefaults(AgentSessionMutationKeys.rename, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
         mutationFn: updateAgentSession,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["agent-sessions"] });

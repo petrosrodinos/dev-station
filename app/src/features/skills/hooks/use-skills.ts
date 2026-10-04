@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, type QueryClient } from "@tanstack/react-query";
 import type { SkillListResult } from "@shared/contract";
 import {
     addFavorite,
@@ -18,9 +18,20 @@ import type { CreateSkillDto, CustomSkill, FavoriteSkillDto, SkillFavorite, Unif
 import { isDesktop } from "@/lib/desktop";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { toast } from "@/hooks/use-toast";
+import { QUEUED_MUTATION_POLICY } from "@/config/query/offline-policy";
 
-const CUSTOM_KEY = ["skills", "custom"];
-const FAVORITES_KEY = ["skills", "favorites"];
+// Own roots (not under "skills"): "skills" also holds the local IPC scan, which must not pause offline.
+const CUSTOM_KEY = ["custom-skills"];
+const FAVORITES_KEY = ["skill-favorites"];
+
+/** Mutation keys only. The functions and callbacks live in registerSkillMutations (see config/query/mutation-defaults). */
+export const SkillMutationKeys = {
+    create: ["skills", "create"],
+    update: ["skills", "update"],
+    delete: ["skills", "delete"],
+    favorite: ["skills", "favorite"],
+    unfavorite: ["skills", "unfavorite"],
+} as const;
 
 export const useCustomSkills = () => {
     const orgId = useWorkspaceStore((s) => s.active_organization_id);
@@ -100,48 +111,64 @@ export const useSendCustomSkill = () =>
         onError: (error: Error) => toast({ title: "Could not send skill", description: error.message, variant: "error", duration: 6000 }),
     });
 
-export const useCreateSkill = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
+export const useCreateSkill = () => useMutation<CustomSkill, Error, CreateSkillDto>({ mutationKey: SkillMutationKeys.create });
+
+export const useUpdateSkill = () => useMutation<CustomSkill, Error, UpdateSkillDto & { id: string }>({ mutationKey: SkillMutationKeys.update });
+
+export const useDeleteSkill = () => useMutation<void, Error, string>({ mutationKey: SkillMutationKeys.delete });
+
+export const useFavoriteSkill = () => useMutation<SkillFavorite, Error, FavoriteSkillDto>({ mutationKey: SkillMutationKeys.favorite });
+
+export const useUnfavoriteSkill = () => useMutation<void, Error, string>({ mutationKey: SkillMutationKeys.unfavorite });
+
+export const registerSkillMutations = (queryClient: QueryClient) => {
+    const refreshCustom = () => queryClient.invalidateQueries({ queryKey: CUSTOM_KEY });
+    const refreshFavorites = () => queryClient.invalidateQueries({ queryKey: FAVORITES_KEY });
+    const reportFailure = (title: string) => (error: Error) => toast({ title, description: error.message, variant: "error" });
+
+    // Every custom-skill and favorite write shares one scope so they replay in the order they were made.
+    const scope = { id: "skills" };
+
+    queryClient.setMutationDefaults(SkillMutationKeys.create, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
         mutationFn: createSkill,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: CUSTOM_KEY });
+            refreshCustom();
             toast({ title: "Skill created", duration: 1500 });
         },
-        onError: (error: Error) => toast({ title: "Could not create skill", description: error.message, variant: "error" }),
+        onError: reportFailure("Could not create skill"),
     });
-};
 
-export const useUpdateSkill = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (vars: UpdateSkillDto & { id: string }) => updateSkill(vars),
+    queryClient.setMutationDefaults(SkillMutationKeys.update, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
+        mutationFn: updateSkill,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: CUSTOM_KEY });
+            refreshCustom();
             toast({ title: "Skill saved", duration: 1500 });
         },
-        onError: (error: Error) => toast({ title: "Could not save skill", description: error.message, variant: "error" }),
+        onError: reportFailure("Could not save skill"),
     });
-};
 
-export const useDeleteSkill = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
+    queryClient.setMutationDefaults(SkillMutationKeys.delete, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
         mutationFn: deleteSkill,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: CUSTOM_KEY });
-            queryClient.invalidateQueries({ queryKey: FAVORITES_KEY });
+            refreshCustom();
+            refreshFavorites();
             toast({ title: "Skill deleted", duration: 1500 });
         },
-        onError: (error: Error) => toast({ title: "Could not delete skill", description: error.message, variant: "error" }),
+        onError: reportFailure("Could not delete skill"),
     });
-};
 
-export const useFavoriteSkill = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (dto: FavoriteSkillDto) => addFavorite(dto),
-        onMutate: async (dto) => {
+    queryClient.setMutationDefaults(SkillMutationKeys.favorite, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
+        mutationFn: addFavorite,
+        onMutate: async (dto: FavoriteSkillDto) => {
+            // Optimistic: the star lights up immediately, including while offline.
             await queryClient.cancelQueries({ queryKey: FAVORITES_KEY });
             const previous = queryClient.getQueryData<SkillFavorite[]>(FAVORITES_KEY);
             const optimistic: SkillFavorite = { id: `optimistic-${dto.target_kind}-${dto.ref_id}`, target_kind: dto.target_kind, ref_id: dto.ref_id };
@@ -152,15 +179,15 @@ export const useFavoriteSkill = () => {
             if (context?.previous) queryClient.setQueryData(FAVORITES_KEY, context.previous);
             toast({ title: "Could not favorite skill", description: error.message, variant: "error" });
         },
-        onSettled: () => queryClient.invalidateQueries({ queryKey: FAVORITES_KEY }),
+        onSettled: () => refreshFavorites(),
     });
-};
 
-export const useUnfavoriteSkill = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (favoriteId: string) => removeFavorite(favoriteId),
-        onMutate: async (favoriteId) => {
+    queryClient.setMutationDefaults(SkillMutationKeys.unfavorite, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
+        mutationFn: removeFavorite,
+        onMutate: async (favoriteId: string) => {
+            // Optimistic: the star clears immediately, including while offline.
             await queryClient.cancelQueries({ queryKey: FAVORITES_KEY });
             const previous = queryClient.getQueryData<SkillFavorite[]>(FAVORITES_KEY);
             queryClient.setQueryData<SkillFavorite[]>(FAVORITES_KEY, (prev) => prev?.filter((f) => f.id !== favoriteId));
@@ -170,7 +197,7 @@ export const useUnfavoriteSkill = () => {
             if (context?.previous) queryClient.setQueryData(FAVORITES_KEY, context.previous);
             toast({ title: "Could not unfavorite skill", description: error.message, variant: "error" });
         },
-        onSettled: () => queryClient.invalidateQueries({ queryKey: FAVORITES_KEY }),
+        onSettled: () => refreshFavorites(),
     });
 };
 

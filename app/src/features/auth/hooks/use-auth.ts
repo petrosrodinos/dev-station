@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { Routes } from "@/routes/routes";
 import { toast } from "@/hooks/use-toast";
+import { discardCacheOnSignOut } from "@/config/query/persister";
 
 export function useSignin() {
     const login = useAuthStore((state) => state.login);
@@ -56,9 +57,24 @@ export function useSignOut() {
     const navigate = useNavigate();
 
     return () => {
+        const unsynced = queryClient
+            .getMutationCache()
+            .getAll()
+            .filter((mutation) => mutation.state.isPaused).length;
+        if (unsynced > 0) {
+            toast({
+                title: "Signed out with unsynced changes",
+                description: `${unsynced} ${unsynced === 1 ? "change is" : "changes are"} kept on this device and will sync the next time you sign in.`,
+                variant: "warning",
+                duration: 6000,
+            });
+        } else {
+            discardCacheOnSignOut();
+        }
+        // The cache is cleared by the session teardown (config/query/persister), after its save has landed.
+        // Clearing here would race that save and overwrite it with an empty snapshot.
         logout();
         resetWorkspace();
-        queryClient.clear();
         navigate(Routes.auth.sign_in, { replace: true });
     };
 }

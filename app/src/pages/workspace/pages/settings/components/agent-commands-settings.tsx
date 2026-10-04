@@ -9,6 +9,7 @@ import type { AgentCommand } from "@/features/agent-commands/interfaces/agent-co
 import { AgentTypeFormOptions, getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
 import { AgentTypes, type AgentType } from "@shared/contract";
 import { SettingsSectionHeader } from "./settings-row";
+import { isBlockingMutation, willQueueWrite } from "@/lib/mutation-state";
 
 const COMMAND_PLACEHOLDERS: Record<AgentType, string> = {
   CLAUDE_CODE: "claude --dangerously-skip-permissions",
@@ -50,7 +51,7 @@ export function AgentCommandsSettings() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<CommandDraft>(emptyDraft);
 
-  const busy = create.isPending || update.isPending || remove.isPending;
+  const busy = isBlockingMutation(create) || isBlockingMutation(update) || isBlockingMutation(remove);
   const canAdd = draft.name.trim().length > 0 && draft.command.trim().length > 0;
   const canSave = editDraft.name.trim().length > 0 && editDraft.command.trim().length > 0;
 
@@ -67,6 +68,7 @@ export function AgentCommandsSettings() {
       { id: editingId, name: editDraft.name.trim(), agent_type: editDraft.agent_type, command: editDraft.command.trim() },
       { onSuccess: () => setEditingId(null) },
     );
+    if (willQueueWrite()) setEditingId(null);
   };
 
   const add = () => {
@@ -76,6 +78,7 @@ export function AgentCommandsSettings() {
       { name: draft.name.trim(), agent_type: draft.agent_type, command: draft.command.trim(), is_default: isFirstForAgent },
       { onSuccess: () => setDraft(emptyDraft()) },
     );
+    if (willQueueWrite()) setDraft(emptyDraft());
   };
 
   return (
@@ -107,10 +110,10 @@ export function AgentCommandsSettings() {
                   maxLength={2000}
                 />
                 <div className="flex shrink-0 justify-end gap-2">
-                  <Button type="button" variant="ghost" size="sm" onClick={cancelEdit} disabled={update.isPending}>
+                  <Button type="button" variant="ghost" size="sm" onClick={cancelEdit} disabled={isBlockingMutation(update)}>
                     Cancel
                   </Button>
-                  <Button type="button" variant="outline" size="sm" onClick={saveEdit} disabled={!canSave || update.isPending}>
+                  <Button type="button" variant="outline" size="sm" onClick={saveEdit} disabled={!canSave || isBlockingMutation(update)}>
                     Save
                   </Button>
                 </div>

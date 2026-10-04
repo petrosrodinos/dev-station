@@ -3,6 +3,8 @@ import { getAuthStoreState } from "@/stores/auth";
 import { getWorkspaceStoreState } from "@/stores/workspace";
 import { isTokenExpired } from "@/lib/token";
 import { environments } from "@/config/environments";
+import { isNetworkError } from "@/config/api/network";
+import { reportApiUnreachable } from "@/config/query/connectivity";
 
 const axiosInstance = axios.create({
     baseURL: environments.API_URL,
@@ -36,6 +38,8 @@ axiosInstance.interceptors.request.use((config) => {
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
+        // No response at all means the API is unreachable: go offline now and let the health probe bring us back.
+        if (isNetworkError(error)) reportApiUnreachable();
         if (axios.isAxiosError(error) && error.response?.status === 401 && getAuthStoreState().access_token) {
             getAuthStoreState().logout();
         }

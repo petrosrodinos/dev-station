@@ -6,6 +6,7 @@ import { useShortcutsHydration } from "@/features/users/hooks/use-shortcuts";
 import { useLayoutHydration } from "@/features/workspace-layouts/hooks/use-layout-persistence";
 import { useFloatingPanelsSync } from "@/features/workspace-layouts/hooks/use-floating-panels-sync";
 import { useAccessSync } from "@/hooks/use-access-sync";
+import { OfflineBanner } from "./components/offline-banner";
 import { TopBar } from "./components/top-bar";
 import { ProjectRail } from "./components/project-rail";
 import { WorkspaceDock } from "./components/dock/workspace-dock";
@@ -50,6 +51,7 @@ const WorkspaceLayout: FC = () => {
       <DesktopEventsProvider />
       <DockApiProvider>
         <div className="flex h-screen flex-col bg-canvas text-foreground">
+          <OfflineBanner />
           <TopBar />
           <div className={cn("flex min-h-0 flex-1", RAIL_FLEX[railPosition])}>
             <ProjectRail />
