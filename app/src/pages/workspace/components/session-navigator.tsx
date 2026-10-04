@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Check, Plus, X } from "lucide-react";
+import { useState, useEffect, useRef, useMemo, type WheelEvent } from "react";
 import { StatusDot } from "@/components/ui/status-dot";
-import { ProjectFlag } from "@/components/ui/project-avatar";
+import { formatTimelineTime } from "@/lib/date";
 import { useCloseSessionTab, useMarkSessionReviewed } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { SessionReviewStates } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
+import { useGetProjects } from "@/features/projects/hooks/use-projects";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
@@ -12,105 +11,82 @@ import { SessionReviewStateOptions } from "@/config/constants/dropdowns/agents/s
 import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { isAgentActive, reviewStateDot } from "@/lib/status";
-import { useWorkspaceStore } from "@/stores/workspace";
-import { useQuickStartSession } from "@/features/agent-sessions/hooks/use-quick-start-session";
-import { Routes } from "@/routes/routes";
+import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { SessionGroups, SessionItem } from "../hooks/use-session-groups";
+import type { OpenSessions, SessionItem } from "../hooks/use-open-sessions";
 import { CloseSessionDialog } from "./close-session-dialog";
 import { SessionContextMenu } from "./session-context-menu";
 import { PlacementMenu, PlacementTargets } from "./placement-menu";
 
 interface SessionNavigatorProps {
-  groups: SessionGroups;
+  sessions: OpenSessions;
   activeId: string | null;
   onOpen: (item: SessionItem) => void;
 }
 
 /**
- * Open sessions across all projects, grouped by project: each project is a header bar (flag, name,
- * ready and session counts, new-session button) with its sessions stacked beneath it. The headers
- * stick while their sessions scroll, and the list takes at most part of the panel's height, so it
- * reads the same whether there are two projects or twenty.
+ * Open sessions as a single strip of tabs, in the order they were opened. The strip is one fixed-height
+ * line that scrolls sideways when there are too many, so it never takes space from the terminal below.
  */
-export function SessionNavigator({ groups, activeId, onOpen }: SessionNavigatorProps) {
-  const navigate = useNavigate();
-  const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
-  const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
-  const quickStartSession = useQuickStartSession();
+export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigatorProps) {
+  const { data: projects } = useGetProjects();
   const closeTab = useCloseSessionTab();
   const { can } = usePermissions();
   const [closing, setClosing] = useState<SessionItem | null>(null);
   const navRef = useRef<HTMLElement>(null);
+  const projectById = useMemo(() => new Map((projects ?? []).map((p) => [p.id, p])), [projects]);
+  // Two sessions in one project can share a name; those tabs get their start time so they can be told apart.
+  const repeatedNames = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const i of sessions.ordered) counts.set(`${i.project_id}\u0000${i.name}`, (counts.get(`${i.project_id}\u0000${i.name}`) ?? 0) + 1);
+    return new Set([...counts].filter(([, n]) => n > 1).map(([key]) => key));
+  }, [sessions]);
 
   // Keep the focused session in view (e.g. after "next review" jumps to one scrolled out of sight).
   useEffect(() => {
     if (!activeId) return;
-    navRef.current?.querySelector<HTMLElement>(`[data-session-id="${activeId}"]`)?.scrollIntoView({ block: "nearest" });
+    navRef.current?.querySelector<HTMLElement>(`[data-session-id="${activeId}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [activeId]);
 
-  if (!groups.ordered.length) return null;
+  // The strip scrolls sideways; a mouse wheel (vertical only) should move it too.
+  const scrollOnWheel = (e: WheelEvent<HTMLElement>) => {
+    if (e.deltaY && !e.deltaX && navRef.current) navRef.current.scrollLeft += e.deltaY;
+  };
+
+  if (!sessions.ordered.length) return null;
 
   const requestClose = (item: SessionItem) => {
     if (item.runtime?.alive && isAgentActive(item.status)) setClosing(item);
     else closeTab.mutate({ id: item.id, stopProcess: !!item.runtime });
   };
 
-  const selectProject = (project: Project) => {
-    setActiveProject(project.id);
-    navigate(Routes.workspace.project(project.id));
-  };
-
   return (
-    <nav ref={navRef} className="flex max-h-[40%] shrink-0 flex-col overflow-y-auto border-b" aria-label="Open AI sessions">
+    <nav
+      ref={navRef}
+      onWheel={scrollOnWheel}
+      className="flex h-8 shrink-0 items-stretch overflow-x-auto overflow-y-hidden border-b [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      aria-label="Open AI sessions"
+    >
       <PlacementMenu target={PlacementTargets.AI_PANEL}>
-        <div>
-          {groups.groups.map((group) => (
-            <section key={group.project.id} aria-label={group.project.name} className="group/project border-b border-hairline-soft last:border-b-0">
-              <header className="sticky top-0 z-10 flex h-8 items-center gap-1.5 bg-surface pl-2 pr-1.5">
-                <button
-                  onClick={() => selectProject(group.project)}
-                  title={group.project.name}
-                  className={cn(
-                    "flex min-w-0 flex-1 items-center gap-1.5 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.4px] text-muted-foreground hover:text-foreground",
-                    group.project.id === activeProjectId && "text-foreground",
-                  )}
-                >
-                  <ProjectFlag color={group.project.color} className="h-3.5" />
-                  <span className="truncate">{group.project.name}</span>
-                </button>
-                {group.ready > 0 && (
-                  <span title="Ready for review" className="shrink-0 rounded-full bg-info-soft px-1.5 text-[0.625rem] font-semibold leading-4 text-info">
-                    {group.ready} ready
-                  </span>
-                )}
-                <span className="shrink-0 text-[0.6875rem] tabular-nums text-ash">{group.sessions.length}</span>
-                {can(PermissionKeys.AI_START_AGENTS) && (
-                  <button
-                    onClick={() => quickStartSession(group.project.id)}
-                    className="flex size-6 shrink-0 items-center justify-center rounded-xs text-ash opacity-0 hover:text-foreground focus-visible:opacity-100 group-hover/project:opacity-100"
-                    aria-label={`New session in ${group.project.name}`}
-                    title={`New session in ${group.project.name}`}
-                  >
-                    <Plus className="size-3.5" />
-                  </button>
-                )}
-              </header>
-              <ul>
-                {group.sessions.map((item) => (
-                  <li key={item.id}>
-                    <SessionRow
-                      item={item}
-                      active={item.id === activeId}
-                      onOpen={() => onOpen(item)}
-                      onClose={can(PermissionKeys.AI_USE_AGENTS) ? () => requestClose(item) : undefined}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
+        <ul className="flex h-full min-w-0">
+          {sessions.ordered.map((item, index) => {
+            const previous = sessions.ordered[index - 1];
+            return (
+              <li key={item.id} className="flex h-full shrink-0">
+                <SessionRow
+                  item={item}
+                  project={projectById.get(item.project_id)}
+                  // The project name is shown once, where a run of sessions from the same project starts.
+                  showProject={previous?.project_id !== item.project_id}
+                  timeHint={repeatedNames.has(`${item.project_id}\u0000${item.name}`) && item.session ? formatTimelineTime(item.session.started_at) : null}
+                  active={item.id === activeId}
+                  onOpen={() => onOpen(item)}
+                  onClose={can(PermissionKeys.AI_USE_AGENTS) ? () => requestClose(item) : undefined}
+                />
+              </li>
+            );
+          })}
+        </ul>
       </PlacementMenu>
       <CloseSessionDialog
         sessionName={closing?.name ?? "This session"}
@@ -125,12 +101,17 @@ export function SessionNavigator({ groups, activeId, onOpen }: SessionNavigatorP
 
 interface SessionRowProps {
   item: SessionItem;
+  project?: Project;
+  /** Whether this tab starts a run of sessions from `project`, and so carries the project's name. */
+  showProject: boolean;
+  /** Start time, shown only when another open session in the same project has the same name. */
+  timeHint: string | null;
   active: boolean;
   onOpen: () => void;
   onClose?: () => void;
 }
 
-function SessionRow({ item, active, onOpen, onClose }: SessionRowProps) {
+function SessionRow({ item, project, showProject, timeHint, active, onOpen, onClose }: SessionRowProps) {
   const state = item.review_state;
   const label = getDropdownOptionLabel(SessionReviewStateOptions, state);
   const ready = state === SessionReviewStates.READY;
@@ -141,32 +122,39 @@ function SessionRow({ item, active, onOpen, onClose }: SessionRowProps) {
   // than nested inside it.
   const row = (
     <div
+      style={project ? { boxShadow: `inset 0 2px 0 ${project.color}` } : undefined}
       onContextMenu={(e) => e.stopPropagation()}
       // Without preventing default on the middle-button mousedown, Chrome enters its autoscroll mode
       // instead of letting the click through cleanly to `onAuxClick` below.
       onMouseDown={(e) => e.button === 1 && e.preventDefault()}
       onAuxClick={(e) => e.button === 1 && onClose?.()}
       className={cn(
-        "group relative flex h-7 items-center gap-1 pr-1 text-xs text-body hover:bg-surface-elevated",
+        "group relative flex h-full items-center gap-1 border-r border-hairline-soft pr-1 text-xs text-body hover:bg-surface-elevated",
         ready && !active && "bg-info-soft",
         done && "text-muted-foreground",
-        active && "bg-surface-card text-foreground before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-foreground",
+        active && "bg-surface-card text-foreground before:absolute before:inset-x-0 before:bottom-0 before:h-0.5 before:bg-foreground",
       )}
     >
+      {showProject && project && (
+        <span className="flex h-full max-w-24 shrink-0 items-center pl-2 text-[0.625rem] font-semibold uppercase tracking-[0.3px] text-ash">
+          <span className="truncate">{project.name}</span>
+        </span>
+      )}
       <button
         type="button"
         data-session-id={item.id}
         aria-current={active ? "true" : undefined}
         onClick={onOpen}
-        title={`${item.name} · ${item.agent_type ? getAgentTypeLabel(item.agent_type) : ""} · ${label}`}
-        className="flex h-full min-w-0 flex-1 items-center gap-2 pl-5 text-left outline-none focus-visible:bg-surface-elevated"
+        title={`${item.name} · ${project?.name ?? "Unknown project"} · ${item.agent_type ? getAgentTypeLabel(item.agent_type) : ""} · ${label}`}
+        className="flex h-full shrink-0 items-center gap-1.5 pl-2 text-left outline-none focus-visible:bg-surface-elevated"
       >
         {done ? (
           <Check className="size-3 shrink-0 text-ash" aria-label={label} />
         ) : (
-          <StatusDot status={reviewStateDot(state)} title={label} className={cn(item.unseen && "animate-pulse")} />
+          <StatusDot status={reviewStateDot(state)} title={label} className={cn("shrink-0", item.unseen && "animate-pulse")} />
         )}
-        <span className={cn("min-w-0 flex-1 truncate", (ready || item.unseen) && "font-semibold")}>{item.name}</span>
+        <span className={cn("max-w-32 truncate", (ready || item.unseen) && "font-semibold")}>{item.name}</span>
+        {timeHint && <span className="shrink-0 text-[0.6875rem] tabular-nums text-ash">{timeHint}</span>}
       </button>
       {ready && (
         <button

@@ -9,7 +9,7 @@ import {
 } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 import { AiPanel } from "../ai-panel";
-import { useSessionGroups } from "../../hooks/use-session-groups";
+import { useOpenSessions } from "../../hooks/use-open-sessions";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { useLayoutStore } from "@/stores/layout";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
@@ -29,10 +29,10 @@ const MainContentPanel: FC<IDockviewPanelProps> = () => (
   </main>
 );
 
-/** Thin adapter: resolves the session groups the existing AiPanel component expects. */
+/** Thin adapter: resolves the open sessions the existing AiPanel component expects. */
 const AiPanelDockPanel: FC<IDockviewPanelProps> = () => {
-  const groups = useSessionGroups();
-  return <AiPanel groups={groups} />;
+  const sessions = useOpenSessions();
+  return <AiPanel sessions={sessions} />;
 };
 
 const components: IDockviewReactProps["components"] = {

@@ -17,7 +17,7 @@ import { NewSessionDialog } from "./components/new-session-dialog";
 import { ProjectDialog } from "./components/project-dialog";
 import { ShortcutsPracticeDialog } from "./components/shortcuts-practice-dialog";
 import { useGlobalShortcuts } from "./hooks/use-global-shortcuts";
-import { useSessionGroups } from "./hooks/use-session-groups";
+import { useOpenSessions } from "./hooks/use-open-sessions";
 import type { RailPosition } from "@/config/constants/dropdowns/settings/rail-position.options";
 import { useRailPosition } from "@/features/users/hooks/use-rail-position";
 import { cn } from "@/lib/utils";
@@ -33,13 +33,13 @@ const RAIL_FLEX: Record<RailPosition, string> = {
 
 /**
  * Desktop workspace shell (Spec §4):
- * top bar · project rail | project workspace | AI panel (sessions grouped by project + review) · status bar.
+ * top bar · project rail | project workspace | AI panel (open sessions + review) · status bar.
  */
 const WorkspaceLayout: FC = () => {
   useAccessSync();
-  const sessionGroups = useSessionGroups();
-  useGlobalShortcuts(sessionGroups);
-  useProjectSessionMemory(sessionGroups);
+  const openSessions = useOpenSessions();
+  useGlobalShortcuts(openSessions);
+  useProjectSessionMemory(openSessions);
   useAppearanceHydration();
   useShortcutsHydration();
   useLayoutHydration();

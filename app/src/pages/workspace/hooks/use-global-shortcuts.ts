@@ -19,7 +19,7 @@ import { useRuntimeStore } from "@/stores/runtime";
 import { toast } from "@/hooks/use-toast";
 import { isDesktop } from "@/lib/desktop";
 import { Routes } from "@/routes/routes";
-import { nextReviewSession, type SessionGroups } from "./use-session-groups";
+import { nextReviewSession, type OpenSessions } from "./use-open-sessions";
 import { useQuickStartSession } from "@/features/agent-sessions/hooks/use-quick-start-session";
 import { SessionReviewStates } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 
@@ -27,11 +27,11 @@ interface ActionContext {
   navigate: NavigateFunction;
   projects: Project[] | undefined;
   can: ReturnType<typeof usePermissions>["can"];
-  sessions: SessionGroups;
+  sessions: OpenSessions;
   quickStartSession: (projectId: string | null) => void;
 }
 
-/** Steps through the AI panel's sessions in display order (grouped by project), switching project as needed. */
+/** Steps through the AI panel's sessions in display order, switching project as needed. */
 const cycleSession = (ctx: ActionContext, direction: 1 | -1): boolean => {
   const items = ctx.sessions.ordered;
   if (!items.length) return false;
@@ -131,7 +131,7 @@ const runShortcutAction = (actionId: string, ctx: ActionContext): boolean => {
 };
 
 /** Dispatches the user's effective shortcuts (defaults, overrides and custom ones) on Ctrl/⌘ key presses. */
-export const useGlobalShortcuts = (sessions: SessionGroups) => {
+export const useGlobalShortcuts = (sessions: OpenSessions) => {
   const navigate = useNavigate();
   const { data: projects } = useGetProjects();
   const { can } = usePermissions();

@@ -11,7 +11,7 @@ import { usePermissions } from "@/features/organizations/hooks/use-organizations
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { isDesktop } from "@/lib/desktop";
 import { SessionReviewBar } from "./session-review-bar";
-import { useSessionGroups } from "../hooks/use-session-groups";
+import { useOpenSessions } from "../hooks/use-open-sessions";
 
 /**
  * One agent session's terminal, as a standalone dock panel — every open session gets its own
@@ -33,10 +33,10 @@ export function SessionTerminalPanel({
   onNext: () => void;
   panelApi?: { setTitle: (title: string) => void };
 }) {
-  // Read live here rather than taking `groups` as a prop: dockview renders panel components on its
+  // Read live here rather than taking the open sessions as a prop: dockview renders panel components on its
   // own schedule, so a prop snapshot goes stale (wrong review state, or no item at all for a session
   // opened before the session list caught up) until something unrelated re-renders the panel.
-  const groups = useSessionGroups();
+  const openSessions = useOpenSessions();
   const { data: sessions } = useAgentSessions();
   const { data: projects } = useGetProjects();
   const runtime = useRuntimeAgent(sessionId);
@@ -50,8 +50,8 @@ export function SessionTerminalPanel({
   const live = !!runtime?.alive;
   const canUseAgents = can(PermissionKeys.AI_USE_AGENTS);
   const project = projects?.find((p) => p.id === (runtime?.project_id ?? session?.project_id));
-  const item = groups.ordered.find((i) => i.id === sessionId) ?? null;
-  const remaining = groups.ready.filter((i) => i.id !== sessionId).length;
+  const item = openSessions.ordered.find((i) => i.id === sessionId) ?? null;
+  const remaining = openSessions.ready.filter((i) => i.id !== sessionId).length;
   const name = session?.name ?? runtime?.name ?? "Session";
 
   // Dockview defaults the tab title to the panel id (`session:<uuid>`), so push the real name.

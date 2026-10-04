@@ -29,21 +29,21 @@ import { PlacementMenu, PlacementTargets } from "./placement-menu";
 import { SessionNavigator } from "./session-navigator";
 import { SessionActionsMenu } from "./session-actions-menu";
 import { SessionTerminalStage } from "./session-terminal-stage";
-import { nextReviewSession, type SessionGroups, type SessionItem } from "../hooks/use-session-groups";
+import { nextReviewSession, type OpenSessions, type SessionItem } from "../hooks/use-open-sessions";
 import { cn } from "@/lib/utils";
 
 /**
- * Right-hand panel — the hub for parallel agent work: every open session grouped by project with
- * its review state, the focused session's terminal, and the review bar (commit → next).
+ * Right-hand panel — the hub for parallel agent work: the open sessions as one flat list with their
+ * review state, the focused session's terminal, and the review bar (commit → next).
  * The history toggle swaps in the full list of recent sessions.
  */
-export function AiPanel({ groups }: { groups: SessionGroups }) {
+export function AiPanel({ sessions }: { sessions: OpenSessions }) {
   const navigate = useNavigate();
   const mode = useWorkspaceStore((s) => s.ai_panel_mode);
   const activeId = useWorkspaceStore((s) => s.active_session_id);
   const { data: projects } = useGetProjects();
   const history = mode === AiPanelModes.SESSIONS;
-  const activeItem = groups.ordered.find((i) => i.id === activeId) ?? null;
+  const activeItem = sessions.ordered.find((i) => i.id === activeId) ?? null;
   const setMode = useWorkspaceStore((s) => s.setAiPanelMode);
   const historyLabel = history ? "Back to open sessions" : "Session history";
   const aiFullWidth = useLayoutStore((s) => s.ai_full_width);
@@ -57,7 +57,7 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
     jumpToSession(item.id, navigate, { fallbackProjectId: item.project_id, review: item.review_state === SessionReviewStates.READY ? { projects } : undefined });
 
   const openNext = () => {
-    const next = nextReviewSession(groups, activeId, useWorkspaceStore.getState().attention_session_ids);
+    const next = nextReviewSession(sessions, activeId, useWorkspaceStore.getState().attention_session_ids);
     if (next) openItem(next);
   };
 
@@ -73,7 +73,7 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
               <TooltipTrigger
                 render={
                   <button
-                    onClick={() => openNewSession({ project_id: activeItem?.project_id ?? activeProjectId })}
+                    onClick={() => openNewSession({ project_id: activeProjectId })}
                     aria-label="New AI session"
                     className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
                   >
@@ -122,20 +122,13 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
           <SessionList />
         ) : (
           <>
-            <SessionNavigator groups={groups} activeId={activeId} onOpen={openItem} />
+            <SessionNavigator sessions={sessions} activeId={activeId} onOpen={openItem} />
             <SessionTerminalStage onNext={openNext} />
           </>
         )}
       </div>
     </aside>
   );
-}
-
-interface SessionListGroup {
-  id: string;
-  name: string;
-  color: string;
-  sessions: AgentSession[];
 }
 
 function SessionList() {
@@ -150,29 +143,19 @@ function SessionList() {
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
   const openNewSession = useDialogsStore((s) => s.openNewSession);
 
-  // Same "grouped by project, in rail order" shape as the open-tabs row (`use-session-groups.ts`),
-  // just built straight from every session instead of only the ones open in this workspace — a
-  // session whose project no longer exists (deleted since) still needs somewhere to land.
-  const groups = useMemo<SessionListGroup[]>(() => {
-    const byProject = new Map<string, AgentSession[]>();
-    for (const s of data?.data ?? []) byProject.set(s.project_id, [...(byProject.get(s.project_id) ?? []), s]);
-    const known = new Set((projects ?? []).map((p) => p.id));
-    const result: SessionListGroup[] = (projects ?? [])
-      .filter((p) => byProject.has(p.id))
-      .map((p) => ({ id: p.id, name: p.name, color: p.color, sessions: byProject.get(p.id)! }));
-    const orphaned = [...byProject.keys()].filter((id) => !known.has(id)).flatMap((id) => byProject.get(id)!);
-    if (orphaned.length) result.push({ id: "unknown", name: "Unknown project", color: "#8a8a8e", sessions: orphaned });
-    return result;
-  }, [data, projects]);
+  // Every session in one flat list, labelled with its project. A session whose project no longer
+  // exists (deleted since) still lands here, just without a project name.
+  const sessions = useMemo(() => data?.data ?? [], [data]);
+  const projectById = useMemo(() => new Map((projects ?? []).map((p) => [p.id, p])), [projects]);
 
   const { can } = usePermissions();
   const canDelete = can(PermissionKeys.AI_USE_AGENTS);
-  const orderedIds = useMemo(() => groups.flatMap((g) => g.sessions.map((s) => s.id)), [groups]);
+  const orderedIds = useMemo(() => sessions.map((s) => s.id), [sessions]);
   const selection = useRowSelection(orderedIds, { enabled: canDelete });
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (isPending) return <ListSkeleton rows={8} />;
-  if (!data?.data.length)
+  if (!sessions.length)
     return (
       <EmptyState
         className="flex-1"
@@ -210,40 +193,36 @@ function SessionList() {
       </div>
     )}
     <div className="min-h-0 flex-1 overflow-y-auto">
-      {groups.map((group) => (
-        <div key={group.id}>
-          <div className="sticky top-0 z-10 flex items-center gap-1.5 border-b bg-surface px-4 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.4px] text-muted-foreground">
-            <ProjectFlag color={group.color} className="h-3.5" />
-            <span className="truncate">{group.name}</span>
-          </div>
-          {group.sessions.map((s) => {
-            const status = runtimeAgents[s.id]?.status ?? s.status;
-            const isSelected = selection.selected.has(s.id);
-            return (
-              <SessionContextMenu key={s.id} session={s}>
-                <button
-                  onClick={(e) => selection.onRowClick(e, s.id) || open(s)}
-                  onMouseDown={selection.onRowMouseDown}
-                  aria-pressed={selection.selected.size ? isSelected : undefined}
-                  className={cn(
-                    "flex w-full select-none items-center gap-2.5 border-b border-hairline-soft px-4 py-2.5 text-left hover:bg-surface-elevated",
-                    s.id === activeId && "bg-surface-card",
-                    isSelected && "relative bg-accent before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-foreground hover:bg-accent",
-                  )}
-                >
-                  <StatusDot status={agentStatusDot(status)} />
-                  <div className="min-w-0 flex-1">
-                    <div className={cn("truncate text-[0.8125rem] font-medium", attention.includes(s.id) && "text-foreground")}>{s.name}</div>
-                    <div className="truncate text-[0.7188rem] text-muted-foreground">
-                      {getAgentTypeLabel(s.agent_type)} · {getDropdownOptionLabel(AgentStatusOptions, status)} · {formatRelative(s.started_at)}
-                    </div>
-                  </div>
-                </button>
-              </SessionContextMenu>
-            );
-          })}
-        </div>
-      ))}
+      {sessions.map((s) => {
+        const status = runtimeAgents[s.id]?.status ?? s.status;
+        const isSelected = selection.selected.has(s.id);
+        const project = projectById.get(s.project_id);
+        return (
+          <SessionContextMenu key={s.id} session={s}>
+            <button
+              onClick={(e) => selection.onRowClick(e, s.id) || open(s)}
+              onMouseDown={selection.onRowMouseDown}
+              aria-pressed={selection.selected.size ? isSelected : undefined}
+              className={cn(
+                "flex w-full select-none items-center gap-2.5 border-b border-hairline-soft px-4 py-2.5 text-left hover:bg-surface-elevated",
+                s.id === activeId && "bg-surface-card",
+                isSelected && "relative bg-accent before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-foreground hover:bg-accent",
+              )}
+            >
+              <StatusDot status={agentStatusDot(status)} />
+              <div className="min-w-0 flex-1">
+                <div className={cn("truncate text-[0.8125rem] font-medium", attention.includes(s.id) && "text-foreground")}>{s.name}</div>
+                <div className="flex min-w-0 items-center gap-1.5 text-[0.7188rem] text-muted-foreground">
+                  {project && <ProjectFlag color={project.color} className="h-3" />}
+                  <span className="truncate">
+                    {project?.name ?? "Unknown project"} · {getAgentTypeLabel(s.agent_type)} · {getDropdownOptionLabel(AgentStatusOptions, status)} · {formatRelative(s.started_at)}
+                  </span>
+                </div>
+              </div>
+            </button>
+          </SessionContextMenu>
+        );
+      })}
     </div>
     <DeleteSessionsDialog ids={[...selection.selected]} open={confirmDelete} onOpenChange={setConfirmDelete} onDeleted={selection.clear} />
     </>

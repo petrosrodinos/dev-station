@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useWorkspaceStore } from "@/stores/workspace";
-import type { SessionGroups } from "./use-session-groups";
+import type { OpenSessions } from "./use-open-sessions";
 
 /**
  * Each project keeps its own current session: the focused session is remembered per project, and
  * switching to a project brings back the session last focused there (or its first open one).
  */
-export const useProjectSessionMemory = ({ ordered }: SessionGroups) => {
+export const useProjectSessionMemory = ({ ordered }: OpenSessions) => {
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
   const activeSessionId = useWorkspaceStore((s) => s.active_session_id);
   const remember = useWorkspaceStore((s) => s.rememberProjectSession);
