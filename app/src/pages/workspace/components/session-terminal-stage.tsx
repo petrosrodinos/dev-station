@@ -15,7 +15,6 @@ import { useLayoutStore } from "@/stores/layout";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { SessionTerminalPanel } from "./session-terminal-panel";
-import type { SessionGroups } from "../hooks/use-session-groups";
 
 const SESSION_PANEL_COMPONENT = "session-terminal";
 const sessionPanelId = (sessionId: string) => `session:${sessionId}`;
@@ -35,7 +34,7 @@ const sessionPanelId = (sessionId: string) => `session:${sessionId}`;
  * API correctly (undocumented internal branching that threw `invalid direction 'undefined'` for
  * us twice), whereas CSS can't get that wrong.
  */
-export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups; onNext: () => void }) {
+export function SessionTerminalStage({ onNext }: { onNext: () => void }) {
   const apiRef = useRef<DockviewApi | null>(null);
   const openTabs = useWorkspaceStore((s) => s.open_session_tabs);
   const activeId = useWorkspaceStore((s) => s.active_session_id);
@@ -45,13 +44,11 @@ export function SessionTerminalStage({ groups, onNext }: { groups: SessionGroups
   const floatingIds = useLayoutStore((s) => s.floating);
   const { can } = usePermissions();
 
-  const groupsRef = useRef(groups);
-  groupsRef.current = groups;
   const onNextRef = useRef(onNext);
   onNextRef.current = onNext;
 
   const SessionPanel: FC<IDockviewPanelProps<{ sessionId: string }>> = useCallback(
-    ({ params, api }) => <SessionTerminalPanel sessionId={params.sessionId} groups={groupsRef.current} onNext={() => onNextRef.current()} panelApi={api} />,
+    ({ params, api }) => <SessionTerminalPanel sessionId={params.sessionId} onNext={() => onNextRef.current()} panelApi={api} />,
     [],
   );
 

@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { copyFilePath, createFile, createFolder, deleteEntry, importExternal, listDirectory, moveEntry, openFileExternally, openInEditor, readFile, renameEntry, revealFile, searchFiles, writeFile } from "../services/files.services";
+import { copyFilePath, copyRelativePath, createFile, createFolder, deleteEntry, importExternal, listDirectory, moveEntry, openFileExternally, openInEditor, readFile, renameEntry, revealFile, searchFiles, writeFile } from "../services/files.services";
 import { getEditorTargetLabel } from "@/config/constants/dropdowns/settings/editor-target.options";
 import { toast } from "@/hooks/use-toast";
 
@@ -39,6 +39,13 @@ export const useCopyFilePath = () =>
     useMutation({
         mutationFn: copyFilePath,
         onSuccess: (path) => toast({ title: "Path copied", description: path, duration: 1500 }),
+        onError: (error: Error) => toast({ title: "Could not copy path", description: error.message, variant: "error" }),
+    });
+
+export const useCopyRelativePath = () =>
+    useMutation({
+        mutationFn: copyRelativePath,
+        onSuccess: (path) => toast({ title: "Relative path copied", description: path, duration: 1500 }),
         onError: (error: Error) => toast({ title: "Could not copy path", description: error.message, variant: "error" }),
     });
 

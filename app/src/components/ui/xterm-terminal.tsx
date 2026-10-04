@@ -48,12 +48,24 @@ export function XtermTerminal({ source, sourceKey, readOnly = false, className, 
       disableStdin: readOnly,
       scrollback: 10_000,
       allowProposedApi: true,
+      // OSC 8 hyperlinks (which Claude Code emits) otherwise go through xterm's default handler: a
+      // confirm() prompt plus window.open, neither of which opens anything usable in Electron.
+      linkHandler: { activate: (_e, uri) => sourceRef.current.openLink?.(uri), allowNonHttpProtocols: false },
       convertEol: false,
     });
     const fit = new FitAddon();
     term.loadAddon(fit);
     term.loadAddon(new WebLinksAddon((_e, uri) => sourceRef.current.openLink?.(uri)));
     term.open(container);
+    // xterm turns Ctrl+V into a raw ^V keystroke and cancels the browser's paste event, so nothing
+    // is pasted. Returning false hands the key back to the browser, whose paste event xterm
+    // already turns into (bracketed) paste input. Shift+Insert and Ctrl+Shift+V follow the same path.
+    term.attachCustomKeyEventHandler((e) => {
+      if (e.type !== "keydown") return true;
+      const key = e.key.toLowerCase();
+      const isPaste = (e.ctrlKey && !e.altKey && key === "v") || (e.shiftKey && e.key === "Insert");
+      return !isPaste;
+    });
 
     let disposed = false;
     let buffered: string[] = [];

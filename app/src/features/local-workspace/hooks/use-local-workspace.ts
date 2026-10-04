@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     getProjectLocalStates,
     getWorkspaceConfig,
@@ -50,6 +50,9 @@ export const useProjectLocalStates = () => {
     return useQuery({
         queryKey: ["project-local-states", ids],
         queryFn: () => getProjectLocalStates(ids),
+        // A changed project list is a new key; keep the last answer meanwhile so every project
+        // doesn't briefly read as "not local" (which disables Git status and blanks its UI).
+        placeholderData: keepPreviousData,
         enabled: isDesktop() && ids.length > 0,
         refetchInterval: 20_000,
         refetchOnWindowFocus: true,

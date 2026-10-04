@@ -126,7 +126,7 @@ export function ProjectRail() {
       <div
         className={cn(
           "flex flex-1 items-center gap-1",
-          horizontal ? "h-full min-w-0 flex-row overflow-x-auto overflow-y-hidden pr-2" : "w-full flex-col overflow-y-auto overflow-x-hidden pb-2",
+          horizontal ? "h-full min-w-0 flex-row overflow-x-auto overflow-y-hidden pl-2 pr-2" : "w-full flex-col overflow-y-auto overflow-x-hidden pt-2 pb-2",
         )}
       >
         {isPending &&
