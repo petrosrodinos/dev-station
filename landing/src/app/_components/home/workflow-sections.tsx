@@ -1,71 +1,11 @@
 import Link from "next/link";
 import { Routes } from "@/routes/routes";
 
-const clutter = [
-    "Terminal window",
-    "Another terminal window",
-    "VS Code",
-    "Browser",
-    "Git client",
-    "Linear",
-    "Notion",
-    "Another terminal",
-];
-
-/** "Less window management. More development." */
-export function ClutterSection() {
-    return (
-        <section id="clutter">
-            <div className="wrap two-col">
-                <div>
-                    <p className="kicker">Focus</p>
-                    <h2>Less window management. More development.</h2>
-                    <div className="prose">
-                        <p>A typical AI-assisted workflow can look like the list on the right.</p>
-                        <p>You shouldn&apos;t need to remember where everything is.</p>
-                        <p className="pull">Keep the development workflow together.</p>
-                    </div>
-                </div>
-                <div className="taskbar" role="img" aria-label="A stack of nine open windows ending with: where was that agent running again?">
-                    {clutter.map((w, i) => (
-                        <div key={w + i} className="tb-win" style={{ marginLeft: `${(i % 3) * 14}px` }}>
-                            <i />{w}
-                        </div>
-                    ))}
-                    <div className="tb-win lost"><i />&ldquo;Where was that agent running again?&rdquo;</div>
-                </div>
-            </div>
-        </section>
-    );
-}
-
-/** "The editor is still there." */
-export function EditorSection() {
-    return (
-        <section id="editor">
-            <div className="wrap narrow">
-                <div className="editor-card">
-                    <p className="kicker">The editor</p>
-                    <h2>The editor is still there.</h2>
-                    <div className="prose">
-                        <p>We&apos;re not pretending developers never need to edit code.</p>
-                        <p>Sometimes you want to open a file, inspect something, make a quick change, or understand what an agent modified.</p>
-                        <p>The editor is there when you need it. It just isn&apos;t the center of the product.</p>
-                        <p className="pull">The work is.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
-}
-
 const loop = [
     { title: "Pick a project", body: "Open the repository you're working on." },
     { title: "Start an agent", body: "Give your coding agent a task." },
     { title: "Let it work", body: "Continue with another task while it runs." },
-    { title: "Check the result", body: "Open the preview or inspect the changes." },
-    { title: "Give feedback", body: "Tell the agent what needs to change." },
-    { title: "Review", body: "Check the Git diff and make sure the result is what you expected." },
+    { title: "Review", body: "Check the preview and Git diff." },
     { title: "Repeat", body: "Keep iterating until it's ready." },
 ];
 
@@ -94,22 +34,6 @@ export function LoopSection() {
     );
 }
 
-/** "Stop managing your development environment." */
-export function StopSection() {
-    return (
-        <section id="stop" className="stop">
-            <div className="wrap stop-band">
-                <div>
-                    <h2>Stop managing your development environment.</h2>
-                    <p>You already have enough things to think about. Your tools shouldn&apos;t become another project.</p>
-                    <p className="stop-line">Open your projects. Start your agents. See the result. Keep moving.</p>
-                </div>
-                <Link className="btn btn-primary btn-lg" href={Routes.downloads}>Download the app</Link>
-            </div>
-        </section>
-    );
-}
-
 export const faqs: { q: string; a: string[] }[] = [
     {
         q: "Is this another code editor?",
@@ -118,10 +42,6 @@ export const faqs: { q: string; a: string[] }[] = [
     {
         q: "What AI coding agents does it support?",
         a: ["The workspace is designed to work with existing coding agents such as Claude Code, Codex and Cursor, rather than requiring you to use a proprietary AI agent.", "Support can expand as new coding agents become available."],
-    },
-    {
-        q: "Can I work on multiple projects?",
-        a: ["Yes. You can keep multiple projects available and switch between them quickly."],
     },
     {
         q: "Can I run multiple AI agents at the same time?",
@@ -134,18 +54,6 @@ export const faqs: { q: string; a: string[] }[] = [
     {
         q: "Does it work with Git?",
         a: ["Yes. Git functionality is built into the workspace so you can inspect repositories, branches and changes without leaving the application."],
-    },
-    {
-        q: "Does it detect project scripts?",
-        a: ["Yes. The workspace can detect common project configuration and surface available development scripts so you can run them directly."],
-    },
-    {
-        q: "Do I have to stop using my existing code editor?",
-        a: ["No.", "The product is designed to complement your existing development tools. You can continue using whatever editor or AI coding agent fits your workflow."],
-    },
-    {
-        q: "Who is this for?",
-        a: ["It's primarily designed for developers who use AI coding agents and regularly work across multiple projects, repositories, terminals and application previews."],
     },
 ];
 
@@ -177,7 +85,6 @@ export function FinalCtaSection() {
                 <div className="final">
                     <h2>Your AI agents are already writing the code.</h2>
                     <p className="final-sub">Give them a better workspace to work in.</p>
-                    <p>Run multiple projects, manage multiple agent sessions, preview your applications and keep your development workflow in one place.</p>
                     <div className="cta">
                         <Link className="btn btn-primary btn-lg" href={Routes.downloads}>Download for free</Link>
                     </div>
