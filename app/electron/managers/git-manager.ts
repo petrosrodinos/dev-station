@@ -270,6 +270,12 @@ class GitManager {
       });
   }
 
+  async init(cwd: string) {
+    if (await this.isRepo(cwd)) throw new IpcError("This folder is already a Git repository.");
+    await run(cwd, ["init"]);
+    return "Initialized Git repository";
+  }
+
   async fetch(cwd: string) {
     const r = await run(cwd, ["fetch", "--all", "--prune"]);
     return (r.stderr || r.stdout).trim() || "Fetched";

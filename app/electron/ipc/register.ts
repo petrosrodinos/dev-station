@@ -163,6 +163,7 @@ export function registerIpc() {
   handle(IpcChannels.GIT_BRANCHES, args(zId), async ([id]) => gitManager.branches(await root(id)));
   handle(IpcChannels.GIT_LOG, args(zId, z.number().int().min(1).max(200).optional()), async ([id, limit]) => gitManager.log(await root(id), limit));
   handle(IpcChannels.GIT_STASHES, args(zId), async ([id]) => gitManager.stashes(await root(id)));
+  handle(IpcChannels.GIT_INIT, args(zId), async ([id]) => gitManager.init(workspaceConfig.projectRoot(id)), { requires: ["GIT_COMMIT"] });
   handle(IpcChannels.GIT_FETCH, args(zId), async ([id]) => gitManager.fetch(await root(id)), { requires: ["GIT_COMMIT"] });
   handle(IpcChannels.GIT_PULL, args(zId), async ([id]) => gitManager.pull(await root(id)), { requires: ["GIT_COMMIT"] });
   handle(IpcChannels.GIT_PUSH, args(zId), async ([id]) => gitManager.push(await root(id)), { requires: ["GIT_PUSH"] });

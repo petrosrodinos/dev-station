@@ -9,7 +9,7 @@ import {
     gitCommit,
     gitCreateBranch,
     gitDiscard,
-    gitFetch,
+    gitFetch, gitInit,
     gitMerge,
     gitPull,
     gitPush,
@@ -81,6 +81,9 @@ function useGitMutation<TVars extends { projectId: string }, TResult>(options: {
         },
     });
 }
+
+export const useGitInit = () =>
+    useGitMutation({ mutationFn: ({ projectId }: { projectId: string }) => gitInit(projectId), success: () => "Git repository initialized", failure: "Could not initialize Git" });
 
 export const useGitFetch = () =>
     useGitMutation({ mutationFn: ({ projectId }: { projectId: string }) => gitFetch(projectId), success: () => "Fetched from remote", failure: "Fetch failed" });

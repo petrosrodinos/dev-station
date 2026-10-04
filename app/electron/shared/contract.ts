@@ -581,6 +581,8 @@ export interface DevStationBridge {
     branches(projectId: string): Promise<GitBranch[]>;
     log(projectId: string, limit?: number): Promise<GitCommitEntry[]>;
     stashes(projectId: string): Promise<GitStashEntry[]>;
+    /** Runs `git init` in the project folder. */
+    init(projectId: string): Promise<string>;
     fetch(projectId: string): Promise<string>;
     pull(projectId: string): Promise<string>;
     push(projectId: string): Promise<{ pushed: boolean; output: string }>;
@@ -708,6 +710,7 @@ export const IpcChannels = {
   GIT_BRANCHES: "git:branches",
   GIT_LOG: "git:log",
   GIT_STASHES: "git:stashes",
+  GIT_INIT: "git:init",
   GIT_FETCH: "git:fetch",
   GIT_PULL: "git:pull",
   GIT_PUSH: "git:push",

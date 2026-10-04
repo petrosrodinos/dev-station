@@ -16,6 +16,7 @@ export const getFileDiff = (projectId: string, path: string): Promise<string> =>
 export const getBranches = (projectId: string): Promise<GitBranch[]> => wrap(() => getBridge().git.branches(projectId), "Failed to list branches.");
 export const getGitLog = (projectId: string, limit = 20): Promise<GitCommitEntry[]> => wrap(() => getBridge().git.log(projectId, limit), "Failed to load commit history.");
 export const getStashes = (projectId: string): Promise<GitStashEntry[]> => wrap(() => getBridge().git.stashes(projectId), "Failed to list stashes.");
+export const gitInit = (projectId: string) => wrap(() => getBridge().git.init(projectId), "Could not initialize Git.");
 export const gitFetch = (projectId: string) => wrap(() => getBridge().git.fetch(projectId), "Fetch failed.");
 export const gitPull = (projectId: string) => wrap(() => getBridge().git.pull(projectId), "Pull failed.");
 export const gitPush = (projectId: string) => wrap(() => getBridge().git.push(projectId), "Push failed.");
