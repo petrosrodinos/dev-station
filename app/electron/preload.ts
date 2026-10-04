@@ -76,6 +76,7 @@ const bridge: DevStationBridge = {
     branches: (id) => call(C.GIT_BRANCHES, id),
     log: (id, limit) => call(C.GIT_LOG, id, limit),
     stashes: (id) => call(C.GIT_STASHES, id),
+    init: (id) => call(C.GIT_INIT, id),
     fetch: (id) => call(C.GIT_FETCH, id),
     pull: (id) => call(C.GIT_PULL, id),
     push: (id) => call(C.GIT_PUSH, id),

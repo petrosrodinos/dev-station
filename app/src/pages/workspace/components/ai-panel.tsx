@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, CircleCheck, History, Trash2 } from "lucide-react";
+import { Bot, CircleCheck, History, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatusDot } from "@/components/ui/status-dot";
@@ -49,6 +49,9 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
   const activeItem = groups.ordered.find((i) => i.id === activeId) ?? null;
   const setMode = useWorkspaceStore((s) => s.setAiPanelMode);
   const historyLabel = history ? "Back to open sessions" : "Session history";
+  const { can } = usePermissions();
+  const openNewSession = useDialogsStore((s) => s.openNewSession);
+  const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
 
   const openItem = (item: SessionItem) =>
     jumpToSession(item.id, navigate, { fallbackProjectId: item.project_id, review: item.review_state === SessionReviewStates.READY ? { projects } : undefined });
@@ -84,6 +87,22 @@ export function AiPanel({ groups }: { groups: SessionGroups }) {
         )}
         <div className="ml-auto flex shrink-0 items-center gap-1">
           <SessionActionsMenu item={activeItem} />
+          {can(PermissionKeys.AI_START_AGENTS) && (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    onClick={() => openNewSession({ project_id: activeItem?.project_id ?? activeProjectId })}
+                    aria-label="New AI session"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+                  >
+                    <Plus className="size-3.5" />
+                  </button>
+                }
+              />
+              <TooltipContent>New AI session</TooltipContent>
+            </Tooltip>
+          )}
           <Tooltip>
             <TooltipTrigger
               render={

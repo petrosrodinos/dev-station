@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
-import { useGitDiscard, useGitStatus } from "@/features/git/hooks/use-git";
+import { useGitDiscard, useGitInit, useGitStatus } from "@/features/git/hooks/use-git";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { GitFileStateOptions } from "@/config/constants/dropdowns/git/git-file-state.options";
@@ -36,6 +36,7 @@ const GitTab: FC = () => {
   const [params, setParams] = useSearchParams();
   const { data: status, isPending } = useGitStatus(project.id, { refetchInterval: 5000 });
   const discard = useGitDiscard();
+  const gitInit = useGitInit();
   const { can } = usePermissions();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [discardTarget, setDiscardTarget] = useState<string[] | "all" | null>(null);
@@ -62,7 +63,22 @@ const GitTab: FC = () => {
     });
 
   if (isPending) return <ListSkeleton rows={8} className="p-4" />;
-  if (!status?.is_repo) return <EmptyState className="py-16" icon={<GitCommitHorizontal />} title="Not a Git repository" description="Initialize Git in this folder or link the project to a cloned repository." />;
+  if (!status?.is_repo)
+    return (
+      <EmptyState
+        className="py-16"
+        icon={<GitCommitHorizontal />}
+        title="Not a Git repository"
+        description="Initialize Git in this folder or link the project to a cloned repository."
+        action={
+          can(PermissionKeys.GIT_COMMIT) && (
+            <Button size="sm" loading={gitInit.isPending} onClick={() => gitInit.mutate({ projectId: project.id })}>
+              Initialize Git
+            </Button>
+          )
+        }
+      />
+    );
 
   const allSelected = files.length > 0 && selected.size === files.length;
   const selectedPaths = files.filter((f) => selected.has(f.path)).map((f) => f.path);
