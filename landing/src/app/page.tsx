@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { SiteNav } from "@/components/layout/site-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Hero } from "./_components/home/hero";
-import { AgentsSection, LayoutsSection, PreviewSection, ShiftSection, WorkspaceSection } from "./_components/home/workspace-sections";
-import { AgentToolsSection, AudienceSection, GitSection, IntegrationsSection, ScriptsSection } from "./_components/home/tooling-sections";
-import { ClutterSection, EditorSection, FaqSection, FinalCtaSection, LoopSection, StopSection, faqs } from "./_components/home/workflow-sections";
+import { AgentsSection, WorkspaceSection } from "./_components/home/workspace-sections";
+import { IntegrationsSection } from "./_components/home/tooling-sections";
+import { FaqSection, FinalCtaSection, LoopSection, faqs } from "./_components/home/workflow-sections";
 
 const description =
   "A desktop workspace for AI-assisted development. Run Claude Code, Codex, Cursor and multiple coding agents across projects with terminals, previews, Git and project tools.";
@@ -66,20 +66,10 @@ export default function Home() {
 
       <main id="top">
         <Hero />
-        <ShiftSection />
         <WorkspaceSection />
         <AgentsSection />
-        <PreviewSection />
-        <LayoutsSection />
-        <ScriptsSection />
-        <GitSection />
         <IntegrationsSection />
-        <AgentToolsSection />
-        <AudienceSection />
-        <ClutterSection />
-        <EditorSection />
         <LoopSection />
-        <StopSection />
         <FaqSection />
         <FinalCtaSection />
       </main>
