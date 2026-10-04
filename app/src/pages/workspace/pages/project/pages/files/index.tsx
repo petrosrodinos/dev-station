@@ -1,19 +1,21 @@
-import { useMemo, useState, type FC } from "react";
+import { useMemo, useRef, useState, type FC } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ChevronsDownUp, ChevronsUpDown, Code2, FilePlus, FolderPlus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Panel, PanelBody, PanelHeader } from "@/components/ui/panel";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { useFileSearch } from "@/features/files/hooks/use-files";
+import { useFileSearch, useImportFiles, useMoveEntry } from "@/features/files/hooks/use-files";
 import { useGitStatus } from "@/features/git/hooks/use-git";
 import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import type { FileEntry, GitFileState } from "@shared/contract";
 import { useProjectContext } from "../../hooks/use-project-context";
 import { FileTreeNode, FileRow, TreeActionsContext, TreeCommandContext, type CreateKind, type TreeActions, type TreeCommand } from "./components/file-tree";
+import { useTreeDropTarget } from "./hooks/use-tree-drop-target";
 import { EntryDialogs, type EntryDialogState } from "./components/entry-dialogs";
 import { CodeEditor } from "./components/code-editor";
 
@@ -48,14 +50,32 @@ const FilesTab: FC = () => {
   const selectFile = (path: string) => setParams((p) => (p.set("file", path), p), { replace: true });
   const clearFile = () => setParams((p) => (p.delete("file"), p), { replace: true });
 
+  const moveEntry = useMoveEntry();
+  const importFiles = useImportFiles();
+  const activeRef = useRef(activeFile);
+  activeRef.current = activeFile;
+
   const actions = useMemo<TreeActions>(
     () => ({
       onCreate: (dir: string, kind: CreateKind) => setDialog({ type: "create", dir, kind }),
       onRename: (entry: FileEntry) => setDialog({ type: "rename", entry }),
       onDelete: (entry: FileEntry) => setDialog({ type: "delete", entry }),
+      onMove: (path: string, destDir: string) =>
+        moveEntry.mutate(
+          { projectId: project.id, path, destDir },
+          {
+            onSuccess: (next) => {
+              const active = activeRef.current;
+              if (active && isWithin(active, path)) selectFile(next + active.slice(path.length));
+            },
+          },
+        ),
+      onDropFiles: (files: File[], destDir: string) => importFiles.mutate({ projectId: project.id, destDir, files }),
     }),
-    [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [project.id, moveEntry.mutate, importFiles.mutate],
   );
+  const rootDrop = useTreeDropTarget("", actions);
 
   // Git paths are repo-relative; the tree is rooted at the project folder (monorepo sub_path).
   const gitStates = useMemo(() => {
@@ -81,7 +101,7 @@ const FilesTab: FC = () => {
         </div>
 
         <div className="grid grid-cols-1 items-start gap-4 @5xl:grid-cols-[minmax(280px,1fr)_2fr]">
-          <Panel className="p-2">
+          <Panel className={cn("p-2", rootDrop.isOver && "ring-1 ring-primary")} {...rootDrop.dropProps}>
             {searching ? (
               isFetching && !results ? (
                 <ListSkeleton rows={6} />

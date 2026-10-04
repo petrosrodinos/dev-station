@@ -78,6 +78,50 @@ class FilesystemManager {
     return nextRel;
   }
 
+  async move(projectId: string, rel: string, destDir: string): Promise<string> {
+    if (!rel) throw new IpcError("The project root cannot be moved.");
+    const root = workspaceConfig.projectRoot(projectId);
+    const from = workspaceConfig.resolveInProject(projectId, rel);
+    const dest = workspaceConfig.resolveInProject(projectId, destDir);
+    const to = path.join(dest, path.basename(from));
+    const nextRel = toPosix(path.relative(root, to));
+    if (path.resolve(to) === path.resolve(from)) return rel;
+    const intoSelf = path.relative(from, dest);
+    if (!intoSelf.startsWith("..") && !path.isAbsolute(intoSelf)) throw new IpcError("A folder cannot be moved into itself.");
+    const destStat = await fs.promises.stat(dest).catch(() => null);
+    if (!destStat?.isDirectory()) throw new IpcError("The destination is not a folder.");
+    await this.assertMissing(to, nextRel);
+    await fs.promises.rename(from, to).catch(() => {
+      throw new IpcError(`Could not move "${rel}".`);
+    });
+    return nextRel;
+  }
+
+  async importExternal(projectId: string, destDir: string, sources: string[]): Promise<string[]> {
+    const root = workspaceConfig.projectRoot(projectId);
+    const dest = workspaceConfig.resolveInProject(projectId, destDir);
+    const destStat = await fs.promises.stat(dest).catch(() => null);
+    if (!destStat?.isDirectory()) throw new IpcError("The destination is not a folder.");
+    const created: string[] = [];
+    for (const source of sources) {
+      if (!path.isAbsolute(source)) throw new IpcError("Dropped item has no usable path.");
+      const stat = await fs.promises.stat(source).catch(() => null);
+      if (!stat || !(stat.isFile() || stat.isDirectory())) throw new IpcError(`Cannot read "${path.basename(source)}".`);
+      const to = path.join(dest, path.basename(source));
+      const nextRel = toPosix(path.relative(root, to));
+      const back = path.relative(source, to);
+      if (stat.isDirectory() && !back.startsWith("..") && !path.isAbsolute(back)) throw new IpcError("A folder cannot be copied into itself.");
+      await this.assertMissing(to, nextRel);
+      await fs.promises
+        .cp(source, to, { recursive: true, errorOnExist: true, filter: (src) => path.basename(src) !== ".git" || src === source })
+        .catch(() => {
+          throw new IpcError(`Could not copy "${path.basename(source)}".`);
+        });
+      created.push(nextRel);
+    }
+    return created;
+  }
+
   async delete(projectId: string, rel: string): Promise<void> {
     if (!rel) throw new IpcError("The project root cannot be deleted.");
     const abs = workspaceConfig.resolveInProject(projectId, rel);

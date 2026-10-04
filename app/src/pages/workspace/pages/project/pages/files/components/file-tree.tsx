@@ -9,6 +9,7 @@ import { GitFileStateOptions } from "@/config/constants/dropdowns/git/git-file-s
 import { EditorTargetOptions } from "@/config/constants/dropdowns/settings/editor-target.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { cn } from "@/lib/utils";
+import { ENTRY_DRAG_TYPE, setDraggedPath, useTreeDropTarget } from "../hooks/use-tree-drop-target";
 import { EditorTargets, type FileEntry, type GitFileState } from "@shared/contract";
 
 const GIT_DOT: Record<GitFileState, string> = {
@@ -36,8 +37,22 @@ export interface TreeActions {
   onCreate: (dir: string, kind: CreateKind) => void;
   onRename: (entry: FileEntry) => void;
   onDelete: (entry: FileEntry) => void;
+  onMove: (path: string, destDir: string) => void;
+  onDropFiles: (files: File[], destDir: string) => void;
 }
 export const TreeActionsContext = createContext<TreeActions | null>(null);
+
+/** Native drag source props for a tree row. */
+const dragSourceProps = (path: string) => ({
+  draggable: true,
+  onDragStart: (e: React.DragEvent) => {
+    e.stopPropagation();
+    e.dataTransfer.effectAllowed = "copyMove";
+    e.dataTransfer.setData(ENTRY_DRAG_TYPE, path);
+    setDraggedPath(path);
+  },
+  onDragEnd: () => setDraggedPath(null),
+});
 
 interface TreeProps {
   projectId: string;
@@ -86,15 +101,17 @@ function DirRow({ projectId, entry, depth, gitStates, activePath, onSelect }: { 
     if (command.id > 0) setOpen(followsCommand);
   }, [command.id, followsCommand]);
   const reveal = useRevealFile();
+  const { isOver, dropProps } = useTreeDropTarget(entry.path, actions, () => setOpen(true));
   const changed = [...gitStates.keys()].some((p) => p.startsWith(`${entry.path}/`));
 
   return (
-    <div>
+    <div {...dropProps}>
       <div
         role="treeitem"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="group flex h-[26px] cursor-pointer items-center gap-1.5 rounded-sm pr-1 text-[0.8125rem] text-body hover:bg-surface-elevated"
+        {...(actions ? dragSourceProps(entry.path) : {})}
+        className={cn("group flex h-[26px] cursor-pointer items-center gap-1.5 rounded-sm pr-1 text-[0.8125rem] text-body hover:bg-surface-elevated", isOver && "bg-surface-card ring-1 ring-inset ring-primary")}
         style={{ paddingLeft: depth * 16 + 6 }}
       >
         <ChevronRight className={cn("size-3.5 text-ash transition-transform", open && "rotate-90")} />
@@ -138,6 +155,7 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
     <div
       onClick={() => onSelect?.(entry.path)}
       onDoubleClick={() => openInEditor.mutate({ projectId, editor: EditorTargets.CURSOR, path: entry.path })}
+      {...(actions ? dragSourceProps(entry.path) : {})}
       className={cn("group flex h-[26px] cursor-pointer items-center gap-1.5 rounded-sm pr-1 text-[0.8125rem] text-body hover:bg-surface-elevated", active && "bg-surface-card")}
       style={{ paddingLeft: depth * 16 + 26 }}
       title="Click to open · double-click to open in Cursor"

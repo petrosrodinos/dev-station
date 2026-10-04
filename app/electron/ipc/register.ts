@@ -150,6 +150,8 @@ export function registerIpc() {
   handle(IpcChannels.FILES_CREATE_FILE, args(zId, zRelPath), ([id, rel]) => filesystemManager.createFile(id, rel));
   handle(IpcChannels.FILES_CREATE_FOLDER, args(zId, zRelPath), ([id, rel]) => filesystemManager.createFolder(id, rel));
   handle(IpcChannels.FILES_RENAME, args(zId, zRelPath, z.string().max(255)), ([id, rel, name]) => filesystemManager.rename(id, rel, name));
+  handle(IpcChannels.FILES_MOVE, args(zId, zRelPath, zRelPath), ([id, rel, dest]) => filesystemManager.move(id, rel, dest));
+  handle(IpcChannels.FILES_IMPORT, args(zId, zRelPath, z.array(z.string().min(1).max(4096)).min(1).max(500)), ([id, dest, sources]) => filesystemManager.importExternal(id, dest, sources));
   handle(IpcChannels.FILES_DELETE, args(zId, zRelPath), ([id, rel]) => filesystemManager.delete(id, rel));
 
   // Git ----------------------------------------------------------------------------
