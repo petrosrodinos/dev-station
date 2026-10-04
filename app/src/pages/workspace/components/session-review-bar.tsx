@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Check, FileDiff, GitCommitHorizontal, TriangleAlert } from "lucide-react";
+import { ArrowRight, ArrowUp, Check, FileDiff, GitCommitHorizontal, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { ShortcutKeys } from "@/components/ui/shortcut-keys";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useGitCommit, useGitStatus } from "@/features/git/hooks/use-git";
+import { useGitCommit, useGitPush, useGitStatus } from "@/features/git/hooks/use-git";
 import { useGitIdentities } from "@/features/git-identities/hooks/use-git-identities";
 import { useMarkSessionReviewed } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { SessionReviewStates } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
@@ -43,6 +43,7 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
   const isLocal = localState === ProjectLocalStates.LOCAL;
   const { data: git } = useGitStatus(isLocal ? project.id : null);
   const commit = useGitCommit();
+  const push = useGitPush();
   const markReviewed = useMarkSessionReviewed();
   const { data: identities } = useGitIdentities();
   const identity = identities?.find((i) => i.is_default);
@@ -78,6 +79,14 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
     ),
   );
 
+  const ahead = git?.ahead ?? 0;
+  const pushButton =
+    isLocal && ahead > 0 && can(PermissionKeys.GIT_PUSH) ? (
+      <Button type="button" size="sm" variant="outline" className="h-8 shrink-0 gap-1.5" loading={push.isPending} onClick={() => push.mutate({ projectId: project.id })}>
+        {!push.isPending && <ArrowUp className="size-3.5" />} Push <span className="font-mono text-muted-foreground">{ahead}</span>
+      </Button>
+    ) : null;
+
   const nextButton = (autoFocus: boolean) =>
     remaining > 0 ? (
       <Tooltip>
@@ -108,6 +117,7 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
           )}
           {remaining === 0 && " · nothing else waiting for review"}
         </span>
+        {pushButton}
         {nextButton(justReviewed)}
       </div>
     );
@@ -177,11 +187,17 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
             <Button type="submit" size="sm" className="h-8 shrink-0 gap-1.5" loading={commit.isPending} disabled={!form.watch("message").trim()}>
               {!commit.isPending && <GitCommitHorizontal className="size-3.5" />} Commit
             </Button>
+            {pushButton}
             {nextButton(false)}
           </form>
         </Form>
       ) : (
-        remaining > 0 && <div className="flex justify-end">{nextButton(false)}</div>
+        (remaining > 0 || pushButton) && (
+          <div className="flex justify-end gap-2">
+            {pushButton}
+            {nextButton(false)}
+          </div>
+        )
       )}
     </div>
   );
