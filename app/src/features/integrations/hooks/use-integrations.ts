@@ -1,4 +1,4 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, type QueryClient } from "@tanstack/react-query";
 import {
     archiveNotionPage,
     createNotionPage,
@@ -19,10 +19,34 @@ import {
     updateLinearIssue,
     updateNotionPage,
 } from "../services/integrations.services";
-import type { IntegrationProvider, LinearIssuesQuery } from "../interfaces/integrations.interfaces";
+import type {
+    CreateNotionPageDto,
+    InitiateConnectionResponse,
+    IntegrationConnection,
+    IntegrationProvider,
+    LinearIssue,
+    LinearIssuesQuery,
+    NotionPageContent,
+    UpdateLinearIssueDto,
+    UpdateNotionPageDto,
+} from "../interfaces/integrations.interfaces";
 import { ConnectionStatuses } from "../interfaces/integrations.interfaces";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { toast } from "@/hooks/use-toast";
+import { QUEUED_MUTATION_POLICY } from "@/config/query/offline-policy";
+
+/** Mutation keys only. The functions and callbacks live in registerIntegrationMutations (see config/query/mutation-defaults). */
+export const IntegrationMutationKeys = {
+    initiateConnection: ["integrations", "initiate-connection"],
+    refreshConnection: ["integrations", "refresh-connection"],
+    pollConnection: ["integrations", "poll-connection"],
+    updateConnection: ["integrations", "update-connection"],
+    disconnectConnection: ["integrations", "disconnect-connection"],
+    updateLinearIssue: ["integrations", "update-linear-issue"],
+    createNotionPage: ["integrations", "create-notion-page"],
+    updateNotionPage: ["integrations", "update-notion-page"],
+    archiveNotionPage: ["integrations", "archive-notion-page"],
+} as const;
 
 export const useGetIntegrations = () => {
     const orgId = useWorkspaceStore((s) => s.active_organization_id);
@@ -38,62 +62,19 @@ export const useProviderConnections = (provider: IntegrationProvider) => {
     return { ...query, connections };
 };
 
-export const useInitiateConnection = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: initiateConnection,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["integrations"] });
-            toast({ title: "Finish connecting in your browser", description: "Return here once you've authorized access.", duration: 4000 });
-        },
-        onError: (error: Error) => toast({ title: "Could not start connection", description: error.message, variant: "error" }),
-    });
-};
+export const useInitiateConnection = () =>
+    useMutation<InitiateConnectionResponse, Error, { provider: IntegrationProvider; label?: string }>({ mutationKey: IntegrationMutationKeys.initiateConnection });
 
-/** `silent` is for background polling after OAuth: only a successful connection is announced. */
-export const useRefreshConnection = (options: { silent?: boolean } = {}) => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: refreshConnection,
-        onSuccess: (connection) => {
-            queryClient.invalidateQueries({ queryKey: ["integrations"] });
-            if (options.silent && connection.status !== ConnectionStatuses.ACTIVE) return;
-            toast({
-                title: connection.status === ConnectionStatuses.ACTIVE ? "Account connected" : "Connection not active yet",
-                description: connection.external_account ?? connection.label,
-                duration: 2500,
-            });
-        },
-        onError: (error: Error) => {
-            if (!options.silent) toast({ title: "Could not refresh connection", description: error.message, variant: "error" });
-        },
+/** `silent` is for background polling after OAuth: only a successful connection is announced. Polling has its own key, so the registry needs no hook argument. */
+export const useRefreshConnection = (options: { silent?: boolean } = {}) =>
+    useMutation<IntegrationConnection, Error, string>({
+        mutationKey: options.silent ? IntegrationMutationKeys.pollConnection : IntegrationMutationKeys.refreshConnection,
     });
-};
 
-export const useUpdateConnection = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: updateConnection,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["integrations"] });
-            toast({ title: "Connection updated", duration: 1500 });
-        },
-        onError: (error: Error) => toast({ title: "Could not update connection", description: error.message, variant: "error" }),
-    });
-};
+export const useUpdateConnection = () =>
+    useMutation<IntegrationConnection, Error, { id: string; label?: string; is_default?: boolean }>({ mutationKey: IntegrationMutationKeys.updateConnection });
 
-export const useDisconnectConnection = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: disconnectConnection,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["integrations"] });
-            queryClient.invalidateQueries({ queryKey: ["projects"] });
-            toast({ title: "Account disconnected", duration: 2000 });
-        },
-        onError: (error: Error) => toast({ title: "Could not disconnect", description: error.message, variant: "error" }),
-    });
-};
+export const useDisconnectConnection = () => useMutation<void, Error, string>({ mutationKey: IntegrationMutationKeys.disconnectConnection });
 
 export const useGetGithubRepositories = (connectionId: string | null, search: string) =>
     useQuery({
@@ -148,18 +129,8 @@ export const useGetLinearTeamMembers = (connectionId: string | null, teamId: str
         staleTime: 5 * 60_000,
     });
 
-export const useUpdateLinearIssue = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: updateLinearIssue,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["linear-issues"] });
-            queryClient.invalidateQueries({ queryKey: ["linear-issue"] });
-            toast({ title: "Issue updated", duration: 1500 });
-        },
-        onError: (error: Error) => toast({ title: "Could not update issue", description: error.message, variant: "error" }),
-    });
-};
+export const useUpdateLinearIssue = () =>
+    useMutation<LinearIssue, Error, UpdateLinearIssueDto & { connectionId: string; issueId: string }>({ mutationKey: IntegrationMutationKeys.updateLinearIssue });
 
 export const useGetNotionPages = (connectionId: string | null, search: string) =>
     useQuery({
@@ -178,9 +149,89 @@ export const useGetNotionPage = (connectionId: string | null, pageId: string | n
         staleTime: 60_000,
     });
 
-export const useCreateNotionPage = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
+export const useCreateNotionPage = () =>
+    useMutation<NotionPageContent, Error, CreateNotionPageDto & { connectionId: string }>({ mutationKey: IntegrationMutationKeys.createNotionPage });
+
+export const useUpdateNotionPage = () =>
+    useMutation<NotionPageContent, Error, UpdateNotionPageDto & { connectionId: string; pageId: string }>({ mutationKey: IntegrationMutationKeys.updateNotionPage });
+
+export const useArchiveNotionPage = () =>
+    useMutation<void, Error, { connectionId: string; pageId: string }>({ mutationKey: IntegrationMutationKeys.archiveNotionPage });
+
+export const registerIntegrationMutations = (queryClient: QueryClient) => {
+    const refreshIntegrations = () => queryClient.invalidateQueries({ queryKey: ["integrations"] });
+    const announceRefresh = (connection: IntegrationConnection) =>
+        toast({
+            title: connection.status === ConnectionStatuses.ACTIVE ? "Account connected" : "Connection not active yet",
+            description: connection.external_account ?? connection.label,
+            duration: 2500,
+        });
+
+    // Queued writes edit the user's own integration data. They pause offline and replay in order.
+    const queuedScope = { id: "integrations" };
+
+    // OAuth and destructive calls fail fast. They keep the default networkMode and never queue.
+    queryClient.setMutationDefaults(IntegrationMutationKeys.initiateConnection, {
+        mutationFn: initiateConnection,
+        onSuccess: () => {
+            refreshIntegrations();
+            toast({ title: "Finish connecting in your browser", description: "Return here once you've authorized access.", duration: 4000 });
+        },
+        onError: (error: Error) => toast({ title: "Could not start connection", description: error.message, variant: "error" }),
+    });
+
+    queryClient.setMutationDefaults(IntegrationMutationKeys.refreshConnection, {
+        mutationFn: refreshConnection,
+        onSuccess: (connection) => {
+            refreshIntegrations();
+            announceRefresh(connection);
+        },
+        onError: (error: Error) => toast({ title: "Could not refresh connection", description: error.message, variant: "error" }),
+    });
+
+    queryClient.setMutationDefaults(IntegrationMutationKeys.pollConnection, {
+        mutationFn: refreshConnection,
+        onSuccess: (connection) => {
+            refreshIntegrations();
+            if (connection.status === ConnectionStatuses.ACTIVE) announceRefresh(connection);
+        },
+        // Background polling is silent on failure; the next poll or a manual refresh reports it.
+    });
+
+    queryClient.setMutationDefaults(IntegrationMutationKeys.updateConnection, {
+        ...QUEUED_MUTATION_POLICY,
+        scope: queuedScope,
+        mutationFn: updateConnection,
+        onSuccess: () => {
+            refreshIntegrations();
+            toast({ title: "Connection updated", duration: 1500 });
+        },
+        onError: (error: Error) => toast({ title: "Could not update connection", description: error.message, variant: "error" }),
+    });
+
+    queryClient.setMutationDefaults(IntegrationMutationKeys.disconnectConnection, {
+        mutationFn: disconnectConnection,
+        onSuccess: () => {
+            refreshIntegrations();
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            toast({ title: "Account disconnected", duration: 2000 });
+        },
+        onError: (error: Error) => toast({ title: "Could not disconnect", description: error.message, variant: "error" }),
+    });
+
+    queryClient.setMutationDefaults(IntegrationMutationKeys.updateLinearIssue, {
+        ...QUEUED_MUTATION_POLICY,
+        scope: queuedScope,
+        mutationFn: updateLinearIssue,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["linear-issues"] });
+            queryClient.invalidateQueries({ queryKey: ["linear-issue"] });
+            toast({ title: "Issue updated", duration: 1500 });
+        },
+        onError: (error: Error) => toast({ title: "Could not update issue", description: error.message, variant: "error" }),
+    });
+
+    queryClient.setMutationDefaults(IntegrationMutationKeys.createNotionPage, {
         mutationFn: createNotionPage,
         onSuccess: (page, { connectionId }) => {
             queryClient.setQueryData(["notion-page", connectionId, page.id], page);
@@ -189,11 +240,10 @@ export const useCreateNotionPage = () => {
         },
         onError: (error: Error) => toast({ title: "Could not create page", description: error.message, variant: "error" }),
     });
-};
 
-export const useUpdateNotionPage = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
+    queryClient.setMutationDefaults(IntegrationMutationKeys.updateNotionPage, {
+        ...QUEUED_MUTATION_POLICY,
+        scope: queuedScope,
         mutationFn: updateNotionPage,
         onSuccess: (page, { connectionId }) => {
             queryClient.setQueryData(["notion-page", connectionId, page.id], page);
@@ -202,11 +252,8 @@ export const useUpdateNotionPage = () => {
         },
         onError: (error: Error) => toast({ title: "Could not save page", description: error.message, variant: "error" }),
     });
-};
 
-export const useArchiveNotionPage = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
+    queryClient.setMutationDefaults(IntegrationMutationKeys.archiveNotionPage, {
         mutationFn: archiveNotionPage,
         onSuccess: (_, { connectionId, pageId }) => {
             queryClient.removeQueries({ queryKey: ["notion-page", connectionId, pageId] });

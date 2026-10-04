@@ -10,6 +10,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
+import { willQueueWrite } from "@/lib/mutation-state";
+import { useCloseWhenParked } from "@/hooks/use-close-when-parked";
 import { useCreateGitIdentity, useDeleteGitIdentity, useGitIdentities, useUpdateGitIdentity } from "@/features/git-identities/hooks/use-git-identities";
 import type { GitIdentity } from "@/features/git-identities/interfaces/git-identities.interfaces";
 import { gitIdentitySchema, type GitIdentityFormData } from "../validation-schemas/settings.schema";
@@ -22,6 +24,8 @@ const EMPTY: GitIdentityFormData = { label: "", name: "", email: "" };
 function IdentityDialog({ identity, open, onClose }: { identity: GitIdentity | null; open: boolean; onClose: () => void }) {
   const create = useCreateGitIdentity();
   const update = useUpdateGitIdentity();
+  useCloseWhenParked(create, onClose);
+  useCloseWhenParked(update, onClose);
   const form = useForm<GitIdentityFormData>({ resolver: zodResolver(gitIdentitySchema), defaultValues: EMPTY });
 
   useEffect(() => {
@@ -32,6 +36,7 @@ function IdentityDialog({ identity, open, onClose }: { identity: GitIdentity | n
     const options = { onSuccess: onClose };
     if (identity) update.mutate({ id: identity.id, ...data }, options);
     else create.mutate(data, options);
+    if (willQueueWrite()) onClose();
   };
 
   return (

@@ -31,6 +31,9 @@ import { isDesktop } from "@/lib/desktop";
 import { cn } from "@/lib/utils";
 import type { DetectionResult } from "@shared/contract";
 import { projectFormSchema, ProjectSources, type ProjectFormData, type ProjectSource } from "../validation-schemas/workspace.schema";
+import { toast } from "@/hooks/use-toast";
+import { isBlockingMutation, willQueueWrite } from "@/lib/mutation-state";
+import { useCloseWhenParked } from "@/hooks/use-close-when-parked";
 import { AvatarPicker } from "./project-form/avatar-picker";
 import { ColorSwatches } from "./project-form/color-swatches";
 import { DirectoryField } from "./project-form/directory-field";
@@ -119,7 +122,15 @@ export function ProjectDialog() {
     return () => clearTimeout(t);
   }, [name, source, editing, form]);
 
-  const busy = createProject.isPending || updateProject.isPending || cloneProject.isPending || linkFolder.isPending;
+  const busy = isBlockingMutation(createProject) || isBlockingMutation(updateProject) || cloneProject.isPending || linkFolder.isPending;
+
+  // A submit that goes offline mid-flight parks in the outbox: close, and don't navigate when it finally syncs.
+  const parkedRef = useRef(false);
+  useCloseWhenParked(createProject, () => {
+    parkedRef.current = true;
+    close();
+  });
+  useCloseWhenParked(updateProject, close);
   const cloneEvent = operationId ? progress[operationId] : undefined;
 
   const finish = (project: Project) => {
@@ -129,6 +140,7 @@ export function ProjectDialog() {
   };
 
   const onSubmit = async (data: ProjectFormData) => {
+    parkedRef.current = false;
     if (editing) {
       updateProject.mutate(
         {
@@ -141,12 +153,12 @@ export function ProjectDialog() {
         },
         { onSuccess: close },
       );
+      if (willQueueWrite()) close();
       return;
     }
 
     const repositoryUrl = data.source === ProjectSources.FOLDER ? detection?.git.remote_url ?? null : data.clone_url ?? null;
-    const project = await createProject
-      .mutateAsync({
+    const payload = {
         name: data.name,
         color: data.color,
         avatar_seed: data.avatar_seed ?? null,
@@ -163,9 +175,21 @@ export function ProjectDialog() {
             }
           : null,
         services: data.source === ProjectSources.FOLDER && detection ? detectedToServiceInputs(detection.services) : undefined,
-      })
-      .catch(() => null);
-    if (!project) return;
+    };
+
+    if (willQueueWrite()) {
+      // Offline: the outbox saves the project and syncs it later. Cloning and folder linking need the
+      // server-issued id and a connection, so they can't run now; the user does them once back online.
+      createProject.mutate(payload);
+      if (data.source !== ProjectSources.NONE) {
+        toast({ title: "Local setup waits for the connection", description: "Clone or link the folder once you're back online.", variant: "info", duration: 5000 });
+      }
+      close();
+      return;
+    }
+
+    const project = await createProject.mutateAsync(payload).catch(() => null);
+    if (!project || parkedRef.current) return;
 
     if (data.source === ProjectSources.GITHUB || data.source === ProjectSources.URL) {
       const opId = crypto.randomUUID();

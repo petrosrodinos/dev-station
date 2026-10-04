@@ -39,6 +39,8 @@ import { useDockApi } from "../context/dock-api-context";
 import { AI_PANEL_ID } from "./dock/workspace-dock";
 import { moveAiPanel } from "./dock/move-ai-panel";
 import { cn } from "@/lib/utils";
+import { willQueueWrite } from "@/lib/mutation-state";
+import { useCloseWhenParked } from "@/hooks/use-close-when-parked";
 
 /**
  * The single place users manage named layout presets (docking system spec §B): switch, save the
@@ -55,7 +57,12 @@ export function LayoutMenu() {
   const { position: railPosition, setPosition: setRailPosition } = useRailPosition();
 
   const create = useCreateLayout();
+  useCloseWhenParked(create, () => {
+    setSaveDialog(false);
+    setName("");
+  });
   const update = useUpdateLayout({ silent: false });
+  useCloseWhenParked(update, () => setRenameDialog(false));
   const remove = useDeleteLayout();
   const updateState = useUpdateLayoutState();
 
@@ -80,21 +87,27 @@ export function LayoutMenu() {
 
   const saveAsNew = () => {
     if (!api || !name.trim()) return;
-    create.mutate(
-      { name: name.trim(), layout: api.toJSON() as unknown as Record<string, unknown> },
-      {
-        onSuccess: (preset) => {
-          switchTo(preset.id);
-          setSaveDialog(false);
-          setName("");
-        },
+    const dto = { name: name.trim(), layout: api.toJSON() as unknown as Record<string, unknown> };
+    if (willQueueWrite()) {
+      // Offline: the preset is saved to the outbox. Switching to it needs the server id, so that waits.
+      create.mutate(dto);
+      setSaveDialog(false);
+      setName("");
+      return;
+    }
+    create.mutate(dto, {
+      onSuccess: (preset) => {
+        switchTo(preset.id);
+        setSaveDialog(false);
+        setName("");
       },
-    );
+    });
   };
 
   const renameCurrent = () => {
     if (!activePresetId || !name.trim()) return;
     update.mutate({ id: activePresetId, dto: { name: name.trim() } }, { onSuccess: () => setRenameDialog(false) });
+    if (willQueueWrite()) setRenameDialog(false);
   };
 
   const updateCurrent = () => {

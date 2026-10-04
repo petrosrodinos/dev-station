@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, type QueryClient } from "@tanstack/react-query";
 import {
     createProject,
     deleteProject,
@@ -9,9 +9,27 @@ import {
     replaceProjectServices,
     updateProject,
 } from "../services/projects.services";
-import type { Project } from "../interfaces/projects.interfaces";
-import { useWorkspaceStore } from "@/stores/workspace";
+import type {
+    CreateProjectDto,
+    LinkProjectIssueDto,
+    Project,
+    ProjectIssueLink,
+    ServiceInput,
+    UpdateProjectDto,
+} from "../interfaces/projects.interfaces";
+import { getWorkspaceStoreState, useWorkspaceStore } from "@/stores/workspace";
 import { toast } from "@/hooks/use-toast";
+import { QUEUED_MUTATION_POLICY } from "@/config/query/offline-policy";
+
+/** Mutation keys only. The functions and callbacks live in registerProjectMutations (see config/query/mutation-defaults). */
+export const ProjectMutationKeys = {
+    create: ["projects", "create"],
+    update: ["projects", "update"],
+    delete: ["projects", "delete"],
+    reorder: ["projects", "reorder"],
+    replaceServices: ["projects", "replace-services"],
+    linkIssue: ["projects", "link-issue"],
+} as const;
 
 export const useGetProjects = () => {
     const orgId = useWorkspaceStore((s) => s.active_organization_id);
@@ -24,49 +42,70 @@ export const useProject = (projectId: string | null | undefined): { project: Pro
     return { project: data?.find((p) => p.id === projectId) ?? null, isPending };
 };
 
-export const useCreateProject = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
+export const useCreateProject = () => useMutation<Project, Error, CreateProjectDto>({ mutationKey: ProjectMutationKeys.create });
+
+export const useUpdateProject = () => useMutation<Project, Error, UpdateProjectDto & { id: string }>({ mutationKey: ProjectMutationKeys.update });
+
+export const useDeleteProject = () => useMutation<void, Error, string>({ mutationKey: ProjectMutationKeys.delete });
+
+export const useReorderProjects = () => useMutation<void, Error, string[]>({ mutationKey: ProjectMutationKeys.reorder });
+
+export const useReplaceProjectServices = () =>
+    useMutation<Project, Error, { id: string; services: ServiceInput[] }>({ mutationKey: ProjectMutationKeys.replaceServices });
+
+export const useGetProjectIssues = (projectId: string | null) =>
+    useQuery({ queryKey: ["project-issues", projectId], queryFn: () => getProjectIssues(projectId!), enabled: !!projectId });
+
+export const useLinkProjectIssue = () =>
+    useMutation<ProjectIssueLink, Error, LinkProjectIssueDto & { id: string }>({ mutationKey: ProjectMutationKeys.linkIssue });
+
+export const registerProjectMutations = (queryClient: QueryClient) => {
+    const refreshProjects = () => queryClient.invalidateQueries({ queryKey: ["projects"] });
+    const reportFailure = (title: string) => (error: Error) => toast({ title, description: error.message, variant: "error" });
+
+    // Every project write shares one scope so they replay in the order they were made.
+    const scope = { id: "projects" };
+
+    queryClient.setMutationDefaults(ProjectMutationKeys.create, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
         mutationFn: createProject,
         onSuccess: (project) => {
-            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            refreshProjects();
             toast({ title: "Project created", description: project.name, duration: 2000 });
         },
-        onError: (error: Error) => toast({ title: "Could not create project", description: error.message, variant: "error" }),
+        onError: reportFailure("Could not create project"),
     });
-};
 
-export const useUpdateProject = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
+    queryClient.setMutationDefaults(ProjectMutationKeys.update, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
         mutationFn: updateProject,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            refreshProjects();
             toast({ title: "Project updated", duration: 1500 });
         },
-        onError: (error: Error) => toast({ title: "Could not update project", description: error.message, variant: "error" }),
+        onError: reportFailure("Could not update project"),
     });
-};
 
-export const useDeleteProject = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
+    queryClient.setMutationDefaults(ProjectMutationKeys.delete, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
         mutationFn: deleteProject,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            refreshProjects();
             toast({ title: "Project removed", duration: 2000 });
         },
-        onError: (error: Error) => toast({ title: "Could not remove project", description: error.message, variant: "error" }),
+        onError: reportFailure("Could not remove project"),
     });
-};
 
-export const useReorderProjects = () => {
-    const queryClient = useQueryClient();
-    const orgId = useWorkspaceStore((s) => s.active_organization_id);
-    return useMutation({
+    queryClient.setMutationDefaults(ProjectMutationKeys.reorder, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
         mutationFn: reorderProjects,
-        onMutate: async (ids) => {
-            // Optimistic: the rail reorders immediately.
+        onMutate: async (ids: string[]) => {
+            // Optimistic: the rail reorders immediately, including while offline.
+            const orgId = getWorkspaceStoreState().active_organization_id;
             await queryClient.cancelQueries({ queryKey: ["projects", orgId] });
             const previous = queryClient.getQueryData<Project[]>(["projects", orgId]);
             if (previous) {
@@ -76,42 +115,37 @@ export const useReorderProjects = () => {
                     ids.map((id, index) => ({ ...byId.get(id)!, sort_order: index })).filter((p) => p.id),
                 );
             }
-            return { previous };
+            return { previous, orgId };
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            refreshProjects();
             toast({ title: "Project order saved", duration: 1200 });
         },
         onError: (error: Error, _ids, context) => {
-            if (context?.previous) queryClient.setQueryData(["projects", orgId], context.previous);
+            if (context?.previous) queryClient.setQueryData(["projects", context.orgId], context.previous);
             toast({ title: "Could not reorder projects", description: error.message, variant: "error" });
         },
     });
-};
 
-export const useReplaceProjectServices = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
+    queryClient.setMutationDefaults(ProjectMutationKeys.replaceServices, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
         mutationFn: replaceProjectServices,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            refreshProjects();
             toast({ title: "Services saved", duration: 1500 });
         },
-        onError: (error: Error) => toast({ title: "Could not save services", description: error.message, variant: "error" }),
+        onError: reportFailure("Could not save services"),
     });
-};
 
-export const useGetProjectIssues = (projectId: string | null) =>
-    useQuery({ queryKey: ["project-issues", projectId], queryFn: () => getProjectIssues(projectId!), enabled: !!projectId });
-
-export const useLinkProjectIssue = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
+    queryClient.setMutationDefaults(ProjectMutationKeys.linkIssue, {
+        ...QUEUED_MUTATION_POLICY,
+        scope,
         mutationFn: linkProjectIssue,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["project-issues"] });
             toast({ title: "Issue linked to project", duration: 1500 });
         },
-        onError: (error: Error) => toast({ title: "Could not link issue", description: error.message, variant: "error" }),
+        onError: reportFailure("Could not link issue"),
     });
 };

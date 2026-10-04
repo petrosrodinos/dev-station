@@ -13,6 +13,8 @@ import type { CustomSkill } from "@/features/skills/interfaces/skills.interfaces
 import { SkillKindOptions, SkillProviderOptions } from "@/config/constants/dropdowns/skills/skill.options";
 import { SkillKinds, SkillProviders } from "@shared/contract";
 import { skillFormSchema, type SkillFormData } from "../validation-schemas/skill.schema";
+import { isBlockingMutation, willQueueWrite } from "@/lib/mutation-state";
+import { useCloseWhenParked } from "@/hooks/use-close-when-parked";
 
 const EMPTY: SkillFormData = { name: "", description: "", body: "", provider: SkillProviders.GENERIC, kind: SkillKinds.SKILL, is_public: true };
 
@@ -29,7 +31,9 @@ interface SkillDialogProps {
 export function SkillDialog({ skill, initialValues, open, onOpenChange }: SkillDialogProps) {
     const create = useCreateSkill();
     const update = useUpdateSkill();
-    const busy = create.isPending || update.isPending;
+    const busy = isBlockingMutation(create) || isBlockingMutation(update);
+    useCloseWhenParked(create, () => onOpenChange(false));
+    useCloseWhenParked(update, () => onOpenChange(false));
     const form = useForm<SkillFormData>({ resolver: zodResolver(skillFormSchema), defaultValues: EMPTY });
 
     useEffect(() => {
@@ -41,6 +45,7 @@ export function SkillDialog({ skill, initialValues, open, onOpenChange }: SkillD
         const dto = { name: data.name, description: data.description || undefined, body: data.body, provider: data.provider, kind: data.kind, is_public: data.is_public };
         if (skill) update.mutate({ id: skill.id, ...dto }, { onSuccess: () => onOpenChange(false) });
         else create.mutate(dto, { onSuccess: () => onOpenChange(false) });
+        if (willQueueWrite()) onOpenChange(false);
     };
 
     return (
