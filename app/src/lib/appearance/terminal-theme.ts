@@ -25,9 +25,13 @@ const ANSI: ITheme = {
     brightWhite: "#ffffff",
 };
 
-/** Terminal colors follow the active preset's terminal surface; ANSI colors stay fixed for tool-output legibility. */
+/**
+ * Terminal colors follow the active preset's terminal surface; ANSI colors stay fixed for tool-output legibility.
+ * The surface is dark in every mode, so the text color comes from the dark palette too: a light-mode ink
+ * would be dark-on-dark here.
+ */
 export const buildTerminalTheme = (values: AppearanceValues): ITheme => {
-    const palette = getActivePalette(values);
+    const palette = getActivePalette({ ...values, mode: "dark" });
     const background = palette?.terminal ?? BASE_BACKGROUND;
     const foreground = palette ? palette.ink : BASE_FOREGROUND;
     const accent = primaryColor(values) ?? BASE_FOREGROUND;

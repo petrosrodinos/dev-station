@@ -48,6 +48,9 @@ export function XtermTerminal({ source, sourceKey, readOnly = false, className, 
       disableStdin: readOnly,
       scrollback: 10_000,
       allowProposedApi: true,
+      // Agent CLIs paint their own bands (Claude Code's prompt box is light or dark by its own theme). xterm
+      // lifts any text that falls below WCAG AA against the cell's real background, so it stays readable.
+      minimumContrastRatio: 4.5,
       // OSC 8 hyperlinks (which Claude Code emits) otherwise go through xterm's default handler: a
       // confirm() prompt plus window.open, neither of which opens anything usable in Electron.
       linkHandler: { activate: (_e, uri) => sourceRef.current.openLink?.(uri), allowNonHttpProtocols: false },
