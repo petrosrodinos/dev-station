@@ -39,6 +39,8 @@ interface WorkspaceState {
     ai_panel_open: boolean;
     /** Sidebar edge chosen on this device; wins over the account value so a move applies even if the save fails. */
     rail_position: RailPosition | null;
+    /** Project sidebar folded to a thin strip on this device; the strip keeps a button to bring it back. */
+    rail_collapsed: boolean;
     /** Sessions that finished/await input and haven't been looked at yet (drives nav-rail badges). */
     attention_session_ids: string[];
     /** Sessions the user reviewed (committed or marked reviewed) since the agent last finished. */
@@ -62,6 +64,7 @@ interface WorkspaceActions {
     setAiPanelMode(mode: AiPanelMode): void;
     setAiPanelOpen(open: boolean): void;
     setRailPosition(position: RailPosition | null): void;
+    setRailCollapsed(collapsed: boolean): void;
     markAttention(id: string): void;
     clearAttention(id: string): void;
     markReviewed(id: string): void;
@@ -82,6 +85,7 @@ const initialValues: WorkspaceState = {
     ai_panel_mode: AiPanelModes.TERMINAL,
     ai_panel_open: true,
     rail_position: null,
+    rail_collapsed: false,
     attention_session_ids: [],
     reviewed_session_ids: [],
     session_by_project: {},
@@ -125,6 +129,7 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                 setAiPanelMode: (mode) => set({ ai_panel_mode: mode }),
                 setAiPanelOpen: (open) => set({ ai_panel_open: open }),
                 setRailPosition: (position) => set({ rail_position: position }),
+                setRailCollapsed: (collapsed) => set({ rail_collapsed: collapsed }),
                 markAttention: (id) =>
                     set((s) => (s.attention_session_ids.includes(id) ? s : { attention_session_ids: [...s.attention_session_ids, id] })),
                 clearAttention: (id) => set((s) => ({ attention_session_ids: s.attention_session_ids.filter((x) => x !== id) })),

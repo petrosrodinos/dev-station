@@ -3,7 +3,29 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { AlertTriangle, Archive, CloudDownload, FolderOpen, FolderSearch, LayoutGrid, Link2, Pencil, Plug, Plus, Settings, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Archive,
+  CloudDownload,
+  FolderOpen,
+  FolderSearch,
+  LayoutGrid,
+  Link2,
+  Pencil,
+  PanelBottomClose,
+  PanelBottomOpen,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelRightClose,
+  PanelRightOpen,
+  PanelTopClose,
+  PanelTopOpen,
+  Plug,
+  Plus,
+  Settings,
+  Trash2,
+  type LucideIcon,
+} from "lucide-react";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -48,6 +70,21 @@ const RAIL_EDGE_BORDER: Record<RailPosition, string> = {
   bottom: "border-t",
 };
 
+/** Folding the bar away points at the edge it's docked to; bringing it back points into the screen. */
+const HIDE_RAIL_ICON: Record<RailPosition, LucideIcon> = {
+  left: PanelLeftClose,
+  right: PanelRightClose,
+  top: PanelTopClose,
+  bottom: PanelBottomClose,
+};
+
+const SHOW_RAIL_ICON: Record<RailPosition, LucideIcon> = {
+  left: PanelLeftOpen,
+  right: PanelRightOpen,
+  top: PanelTopOpen,
+  bottom: PanelBottomOpen,
+};
+
 /** Slack-style project rail (Spec §5) with attention badges (Spec §13/§27) and local-state treatment (Spec §26). */
 export function ProjectRail() {
   const { position } = useRailPosition();
@@ -59,6 +96,8 @@ export function ProjectRail() {
   const { data: sessions } = useAgentSessions();
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
   const attentionIds = useWorkspaceStore((s) => s.attention_session_ids);
+  const railCollapsed = useWorkspaceStore((s) => s.rail_collapsed);
+  const setRailCollapsed = useWorkspaceStore((s) => s.setRailCollapsed);
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
   const runtimeAgents = useRuntimeStore((s) => s.agents);
   const openProjectDialog = useDialogsStore((s) => s.openProjectDialog);
@@ -116,6 +155,13 @@ export function ProjectRail() {
     const ids = projects.map((p) => p.id);
     reorder.mutate(arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id))));
   };
+
+  // Hooks are all above this point: a folded bar only renders its strip.
+  if (railCollapsed) {
+    return <CollapsedProjectRail position={position} attention={attentionIds.length} onExpand={() => setRailCollapsed(false)} />;
+  }
+
+  const HideIcon = HIDE_RAIL_ICON[position];
 
   return (
     <PlacementMenu target={PlacementTargets.SIDEBAR}>
@@ -200,6 +246,9 @@ export function ProjectRail() {
         <RailButton label="Settings" onClick={() => navigate(Routes.workspace.settings)} tipSide={tipSide}>
           <Settings className="size-4" />
         </RailButton>
+        <RailButton label="Hide project bar" onClick={() => setRailCollapsed(true)} tipSide={tipSide}>
+          <HideIcon className="size-4" />
+        </RailButton>
       </div>
 
       <ConfirmationDialog
@@ -213,6 +262,36 @@ export function ProjectRail() {
         isLoading={deleteProject.isPending}
         icon={<Trash2 className="size-5" />}
       />
+    </aside>
+    </PlacementMenu>
+  );
+}
+
+/** The bar folded away: a thin strip that stays visible, with one button in its middle to bring the bar back. */
+function CollapsedProjectRail({ position, attention, onExpand }: { position: RailPosition; attention: number; onExpand: () => void }) {
+  const horizontal = isHorizontalRail(position);
+  const ShowIcon = SHOW_RAIL_ICON[position];
+  // Badges live on the bar's avatars, so a folded bar reports pending attention on its button instead.
+  const label = attention === 0 ? "Show project bar" : `Show project bar · ${attention === 1 ? "1 session needs" : `${attention} sessions need`} attention`;
+
+  return (
+    <PlacementMenu target={PlacementTargets.SIDEBAR}>
+    <aside className={cn("flex shrink-0 items-center justify-center bg-canvas", RAIL_EDGE_BORDER[position], horizontal ? "h-6 w-full" : "w-6")} aria-label="Projects">
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <button
+              onClick={onExpand}
+              aria-label={label}
+              className="relative flex size-5 items-center justify-center rounded-md border bg-surface-elevated text-muted-foreground hover:text-foreground"
+            >
+              <ShowIcon className="size-3.5" />
+              {attention > 0 && <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-danger ring-2 ring-canvas" />}
+            </button>
+          }
+        />
+        <TooltipContent side={TOOLTIP_SIDE[position]}>{label}</TooltipContent>
+      </Tooltip>
     </aside>
     </PlacementMenu>
   );
