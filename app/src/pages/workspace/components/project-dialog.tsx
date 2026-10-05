@@ -68,7 +68,8 @@ export function ProjectDialog() {
   const createProject = useCreateProject();
   const updateProject = useUpdateProject();
   const cloneProject = useCloneProject();
-  const linkFolder = useLinkProjectFolder();
+  // "Project created" already confirms the create; the folder link is part of that same flow.
+  const linkFolder = useLinkProjectFolder({ silent: true });
   const inspectPath = useInspectPath();
   const cancelClone = useCancelClone();
   const progress = useCloneProgress();
