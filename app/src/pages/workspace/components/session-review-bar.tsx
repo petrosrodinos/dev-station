@@ -51,8 +51,6 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
   const nextCombo = useResolvedShortcuts().find((s) => s.id === ShortcutActions.GO_TO_FINISHED_SESSION)?.combo;
   const { can } = usePermissions();
   const [committedSha, setCommittedSha] = useState<string | null>(null);
-  // Focus "Next" only right after the developer finished reviewing here, not when revisiting a reviewed session.
-  const [justReviewed, setJustReviewed] = useState(false);
   const form = useForm<CommitFormData>({ resolver: zodResolver(commitSchema), defaultValues: { message: item.name } });
 
   const state = item.review_state;
@@ -72,7 +70,6 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
       {
         onSuccess: (result) => {
           setCommittedSha(result.sha);
-          setJustReviewed(true);
           markReviewed.mutate({ id: item.id, commit_sha: result.sha });
         },
       },
@@ -87,12 +84,13 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
       </Button>
     ) : null;
 
-  const nextButton = (autoFocus: boolean) =>
+  // Never takes focus on mount: this bar re-mounts whenever git status refreshes, and focus has to stay in the terminal.
+  const nextButton = () =>
     remaining > 0 ? (
       <Tooltip>
         <TooltipTrigger
           render={
-            <Button size="sm" variant={done ? "default" : "ghost"} className="h-8 shrink-0 gap-1.5" onClick={onNext} autoFocus={autoFocus}>
+            <Button size="sm" variant={done ? "default" : "ghost"} className="h-8 shrink-0 gap-1.5" onClick={onNext}>
               {done ? `Next review (${remaining})` : "Skip"} <ArrowRight className="size-3.5" />
             </Button>
           }
@@ -118,7 +116,7 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
           {remaining === 0 && " · nothing else waiting for review"}
         </span>
         {pushButton}
-        {nextButton(justReviewed)}
+        {nextButton()}
       </div>
     );
   }
@@ -148,10 +146,7 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
         <span className="ml-auto" />
         {state === SessionReviewStates.READY && (
           <button
-            onClick={() => {
-              setJustReviewed(true);
-              markReviewed.mutate({ id: item.id });
-            }}
+            onClick={() => markReviewed.mutate({ id: item.id })}
             className="hover:text-foreground"
           >
             Mark reviewed
@@ -182,14 +177,14 @@ export function SessionReviewBar({ item, project, remaining, onNext }: SessionRe
               {!commit.isPending && <GitCommitHorizontal className="size-3.5" />} Commit
             </Button>
             {pushButton}
-            {nextButton(false)}
+            {nextButton()}
           </form>
         </Form>
       ) : (
         (remaining > 0 || pushButton) && (
           <div className="flex justify-end gap-2">
             {pushButton}
-            {nextButton(false)}
+            {nextButton()}
           </div>
         )
       )}
