@@ -117,6 +117,7 @@ export class AgentSessionsService {
     id: string,
     dto: UpdateAgentSessionDto,
   ) {
+    const { silent, ...fields } = dto;
     const session = await this.findOne(organizationId, id);
     const statusChanged = dto.status && dto.status !== session.status;
 
@@ -133,7 +134,7 @@ export class AgentSessionsService {
     const updated = await this.prisma.agentSession.update({
       where: { id },
       data: {
-        ...dto,
+        ...fields,
         // A restarted session clears its end marker; an ending one gets stamped.
         ended_at: dto.ended_at
           ? new Date(dto.ended_at)
@@ -145,9 +146,8 @@ export class AgentSessionsService {
       },
     });
 
-    const activity = statusChanged
-      ? SessionStatusActivity[dto.status]
-      : undefined;
+    const activity =
+      statusChanged && !silent ? SessionStatusActivity[dto.status] : undefined;
     if (activity) {
       const agentName =
         AgentCatalog.find((a) => a.type === updated.agent_type)?.name ??

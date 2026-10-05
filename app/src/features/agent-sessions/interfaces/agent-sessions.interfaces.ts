@@ -58,6 +58,8 @@ export interface UpdateAgentSessionDto {
     commit_sha?: string | null;
     exit_code?: number | null;
     ended_at?: string | null;
+    /** Record the status without an activity entry (sessions nobody worked in). */
+    silent?: boolean;
 }
 
 export interface AgentCatalogItem {

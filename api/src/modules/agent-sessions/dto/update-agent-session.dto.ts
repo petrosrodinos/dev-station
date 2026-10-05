@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AgentSessionStatus } from 'generated/prisma';
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsInt,
@@ -57,4 +58,13 @@ export class UpdateAgentSessionDto {
   @IsOptional()
   @IsDateString()
   ended_at?: string;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Record the status change without an activity entry (sessions nobody worked in)',
+  })
+  @IsOptional()
+  @IsBoolean()
+  silent?: boolean;
 }
