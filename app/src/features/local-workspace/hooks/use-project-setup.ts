@@ -73,13 +73,15 @@ export const useCancelClone = () =>
     });
 
 /** "Choose local path": point a project at an existing folder on this device. */
-export const useLinkProjectFolder = () => {
+export const useLinkProjectFolder = (options: { silent?: boolean } = {}) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ project, path }: { project: Project; path: string }) => ({ project, detection: await linkAndDetect(project, path) }),
         onSuccess: ({ project }) => {
             ["projects", "project-local-states", "workspace-config", "project-detection", "git-status"].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
-            toast({ title: `${project.name} linked to a local folder`, duration: 2000 });
+            if (!options.silent) {
+                toast({ title: `${project.name} linked to a local folder`, duration: 2000 });
+            }
         },
         onError: (error: Error) => toast({ title: "Could not link folder", description: error.message, variant: "error" }),
     });
