@@ -25,7 +25,7 @@ interface SessionNavigatorProps {
 }
 
 /**
- * Open sessions as a single strip of tabs, in the order they were opened. The strip is one fixed-height
+ * Open sessions as a single strip of tabs, grouped by project (see `useOpenSessions`). The strip is one fixed-height
  * line that scrolls sideways when there are too many, so it never takes space from the terminal below.
  */
 export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigatorProps) {
