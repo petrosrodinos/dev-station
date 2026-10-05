@@ -156,6 +156,7 @@ class AgentManager {
       changes: existing?.info.changes ?? { files_changed: 0, additions: 0, deletions: 0 },
       alive: true,
       agent_title: existing?.info.agent_title ?? null,
+      engaged: (existing?.info.engaged ?? false) || !!input.prompt,
     };
     this.sessions.set(input.session_id, managed);
     this.transition(managed, AgentRuntimeStatuses.RUNNING, null);
@@ -183,6 +184,7 @@ class AgentManager {
     const text = data.replace(ANSI_RE, "");
     managed.recent = (managed.recent + text).slice(-4000);
     this.onData({ id: managed.info.id, data });
+    if (!managed.info.engaged && managed.adapter.inferStatus?.(managed.recent) === AgentRuntimeStatuses.RUNNING) this.engage(managed);
 
     if (managed.info.status === AgentRuntimeStatuses.AWAITING_INPUT) {
       const hinted = managed.adapter.inferStatus?.(text) ?? null;
@@ -266,6 +268,11 @@ class AgentManager {
     }
   }
 
+  /** Marks the session as worked in; the next status event carries the flag. */
+  private engage(managed: ManagedAgent) {
+    if (!managed.info.engaged) managed.info = { ...managed.info, engaged: true };
+  }
+
   private transition(managed: ManagedAgent, status: AgentRuntimeStatus, previous: AgentRuntimeStatus | null = managed.info.status) {
     if (status === AgentRuntimeStatuses.AWAITING_INPUT && previous !== status) managed.awaitingSince = Date.now();
     managed.info = { ...managed.info, status };
@@ -276,7 +283,10 @@ class AgentManager {
     const s = this.get(id);
     if (!s.pty) return;
     s.lastUserInputAt = Date.now();
-    if (isSubmit(data)) s.lastSubmitAt = s.lastUserInputAt;
+    if (isSubmit(data)) {
+      s.lastSubmitAt = s.lastUserInputAt;
+      this.engage(s);
+    }
     s.pty.write(data);
   }
 

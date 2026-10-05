@@ -108,7 +108,9 @@ export function DesktopEventsProvider() {
       const workspace = useWorkspaceStore.getState();
       const viewing = workspace.active_session_id === session.id && workspace.ai_panel_open;
       const attention = ATTENTION_EVENTS[session.status];
-      if (attention) {
+      // A session nobody worked in (opened, then left idle or closed) has nothing to review; a crash always does.
+      const reviewable = session.engaged || session.status === AgentRuntimeStatuses.CRASHED;
+      if (attention && reviewable) {
         const settings = getSettings();
         if (!viewing && shouldNotify(settings, attention.type, NotificationChannels.BADGE)) workspace.markAttention(session.id);
         // Unfocused windows get the OS notification instead; this is the in-app equivalent.
@@ -139,13 +141,14 @@ export function DesktopEventsProvider() {
         workspace.clearReviewed(session.id);
       }
 
-      // The API records AGENT_* activity entries on status transitions.
+      // The API records AGENT_* activity entries on status transitions, except for sessions nobody worked in.
       void updateAgentSession({
         id: session.id,
         status: session.status,
         ...session.changes,
         exit_code: session.exit_code,
         ended_at: session.ended_at,
+        silent: !reviewable,
       })
         .then(() => {
           queryClient.invalidateQueries({ queryKey: ["agent-sessions"] });

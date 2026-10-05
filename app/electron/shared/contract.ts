@@ -409,6 +409,8 @@ export interface AgentSessionInfo {
   alive: boolean;
   /** The agent CLI's own title for this conversation, when it has one. */
   agent_title?: string | null;
+  /** Someone has worked in it (a prompt was sent or the agent ran). A session opened and left alone has nothing to review. */
+  engaged: boolean;
 }
 
 export interface AgentStatusEvent {
