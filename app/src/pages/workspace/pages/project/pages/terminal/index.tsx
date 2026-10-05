@@ -132,8 +132,8 @@ const TerminalTab: FC = () => {
     <div className="flex h-full min-h-[420px] flex-col gap-2 p-4">
       {canEdit && (
         <div className="flex shrink-0 justify-end">
-          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-muted-foreground" onClick={openNew} loading={create.isPending}>
-            {!create.isPending && <Plus className="size-3.5" />} New terminal
+          <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={openNew} loading={create.isPending} aria-label="New terminal" title="New terminal">
+            {!create.isPending && <Plus className="size-3.5" />}
           </Button>
         </div>
       )}
