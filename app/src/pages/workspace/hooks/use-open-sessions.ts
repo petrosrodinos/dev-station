@@ -24,15 +24,25 @@ export interface SessionItem {
 }
 
 export interface OpenSessions {
-  /** Every listed session in display order: the order they were opened. Next/previous steps follow this order too. */
+  /** Every listed session in display order: grouped by project, opening order within each group. Next/previous steps follow this order too. */
   ordered: SessionItem[];
   /** Sessions ready for review, in display order. */
   ready: SessionItem[];
 }
 
 /**
- * The AI panel's working set: sessions opened in this workspace plus any that need attention, as one
- * flat list in the order they were opened. Runtime state on this device wins over the server copy.
+ * Sessions of one project sit together. Groups follow the order their first session was opened, and a
+ * group keeps its sessions in opening order, so a new session lands at the end of its project's run.
+ */
+const groupByProject = (items: SessionItem[]): SessionItem[] => {
+  const groups = new Map<string, SessionItem[]>();
+  for (const item of items) groups.set(item.project_id, [...(groups.get(item.project_id) ?? []), item]);
+  return [...groups.values()].flat();
+};
+
+/**
+ * The AI panel's working set: sessions opened in this workspace plus any that need attention, grouped by
+ * project. Runtime state on this device wins over the server copy.
  */
 export const useOpenSessions = (): OpenSessions => {
   const { data: sessions } = useAgentSessions();
@@ -72,7 +82,8 @@ export const useOpenSessions = (): OpenSessions => {
       });
     }
 
-    return { ordered, ready: ordered.filter((i) => i.review_state === SessionReviewStates.READY) };
+    const grouped = groupByProject(ordered);
+    return { ordered: grouped, ready: grouped.filter((i) => i.review_state === SessionReviewStates.READY) };
   }, [sessions, runtimeAgents, openIds, attention, reviewed, deviceId]);
 };
 
