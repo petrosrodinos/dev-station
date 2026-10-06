@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { CardGridSkeleton } from "@/components/ui/list-skeleton";
 import { AttentionPanel } from "./components/attention-panel";
 import { ArchivedProjectsPanel } from "./components/archived-projects-panel";
+import { ProjectActionsMenu } from "../../components/project-actions";
 import { useGetProjects, useReorderProjects } from "@/features/projects/hooks/use-projects";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { useProjectLocalStates } from "@/features/local-workspace/hooks/use-local-workspace";
@@ -168,6 +169,7 @@ function ProjectCard({ project, localState }: { project: Project; localState: Pr
         {localState && localState !== ProjectLocalStates.LOCAL && (
           <span className="shrink-0 rounded-xs bg-surface-elevated px-2 py-0.5 text-[0.6875rem] text-muted-foreground">{getDropdownOptionLabel(ProjectLocalStateOptions, localState)}</span>
         )}
+        <ProjectActionsMenu project={project} />
       </div>
       {project.description && <p className="mt-2 hidden text-[0.7813rem] @3xl:line-clamp-2 text-muted-foreground">{project.description}</p>}
       {localState === ProjectLocalStates.LOCAL && (

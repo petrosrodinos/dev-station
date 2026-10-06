@@ -1,17 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
   AlertTriangle,
-  Archive,
   CloudDownload,
-  FolderOpen,
-  FolderSearch,
   LayoutGrid,
-  Link2,
-  Pencil,
   PanelBottomClose,
   PanelBottomOpen,
   PanelLeftClose,
@@ -23,18 +18,15 @@ import {
   Plug,
   Plus,
   Settings,
-  Trash2,
   type LucideIcon,
 } from "lucide-react";
 import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
-import ConfirmationDialog from "@/components/ui/confirmation-dialog";
-import { useArchiveProject, useDeleteProject, useGetProjects, useReorderProjects } from "@/features/projects/hooks/use-projects";
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { useGetProjects, useReorderProjects } from "@/features/projects/hooks/use-projects";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
 import { useProjectLocalStates } from "@/features/local-workspace/hooks/use-local-workspace";
-import { useOpenInEditor, useRevealFile } from "@/features/files/hooks/use-files";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { useAgentSessions } from "@/features/agent-sessions/hooks/use-agent-sessions";
@@ -44,6 +36,8 @@ import { useWorkspaceStore } from "@/stores/workspace";
 import { isHorizontalRail, type RailPosition } from "@/config/constants/dropdowns/settings/rail-position.options";
 import { OrganizationMenu } from "./organization-menu";
 import { PlacementMenu, PlacementTargets } from "./placement-menu";
+import { ProjectMenuItems } from "./project-actions";
+import { useProjectActions } from "../hooks/use-project-actions";
 import { useRailPosition } from "@/features/users/hooks/use-rail-position";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
@@ -51,7 +45,7 @@ import { Routes } from "@/routes/routes";
 import { isDesktop } from "@/lib/desktop";
 import { jumpToSession } from "@/lib/session-navigation.utils";
 import { cn } from "@/lib/utils";
-import { EditorTargets, ProjectLocalStates, type ProjectLocalState } from "@shared/contract";
+import { ProjectLocalStates, type ProjectLocalState } from "@shared/contract";
 
 type TipSide = "left" | "right" | "top" | "bottom";
 
@@ -103,11 +97,6 @@ export function ProjectRail() {
   const openProjectDialog = useDialogsStore((s) => s.openProjectDialog);
   const { can } = usePermissions();
   const reorder = useReorderProjects();
-  const deleteProject = useDeleteProject();
-  const archiveProject = useArchiveProject();
-  const reveal = useRevealFile();
-  const openInEditor = useOpenInEditor();
-  const [removing, setRemoving] = useState<Project | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
@@ -135,12 +124,6 @@ export function ProjectRail() {
   const selectProject = (project: Project) => {
     setActiveProject(project.id);
     navigate(Routes.workspace.project(project.id));
-  };
-
-  // Archiving is reversible from /workspace, so it needs no confirmation; leaving the project's page avoids a "not found" screen.
-  const archive = (project: Project) => {
-    if (project.id === activeProjectId) goHome();
-    archiveProject.mutate({ id: project.id, archived: true });
   };
 
   // The badge opens the latest session that needs attention straight into review.
@@ -196,15 +179,8 @@ export function ProjectRail() {
                 localState={isDesktop() ? localStates?.[project.id] ?? null : null}
                 attention={attentionByProject.get(project.id)?.length ?? 0}
                 canEdit={can(PermissionKeys.PROJECTS_EDIT)}
-                canDelete={can(PermissionKeys.PROJECTS_DELETE)}
                 onSelect={() => selectProject(project)}
                 onBadge={() => openAttention(project)}
-                onEdit={() => openProjectDialog(project.id)}
-                onSetup={() => navigate(Routes.workspace.project_setup(project.id))}
-                onReveal={() => reveal.mutate({ projectId: project.id, path: "." })}
-                onOpenEditor={() => openInEditor.mutate({ projectId: project.id, editor: EditorTargets.CURSOR })}
-                onArchive={() => archive(project)}
-                onRemove={() => setRemoving(project)}
               />
             ))}
           </SortableContext>
@@ -250,18 +226,6 @@ export function ProjectRail() {
           <HideIcon className="size-4" />
         </RailButton>
       </div>
-
-      <ConfirmationDialog
-        isOpen={!!removing}
-        onClose={() => setRemoving(null)}
-        onConfirm={() => removing && deleteProject.mutate(removing.id, { onSuccess: () => setRemoving(null) })}
-        title={`Remove ${removing?.name ?? "project"}?`}
-        description="The project is removed from the organization for everyone. Local files on this device are not deleted."
-        confirmText="Remove project"
-        variant="destructive"
-        isLoading={deleteProject.isPending}
-        icon={<Trash2 className="size-5" />}
-      />
     </aside>
     </PlacementMenu>
   );
@@ -324,25 +288,19 @@ interface RailItemProps {
   localState: ProjectLocalState | null;
   attention: number;
   canEdit: boolean;
-  canDelete: boolean;
   onSelect: () => void;
   onBadge: () => void;
-  onEdit: () => void;
-  onSetup: () => void;
-  onReveal: () => void;
-  onOpenEditor: () => void;
-  onArchive: () => void;
-  onRemove: () => void;
 }
 
-function RailItem({ project, active, position, localState, attention, canEdit, canDelete, onSelect, onBadge, onEdit, onSetup, onReveal, onOpenEditor, onArchive, onRemove }: RailItemProps) {
+function RailItem({ project, active, position, localState, attention, canEdit, onSelect, onBadge }: RailItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: project.id, disabled: !canEdit });
+  const { entries, removeDialog } = useProjectActions(project);
   const horizontal = isHorizontalRail(position);
   const imported = localState === ProjectLocalStates.IMPORTED;
   const missing = localState === ProjectLocalStates.MISSING;
-  const isLocal = localState === ProjectLocalStates.LOCAL;
 
   return (
+    <>
     <ContextMenu>
       <Tooltip>
         <ContextMenuTrigger
@@ -407,42 +365,10 @@ function RailItem({ project, active, position, localState, attention, canEdit, c
         </TooltipContent>
       </Tooltip>
       <ContextMenuContent className="w-56">
-        <ContextMenuItem onSelect={onSelect}>Open workspace</ContextMenuItem>
-        {isDesktop() && (
-          <ContextMenuItem onSelect={onSetup} className="gap-2">
-            {isLocal ? <Link2 className="size-3.5" /> : <CloudDownload className="size-3.5" />}
-            {isLocal ? "Change local folder…" : "Set up on this device…"}
-          </ContextMenuItem>
-        )}
-        {isLocal && (
-          <>
-            <ContextMenuItem onSelect={onOpenEditor} className="gap-2">
-              <FolderOpen className="size-3.5" /> Open in Cursor
-            </ContextMenuItem>
-            <ContextMenuItem onSelect={onReveal} className="gap-2">
-              <FolderSearch className="size-3.5" /> Reveal in file manager
-            </ContextMenuItem>
-          </>
-        )}
-        {canEdit && (
-          <>
-            <ContextMenuItem onSelect={onEdit} className="gap-2">
-              <Pencil className="size-3.5" /> Edit project…
-            </ContextMenuItem>
-            <ContextMenuItem onSelect={onArchive} className="gap-2">
-              <Archive className="size-3.5" /> Archive project
-            </ContextMenuItem>
-          </>
-        )}
-        {canDelete && (
-          <>
-            <ContextMenuSeparator />
-            <ContextMenuItem onSelect={onRemove} className="gap-2 text-danger focus:text-danger">
-              <Trash2 className="size-3.5" /> Remove project
-            </ContextMenuItem>
-          </>
-        )}
+        <ProjectMenuItems entries={entries} variant="context" />
       </ContextMenuContent>
     </ContextMenu>
+    {removeDialog}
+    </>
   );
 }
