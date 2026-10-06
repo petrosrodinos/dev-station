@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type FC } from "react";
-import { ArrowLeft, ArrowRight, Code2, ExternalLink, Globe, Play, RotateCw, TriangleAlert, Undo2 } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FC } from "react";
+import { ArrowLeft, ArrowRight, Code2, ExternalLink, Globe, Play, RotateCw, ScrollText, TriangleAlert, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Project } from "@/features/projects/interfaces/projects.interfaces";
+import type { Project, ProjectService } from "@/features/projects/interfaces/projects.interfaces";
 import { ServiceKinds } from "@/features/projects/interfaces/projects.interfaces";
 import { useProjectProcesses, useStartService } from "@/features/processes/hooks/use-processes";
 import { usePreviewActions, usePreviewState } from "@/features/preview/hooks/use-preview";
@@ -13,6 +13,7 @@ import { useOverlayOpen } from "@/hooks/use-overlay-open";
 import { toast } from "@/hooks/use-toast";
 import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
 import { ProcessStatuses, type PreviewBounds } from "@shared/contract";
+import { ServiceLogsSheet } from "../pages/overview/components/service-logs-sheet";
 import { PreviewAddressInput } from "./preview-address-input";
 
 interface PreviewPanelProps {
@@ -34,6 +35,7 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
   const actions = usePreviewActions(projectId);
   const start = useStartService((command) => toast({ title: "Approval needed", description: `Start this service from the Overview tab to approve: ${command}`, duration: 6000 }));
 
+  const [logsFor, setLogsFor] = useState<ProjectService | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const overlayOpen = useOverlayOpen(bodyRef);
   const lastBounds = useRef<PreviewBounds | null>(null);
@@ -163,6 +165,9 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
         <HeaderButton label="Open DevTools (Network, Console, ...)" disabled={!url} onClick={() => void actions.toggleDevTools()}>
           <Code2 className="size-3.5" />
         </HeaderButton>
+        <HeaderButton label="View logs" disabled={!selected} onClick={() => selected && setLogsFor(selected.service)}>
+          <ScrollText className="size-3.5" />
+        </HeaderButton>
       </div>
       {stopped && (
         <div className="flex shrink-0 items-center gap-2 border-b bg-surface-elevated px-3 py-1.5 text-xs text-muted-foreground">
@@ -198,6 +203,7 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
           />
         )}
       </div>
+      <ServiceLogsSheet project={project} service={logsFor} onClose={() => setLogsFor(null)} />
     </div>
   );
 };
