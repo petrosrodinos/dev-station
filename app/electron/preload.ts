@@ -53,6 +53,7 @@ const bridge: DevStationBridge = {
     pickDirectory: (defaultPath) => call(C.WS_PICK_DIRECTORY, defaultPath),
   },
   detect: {
+    listEnvKeys: (id, relDir) => call(C.DETECT_ENV_KEYS, id, relDir),
     inspectProject: (id) => call(C.DETECT_PROJECT, id),
     inspectPath: (path) => call(C.DETECT_PATH, path),
   },

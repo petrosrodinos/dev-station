@@ -1,4 +1,4 @@
-import type { DetectionResult, DeviceSettings, ProjectLocalState, WorkspaceConfig } from "@shared/contract";
+import type { DetectionResult, DeviceSettings, EnvKeyEntry, ProjectLocalState, WorkspaceConfig } from "@shared/contract";
 import { getBridge, getErrorMessage } from "@/lib/desktop";
 
 // Device-local workspace (Spec §25/§26) — served by the Electron main process, never by the API.
@@ -48,6 +48,14 @@ export const pickDirectory = async (defaultPath?: string): Promise<string | null
         return await getBridge().workspace.pickDirectory(defaultPath);
     } catch (error) {
         throw new Error(getErrorMessage(error, "Could not open the folder picker."));
+    }
+};
+
+export const listEnvKeys = async (projectId: string, relDir: string): Promise<EnvKeyEntry[]> => {
+    try {
+        return await getBridge().detect.listEnvKeys(projectId, relDir);
+    } catch (error) {
+        throw new Error(getErrorMessage(error, "Failed to read the .env files."));
     }
 };
 

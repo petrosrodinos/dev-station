@@ -324,6 +324,13 @@ exports.Prisma.ProjectServiceScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.ProjectEnvConsentScalarFieldEnum = {
+  id: 'id',
+  project_id: 'project_id',
+  user_id: 'user_id',
+  accepted_at: 'accepted_at'
+};
+
 exports.Prisma.ProjectIssueScalarFieldEnum = {
   id: 'id',
   project_id: 'project_id',
@@ -621,6 +628,7 @@ exports.Prisma.ModelName = {
   Repository: 'Repository',
   Project: 'Project',
   ProjectService: 'ProjectService',
+  ProjectEnvConsent: 'ProjectEnvConsent',
   ProjectIssue: 'ProjectIssue',
   IntegrationConnection: 'IntegrationConnection',
   AgentSession: 'AgentSession',

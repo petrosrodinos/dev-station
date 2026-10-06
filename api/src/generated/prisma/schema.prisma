@@ -176,6 +176,7 @@ model User {
   agent_commands         AgentCommand[]
   skill_favorites        SkillFavorite[]
   workspace_layouts      WorkspaceLayoutPreset[]
+  env_consents           ProjectEnvConsent[]
   workspace_layout_state WorkspaceLayoutState?
 
   @@index([email])
@@ -478,6 +479,7 @@ model Project {
   issues            ProjectIssue[]
   sessions          AgentSession[]
   activities        Activity[]
+  env_consents      ProjectEnvConsent[]
 
   @@index([organization_id])
   @@map("projects")
@@ -506,6 +508,22 @@ model ProjectService {
 
   @@index([project_id])
   @@map("project_services")
+}
+
+/// A user's acknowledgement, per project, that Dev Station may read the project's .env files on their device
+/// to suggest variable names. Only the acknowledgement is stored; env contents never reach the server.
+model ProjectEnvConsent {
+  id          String   @id @default(uuid())
+  project_id  String
+  user_id     String
+  accepted_at DateTime @default(now())
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([project_id, user_id])
+  @@index([user_id])
+  @@map("project_env_consents")
 }
 
 /// External issue reference linked to a project (we store the external id, never a copy of the issue).

@@ -1,6 +1,6 @@
 import axiosInstance, { getApiErrorMessage } from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
-import type { CreateProjectDto, LinkProjectIssueDto, Project, ProjectIssueLink, ServiceInput, UpdateProjectDto } from "../interfaces/projects.interfaces";
+import type { CreateProjectDto, LinkProjectIssueDto, Project, ProjectEnvConsent, ProjectIssueLink, ServiceInput, UpdateProjectDto } from "../interfaces/projects.interfaces";
 
 /** Active projects by default; pass `archived` to list the archived ones instead. */
 export const getProjects = async (archived = false): Promise<Project[]> => {
@@ -61,6 +61,24 @@ export const replaceProjectServices = async ({ id, services }: { id: string; ser
         return response.data;
     } catch (error) {
         throw new Error(getApiErrorMessage(error, "Failed to save services."));
+    }
+};
+
+export const getProjectEnvConsent = async (id: string): Promise<ProjectEnvConsent> => {
+    try {
+        const response = await axiosInstance.get<ProjectEnvConsent>(ApiRoutes.projects.env_consent(id));
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to load the .env access setting."));
+    }
+};
+
+export const acceptProjectEnvConsent = async (id: string): Promise<ProjectEnvConsent> => {
+    try {
+        const response = await axiosInstance.put<ProjectEnvConsent>(ApiRoutes.projects.env_consent(id));
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to save your choice."));
     }
 };
 

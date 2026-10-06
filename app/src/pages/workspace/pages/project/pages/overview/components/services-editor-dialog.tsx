@@ -32,6 +32,9 @@ import type {
   Project,
   ServiceInput,
 } from "@/features/projects/interfaces/projects.interfaces";
+import { useProjectProcesses } from "@/features/processes/hooks/use-processes";
+import { ProcessStatuses } from "@shared/contract";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useReplaceProjectServices } from "@/features/projects/hooks/use-projects";
 import { isBlockingMutation, willQueueWrite } from "@/lib/mutation-state";
 import { useCloseWhenParked } from "@/hooks/use-close-when-parked";
@@ -123,6 +126,7 @@ export function ServicesEditorDialog({
     name: "services",
   });
   const watched = form.watch("services");
+  const processes = useProjectProcesses(project.id);
   // The name other services use to reference each one (`{{api.url}}`); kept in sync with the live form.
   const slugs = assignServiceSlugs(watched.map((s) => s?.name || "service"));
 
@@ -256,12 +260,26 @@ export function ServicesEditorDialog({
                       .filter(Boolean)
                       .join(" ")
                   : current?.command;
-              const targets: ServiceReferenceTarget[] = watched.map((s, n) => ({
-                slug: slugs[n],
-                name: s?.name || slugs[n],
-                hasPort: /^\d+$/.test(s?.port ?? ""),
-                isSelf: n === index,
-              }));
+              // Port the service actually got while it runs (differs from the field when the preferred port was taken).
+              const livePortOf = (id?: string) => {
+                const p = id ? processes[id] : undefined;
+                return p?.status === ProcessStatuses.RUNNING ? (p.port ?? null) : null;
+              };
+              const targets: ServiceReferenceTarget[] = watched.map((s, n) => {
+                const preferred = /^\d+$/.test(s?.port ?? "") ? Number(s.port) : null;
+                const live = livePortOf(s?.id);
+                return {
+                  slug: slugs[n],
+                  name: s?.name || slugs[n],
+                  hasPort: preferred !== null,
+                  isSelf: n === index,
+                  port: live ?? preferred,
+                  shifted: live !== null && preferred !== null && live !== preferred,
+                };
+              });
+              const livePort = livePortOf(current?.id);
+              const preferredPort = /^\d+$/.test(current?.port ?? "") ? Number(current?.port) : null;
+              const portShifted = livePort !== null && preferredPort !== null && livePort !== preferredPort;
               return (
                 <div key={field.id} className="rounded-md border">
                   <div className="flex items-center gap-1 pr-1.5">
@@ -376,12 +394,32 @@ export function ServicesEditorDialog({
                             </FormLabel>
                             <FormControl>
                               <Input
-                                className="font-mono text-xs"
+                                className={cn(
+                                  "font-mono text-xs",
+                                  portShifted && "border-warning",
+                                )}
                                 placeholder="5173"
                                 {...f}
                                 value={f.value ?? ""}
                               />
                             </FormControl>
+                            {portShifted && (
+                              <Tooltip>
+                                <TooltipTrigger
+                                  render={
+                                    <span className="inline-block rounded bg-warning-soft px-1.5 py-0.5 font-mono text-[0.6875rem] text-warning">
+                                      Running on :{livePort}
+                                    </span>
+                                  }
+                                />
+                                <TooltipContent>
+                                  Port {preferredPort} was taken, so Dev Station
+                                  started this service on {livePort}. Your saved
+                                  port is unchanged, and references like{" "}
+                                  {"{{url}}"} already use {livePort}.
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
                             <FormMessage />
                           </FormItem>
                         )}
@@ -513,6 +551,8 @@ export function ServicesEditorDialog({
                         />
                       )}
                       <ServiceEnvEditor
+                        projectId={project.id}
+                        projectName={project.name}
                         form={form}
                         index={index}
                         targets={targets}

@@ -37,7 +37,11 @@ import {
   ProjectsQuerySchema,
   ProjectsQueryType,
 } from './dto/projects-query.schema';
-import { ProjectEntity, ProjectIssueEntity } from './entities/project.entity';
+import {
+  EnvConsentEntity,
+  ProjectEntity,
+  ProjectIssueEntity,
+} from './entities/project.entity';
 
 @ApiTags('Projects')
 @ApiBearerAuth()
@@ -132,6 +136,35 @@ export class ProjectsController {
       id,
       dto.services,
     );
+  }
+
+  @Get(':id/env-consent')
+  @RequirePermissions(PermissionKey.PROJECTS_VIEW)
+  @ApiOperation({
+    summary: 'Whether the current user allowed reading this project .env files',
+  })
+  @ApiResponse({ status: 200, type: EnvConsentEntity })
+  getEnvConsent(
+    @CurrentMembership('organization_id') organizationId: string,
+    @CurrentUser('id') userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.projectsService.getEnvConsent(organizationId, id, userId);
+  }
+
+  @Put(':id/env-consent')
+  @RequirePermissions(PermissionKey.PROJECTS_EDIT)
+  @ApiOperation({
+    summary:
+      'Record that the current user allowed reading this project .env files',
+  })
+  @ApiResponse({ status: 200, type: EnvConsentEntity })
+  acceptEnvConsent(
+    @CurrentMembership('organization_id') organizationId: string,
+    @CurrentUser('id') userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.projectsService.acceptEnvConsent(organizationId, id, userId);
   }
 
   @Get(':id/issues')

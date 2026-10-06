@@ -47,6 +47,7 @@ export const ApiRoutes = {
         reorder: "/projects/reorder",
         services: (id: string) => `/projects/${id}/services`,
         issues: (id: string) => `/projects/${id}/issues`,
+        env_consent: (id: string) => `/projects/${id}/env-consent`,
     },
     integrations: {
         prefix: "/integrations",

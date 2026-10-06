@@ -174,6 +174,36 @@ function readEnvFile(file: string): Record<string, string> {
   return out;
 }
 
+export interface EnvKeyEntry {
+  key: string;
+  files: string[];
+}
+
+const ENV_FILE_NAME_RE = /^\.env(\..+)?$/;
+const MAX_ENV_FILES = 20;
+const MAX_ENV_KEYS = 500;
+
+/**
+ * Variable names (never values) declared in the `.env*` files of one directory, with the files declaring each.
+ * Values stay in this process: they are not returned, so they cannot end up in a service definition or the API.
+ */
+export function listEnvKeys(dir: string): EnvKeyEntry[] {
+  let names: string[] = [];
+  try {
+    names = fs.readdirSync(dir, { withFileTypes: true }).filter((e) => e.isFile() && ENV_FILE_NAME_RE.test(e.name)).map((e) => e.name).sort();
+  } catch {
+    return [];
+  }
+  const byKey = new Map<string, string[]>();
+  for (const name of names.slice(0, MAX_ENV_FILES)) {
+    for (const key of Object.keys(readEnvFile(path.join(dir, name)))) {
+      if (!byKey.has(key) && byKey.size >= MAX_ENV_KEYS) continue;
+      byKey.set(key, [...(byKey.get(key) ?? []), name]);
+    }
+  }
+  return [...byKey].map(([key, files]) => ({ key, files })).sort((a, b) => a.key.localeCompare(b.key));
+}
+
 /**
  * Finds `.env` values that point at a sibling service (`VITE_API_URL=http://localhost:3000`) and suggests the
  * reference form (`{{api.url}}`), so the value follows that service if its port has to change.

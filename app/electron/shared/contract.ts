@@ -207,6 +207,12 @@ export interface DetectedService {
   env?: Record<string, string> | null;
 }
 
+export interface EnvKeyEntry {
+  key: string;
+  /** `.env*` files (relative to the directory) that declare it. */
+  files: string[];
+}
+
 export interface DetectedPackage {
   name: string;
   path: string;
@@ -597,6 +603,8 @@ export interface DevStationBridge {
     pickDirectory(defaultPath?: string): Promise<string | null>;
   };
   detect: {
+    /** Names (not values) of the variables in the `.env*` files of a project directory. */
+    listEnvKeys(projectId: string, relDir: string): Promise<EnvKeyEntry[]>;
     inspectProject(projectId: string): Promise<DetectionResult>;
     inspectPath(path: string): Promise<DetectionResult>;
   };
@@ -744,6 +752,7 @@ export const IpcChannels = {
   WS_PICK_DIRECTORY: "workspace:pick-directory",
   DETECT_PROJECT: "detect:project",
   DETECT_PATH: "detect:path",
+  DETECT_ENV_KEYS: "detect:env-keys",
   FILES_LIST: "files:list",
   FILES_SEARCH: "files:search",
   FILES_REVEAL: "files:reveal",

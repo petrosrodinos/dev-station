@@ -18,7 +18,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { isDesktop } from "@/lib/desktop";
+import { ServiceEnvKeyPicker } from "./service-env-key-picker";
 import { ServiceReferenceFieldOptions } from "@/config/constants/dropdowns/projects/service-reference-field.options";
+import { resolveTemplate, type TemplateContext } from "@shared/service-refs";
 import type { ServicesFormData } from "../../../validation-schemas/project.schema";
 
 export interface ServiceReferenceTarget {
@@ -26,9 +29,15 @@ export interface ServiceReferenceTarget {
   name: string;
   hasPort: boolean;
   isSelf: boolean;
+  /** Port in effect: the live one while the service runs, otherwise the preferred one. */
+  port: number | null;
+  /** The running service moved off its preferred port. */
+  shifted: boolean;
 }
 
 interface ServiceEnvEditorProps {
+  projectId: string;
+  projectName: string;
   form: UseFormReturn<ServicesFormData>;
   index: number;
   targets: ServiceReferenceTarget[];
@@ -39,6 +48,8 @@ interface ServiceEnvEditorProps {
  * follow the port that service actually gets when its preferred port is already taken.
  */
 export function ServiceEnvEditor({
+  projectId,
+  projectName,
   form,
   index,
   targets,
@@ -49,6 +60,12 @@ export function ServiceEnvEditor({
   });
   const withPort = targets.filter((t) => t.hasPort);
   const [open, setOpen] = useState(false);
+
+  const liveContext: TemplateContext = {
+    self: targets.find((t) => t.isSelf)?.slug ?? "",
+    services: new Map(targets.map((t) => [t.slug, { name: t.name, port: t.port }])),
+  };
+  const shiftedSlugs = new Set(targets.filter((t) => t.shifted).map((t) => t.slug));
 
   const insert = (row: number, token: string) => {
     const path = `services.${index}.env.${row}.value` as const;
@@ -88,12 +105,22 @@ export function ServiceEnvEditor({
               render={({ field }) => (
                 <FormItem className="col-span-12 sm:col-span-4">
                   <FormControl>
-                    <Input
-                      className="font-mono text-xs"
-                      placeholder="VITE_API_URL"
-                      aria-label="Variable name"
-                      {...field}
-                    />
+                    {isDesktop() ? (
+                      <ServiceEnvKeyPicker
+                        projectId={projectId}
+                        projectName={projectName}
+                        cwd={form.watch(`services.${index}.cwd`) || "."}
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                      />
+                    ) : (
+                      <Input
+                        className="font-mono text-xs"
+                        placeholder="VITE_API_URL"
+                        aria-label="Variable name"
+                        {...field}
+                      />
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -107,11 +134,16 @@ export function ServiceEnvEditor({
                   <FormControl>
                     <Input
                       className="font-mono text-xs"
-                      placeholder="{{api.url}}"
+                      placeholder="{{api.url}} — empty uses the .env value"
                       aria-label="Variable value"
                       {...field}
                     />
                   </FormControl>
+                  <ResolvedValue
+                    template={form.watch(`services.${index}.env.${i}.value`) ?? ""}
+                    context={liveContext}
+                    shiftedSlugs={shiftedSlugs}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -185,5 +217,36 @@ export function ServiceEnvEditor({
         </Button>
       )}
     </div>
+  );
+}
+
+/** Shows what a templated value (`{{api.url}}`) resolves to right now, flagged when a port was shifted. */
+function ResolvedValue({
+  template,
+  context,
+  shiftedSlugs,
+}: {
+  template: string;
+  context: TemplateContext;
+  shiftedSlugs: Set<string>;
+}) {
+  if (!template.includes("{{")) return null;
+  const { value, errors } = resolveTemplate(template, context);
+  if (errors.length) return null;
+  const referenced = [...template.matchAll(/\{\{\s*(?:([a-z0-9-]+)\.)?[a-z]+\s*\}\}/gi)].map(
+    (m) => (m[1] ?? context.self).toLowerCase(),
+  );
+  const shifted = referenced.some((slug) => shiftedSlugs.has(slug));
+  return (
+    <p
+      className={cn(
+        "truncate font-mono text-[0.6875rem]",
+        shifted ? "text-warning" : "text-muted-foreground",
+      )}
+      title={shifted ? "A port changed automatically because the preferred one was taken." : undefined}
+    >
+      → {value}
+      {shifted && " (port changed automatically)"}
+    </p>
   );
 }

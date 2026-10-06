@@ -4,6 +4,7 @@ import {
     getWorkspaceConfig,
     inspectPath,
     inspectProject,
+    listEnvKeys,
     setProjectPath,
     updateDeviceSettings,
 } from "../services/local-workspace.services";
@@ -68,6 +69,10 @@ export const useProjectLocalState = (projectId: string | null | undefined): Proj
 
 export const useInspectProject = (projectId: string | null, enabled = true) =>
     useQuery({ queryKey: ["project-detection", projectId], queryFn: () => inspectProject(projectId!), enabled: isDesktop() && !!projectId && enabled });
+
+/** Variable names declared in the `.env*` files of `cwd`. Only enabled once the user has consented for the project. */
+export const useEnvKeys = (projectId: string | null, cwd: string, enabled: boolean) =>
+    useQuery({ queryKey: ["project-env-keys", projectId, cwd], queryFn: () => listEnvKeys(projectId!, cwd), enabled: isDesktop() && !!projectId && enabled });
 
 export const useInspectPath = () => {
     return useMutation({

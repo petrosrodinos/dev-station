@@ -240,6 +240,24 @@ export class ProjectsService {
     });
   }
 
+  async getEnvConsent(organizationId: string, id: string, userId: string) {
+    await this.findOrThrow(organizationId, id);
+    const consent = await this.prisma.projectEnvConsent.findUnique({
+      where: { project_id_user_id: { project_id: id, user_id: userId } },
+    });
+    return { accepted: !!consent, accepted_at: consent?.accepted_at ?? null };
+  }
+
+  async acceptEnvConsent(organizationId: string, id: string, userId: string) {
+    await this.findOrThrow(organizationId, id);
+    const consent = await this.prisma.projectEnvConsent.upsert({
+      where: { project_id_user_id: { project_id: id, user_id: userId } },
+      update: {},
+      create: { project_id: id, user_id: userId },
+    });
+    return { accepted: true, accepted_at: consent.accepted_at };
+  }
+
   private async findOrThrow(
     organizationId: string,
     id: string,

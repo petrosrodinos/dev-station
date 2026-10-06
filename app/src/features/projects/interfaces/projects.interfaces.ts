@@ -44,6 +44,12 @@ export interface ProjectService {
     sort_order: number;
 }
 
+/** Whether the current user allowed Dev Station to read this project's .env files on their device. */
+export interface ProjectEnvConsent {
+    accepted: boolean;
+    accepted_at: string | null;
+}
+
 export interface Project {
     id: string;
     organization_id: string;

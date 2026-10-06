@@ -165,6 +165,8 @@ class ProcessManager {
     const userEnv: Record<string, string> = {};
     const templated: string[] = [];
     for (const [k, v] of Object.entries(spec.env ?? {})) {
+      // A name picked from a .env file with no value set here must not blank out the file's own value.
+      if (v === "") continue;
       const r = resolveTemplate(v, ctx);
       errors.push(...r.errors.map((e) => `${k}: ${e}`));
       r.refs.forEach((x) => dependsOn.add(x));

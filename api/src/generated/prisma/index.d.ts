@@ -100,6 +100,12 @@ export type Project = $Result.DefaultSelection<Prisma.$ProjectPayload>
  */
 export type ProjectService = $Result.DefaultSelection<Prisma.$ProjectServicePayload>
 /**
+ * Model ProjectEnvConsent
+ * A user's acknowledgement, per project, that Dev Station may read the project's .env files on their device
+ * to suggest variable names. Only the acknowledgement is stored; env contents never reach the server.
+ */
+export type ProjectEnvConsent = $Result.DefaultSelection<Prisma.$ProjectEnvConsentPayload>
+/**
  * Model ProjectIssue
  * External issue reference linked to a project (we store the external id, never a copy of the issue).
  */
@@ -679,6 +685,16 @@ export class PrismaClient<
   get projectService(): Prisma.ProjectServiceDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.projectEnvConsent`: Exposes CRUD operations for the **ProjectEnvConsent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ProjectEnvConsents
+    * const projectEnvConsents = await prisma.projectEnvConsent.findMany()
+    * ```
+    */
+  get projectEnvConsent(): Prisma.ProjectEnvConsentDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.projectIssue`: Exposes CRUD operations for the **ProjectIssue** model.
     * Example usage:
     * ```ts
@@ -1207,6 +1223,7 @@ export namespace Prisma {
     Repository: 'Repository',
     Project: 'Project',
     ProjectService: 'ProjectService',
+    ProjectEnvConsent: 'ProjectEnvConsent',
     ProjectIssue: 'ProjectIssue',
     IntegrationConnection: 'IntegrationConnection',
     AgentSession: 'AgentSession',
@@ -1230,7 +1247,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "passwordResetToken" | "document" | "gitIdentity" | "agentCommand" | "userPreference" | "workspaceLayoutPreset" | "workspaceLayoutState" | "organization" | "role" | "rolePermission" | "organizationMember" | "organizationInvitation" | "repository" | "project" | "projectService" | "projectIssue" | "integrationConnection" | "agentSession" | "activity" | "skill" | "skillFavorite" | "appRelease" | "appInstall"
+      modelProps: "user" | "passwordResetToken" | "document" | "gitIdentity" | "agentCommand" | "userPreference" | "workspaceLayoutPreset" | "workspaceLayoutState" | "organization" | "role" | "rolePermission" | "organizationMember" | "organizationInvitation" | "repository" | "project" | "projectService" | "projectEnvConsent" | "projectIssue" | "integrationConnection" | "agentSession" | "activity" | "skill" | "skillFavorite" | "appRelease" | "appInstall"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2418,6 +2435,80 @@ export namespace Prisma {
           }
         }
       }
+      ProjectEnvConsent: {
+        payload: Prisma.$ProjectEnvConsentPayload<ExtArgs>
+        fields: Prisma.ProjectEnvConsentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ProjectEnvConsentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectEnvConsentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ProjectEnvConsentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectEnvConsentPayload>
+          }
+          findFirst: {
+            args: Prisma.ProjectEnvConsentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectEnvConsentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ProjectEnvConsentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectEnvConsentPayload>
+          }
+          findMany: {
+            args: Prisma.ProjectEnvConsentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectEnvConsentPayload>[]
+          }
+          create: {
+            args: Prisma.ProjectEnvConsentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectEnvConsentPayload>
+          }
+          createMany: {
+            args: Prisma.ProjectEnvConsentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ProjectEnvConsentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectEnvConsentPayload>[]
+          }
+          delete: {
+            args: Prisma.ProjectEnvConsentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectEnvConsentPayload>
+          }
+          update: {
+            args: Prisma.ProjectEnvConsentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectEnvConsentPayload>
+          }
+          deleteMany: {
+            args: Prisma.ProjectEnvConsentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ProjectEnvConsentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ProjectEnvConsentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectEnvConsentPayload>[]
+          }
+          upsert: {
+            args: Prisma.ProjectEnvConsentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectEnvConsentPayload>
+          }
+          aggregate: {
+            args: Prisma.ProjectEnvConsentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateProjectEnvConsent>
+          }
+          groupBy: {
+            args: Prisma.ProjectEnvConsentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ProjectEnvConsentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ProjectEnvConsentCountArgs<ExtArgs>
+            result: $Utils.Optional<ProjectEnvConsentCountAggregateOutputType> | number
+          }
+        }
+      }
       ProjectIssue: {
         payload: Prisma.$ProjectIssuePayload<ExtArgs>
         fields: Prisma.ProjectIssueFieldRefs
@@ -3134,6 +3225,7 @@ export namespace Prisma {
     repository?: RepositoryOmit
     project?: ProjectOmit
     projectService?: ProjectServiceOmit
+    projectEnvConsent?: ProjectEnvConsentOmit
     projectIssue?: ProjectIssueOmit
     integrationConnection?: IntegrationConnectionOmit
     agentSession?: AgentSessionOmit
@@ -3231,6 +3323,7 @@ export namespace Prisma {
     agent_commands: number
     skill_favorites: number
     workspace_layouts: number
+    env_consents: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3243,6 +3336,7 @@ export namespace Prisma {
     agent_commands?: boolean | UserCountOutputTypeCountAgent_commandsArgs
     skill_favorites?: boolean | UserCountOutputTypeCountSkill_favoritesArgs
     workspace_layouts?: boolean | UserCountOutputTypeCountWorkspace_layoutsArgs
+    env_consents?: boolean | UserCountOutputTypeCountEnv_consentsArgs
   }
 
   // Custom InputTypes
@@ -3317,6 +3411,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountWorkspace_layoutsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: WorkspaceLayoutPresetWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountEnv_consentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProjectEnvConsentWhereInput
   }
 
 
@@ -3552,6 +3653,7 @@ export namespace Prisma {
     issues: number
     sessions: number
     activities: number
+    env_consents: number
   }
 
   export type ProjectCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3559,6 +3661,7 @@ export namespace Prisma {
     issues?: boolean | ProjectCountOutputTypeCountIssuesArgs
     sessions?: boolean | ProjectCountOutputTypeCountSessionsArgs
     activities?: boolean | ProjectCountOutputTypeCountActivitiesArgs
+    env_consents?: boolean | ProjectCountOutputTypeCountEnv_consentsArgs
   }
 
   // Custom InputTypes
@@ -3598,6 +3701,13 @@ export namespace Prisma {
    */
   export type ProjectCountOutputTypeCountActivitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ActivityWhereInput
+  }
+
+  /**
+   * ProjectCountOutputType without action
+   */
+  export type ProjectCountOutputTypeCountEnv_consentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProjectEnvConsentWhereInput
   }
 
 
@@ -3900,6 +4010,7 @@ export namespace Prisma {
     agent_commands?: boolean | User$agent_commandsArgs<ExtArgs>
     skill_favorites?: boolean | User$skill_favoritesArgs<ExtArgs>
     workspace_layouts?: boolean | User$workspace_layoutsArgs<ExtArgs>
+    env_consents?: boolean | User$env_consentsArgs<ExtArgs>
     workspace_layout_state?: boolean | User$workspace_layout_stateArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -3952,6 +4063,7 @@ export namespace Prisma {
     agent_commands?: boolean | User$agent_commandsArgs<ExtArgs>
     skill_favorites?: boolean | User$skill_favoritesArgs<ExtArgs>
     workspace_layouts?: boolean | User$workspace_layoutsArgs<ExtArgs>
+    env_consents?: boolean | User$env_consentsArgs<ExtArgs>
     workspace_layout_state?: boolean | User$workspace_layout_stateArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -3971,6 +4083,7 @@ export namespace Prisma {
       agent_commands: Prisma.$AgentCommandPayload<ExtArgs>[]
       skill_favorites: Prisma.$SkillFavoritePayload<ExtArgs>[]
       workspace_layouts: Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>[]
+      env_consents: Prisma.$ProjectEnvConsentPayload<ExtArgs>[]
       workspace_layout_state: Prisma.$WorkspaceLayoutStatePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -4387,6 +4500,7 @@ export namespace Prisma {
     agent_commands<T extends User$agent_commandsArgs<ExtArgs> = {}>(args?: Subset<T, User$agent_commandsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentCommandPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     skill_favorites<T extends User$skill_favoritesArgs<ExtArgs> = {}>(args?: Subset<T, User$skill_favoritesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SkillFavoritePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     workspace_layouts<T extends User$workspace_layoutsArgs<ExtArgs> = {}>(args?: Subset<T, User$workspace_layoutsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    env_consents<T extends User$env_consentsArgs<ExtArgs> = {}>(args?: Subset<T, User$env_consentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     workspace_layout_state<T extends User$workspace_layout_stateArgs<ExtArgs> = {}>(args?: Subset<T, User$workspace_layout_stateArgs<ExtArgs>>): Prisma__WorkspaceLayoutStateClient<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -5046,6 +5160,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: WorkspaceLayoutPresetScalarFieldEnum | WorkspaceLayoutPresetScalarFieldEnum[]
+  }
+
+  /**
+   * User.env_consents
+   */
+  export type User$env_consentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentInclude<ExtArgs> | null
+    where?: ProjectEnvConsentWhereInput
+    orderBy?: ProjectEnvConsentOrderByWithRelationInput | ProjectEnvConsentOrderByWithRelationInput[]
+    cursor?: ProjectEnvConsentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProjectEnvConsentScalarFieldEnum | ProjectEnvConsentScalarFieldEnum[]
   }
 
   /**
@@ -20346,6 +20484,7 @@ export namespace Prisma {
     issues?: boolean | Project$issuesArgs<ExtArgs>
     sessions?: boolean | Project$sessionsArgs<ExtArgs>
     activities?: boolean | Project$activitiesArgs<ExtArgs>
+    env_consents?: boolean | Project$env_consentsArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["project"]>
 
@@ -20442,6 +20581,7 @@ export namespace Prisma {
     issues?: boolean | Project$issuesArgs<ExtArgs>
     sessions?: boolean | Project$sessionsArgs<ExtArgs>
     activities?: boolean | Project$activitiesArgs<ExtArgs>
+    env_consents?: boolean | Project$env_consentsArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProjectIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -20471,6 +20611,7 @@ export namespace Prisma {
       issues: Prisma.$ProjectIssuePayload<ExtArgs>[]
       sessions: Prisma.$AgentSessionPayload<ExtArgs>[]
       activities: Prisma.$ActivityPayload<ExtArgs>[]
+      env_consents: Prisma.$ProjectEnvConsentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -20900,6 +21041,7 @@ export namespace Prisma {
     issues<T extends Project$issuesArgs<ExtArgs> = {}>(args?: Subset<T, Project$issuesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectIssuePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sessions<T extends Project$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, Project$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     activities<T extends Project$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, Project$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    env_consents<T extends Project$env_consentsArgs<ExtArgs> = {}>(args?: Subset<T, Project$env_consentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -21515,6 +21657,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ActivityScalarFieldEnum | ActivityScalarFieldEnum[]
+  }
+
+  /**
+   * Project.env_consents
+   */
+  export type Project$env_consentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentInclude<ExtArgs> | null
+    where?: ProjectEnvConsentWhereInput
+    orderBy?: ProjectEnvConsentOrderByWithRelationInput | ProjectEnvConsentOrderByWithRelationInput[]
+    cursor?: ProjectEnvConsentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProjectEnvConsentScalarFieldEnum | ProjectEnvConsentScalarFieldEnum[]
   }
 
   /**
@@ -22755,6 +22921,1059 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ProjectServiceInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ProjectEnvConsent
+   */
+
+  export type AggregateProjectEnvConsent = {
+    _count: ProjectEnvConsentCountAggregateOutputType | null
+    _min: ProjectEnvConsentMinAggregateOutputType | null
+    _max: ProjectEnvConsentMaxAggregateOutputType | null
+  }
+
+  export type ProjectEnvConsentMinAggregateOutputType = {
+    id: string | null
+    project_id: string | null
+    user_id: string | null
+    accepted_at: Date | null
+  }
+
+  export type ProjectEnvConsentMaxAggregateOutputType = {
+    id: string | null
+    project_id: string | null
+    user_id: string | null
+    accepted_at: Date | null
+  }
+
+  export type ProjectEnvConsentCountAggregateOutputType = {
+    id: number
+    project_id: number
+    user_id: number
+    accepted_at: number
+    _all: number
+  }
+
+
+  export type ProjectEnvConsentMinAggregateInputType = {
+    id?: true
+    project_id?: true
+    user_id?: true
+    accepted_at?: true
+  }
+
+  export type ProjectEnvConsentMaxAggregateInputType = {
+    id?: true
+    project_id?: true
+    user_id?: true
+    accepted_at?: true
+  }
+
+  export type ProjectEnvConsentCountAggregateInputType = {
+    id?: true
+    project_id?: true
+    user_id?: true
+    accepted_at?: true
+    _all?: true
+  }
+
+  export type ProjectEnvConsentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProjectEnvConsent to aggregate.
+     */
+    where?: ProjectEnvConsentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProjectEnvConsents to fetch.
+     */
+    orderBy?: ProjectEnvConsentOrderByWithRelationInput | ProjectEnvConsentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ProjectEnvConsentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProjectEnvConsents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProjectEnvConsents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ProjectEnvConsents
+    **/
+    _count?: true | ProjectEnvConsentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ProjectEnvConsentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ProjectEnvConsentMaxAggregateInputType
+  }
+
+  export type GetProjectEnvConsentAggregateType<T extends ProjectEnvConsentAggregateArgs> = {
+        [P in keyof T & keyof AggregateProjectEnvConsent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateProjectEnvConsent[P]>
+      : GetScalarType<T[P], AggregateProjectEnvConsent[P]>
+  }
+
+
+
+
+  export type ProjectEnvConsentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProjectEnvConsentWhereInput
+    orderBy?: ProjectEnvConsentOrderByWithAggregationInput | ProjectEnvConsentOrderByWithAggregationInput[]
+    by: ProjectEnvConsentScalarFieldEnum[] | ProjectEnvConsentScalarFieldEnum
+    having?: ProjectEnvConsentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ProjectEnvConsentCountAggregateInputType | true
+    _min?: ProjectEnvConsentMinAggregateInputType
+    _max?: ProjectEnvConsentMaxAggregateInputType
+  }
+
+  export type ProjectEnvConsentGroupByOutputType = {
+    id: string
+    project_id: string
+    user_id: string
+    accepted_at: Date
+    _count: ProjectEnvConsentCountAggregateOutputType | null
+    _min: ProjectEnvConsentMinAggregateOutputType | null
+    _max: ProjectEnvConsentMaxAggregateOutputType | null
+  }
+
+  type GetProjectEnvConsentGroupByPayload<T extends ProjectEnvConsentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ProjectEnvConsentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ProjectEnvConsentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ProjectEnvConsentGroupByOutputType[P]>
+            : GetScalarType<T[P], ProjectEnvConsentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ProjectEnvConsentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    project_id?: boolean
+    user_id?: boolean
+    accepted_at?: boolean
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["projectEnvConsent"]>
+
+  export type ProjectEnvConsentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    project_id?: boolean
+    user_id?: boolean
+    accepted_at?: boolean
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["projectEnvConsent"]>
+
+  export type ProjectEnvConsentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    project_id?: boolean
+    user_id?: boolean
+    accepted_at?: boolean
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["projectEnvConsent"]>
+
+  export type ProjectEnvConsentSelectScalar = {
+    id?: boolean
+    project_id?: boolean
+    user_id?: boolean
+    accepted_at?: boolean
+  }
+
+  export type ProjectEnvConsentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "project_id" | "user_id" | "accepted_at", ExtArgs["result"]["projectEnvConsent"]>
+  export type ProjectEnvConsentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type ProjectEnvConsentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type ProjectEnvConsentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $ProjectEnvConsentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ProjectEnvConsent"
+    objects: {
+      project: Prisma.$ProjectPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      project_id: string
+      user_id: string
+      accepted_at: Date
+    }, ExtArgs["result"]["projectEnvConsent"]>
+    composites: {}
+  }
+
+  type ProjectEnvConsentGetPayload<S extends boolean | null | undefined | ProjectEnvConsentDefaultArgs> = $Result.GetResult<Prisma.$ProjectEnvConsentPayload, S>
+
+  type ProjectEnvConsentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ProjectEnvConsentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ProjectEnvConsentCountAggregateInputType | true
+    }
+
+  export interface ProjectEnvConsentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ProjectEnvConsent'], meta: { name: 'ProjectEnvConsent' } }
+    /**
+     * Find zero or one ProjectEnvConsent that matches the filter.
+     * @param {ProjectEnvConsentFindUniqueArgs} args - Arguments to find a ProjectEnvConsent
+     * @example
+     * // Get one ProjectEnvConsent
+     * const projectEnvConsent = await prisma.projectEnvConsent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ProjectEnvConsentFindUniqueArgs>(args: SelectSubset<T, ProjectEnvConsentFindUniqueArgs<ExtArgs>>): Prisma__ProjectEnvConsentClient<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ProjectEnvConsent that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ProjectEnvConsentFindUniqueOrThrowArgs} args - Arguments to find a ProjectEnvConsent
+     * @example
+     * // Get one ProjectEnvConsent
+     * const projectEnvConsent = await prisma.projectEnvConsent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ProjectEnvConsentFindUniqueOrThrowArgs>(args: SelectSubset<T, ProjectEnvConsentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProjectEnvConsentClient<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProjectEnvConsent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectEnvConsentFindFirstArgs} args - Arguments to find a ProjectEnvConsent
+     * @example
+     * // Get one ProjectEnvConsent
+     * const projectEnvConsent = await prisma.projectEnvConsent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ProjectEnvConsentFindFirstArgs>(args?: SelectSubset<T, ProjectEnvConsentFindFirstArgs<ExtArgs>>): Prisma__ProjectEnvConsentClient<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProjectEnvConsent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectEnvConsentFindFirstOrThrowArgs} args - Arguments to find a ProjectEnvConsent
+     * @example
+     * // Get one ProjectEnvConsent
+     * const projectEnvConsent = await prisma.projectEnvConsent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ProjectEnvConsentFindFirstOrThrowArgs>(args?: SelectSubset<T, ProjectEnvConsentFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProjectEnvConsentClient<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ProjectEnvConsents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectEnvConsentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ProjectEnvConsents
+     * const projectEnvConsents = await prisma.projectEnvConsent.findMany()
+     * 
+     * // Get first 10 ProjectEnvConsents
+     * const projectEnvConsents = await prisma.projectEnvConsent.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const projectEnvConsentWithIdOnly = await prisma.projectEnvConsent.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ProjectEnvConsentFindManyArgs>(args?: SelectSubset<T, ProjectEnvConsentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ProjectEnvConsent.
+     * @param {ProjectEnvConsentCreateArgs} args - Arguments to create a ProjectEnvConsent.
+     * @example
+     * // Create one ProjectEnvConsent
+     * const ProjectEnvConsent = await prisma.projectEnvConsent.create({
+     *   data: {
+     *     // ... data to create a ProjectEnvConsent
+     *   }
+     * })
+     * 
+     */
+    create<T extends ProjectEnvConsentCreateArgs>(args: SelectSubset<T, ProjectEnvConsentCreateArgs<ExtArgs>>): Prisma__ProjectEnvConsentClient<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ProjectEnvConsents.
+     * @param {ProjectEnvConsentCreateManyArgs} args - Arguments to create many ProjectEnvConsents.
+     * @example
+     * // Create many ProjectEnvConsents
+     * const projectEnvConsent = await prisma.projectEnvConsent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ProjectEnvConsentCreateManyArgs>(args?: SelectSubset<T, ProjectEnvConsentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ProjectEnvConsents and returns the data saved in the database.
+     * @param {ProjectEnvConsentCreateManyAndReturnArgs} args - Arguments to create many ProjectEnvConsents.
+     * @example
+     * // Create many ProjectEnvConsents
+     * const projectEnvConsent = await prisma.projectEnvConsent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ProjectEnvConsents and only return the `id`
+     * const projectEnvConsentWithIdOnly = await prisma.projectEnvConsent.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ProjectEnvConsentCreateManyAndReturnArgs>(args?: SelectSubset<T, ProjectEnvConsentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ProjectEnvConsent.
+     * @param {ProjectEnvConsentDeleteArgs} args - Arguments to delete one ProjectEnvConsent.
+     * @example
+     * // Delete one ProjectEnvConsent
+     * const ProjectEnvConsent = await prisma.projectEnvConsent.delete({
+     *   where: {
+     *     // ... filter to delete one ProjectEnvConsent
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ProjectEnvConsentDeleteArgs>(args: SelectSubset<T, ProjectEnvConsentDeleteArgs<ExtArgs>>): Prisma__ProjectEnvConsentClient<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ProjectEnvConsent.
+     * @param {ProjectEnvConsentUpdateArgs} args - Arguments to update one ProjectEnvConsent.
+     * @example
+     * // Update one ProjectEnvConsent
+     * const projectEnvConsent = await prisma.projectEnvConsent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ProjectEnvConsentUpdateArgs>(args: SelectSubset<T, ProjectEnvConsentUpdateArgs<ExtArgs>>): Prisma__ProjectEnvConsentClient<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ProjectEnvConsents.
+     * @param {ProjectEnvConsentDeleteManyArgs} args - Arguments to filter ProjectEnvConsents to delete.
+     * @example
+     * // Delete a few ProjectEnvConsents
+     * const { count } = await prisma.projectEnvConsent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ProjectEnvConsentDeleteManyArgs>(args?: SelectSubset<T, ProjectEnvConsentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProjectEnvConsents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectEnvConsentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ProjectEnvConsents
+     * const projectEnvConsent = await prisma.projectEnvConsent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ProjectEnvConsentUpdateManyArgs>(args: SelectSubset<T, ProjectEnvConsentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProjectEnvConsents and returns the data updated in the database.
+     * @param {ProjectEnvConsentUpdateManyAndReturnArgs} args - Arguments to update many ProjectEnvConsents.
+     * @example
+     * // Update many ProjectEnvConsents
+     * const projectEnvConsent = await prisma.projectEnvConsent.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ProjectEnvConsents and only return the `id`
+     * const projectEnvConsentWithIdOnly = await prisma.projectEnvConsent.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ProjectEnvConsentUpdateManyAndReturnArgs>(args: SelectSubset<T, ProjectEnvConsentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ProjectEnvConsent.
+     * @param {ProjectEnvConsentUpsertArgs} args - Arguments to update or create a ProjectEnvConsent.
+     * @example
+     * // Update or create a ProjectEnvConsent
+     * const projectEnvConsent = await prisma.projectEnvConsent.upsert({
+     *   create: {
+     *     // ... data to create a ProjectEnvConsent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ProjectEnvConsent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ProjectEnvConsentUpsertArgs>(args: SelectSubset<T, ProjectEnvConsentUpsertArgs<ExtArgs>>): Prisma__ProjectEnvConsentClient<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ProjectEnvConsents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectEnvConsentCountArgs} args - Arguments to filter ProjectEnvConsents to count.
+     * @example
+     * // Count the number of ProjectEnvConsents
+     * const count = await prisma.projectEnvConsent.count({
+     *   where: {
+     *     // ... the filter for the ProjectEnvConsents we want to count
+     *   }
+     * })
+    **/
+    count<T extends ProjectEnvConsentCountArgs>(
+      args?: Subset<T, ProjectEnvConsentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ProjectEnvConsentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ProjectEnvConsent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectEnvConsentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ProjectEnvConsentAggregateArgs>(args: Subset<T, ProjectEnvConsentAggregateArgs>): Prisma.PrismaPromise<GetProjectEnvConsentAggregateType<T>>
+
+    /**
+     * Group by ProjectEnvConsent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectEnvConsentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ProjectEnvConsentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ProjectEnvConsentGroupByArgs['orderBy'] }
+        : { orderBy?: ProjectEnvConsentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ProjectEnvConsentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProjectEnvConsentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ProjectEnvConsent model
+   */
+  readonly fields: ProjectEnvConsentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ProjectEnvConsent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ProjectEnvConsentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    project<T extends ProjectDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProjectDefaultArgs<ExtArgs>>): Prisma__ProjectClient<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ProjectEnvConsent model
+   */
+  interface ProjectEnvConsentFieldRefs {
+    readonly id: FieldRef<"ProjectEnvConsent", 'String'>
+    readonly project_id: FieldRef<"ProjectEnvConsent", 'String'>
+    readonly user_id: FieldRef<"ProjectEnvConsent", 'String'>
+    readonly accepted_at: FieldRef<"ProjectEnvConsent", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ProjectEnvConsent findUnique
+   */
+  export type ProjectEnvConsentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectEnvConsent to fetch.
+     */
+    where: ProjectEnvConsentWhereUniqueInput
+  }
+
+  /**
+   * ProjectEnvConsent findUniqueOrThrow
+   */
+  export type ProjectEnvConsentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectEnvConsent to fetch.
+     */
+    where: ProjectEnvConsentWhereUniqueInput
+  }
+
+  /**
+   * ProjectEnvConsent findFirst
+   */
+  export type ProjectEnvConsentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectEnvConsent to fetch.
+     */
+    where?: ProjectEnvConsentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProjectEnvConsents to fetch.
+     */
+    orderBy?: ProjectEnvConsentOrderByWithRelationInput | ProjectEnvConsentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProjectEnvConsents.
+     */
+    cursor?: ProjectEnvConsentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProjectEnvConsents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProjectEnvConsents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProjectEnvConsents.
+     */
+    distinct?: ProjectEnvConsentScalarFieldEnum | ProjectEnvConsentScalarFieldEnum[]
+  }
+
+  /**
+   * ProjectEnvConsent findFirstOrThrow
+   */
+  export type ProjectEnvConsentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectEnvConsent to fetch.
+     */
+    where?: ProjectEnvConsentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProjectEnvConsents to fetch.
+     */
+    orderBy?: ProjectEnvConsentOrderByWithRelationInput | ProjectEnvConsentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProjectEnvConsents.
+     */
+    cursor?: ProjectEnvConsentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProjectEnvConsents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProjectEnvConsents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProjectEnvConsents.
+     */
+    distinct?: ProjectEnvConsentScalarFieldEnum | ProjectEnvConsentScalarFieldEnum[]
+  }
+
+  /**
+   * ProjectEnvConsent findMany
+   */
+  export type ProjectEnvConsentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectEnvConsents to fetch.
+     */
+    where?: ProjectEnvConsentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProjectEnvConsents to fetch.
+     */
+    orderBy?: ProjectEnvConsentOrderByWithRelationInput | ProjectEnvConsentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ProjectEnvConsents.
+     */
+    cursor?: ProjectEnvConsentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProjectEnvConsents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProjectEnvConsents.
+     */
+    skip?: number
+    distinct?: ProjectEnvConsentScalarFieldEnum | ProjectEnvConsentScalarFieldEnum[]
+  }
+
+  /**
+   * ProjectEnvConsent create
+   */
+  export type ProjectEnvConsentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ProjectEnvConsent.
+     */
+    data: XOR<ProjectEnvConsentCreateInput, ProjectEnvConsentUncheckedCreateInput>
+  }
+
+  /**
+   * ProjectEnvConsent createMany
+   */
+  export type ProjectEnvConsentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ProjectEnvConsents.
+     */
+    data: ProjectEnvConsentCreateManyInput | ProjectEnvConsentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ProjectEnvConsent createManyAndReturn
+   */
+  export type ProjectEnvConsentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * The data used to create many ProjectEnvConsents.
+     */
+    data: ProjectEnvConsentCreateManyInput | ProjectEnvConsentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ProjectEnvConsent update
+   */
+  export type ProjectEnvConsentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ProjectEnvConsent.
+     */
+    data: XOR<ProjectEnvConsentUpdateInput, ProjectEnvConsentUncheckedUpdateInput>
+    /**
+     * Choose, which ProjectEnvConsent to update.
+     */
+    where: ProjectEnvConsentWhereUniqueInput
+  }
+
+  /**
+   * ProjectEnvConsent updateMany
+   */
+  export type ProjectEnvConsentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ProjectEnvConsents.
+     */
+    data: XOR<ProjectEnvConsentUpdateManyMutationInput, ProjectEnvConsentUncheckedUpdateManyInput>
+    /**
+     * Filter which ProjectEnvConsents to update
+     */
+    where?: ProjectEnvConsentWhereInput
+    /**
+     * Limit how many ProjectEnvConsents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProjectEnvConsent updateManyAndReturn
+   */
+  export type ProjectEnvConsentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * The data used to update ProjectEnvConsents.
+     */
+    data: XOR<ProjectEnvConsentUpdateManyMutationInput, ProjectEnvConsentUncheckedUpdateManyInput>
+    /**
+     * Filter which ProjectEnvConsents to update
+     */
+    where?: ProjectEnvConsentWhereInput
+    /**
+     * Limit how many ProjectEnvConsents to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ProjectEnvConsent upsert
+   */
+  export type ProjectEnvConsentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ProjectEnvConsent to update in case it exists.
+     */
+    where: ProjectEnvConsentWhereUniqueInput
+    /**
+     * In case the ProjectEnvConsent found by the `where` argument doesn't exist, create a new ProjectEnvConsent with this data.
+     */
+    create: XOR<ProjectEnvConsentCreateInput, ProjectEnvConsentUncheckedCreateInput>
+    /**
+     * In case the ProjectEnvConsent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ProjectEnvConsentUpdateInput, ProjectEnvConsentUncheckedUpdateInput>
+  }
+
+  /**
+   * ProjectEnvConsent delete
+   */
+  export type ProjectEnvConsentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentInclude<ExtArgs> | null
+    /**
+     * Filter which ProjectEnvConsent to delete.
+     */
+    where: ProjectEnvConsentWhereUniqueInput
+  }
+
+  /**
+   * ProjectEnvConsent deleteMany
+   */
+  export type ProjectEnvConsentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProjectEnvConsents to delete
+     */
+    where?: ProjectEnvConsentWhereInput
+    /**
+     * Limit how many ProjectEnvConsents to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProjectEnvConsent without action
+   */
+  export type ProjectEnvConsentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectEnvConsent
+     */
+    select?: ProjectEnvConsentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectEnvConsent
+     */
+    omit?: ProjectEnvConsentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectEnvConsentInclude<ExtArgs> | null
   }
 
 
@@ -32254,6 +33473,16 @@ export namespace Prisma {
   export type ProjectServiceScalarFieldEnum = (typeof ProjectServiceScalarFieldEnum)[keyof typeof ProjectServiceScalarFieldEnum]
 
 
+  export const ProjectEnvConsentScalarFieldEnum: {
+    id: 'id',
+    project_id: 'project_id',
+    user_id: 'user_id',
+    accepted_at: 'accepted_at'
+  };
+
+  export type ProjectEnvConsentScalarFieldEnum = (typeof ProjectEnvConsentScalarFieldEnum)[keyof typeof ProjectEnvConsentScalarFieldEnum]
+
+
   export const ProjectIssueScalarFieldEnum: {
     id: 'id',
     project_id: 'project_id',
@@ -32751,6 +33980,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandListRelationFilter
     skill_favorites?: SkillFavoriteListRelationFilter
     workspace_layouts?: WorkspaceLayoutPresetListRelationFilter
+    env_consents?: ProjectEnvConsentListRelationFilter
     workspace_layout_state?: XOR<WorkspaceLayoutStateNullableScalarRelationFilter, WorkspaceLayoutStateWhereInput> | null
   }
 
@@ -32774,6 +34004,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandOrderByRelationAggregateInput
     skill_favorites?: SkillFavoriteOrderByRelationAggregateInput
     workspace_layouts?: WorkspaceLayoutPresetOrderByRelationAggregateInput
+    env_consents?: ProjectEnvConsentOrderByRelationAggregateInput
     workspace_layout_state?: WorkspaceLayoutStateOrderByWithRelationInput
   }
 
@@ -32800,6 +34031,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandListRelationFilter
     skill_favorites?: SkillFavoriteListRelationFilter
     workspace_layouts?: WorkspaceLayoutPresetListRelationFilter
+    env_consents?: ProjectEnvConsentListRelationFilter
     workspace_layout_state?: XOR<WorkspaceLayoutStateNullableScalarRelationFilter, WorkspaceLayoutStateWhereInput> | null
   }, "id" | "email" | "phone">
 
@@ -33881,6 +35113,7 @@ export namespace Prisma {
     issues?: ProjectIssueListRelationFilter
     sessions?: AgentSessionListRelationFilter
     activities?: ActivityListRelationFilter
+    env_consents?: ProjectEnvConsentListRelationFilter
   }
 
   export type ProjectOrderByWithRelationInput = {
@@ -33914,6 +35147,7 @@ export namespace Prisma {
     issues?: ProjectIssueOrderByRelationAggregateInput
     sessions?: AgentSessionOrderByRelationAggregateInput
     activities?: ActivityOrderByRelationAggregateInput
+    env_consents?: ProjectEnvConsentOrderByRelationAggregateInput
   }
 
   export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -33950,6 +35184,7 @@ export namespace Prisma {
     issues?: ProjectIssueListRelationFilter
     sessions?: AgentSessionListRelationFilter
     activities?: ActivityListRelationFilter
+    env_consents?: ProjectEnvConsentListRelationFilter
   }, "id">
 
   export type ProjectOrderByWithAggregationInput = {
@@ -34113,6 +35348,60 @@ export namespace Prisma {
     sort_order?: IntWithAggregatesFilter<"ProjectService"> | number
     created_at?: DateTimeWithAggregatesFilter<"ProjectService"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"ProjectService"> | Date | string
+  }
+
+  export type ProjectEnvConsentWhereInput = {
+    AND?: ProjectEnvConsentWhereInput | ProjectEnvConsentWhereInput[]
+    OR?: ProjectEnvConsentWhereInput[]
+    NOT?: ProjectEnvConsentWhereInput | ProjectEnvConsentWhereInput[]
+    id?: StringFilter<"ProjectEnvConsent"> | string
+    project_id?: StringFilter<"ProjectEnvConsent"> | string
+    user_id?: StringFilter<"ProjectEnvConsent"> | string
+    accepted_at?: DateTimeFilter<"ProjectEnvConsent"> | Date | string
+    project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type ProjectEnvConsentOrderByWithRelationInput = {
+    id?: SortOrder
+    project_id?: SortOrder
+    user_id?: SortOrder
+    accepted_at?: SortOrder
+    project?: ProjectOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type ProjectEnvConsentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    project_id_user_id?: ProjectEnvConsentProject_idUser_idCompoundUniqueInput
+    AND?: ProjectEnvConsentWhereInput | ProjectEnvConsentWhereInput[]
+    OR?: ProjectEnvConsentWhereInput[]
+    NOT?: ProjectEnvConsentWhereInput | ProjectEnvConsentWhereInput[]
+    project_id?: StringFilter<"ProjectEnvConsent"> | string
+    user_id?: StringFilter<"ProjectEnvConsent"> | string
+    accepted_at?: DateTimeFilter<"ProjectEnvConsent"> | Date | string
+    project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "project_id_user_id">
+
+  export type ProjectEnvConsentOrderByWithAggregationInput = {
+    id?: SortOrder
+    project_id?: SortOrder
+    user_id?: SortOrder
+    accepted_at?: SortOrder
+    _count?: ProjectEnvConsentCountOrderByAggregateInput
+    _max?: ProjectEnvConsentMaxOrderByAggregateInput
+    _min?: ProjectEnvConsentMinOrderByAggregateInput
+  }
+
+  export type ProjectEnvConsentScalarWhereWithAggregatesInput = {
+    AND?: ProjectEnvConsentScalarWhereWithAggregatesInput | ProjectEnvConsentScalarWhereWithAggregatesInput[]
+    OR?: ProjectEnvConsentScalarWhereWithAggregatesInput[]
+    NOT?: ProjectEnvConsentScalarWhereWithAggregatesInput | ProjectEnvConsentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ProjectEnvConsent"> | string
+    project_id?: StringWithAggregatesFilter<"ProjectEnvConsent"> | string
+    user_id?: StringWithAggregatesFilter<"ProjectEnvConsent"> | string
+    accepted_at?: DateTimeWithAggregatesFilter<"ProjectEnvConsent"> | Date | string
   }
 
   export type ProjectIssueWhereInput = {
@@ -34826,6 +36115,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
@@ -34849,6 +36139,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -34872,6 +36163,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
@@ -34895,6 +36187,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -36054,6 +37347,7 @@ export namespace Prisma {
     issues?: ProjectIssueCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateInput = {
@@ -36082,6 +37376,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUpdateInput = {
@@ -36110,6 +37405,7 @@ export namespace Prisma {
     issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateInput = {
@@ -36138,6 +37434,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectCreateManyInput = {
@@ -36330,6 +37627,53 @@ export namespace Prisma {
     sort_order?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectEnvConsentCreateInput = {
+    id?: string
+    accepted_at?: Date | string
+    project: ProjectCreateNestedOneWithoutEnv_consentsInput
+    user: UserCreateNestedOneWithoutEnv_consentsInput
+  }
+
+  export type ProjectEnvConsentUncheckedCreateInput = {
+    id?: string
+    project_id: string
+    user_id: string
+    accepted_at?: Date | string
+  }
+
+  export type ProjectEnvConsentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    project?: ProjectUpdateOneRequiredWithoutEnv_consentsNestedInput
+    user?: UserUpdateOneRequiredWithoutEnv_consentsNestedInput
+  }
+
+  export type ProjectEnvConsentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    project_id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectEnvConsentCreateManyInput = {
+    id?: string
+    project_id: string
+    user_id: string
+    accepted_at?: Date | string
+  }
+
+  export type ProjectEnvConsentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectEnvConsentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    project_id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ProjectIssueCreateInput = {
@@ -37195,6 +38539,12 @@ export namespace Prisma {
     none?: WorkspaceLayoutPresetWhereInput
   }
 
+  export type ProjectEnvConsentListRelationFilter = {
+    every?: ProjectEnvConsentWhereInput
+    some?: ProjectEnvConsentWhereInput
+    none?: ProjectEnvConsentWhereInput
+  }
+
   export type WorkspaceLayoutStateNullableScalarRelationFilter = {
     is?: WorkspaceLayoutStateWhereInput | null
     isNot?: WorkspaceLayoutStateWhereInput | null
@@ -37238,6 +38588,10 @@ export namespace Prisma {
   }
 
   export type WorkspaceLayoutPresetOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ProjectEnvConsentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -38438,6 +39792,32 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
+  export type ProjectEnvConsentProject_idUser_idCompoundUniqueInput = {
+    project_id: string
+    user_id: string
+  }
+
+  export type ProjectEnvConsentCountOrderByAggregateInput = {
+    id?: SortOrder
+    project_id?: SortOrder
+    user_id?: SortOrder
+    accepted_at?: SortOrder
+  }
+
+  export type ProjectEnvConsentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    project_id?: SortOrder
+    user_id?: SortOrder
+    accepted_at?: SortOrder
+  }
+
+  export type ProjectEnvConsentMinOrderByAggregateInput = {
+    id?: SortOrder
+    project_id?: SortOrder
+    user_id?: SortOrder
+    accepted_at?: SortOrder
+  }
+
   export type EnumIntegrationProviderFilter<$PrismaModel = never> = {
     equals?: $Enums.IntegrationProvider | EnumIntegrationProviderFieldRefInput<$PrismaModel>
     in?: $Enums.IntegrationProvider[] | ListEnumIntegrationProviderFieldRefInput<$PrismaModel>
@@ -39011,6 +40391,13 @@ export namespace Prisma {
     connect?: WorkspaceLayoutPresetWhereUniqueInput | WorkspaceLayoutPresetWhereUniqueInput[]
   }
 
+  export type ProjectEnvConsentCreateNestedManyWithoutUserInput = {
+    create?: XOR<ProjectEnvConsentCreateWithoutUserInput, ProjectEnvConsentUncheckedCreateWithoutUserInput> | ProjectEnvConsentCreateWithoutUserInput[] | ProjectEnvConsentUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ProjectEnvConsentCreateOrConnectWithoutUserInput | ProjectEnvConsentCreateOrConnectWithoutUserInput[]
+    createMany?: ProjectEnvConsentCreateManyUserInputEnvelope
+    connect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+  }
+
   export type WorkspaceLayoutStateCreateNestedOneWithoutUserInput = {
     create?: XOR<WorkspaceLayoutStateCreateWithoutUserInput, WorkspaceLayoutStateUncheckedCreateWithoutUserInput>
     connectOrCreate?: WorkspaceLayoutStateCreateOrConnectWithoutUserInput
@@ -39084,6 +40471,13 @@ export namespace Prisma {
     connectOrCreate?: WorkspaceLayoutPresetCreateOrConnectWithoutUserInput | WorkspaceLayoutPresetCreateOrConnectWithoutUserInput[]
     createMany?: WorkspaceLayoutPresetCreateManyUserInputEnvelope
     connect?: WorkspaceLayoutPresetWhereUniqueInput | WorkspaceLayoutPresetWhereUniqueInput[]
+  }
+
+  export type ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<ProjectEnvConsentCreateWithoutUserInput, ProjectEnvConsentUncheckedCreateWithoutUserInput> | ProjectEnvConsentCreateWithoutUserInput[] | ProjectEnvConsentUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ProjectEnvConsentCreateOrConnectWithoutUserInput | ProjectEnvConsentCreateOrConnectWithoutUserInput[]
+    createMany?: ProjectEnvConsentCreateManyUserInputEnvelope
+    connect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
   }
 
   export type WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput = {
@@ -39244,6 +40638,20 @@ export namespace Prisma {
     deleteMany?: WorkspaceLayoutPresetScalarWhereInput | WorkspaceLayoutPresetScalarWhereInput[]
   }
 
+  export type ProjectEnvConsentUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ProjectEnvConsentCreateWithoutUserInput, ProjectEnvConsentUncheckedCreateWithoutUserInput> | ProjectEnvConsentCreateWithoutUserInput[] | ProjectEnvConsentUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ProjectEnvConsentCreateOrConnectWithoutUserInput | ProjectEnvConsentCreateOrConnectWithoutUserInput[]
+    upsert?: ProjectEnvConsentUpsertWithWhereUniqueWithoutUserInput | ProjectEnvConsentUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ProjectEnvConsentCreateManyUserInputEnvelope
+    set?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    disconnect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    delete?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    connect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    update?: ProjectEnvConsentUpdateWithWhereUniqueWithoutUserInput | ProjectEnvConsentUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ProjectEnvConsentUpdateManyWithWhereWithoutUserInput | ProjectEnvConsentUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ProjectEnvConsentScalarWhereInput | ProjectEnvConsentScalarWhereInput[]
+  }
+
   export type WorkspaceLayoutStateUpdateOneWithoutUserNestedInput = {
     create?: XOR<WorkspaceLayoutStateCreateWithoutUserInput, WorkspaceLayoutStateUncheckedCreateWithoutUserInput>
     connectOrCreate?: WorkspaceLayoutStateCreateOrConnectWithoutUserInput
@@ -39388,6 +40796,20 @@ export namespace Prisma {
     update?: WorkspaceLayoutPresetUpdateWithWhereUniqueWithoutUserInput | WorkspaceLayoutPresetUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: WorkspaceLayoutPresetUpdateManyWithWhereWithoutUserInput | WorkspaceLayoutPresetUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: WorkspaceLayoutPresetScalarWhereInput | WorkspaceLayoutPresetScalarWhereInput[]
+  }
+
+  export type ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ProjectEnvConsentCreateWithoutUserInput, ProjectEnvConsentUncheckedCreateWithoutUserInput> | ProjectEnvConsentCreateWithoutUserInput[] | ProjectEnvConsentUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ProjectEnvConsentCreateOrConnectWithoutUserInput | ProjectEnvConsentCreateOrConnectWithoutUserInput[]
+    upsert?: ProjectEnvConsentUpsertWithWhereUniqueWithoutUserInput | ProjectEnvConsentUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ProjectEnvConsentCreateManyUserInputEnvelope
+    set?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    disconnect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    delete?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    connect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    update?: ProjectEnvConsentUpdateWithWhereUniqueWithoutUserInput | ProjectEnvConsentUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ProjectEnvConsentUpdateManyWithWhereWithoutUserInput | ProjectEnvConsentUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ProjectEnvConsentScalarWhereInput | ProjectEnvConsentScalarWhereInput[]
   }
 
   export type WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput = {
@@ -40356,6 +41778,13 @@ export namespace Prisma {
     connect?: ActivityWhereUniqueInput | ActivityWhereUniqueInput[]
   }
 
+  export type ProjectEnvConsentCreateNestedManyWithoutProjectInput = {
+    create?: XOR<ProjectEnvConsentCreateWithoutProjectInput, ProjectEnvConsentUncheckedCreateWithoutProjectInput> | ProjectEnvConsentCreateWithoutProjectInput[] | ProjectEnvConsentUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: ProjectEnvConsentCreateOrConnectWithoutProjectInput | ProjectEnvConsentCreateOrConnectWithoutProjectInput[]
+    createMany?: ProjectEnvConsentCreateManyProjectInputEnvelope
+    connect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+  }
+
   export type ProjectServiceUncheckedCreateNestedManyWithoutProjectInput = {
     create?: XOR<ProjectServiceCreateWithoutProjectInput, ProjectServiceUncheckedCreateWithoutProjectInput> | ProjectServiceCreateWithoutProjectInput[] | ProjectServiceUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ProjectServiceCreateOrConnectWithoutProjectInput | ProjectServiceCreateOrConnectWithoutProjectInput[]
@@ -40382,6 +41811,13 @@ export namespace Prisma {
     connectOrCreate?: ActivityCreateOrConnectWithoutProjectInput | ActivityCreateOrConnectWithoutProjectInput[]
     createMany?: ActivityCreateManyProjectInputEnvelope
     connect?: ActivityWhereUniqueInput | ActivityWhereUniqueInput[]
+  }
+
+  export type ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput = {
+    create?: XOR<ProjectEnvConsentCreateWithoutProjectInput, ProjectEnvConsentUncheckedCreateWithoutProjectInput> | ProjectEnvConsentCreateWithoutProjectInput[] | ProjectEnvConsentUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: ProjectEnvConsentCreateOrConnectWithoutProjectInput | ProjectEnvConsentCreateOrConnectWithoutProjectInput[]
+    createMany?: ProjectEnvConsentCreateManyProjectInputEnvelope
+    connect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
   }
 
   export type NullableEnumAgentTypeFieldUpdateOperationsInput = {
@@ -40492,6 +41928,20 @@ export namespace Prisma {
     deleteMany?: ActivityScalarWhereInput | ActivityScalarWhereInput[]
   }
 
+  export type ProjectEnvConsentUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<ProjectEnvConsentCreateWithoutProjectInput, ProjectEnvConsentUncheckedCreateWithoutProjectInput> | ProjectEnvConsentCreateWithoutProjectInput[] | ProjectEnvConsentUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: ProjectEnvConsentCreateOrConnectWithoutProjectInput | ProjectEnvConsentCreateOrConnectWithoutProjectInput[]
+    upsert?: ProjectEnvConsentUpsertWithWhereUniqueWithoutProjectInput | ProjectEnvConsentUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: ProjectEnvConsentCreateManyProjectInputEnvelope
+    set?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    disconnect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    delete?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    connect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    update?: ProjectEnvConsentUpdateWithWhereUniqueWithoutProjectInput | ProjectEnvConsentUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: ProjectEnvConsentUpdateManyWithWhereWithoutProjectInput | ProjectEnvConsentUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: ProjectEnvConsentScalarWhereInput | ProjectEnvConsentScalarWhereInput[]
+  }
+
   export type ProjectServiceUncheckedUpdateManyWithoutProjectNestedInput = {
     create?: XOR<ProjectServiceCreateWithoutProjectInput, ProjectServiceUncheckedCreateWithoutProjectInput> | ProjectServiceCreateWithoutProjectInput[] | ProjectServiceUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ProjectServiceCreateOrConnectWithoutProjectInput | ProjectServiceCreateOrConnectWithoutProjectInput[]
@@ -40548,6 +41998,20 @@ export namespace Prisma {
     deleteMany?: ActivityScalarWhereInput | ActivityScalarWhereInput[]
   }
 
+  export type ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<ProjectEnvConsentCreateWithoutProjectInput, ProjectEnvConsentUncheckedCreateWithoutProjectInput> | ProjectEnvConsentCreateWithoutProjectInput[] | ProjectEnvConsentUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: ProjectEnvConsentCreateOrConnectWithoutProjectInput | ProjectEnvConsentCreateOrConnectWithoutProjectInput[]
+    upsert?: ProjectEnvConsentUpsertWithWhereUniqueWithoutProjectInput | ProjectEnvConsentUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: ProjectEnvConsentCreateManyProjectInputEnvelope
+    set?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    disconnect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    delete?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    connect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+    update?: ProjectEnvConsentUpdateWithWhereUniqueWithoutProjectInput | ProjectEnvConsentUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: ProjectEnvConsentUpdateManyWithWhereWithoutProjectInput | ProjectEnvConsentUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: ProjectEnvConsentScalarWhereInput | ProjectEnvConsentScalarWhereInput[]
+  }
+
   export type ProjectCreateNestedOneWithoutServicesInput = {
     create?: XOR<ProjectCreateWithoutServicesInput, ProjectUncheckedCreateWithoutServicesInput>
     connectOrCreate?: ProjectCreateOrConnectWithoutServicesInput
@@ -40572,6 +42036,34 @@ export namespace Prisma {
     upsert?: ProjectUpsertWithoutServicesInput
     connect?: ProjectWhereUniqueInput
     update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutServicesInput, ProjectUpdateWithoutServicesInput>, ProjectUncheckedUpdateWithoutServicesInput>
+  }
+
+  export type ProjectCreateNestedOneWithoutEnv_consentsInput = {
+    create?: XOR<ProjectCreateWithoutEnv_consentsInput, ProjectUncheckedCreateWithoutEnv_consentsInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutEnv_consentsInput
+    connect?: ProjectWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutEnv_consentsInput = {
+    create?: XOR<UserCreateWithoutEnv_consentsInput, UserUncheckedCreateWithoutEnv_consentsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutEnv_consentsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ProjectUpdateOneRequiredWithoutEnv_consentsNestedInput = {
+    create?: XOR<ProjectCreateWithoutEnv_consentsInput, ProjectUncheckedCreateWithoutEnv_consentsInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutEnv_consentsInput
+    upsert?: ProjectUpsertWithoutEnv_consentsInput
+    connect?: ProjectWhereUniqueInput
+    update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutEnv_consentsInput, ProjectUpdateWithoutEnv_consentsInput>, ProjectUncheckedUpdateWithoutEnv_consentsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutEnv_consentsNestedInput = {
+    create?: XOR<UserCreateWithoutEnv_consentsInput, UserUncheckedCreateWithoutEnv_consentsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutEnv_consentsInput
+    upsert?: UserUpsertWithoutEnv_consentsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutEnv_consentsInput, UserUpdateWithoutEnv_consentsInput>, UserUncheckedUpdateWithoutEnv_consentsInput>
   }
 
   export type ProjectCreateNestedOneWithoutIssuesInput = {
@@ -41901,6 +43393,28 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ProjectEnvConsentCreateWithoutUserInput = {
+    id?: string
+    accepted_at?: Date | string
+    project: ProjectCreateNestedOneWithoutEnv_consentsInput
+  }
+
+  export type ProjectEnvConsentUncheckedCreateWithoutUserInput = {
+    id?: string
+    project_id: string
+    accepted_at?: Date | string
+  }
+
+  export type ProjectEnvConsentCreateOrConnectWithoutUserInput = {
+    where: ProjectEnvConsentWhereUniqueInput
+    create: XOR<ProjectEnvConsentCreateWithoutUserInput, ProjectEnvConsentUncheckedCreateWithoutUserInput>
+  }
+
+  export type ProjectEnvConsentCreateManyUserInputEnvelope = {
+    data: ProjectEnvConsentCreateManyUserInput | ProjectEnvConsentCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type WorkspaceLayoutStateCreateWithoutUserInput = {
     id?: string
     preset_by_project?: JsonNullValueInput | InputJsonValue
@@ -42262,6 +43776,32 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"WorkspaceLayoutPreset"> | Date | string
   }
 
+  export type ProjectEnvConsentUpsertWithWhereUniqueWithoutUserInput = {
+    where: ProjectEnvConsentWhereUniqueInput
+    update: XOR<ProjectEnvConsentUpdateWithoutUserInput, ProjectEnvConsentUncheckedUpdateWithoutUserInput>
+    create: XOR<ProjectEnvConsentCreateWithoutUserInput, ProjectEnvConsentUncheckedCreateWithoutUserInput>
+  }
+
+  export type ProjectEnvConsentUpdateWithWhereUniqueWithoutUserInput = {
+    where: ProjectEnvConsentWhereUniqueInput
+    data: XOR<ProjectEnvConsentUpdateWithoutUserInput, ProjectEnvConsentUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ProjectEnvConsentUpdateManyWithWhereWithoutUserInput = {
+    where: ProjectEnvConsentScalarWhereInput
+    data: XOR<ProjectEnvConsentUpdateManyMutationInput, ProjectEnvConsentUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type ProjectEnvConsentScalarWhereInput = {
+    AND?: ProjectEnvConsentScalarWhereInput | ProjectEnvConsentScalarWhereInput[]
+    OR?: ProjectEnvConsentScalarWhereInput[]
+    NOT?: ProjectEnvConsentScalarWhereInput | ProjectEnvConsentScalarWhereInput[]
+    id?: StringFilter<"ProjectEnvConsent"> | string
+    project_id?: StringFilter<"ProjectEnvConsent"> | string
+    user_id?: StringFilter<"ProjectEnvConsent"> | string
+    accepted_at?: DateTimeFilter<"ProjectEnvConsent"> | Date | string
+  }
+
   export type WorkspaceLayoutStateUpsertWithoutUserInput = {
     update: XOR<WorkspaceLayoutStateUpdateWithoutUserInput, WorkspaceLayoutStateUncheckedUpdateWithoutUserInput>
     create: XOR<WorkspaceLayoutStateCreateWithoutUserInput, WorkspaceLayoutStateUncheckedCreateWithoutUserInput>
@@ -42308,6 +43848,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
@@ -42330,6 +43871,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -42368,6 +43910,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
@@ -42390,6 +43933,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -42412,6 +43956,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
@@ -42434,6 +43979,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -42472,6 +44018,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
@@ -42494,6 +44041,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -42516,6 +44064,7 @@ export namespace Prisma {
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
@@ -42538,6 +44087,7 @@ export namespace Prisma {
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -42576,6 +44126,7 @@ export namespace Prisma {
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
@@ -42598,6 +44149,7 @@ export namespace Prisma {
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -42620,6 +44172,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
@@ -42642,6 +44195,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -42680,6 +44234,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
@@ -42702,6 +44257,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -42724,6 +44280,7 @@ export namespace Prisma {
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
     agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
@@ -42746,6 +44303,7 @@ export namespace Prisma {
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
     agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -42810,6 +44368,7 @@ export namespace Prisma {
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
     agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
@@ -42832,6 +44391,7 @@ export namespace Prisma {
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
     agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -42883,6 +44443,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutWorkspace_layout_stateInput = {
@@ -42905,6 +44466,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutWorkspace_layout_stateInput = {
@@ -42972,6 +44534,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWorkspace_layout_stateInput = {
@@ -42994,6 +44557,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type WorkspaceLayoutPresetUpsertWithoutStateInput = {
@@ -43156,6 +44720,7 @@ export namespace Prisma {
     issues?: ProjectIssueCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutOrganizationInput = {
@@ -43183,6 +44748,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutOrganizationInput = {
@@ -44041,6 +45607,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
@@ -44063,6 +45630,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -44181,6 +45749,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
@@ -44203,6 +45772,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -44514,6 +46084,7 @@ export namespace Prisma {
     issues?: ProjectIssueCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutRepositoryInput = {
@@ -44541,6 +46112,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutRepositoryInput = {
@@ -45028,6 +46600,28 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ProjectEnvConsentCreateWithoutProjectInput = {
+    id?: string
+    accepted_at?: Date | string
+    user: UserCreateNestedOneWithoutEnv_consentsInput
+  }
+
+  export type ProjectEnvConsentUncheckedCreateWithoutProjectInput = {
+    id?: string
+    user_id: string
+    accepted_at?: Date | string
+  }
+
+  export type ProjectEnvConsentCreateOrConnectWithoutProjectInput = {
+    where: ProjectEnvConsentWhereUniqueInput
+    create: XOR<ProjectEnvConsentCreateWithoutProjectInput, ProjectEnvConsentUncheckedCreateWithoutProjectInput>
+  }
+
+  export type ProjectEnvConsentCreateManyProjectInputEnvelope = {
+    data: ProjectEnvConsentCreateManyProjectInput | ProjectEnvConsentCreateManyProjectInput[]
+    skipDuplicates?: boolean
+  }
+
   export type OrganizationUpsertWithoutProjectsInput = {
     update: XOR<OrganizationUpdateWithoutProjectsInput, OrganizationUncheckedUpdateWithoutProjectsInput>
     create: XOR<OrganizationCreateWithoutProjectsInput, OrganizationUncheckedCreateWithoutProjectsInput>
@@ -45357,6 +46951,22 @@ export namespace Prisma {
     data: XOR<ActivityUpdateManyMutationInput, ActivityUncheckedUpdateManyWithoutProjectInput>
   }
 
+  export type ProjectEnvConsentUpsertWithWhereUniqueWithoutProjectInput = {
+    where: ProjectEnvConsentWhereUniqueInput
+    update: XOR<ProjectEnvConsentUpdateWithoutProjectInput, ProjectEnvConsentUncheckedUpdateWithoutProjectInput>
+    create: XOR<ProjectEnvConsentCreateWithoutProjectInput, ProjectEnvConsentUncheckedCreateWithoutProjectInput>
+  }
+
+  export type ProjectEnvConsentUpdateWithWhereUniqueWithoutProjectInput = {
+    where: ProjectEnvConsentWhereUniqueInput
+    data: XOR<ProjectEnvConsentUpdateWithoutProjectInput, ProjectEnvConsentUncheckedUpdateWithoutProjectInput>
+  }
+
+  export type ProjectEnvConsentUpdateManyWithWhereWithoutProjectInput = {
+    where: ProjectEnvConsentScalarWhereInput
+    data: XOR<ProjectEnvConsentUpdateManyMutationInput, ProjectEnvConsentUncheckedUpdateManyWithoutProjectInput>
+  }
+
   export type ProjectCreateWithoutServicesInput = {
     id?: string
     name: string
@@ -45382,6 +46992,7 @@ export namespace Prisma {
     issues?: ProjectIssueCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutServicesInput = {
@@ -45409,6 +47020,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutServicesInput = {
@@ -45452,6 +47064,7 @@ export namespace Prisma {
     issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutServicesInput = {
@@ -45479,6 +47092,243 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
+  }
+
+  export type ProjectCreateWithoutEnv_consentsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    color: string
+    avatar_seed?: string | null
+    sort_order?: number
+    sub_path?: string | null
+    preferred_agent?: $Enums.AgentType | null
+    linear_team_id?: string | null
+    linear_project_id?: string | null
+    notion_root_page_id?: string | null
+    last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
+    created_by: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    organization: OrganizationCreateNestedOneWithoutProjectsInput
+    repository?: RepositoryCreateNestedOneWithoutProjectsInput
+    github_connection?: IntegrationConnectionCreateNestedOneWithoutGithub_projectsInput
+    linear_connection?: IntegrationConnectionCreateNestedOneWithoutLinear_projectsInput
+    notion_connection?: IntegrationConnectionCreateNestedOneWithoutNotion_projectsInput
+    services?: ProjectServiceCreateNestedManyWithoutProjectInput
+    issues?: ProjectIssueCreateNestedManyWithoutProjectInput
+    sessions?: AgentSessionCreateNestedManyWithoutProjectInput
+    activities?: ActivityCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectUncheckedCreateWithoutEnv_consentsInput = {
+    id?: string
+    organization_id: string
+    repository_id?: string | null
+    name: string
+    description?: string | null
+    color: string
+    avatar_seed?: string | null
+    sort_order?: number
+    sub_path?: string | null
+    preferred_agent?: $Enums.AgentType | null
+    github_connection_id?: string | null
+    linear_connection_id?: string | null
+    linear_team_id?: string | null
+    linear_project_id?: string | null
+    notion_connection_id?: string | null
+    notion_root_page_id?: string | null
+    last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
+    created_by: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    services?: ProjectServiceUncheckedCreateNestedManyWithoutProjectInput
+    issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
+    sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectCreateOrConnectWithoutEnv_consentsInput = {
+    where: ProjectWhereUniqueInput
+    create: XOR<ProjectCreateWithoutEnv_consentsInput, ProjectUncheckedCreateWithoutEnv_consentsInput>
+  }
+
+  export type UserCreateWithoutEnv_consentsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
+    activities?: ActivityCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
+    skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutEnv_consentsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
+    skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutEnv_consentsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutEnv_consentsInput, UserUncheckedCreateWithoutEnv_consentsInput>
+  }
+
+  export type ProjectUpsertWithoutEnv_consentsInput = {
+    update: XOR<ProjectUpdateWithoutEnv_consentsInput, ProjectUncheckedUpdateWithoutEnv_consentsInput>
+    create: XOR<ProjectCreateWithoutEnv_consentsInput, ProjectUncheckedCreateWithoutEnv_consentsInput>
+    where?: ProjectWhereInput
+  }
+
+  export type ProjectUpdateToOneWithWhereWithoutEnv_consentsInput = {
+    where?: ProjectWhereInput
+    data: XOR<ProjectUpdateWithoutEnv_consentsInput, ProjectUncheckedUpdateWithoutEnv_consentsInput>
+  }
+
+  export type ProjectUpdateWithoutEnv_consentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
+    sort_order?: IntFieldUpdateOperationsInput | number
+    sub_path?: NullableStringFieldUpdateOperationsInput | string | null
+    preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
+    linear_team_id?: NullableStringFieldUpdateOperationsInput | string | null
+    linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
+    notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
+    last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_by?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
+    repository?: RepositoryUpdateOneWithoutProjectsNestedInput
+    github_connection?: IntegrationConnectionUpdateOneWithoutGithub_projectsNestedInput
+    linear_connection?: IntegrationConnectionUpdateOneWithoutLinear_projectsNestedInput
+    notion_connection?: IntegrationConnectionUpdateOneWithoutNotion_projectsNestedInput
+    services?: ProjectServiceUpdateManyWithoutProjectNestedInput
+    issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
+    sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
+    activities?: ActivityUpdateManyWithoutProjectNestedInput
+  }
+
+  export type ProjectUncheckedUpdateWithoutEnv_consentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organization_id?: StringFieldUpdateOperationsInput | string
+    repository_id?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
+    sort_order?: IntFieldUpdateOperationsInput | number
+    sub_path?: NullableStringFieldUpdateOperationsInput | string | null
+    preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
+    github_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
+    linear_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
+    linear_team_id?: NullableStringFieldUpdateOperationsInput | string | null
+    linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
+    notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
+    notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
+    last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_by?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    services?: ProjectServiceUncheckedUpdateManyWithoutProjectNestedInput
+    issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
+    sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
+  }
+
+  export type UserUpsertWithoutEnv_consentsInput = {
+    update: XOR<UserUpdateWithoutEnv_consentsInput, UserUncheckedUpdateWithoutEnv_consentsInput>
+    create: XOR<UserCreateWithoutEnv_consentsInput, UserUncheckedCreateWithoutEnv_consentsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutEnv_consentsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutEnv_consentsInput, UserUncheckedUpdateWithoutEnv_consentsInput>
+  }
+
+  export type UserUpdateWithoutEnv_consentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
+    activities?: ActivityUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
+    skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutEnv_consentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
+    skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ProjectCreateWithoutIssuesInput = {
@@ -45506,6 +47356,7 @@ export namespace Prisma {
     services?: ProjectServiceCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutIssuesInput = {
@@ -45533,6 +47384,7 @@ export namespace Prisma {
     services?: ProjectServiceUncheckedCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutIssuesInput = {
@@ -45576,6 +47428,7 @@ export namespace Prisma {
     services?: ProjectServiceUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutIssuesInput = {
@@ -45603,6 +47456,7 @@ export namespace Prisma {
     services?: ProjectServiceUncheckedUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type OrganizationCreateWithoutConnectionsInput = {
@@ -45665,6 +47519,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
@@ -45687,6 +47542,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -45756,6 +47612,7 @@ export namespace Prisma {
     issues?: ProjectIssueCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutGithub_connectionInput = {
@@ -45783,6 +47640,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutGithub_connectionInput = {
@@ -45820,6 +47678,7 @@ export namespace Prisma {
     issues?: ProjectIssueCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutLinear_connectionInput = {
@@ -45847,6 +47706,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutLinear_connectionInput = {
@@ -45884,6 +47744,7 @@ export namespace Prisma {
     issues?: ProjectIssueCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutNotion_connectionInput = {
@@ -45911,6 +47772,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutNotion_connectionInput = {
@@ -46000,6 +47862,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
@@ -46022,6 +47885,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -46155,6 +48019,7 @@ export namespace Prisma {
     services?: ProjectServiceCreateNestedManyWithoutProjectInput
     issues?: ProjectIssueCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutSessionsInput = {
@@ -46182,6 +48047,7 @@ export namespace Prisma {
     services?: ProjectServiceUncheckedCreateNestedManyWithoutProjectInput
     issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutSessionsInput = {
@@ -46208,6 +48074,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
@@ -46230,6 +48097,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -46353,6 +48221,7 @@ export namespace Prisma {
     services?: ProjectServiceUpdateManyWithoutProjectNestedInput
     issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutSessionsInput = {
@@ -46380,6 +48249,7 @@ export namespace Prisma {
     services?: ProjectServiceUncheckedUpdateManyWithoutProjectNestedInput
     issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type UserUpsertWithoutAgent_sessionsInput = {
@@ -46412,6 +48282,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
@@ -46434,6 +48305,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -46519,6 +48391,7 @@ export namespace Prisma {
     services?: ProjectServiceCreateNestedManyWithoutProjectInput
     issues?: ProjectIssueCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutActivitiesInput = {
@@ -46546,6 +48419,7 @@ export namespace Prisma {
     services?: ProjectServiceUncheckedCreateNestedManyWithoutProjectInput
     issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutActivitiesInput = {
@@ -46572,6 +48446,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
@@ -46594,6 +48469,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -46738,6 +48614,7 @@ export namespace Prisma {
     services?: ProjectServiceUpdateManyWithoutProjectNestedInput
     issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutActivitiesInput = {
@@ -46765,6 +48642,7 @@ export namespace Prisma {
     services?: ProjectServiceUncheckedUpdateManyWithoutProjectNestedInput
     issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type UserUpsertWithoutActivitiesInput = {
@@ -46797,6 +48675,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
@@ -46819,6 +48698,7 @@ export namespace Prisma {
     agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -46988,6 +48868,7 @@ export namespace Prisma {
     git_identities?: GitIdentityCreateNestedManyWithoutUserInput
     agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
   }
 
@@ -47010,6 +48891,7 @@ export namespace Prisma {
     git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
     agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -47089,6 +48971,7 @@ export namespace Prisma {
     git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
     agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
   }
 
@@ -47111,6 +48994,7 @@ export namespace Prisma {
     git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
     agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -47264,6 +49148,12 @@ export namespace Prisma {
     floating?: JsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
+  }
+
+  export type ProjectEnvConsentCreateManyUserInput = {
+    id?: string
+    project_id: string
+    accepted_at?: Date | string
   }
 
   export type PasswordResetTokenUpdateWithoutUserInput = {
@@ -47593,6 +49483,24 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ProjectEnvConsentUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    project?: ProjectUpdateOneRequiredWithoutEnv_consentsNestedInput
+  }
+
+  export type ProjectEnvConsentUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    project_id?: StringFieldUpdateOperationsInput | string
+    accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectEnvConsentUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    project_id?: StringFieldUpdateOperationsInput | string
+    accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type WorkspaceLayoutStateCreateManyActive_presetInput = {
     id?: string
     user_id: string
@@ -47889,6 +49797,7 @@ export namespace Prisma {
     issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutOrganizationInput = {
@@ -47916,6 +49825,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutOrganizationInput = {
@@ -48351,6 +50261,7 @@ export namespace Prisma {
     issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutRepositoryInput = {
@@ -48378,6 +50289,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutRepositoryInput = {
@@ -48461,6 +50373,12 @@ export namespace Prisma {
     message: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
+  }
+
+  export type ProjectEnvConsentCreateManyProjectInput = {
+    id?: string
+    user_id: string
+    accepted_at?: Date | string
   }
 
   export type ProjectServiceUpdateWithoutProjectInput = {
@@ -48645,6 +50563,24 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ProjectEnvConsentUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutEnv_consentsNestedInput
+  }
+
+  export type ProjectEnvConsentUncheckedUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectEnvConsentUncheckedUpdateManyWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type RepositoryCreateManyConnectionInput = {
     id?: string
     organization_id: string
@@ -48789,6 +50725,7 @@ export namespace Prisma {
     issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutGithub_connectionInput = {
@@ -48816,6 +50753,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutGithub_connectionInput = {
@@ -48866,6 +50804,7 @@ export namespace Prisma {
     issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutLinear_connectionInput = {
@@ -48893,6 +50832,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutLinear_connectionInput = {
@@ -48943,6 +50883,7 @@ export namespace Prisma {
     issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutNotion_connectionInput = {
@@ -48970,6 +50911,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutNotion_connectionInput = {

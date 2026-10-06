@@ -1,6 +1,8 @@
-import { useMutation, useQuery, type QueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import {
+    acceptProjectEnvConsent,
     createProject,
+    getProjectEnvConsent,
     deleteProject,
     getProjectIssues,
     getProjects,
@@ -61,6 +63,18 @@ export const useReorderProjects = () => useMutation<void, Error, string[]>({ mut
 
 export const useReplaceProjectServices = () =>
     useMutation<Project, Error, { id: string; services: ServiceInput[] }>({ mutationKey: ProjectMutationKeys.replaceServices });
+
+export const useProjectEnvConsent = (projectId: string | null) =>
+    useQuery({ queryKey: ["project-env-consent", projectId], queryFn: () => getProjectEnvConsent(projectId!), enabled: !!projectId });
+
+export const useAcceptProjectEnvConsent = (projectId: string) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: () => acceptProjectEnvConsent(projectId),
+        onSuccess: (consent) => queryClient.setQueryData(["project-env-consent", projectId], consent),
+        onError: (error: Error) => toast({ title: "Could not save your choice", description: error.message, variant: "error" }),
+    });
+};
 
 export const useGetProjectIssues = (projectId: string | null) =>
     useQuery({ queryKey: ["project-issues", projectId], queryFn: () => getProjectIssues(projectId!), enabled: !!projectId });

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { AgentTypes, CloseChoices, EditorTargets, IpcChannels, ProcessStatuses, SkillKinds, SkillSendModes, type CloseChoice } from "../shared/contract";
 import { accessManager } from "../managers/access-manager";
 import { agentManager } from "../managers/agent-manager";
-import { inspect } from "../managers/detection-manager";
+import { inspect, listEnvKeys } from "../managers/detection-manager";
 import { filesystemManager } from "../managers/filesystem-manager";
 import { floatingPanelManager } from "../managers/floating-panel-manager";
 import { gitManager } from "../managers/git-manager";
@@ -136,6 +136,7 @@ export function registerIpc(hooks: { onCloseChoice: (choice: CloseChoice) => voi
 
   // Detection ------------------------------------------------------------------
   handle(IpcChannels.DETECT_PROJECT, args(zId), ([id]) => inspect(workspaceConfig.projectRoot(id)));
+  handle(IpcChannels.DETECT_ENV_KEYS, args(zId, zRelPath), ([id, rel]) => listEnvKeys(workspaceConfig.resolveInProject(id, rel)));
   handle(IpcChannels.DETECT_PATH, args(zAbsPath), ([dir]) => inspect(path.resolve(dir)));
 
   // Files ------------------------------------------------------------------------

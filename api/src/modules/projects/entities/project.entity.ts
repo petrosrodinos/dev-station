@@ -68,3 +68,8 @@ export class ProjectIssueEntity {
   @ApiProperty({ nullable: true }) title: string | null;
   @ApiProperty() created_at: Date;
 }
+
+export class EnvConsentEntity {
+  @ApiProperty() accepted: boolean;
+  @ApiProperty({ nullable: true, type: Date }) accepted_at: Date | null;
+}
