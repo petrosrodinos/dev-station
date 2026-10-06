@@ -107,6 +107,7 @@ export function registerIpc(hooks: { onCloseChoice: (choice: CloseChoice) => voi
   });
 
   // Auto-update ----------------------------------------------------------------
+  handle(IpcChannels.APP_UPDATE_STATUS_GET, none, () => updateManager.getStatus());
   handle(IpcChannels.APP_UPDATE_CHECK, none, () => updateManager.check());
   handle(IpcChannels.APP_UPDATE_DOWNLOAD, none, () => updateManager.download());
   handle(IpcChannels.APP_UPDATE_INSTALL, none, () => updateManager.install());

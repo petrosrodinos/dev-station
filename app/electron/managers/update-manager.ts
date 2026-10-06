@@ -22,7 +22,8 @@ class UpdateManager {
     if (this.started || !app.isPackaged) return;
     this.started = true;
 
-    autoUpdater.autoDownload = false;
+    // Stage updates in the background; the renderer shows an Install / Skip banner once downloaded.
+    autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = false;
 
     autoUpdater.on("checking-for-update", () => this.set({ state: AppUpdateStates.CHECKING }));

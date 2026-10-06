@@ -58,6 +58,7 @@ export function DesktopEventsProvider() {
     // Initial snapshot — the main process may already be running things (e.g. after a reload).
     void bridge.processes.list().then(runtime.setProcesses).catch(() => undefined);
     void bridge.terminals.list().then(runtime.setTerminals).catch(() => undefined);
+    void bridge.appUpdates.getStatus().then((status) => useAppUpdateStore.getState().setStatus(status)).catch(() => undefined);
     void bridge.agents.list().then(runtime.setAgents).catch(() => undefined);
 
     const syncChanges = (session: AgentSessionInfo) => {
