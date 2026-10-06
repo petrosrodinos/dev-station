@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type FC } from "react";
-import { ArrowLeft, ArrowRight, Code2, ExternalLink, Globe, Play, RotateCw, TriangleAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, Code2, ExternalLink, Globe, Play, RotateCw, TriangleAlert, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,7 @@ import { useOverlayOpen } from "@/hooks/use-overlay-open";
 import { toast } from "@/hooks/use-toast";
 import { DEFAULT_PREVIEW_PREFS, useWorkspaceStore } from "@/stores/workspace";
 import { ProcessStatuses, type PreviewBounds } from "@shared/contract";
+import { PreviewAddressInput } from "./preview-address-input";
 
 interface PreviewPanelProps {
   project: Project;
@@ -51,16 +52,33 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
     runningWithUrl.find((s) => s.service.kind === ServiceKinds.FRONTEND) ??
     runningWithUrl[0] ??
     null;
-  const url = selected?.url ?? null;
-  const stopped = !!selected && !selected.running;
+  // A URL typed into the address bar wins over the previewed service's URL until the user picks another service.
+  const override = prefs.previewUrl;
+  const url = override ?? selected?.url ?? null;
+  const stopped = !override && !!selected && !selected.running;
   const failed = !!state?.error;
   const visible = !!url && !overlayOpen && !failed;
 
+  // Clipped to the ancestors that hide overflow. A squeezed dock group (full-width AI panel) keeps its
+  // contents' size, so the raw rect can extend past what is on screen and the native view would overhang.
   const measure = useCallback((): PreviewBounds | null => {
     const el = bodyRef.current;
     if (!el) return null;
     const r = el.getBoundingClientRect();
-    return { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
+    let left = r.left;
+    let top = r.top;
+    let right = r.right;
+    let bottom = r.bottom;
+    for (let node = el.parentElement; node; node = node.parentElement) {
+      const style = getComputedStyle(node);
+      if (style.overflowX === "visible" && style.overflowY === "visible") continue;
+      const clip = node.getBoundingClientRect();
+      left = Math.max(left, clip.left);
+      top = Math.max(top, clip.top);
+      right = Math.min(right, clip.right);
+      bottom = Math.min(bottom, clip.bottom);
+    }
+    return { x: Math.round(left), y: Math.round(top), width: Math.round(Math.max(0, right - left)), height: Math.round(Math.max(0, bottom - top)) };
   }, []);
 
   // Show/hide the native view; `show` is idempotent for an unchanged URL.
@@ -102,11 +120,16 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
 
   const displayUrl = state?.url || url || "";
 
+  const navigateTo = (next: string) => {
+    if (next === displayUrl) void actions.navigate("reload");
+    else setProjectPreview(projectId, { previewUrl: next === selected?.url ? null : next });
+  };
+
   return (
     <div className="relative flex h-full min-w-0 flex-col bg-background" aria-label="Preview">
       <div className="flex shrink-0 items-center gap-1 border-b px-2 py-1.5">
         {runningWithUrl.length > 1 && selected && (
-          <Select value={selected.service.id} onValueChange={(id) => setProjectPreview(projectId, { previewServiceId: id })}>
+          <Select value={selected.service.id} onValueChange={(id) => setProjectPreview(projectId, { previewServiceId: id, previewUrl: null })}>
             <SelectTrigger aria-label="Previewed service" className="h-7 w-auto max-w-[9rem] gap-1 px-2 text-xs">
               <SelectValue />
             </SelectTrigger>
@@ -128,9 +151,12 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
         <HeaderButton label="Reload" disabled={!url} onClick={() => void actions.navigate("reload")}>
           <RotateCw className="size-3.5" />
         </HeaderButton>
-        <div className="min-w-0 flex-1 truncate px-1 font-mono text-xs text-muted-foreground" title={displayUrl}>
-          {displayUrl.replace(/^https?:\/\//, "")}
-        </div>
+        {override && selected && (
+          <HeaderButton label="Show service URL" onClick={() => setProjectPreview(projectId, { previewUrl: null })}>
+            <Undo2 className="size-3.5" />
+          </HeaderButton>
+        )}
+        <PreviewAddressInput currentUrl={displayUrl} onNavigate={navigateTo} />
         <HeaderButton label="Open in browser" disabled={!displayUrl} onClick={() => void openUrl(displayUrl)}>
           <ExternalLink className="size-3.5" />
         </HeaderButton>
@@ -149,7 +175,7 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
           <EmptyState
             icon={<Globe />}
             title="No service with a URL is running"
-            description="Start a service to preview it here."
+            description="Start a service, or enter a localhost address above."
             action={
               services.some((s) => !s.running) && (
                 <Button size="sm" variant="outline" className="gap-1.5" onClick={startFirst} loading={start.isPending}>

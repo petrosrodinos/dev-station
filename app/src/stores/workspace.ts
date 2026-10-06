@@ -22,12 +22,14 @@ export interface ProjectPreviewPrefs {
     previewOpen: boolean;
     previewWidth: number;
     previewServiceId: string | null;
+    /** Address typed into the preview bar; null follows the previewed service's URL. */
+    previewUrl: string | null;
     /** Review layout: the preview fills the project area so it sits side by side with the AI panel. */
     previewExpanded: boolean;
 }
 
 export const DEFAULT_PREVIEW_WIDTH = 480;
-export const DEFAULT_PREVIEW_PREFS: ProjectPreviewPrefs = { previewOpen: false, previewWidth: DEFAULT_PREVIEW_WIDTH, previewServiceId: null, previewExpanded: false };
+export const DEFAULT_PREVIEW_PREFS: ProjectPreviewPrefs = { previewOpen: false, previewWidth: DEFAULT_PREVIEW_WIDTH, previewServiceId: null, previewUrl: null, previewExpanded: false };
 
 interface WorkspaceState {
     active_organization_id: string | null;
