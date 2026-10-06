@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { useCreateFile, useCreateFolder, useDeleteEntry, useRenameEntry } from "@/features/files/hooks/use-files";
 import type { FileEntry } from "@shared/contract";
-import type { CreateKind } from "./file-tree";
+import type { CreateKind } from "./tree-context";
 
 export type EntryDialogState = { type: "create"; dir: string; kind: CreateKind } | { type: "rename"; entry: FileEntry } | { type: "delete"; entry: FileEntry } | null;
 

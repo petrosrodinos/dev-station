@@ -14,7 +14,8 @@ import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-w
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { previewTypeFor, type FileEntry, type GitFileState } from "@shared/contract";
 import { useProjectContext } from "../../hooks/use-project-context";
-import { FileTreeNode, FileRow, TreeActionsContext, TreeCommandContext, type CreateKind, type TreeActions, type TreeCommand } from "./components/file-tree";
+import { FileTreeNode, FileRow } from "./components/file-tree";
+import { TreeActionsContext, TreeCommandContext, type CreateKind, type TreeActions, type TreeCommand } from "./components/tree-context";
 import { useTreeDropTarget } from "./hooks/use-tree-drop-target";
 import { EntryDialogs, type EntryDialogState } from "./components/entry-dialogs";
 import { CodeEditor } from "./components/code-editor";

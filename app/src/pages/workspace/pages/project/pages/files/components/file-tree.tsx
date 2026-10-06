@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ChevronRight, Copy, File, Folder, FolderOpen, FilePlus, FolderPlus, FolderSearch, ImageIcon, Pencil, FileText, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,6 +9,7 @@ import { GitFileStateOptions } from "@/config/constants/dropdowns/git/git-file-s
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { cn } from "@/lib/utils";
 import { ENTRY_DRAG_TYPE, setDraggedPath, useTreeDropTarget } from "../hooks/use-tree-drop-target";
+import { TreeActionsContext, TreeCommandContext } from "./tree-context";
 import { EditorTargets, FilePreviewKinds, previewTypeFor, type FileEntry, type FilePreviewKind, type GitFileState } from "@shared/contract";
 
 const GIT_DOT: Record<GitFileState, string> = {
@@ -27,25 +28,6 @@ const PREVIEW_ICONS: Record<FilePreviewKind, typeof File> = {
 };
 
 const HEAVY_DIRS = new Set(["node_modules", ".git", "dist", "build", ".next", ".turbo"]);
-
-/** Bulk expand/collapse: bumping `id` tells every mounted (and newly mounted) folder row to follow `open`. */
-export interface TreeCommand {
-  id: number;
-  open: boolean;
-}
-export const TreeCommandContext = createContext<TreeCommand>({ id: 0, open: false });
-
-export type CreateKind = "file" | "folder";
-
-/** Row-level mutations are handled by the tab (dialogs + state); rows only request them. */
-export interface TreeActions {
-  onCreate: (dir: string, kind: CreateKind) => void;
-  onRename: (entry: FileEntry) => void;
-  onDelete: (entry: FileEntry) => void;
-  onMove: (path: string, destDir: string) => void;
-  onDropFiles: (files: File[], destDir: string) => void;
-}
-export const TreeActionsContext = createContext<TreeActions | null>(null);
 
 /** Native drag source props for a tree row. */
 const dragSourceProps = (path: string) => ({
