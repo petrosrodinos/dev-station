@@ -234,6 +234,40 @@ export interface FileContent {
   content: string;
 }
 
+export const FilePreviewKinds = {
+  IMAGE: "image",
+  PDF: "pdf",
+} as const;
+export type FilePreviewKind = (typeof FilePreviewKinds)[keyof typeof FilePreviewKinds];
+
+/** Extensions the viewer can show without opening them in an editor (lowercase, no dot). */
+export const PREVIEW_FILE_TYPES: Record<string, { kind: FilePreviewKind; mime: string }> = {
+  png: { kind: FilePreviewKinds.IMAGE, mime: "image/png" },
+  jpg: { kind: FilePreviewKinds.IMAGE, mime: "image/jpeg" },
+  jpeg: { kind: FilePreviewKinds.IMAGE, mime: "image/jpeg" },
+  gif: { kind: FilePreviewKinds.IMAGE, mime: "image/gif" },
+  webp: { kind: FilePreviewKinds.IMAGE, mime: "image/webp" },
+  avif: { kind: FilePreviewKinds.IMAGE, mime: "image/avif" },
+  bmp: { kind: FilePreviewKinds.IMAGE, mime: "image/bmp" },
+  ico: { kind: FilePreviewKinds.IMAGE, mime: "image/x-icon" },
+  svg: { kind: FilePreviewKinds.IMAGE, mime: "image/svg+xml" },
+  pdf: { kind: FilePreviewKinds.PDF, mime: "application/pdf" },
+};
+
+/** Preview type for a file or project-relative path (by extension), or null when the viewer has no preview for it. */
+export const previewTypeFor = (filePath: string) => {
+  const name = filePath.slice(filePath.lastIndexOf("/") + 1);
+  const dot = name.lastIndexOf(".");
+  const ext = dot > 0 ? name.slice(dot + 1).toLowerCase() : "";
+  return Object.hasOwn(PREVIEW_FILE_TYPES, ext) ? PREVIEW_FILE_TYPES[ext] : null;
+};
+
+export interface FileBinary {
+  kind: FilePreviewKind;
+  mime: string;
+  data: Uint8Array;
+}
+
 // ---------------------------------------------------------------------------
 // Git
 // ---------------------------------------------------------------------------
@@ -562,6 +596,8 @@ export interface DevStationBridge {
     openInEditor(projectId: string, editor: EditorTarget, relPath?: string): Promise<void>;
     copyPath(projectId: string, relPath: string): Promise<string>;
     readFile(projectId: string, relPath: string): Promise<FileContent>;
+    /** Raw bytes of an image or PDF for the in-app viewer (see PREVIEW_FILE_TYPES). */
+    readBinary(projectId: string, relPath: string): Promise<FileBinary>;
     writeFile(projectId: string, relPath: string, content: string): Promise<void>;
     /** Returns the created project-relative path. `relPath` may contain "/" to create intermediate folders. */
     createFile(projectId: string, relPath: string): Promise<string>;
@@ -700,6 +736,7 @@ export const IpcChannels = {
   FILES_OPEN_EDITOR: "files:open-editor",
   FILES_COPY_PATH: "files:copy-path",
   FILES_READ: "files:read",
+  FILES_READ_BINARY: "files:read-binary",
   FILES_WRITE: "files:write",
   FILES_CREATE_FILE: "files:create-file",
   FILES_CREATE_FOLDER: "files:create-folder",

@@ -61,6 +61,7 @@ const bridge: DevStationBridge = {
     openInEditor: (id, editor, rel) => call(C.FILES_OPEN_EDITOR, id, editor, rel),
     copyPath: (id, rel) => call(C.FILES_COPY_PATH, id, rel),
     readFile: (id, rel) => call(C.FILES_READ, id, rel),
+    readBinary: (id, rel) => call(C.FILES_READ_BINARY, id, rel),
     writeFile: (id, rel, content) => call(C.FILES_WRITE, id, rel, content),
     createFile: (id, rel) => call(C.FILES_CREATE_FILE, id, rel),
     createFolder: (id, rel) => call(C.FILES_CREATE_FOLDER, id, rel),

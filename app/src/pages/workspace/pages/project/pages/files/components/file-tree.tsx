@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { ChevronRight, Copy, File, Folder, FolderOpen, FilePlus, FolderPlus, FolderSearch, Pencil, Trash2 } from "lucide-react";
+import { ChevronRight, Copy, File, Folder, FolderOpen, FilePlus, FolderPlus, FolderSearch, ImageIcon, Pencil, FileText, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -9,7 +9,7 @@ import { GitFileStateOptions } from "@/config/constants/dropdowns/git/git-file-s
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { cn } from "@/lib/utils";
 import { ENTRY_DRAG_TYPE, setDraggedPath, useTreeDropTarget } from "../hooks/use-tree-drop-target";
-import { EditorTargets, type FileEntry, type GitFileState } from "@shared/contract";
+import { EditorTargets, FilePreviewKinds, previewTypeFor, type FileEntry, type FilePreviewKind, type GitFileState } from "@shared/contract";
 
 const GIT_DOT: Record<GitFileState, string> = {
   M: "bg-warning",
@@ -18,6 +18,12 @@ const GIT_DOT: Record<GitFileState, string> = {
   R: "bg-info",
   U: "bg-info",
   C: "bg-danger",
+};
+
+/** Files the viewer can preview get a kind-specific icon in the tree. */
+const PREVIEW_ICONS: Record<FilePreviewKind, typeof File> = {
+  [FilePreviewKinds.IMAGE]: ImageIcon,
+  [FilePreviewKinds.PDF]: FileText,
 };
 
 const HEAVY_DIRS = new Set(["node_modules", ".git", "dist", "build", ".next", ".turbo"]);
@@ -145,6 +151,8 @@ function DirRow({ projectId, entry, depth, gitStates, activePath, onSelect }: { 
 }
 
 export function FileRow({ projectId, entry, depth, gitState, showPath = false, active = false, onSelect }: { projectId: string; entry: FileEntry; depth: number; gitState?: GitFileState; showPath?: boolean; active?: boolean; onSelect?: (path: string) => void }) {
+  const previewKind = previewTypeFor(entry.name)?.kind;
+  const Icon = previewKind ? PREVIEW_ICONS[previewKind] : File;
   const openInEditor = useOpenInEditor();
   const reveal = useRevealFile();
   const copyPath = useCopyFilePath();
@@ -160,7 +168,7 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
       style={{ paddingLeft: depth * 16 + 26 }}
       title="Click to open · double-click to open in Cursor"
     >
-      <File className="size-3.5 shrink-0 text-muted-foreground" />
+      <Icon className="size-3.5 shrink-0 text-muted-foreground" />
       <span className="truncate">{showPath ? entry.path : entry.name}</span>
       {gitState && <span className={cn("size-1.5 shrink-0 rounded-full", GIT_DOT[gitState])} title={getDropdownOptionLabel(GitFileStateOptions, gitState)} />}
       <div className="ml-auto hidden gap-0.5 group-hover:flex">
