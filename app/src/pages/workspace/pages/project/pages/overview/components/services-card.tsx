@@ -90,12 +90,12 @@ export function ServicesCard({ project }: { project: Project }) {
             const running = proc?.status === ProcessStatuses.RUNNING;
             const url = proc?.url ?? service.url;
             return (
-              <div key={service.id} className="group flex items-center gap-2 border-b border-hairline-soft py-2 last:border-b-0">
+              <div key={service.id} className="group flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-hairline-soft py-2 last:border-b-0">
                 <StatusDot status={processStatusDot(proc?.status)} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate text-[0.8125rem] font-medium">{service.name}</span>
-                    {running && url && <span className="truncate font-mono text-xs text-muted-foreground">{url.replace(/^https?:\/\//, "")}</span>}
+                <div className="min-w-48 flex-1">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                    <span className="min-w-0 truncate text-[0.8125rem] font-medium">{service.name}</span>
+                    {running && url && <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">{url.replace(/^https?:\/\//, "")}</span>}
                     {proc?.status === ProcessStatuses.CRASHED && <span className="text-xs text-danger">crashed ({proc.exit_code})</span>}
                     {running && proc?.port && proc.requested_port && proc.port !== proc.requested_port && (
                       <Tooltip>
@@ -124,7 +124,7 @@ export function ServicesCard({ project }: { project: Project }) {
                   </div>
                 </div>
                 {isDesktop() && (
-                  <div className="flex items-center gap-0.5 opacity-70 transition-opacity group-hover:opacity-100">
+                  <div className="ml-auto flex shrink-0 items-center gap-0.5 opacity-70 transition-opacity group-hover:opacity-100">
                     {running && url && (
                       <IconAction label="Preview" onClick={() => setProjectPreview(project.id, { previewOpen: true, previewServiceId: service.id })}>
                         <PanelRight className="size-3.5" />
