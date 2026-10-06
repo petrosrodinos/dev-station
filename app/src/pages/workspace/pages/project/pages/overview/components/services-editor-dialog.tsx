@@ -447,11 +447,13 @@ export function ServicesEditorDialog({
                                 </FormLabel>
                                 {Object.keys(scripts).length ? (
                                   <Select
+                                    // Explicit labels: the trigger shows only the script name, not the (possibly long) command.
+                                    items={Object.keys(scripts).map((name) => ({ label: name, value: name }))}
                                     value={f.value ?? ""}
                                     onValueChange={f.onChange}
                                   >
                                     <FormControl>
-                                      <SelectTrigger className="font-mono text-xs">
+                                      <SelectTrigger className="w-full min-w-0 font-mono text-xs">
                                         <SelectValue placeholder="Choose a script" />
                                       </SelectTrigger>
                                     </FormControl>
