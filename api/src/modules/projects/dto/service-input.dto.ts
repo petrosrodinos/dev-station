@@ -7,6 +7,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  IsUUID,
   IsUrl,
   Matches,
   Max,
@@ -16,6 +17,15 @@ import {
 } from 'class-validator';
 
 export class ServiceInputDto {
+  @ApiProperty({
+    required: false,
+    description:
+      'Id of an existing service of this project. Kept on save so a running process stays attached to its service.',
+  })
+  @IsOptional()
+  @IsUUID()
+  id?: string;
+
   @ApiProperty({ example: 'Frontend' })
   @IsString()
   @MinLength(1)

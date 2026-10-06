@@ -140,15 +140,7 @@ export class ProjectsService {
             ? await this.upsertRepository(tx, organizationId, dto.repository)
             : undefined;
 
-      if (dto.services) {
-        await tx.projectService.deleteMany({ where: { project_id: id } });
-        await tx.projectService.createMany({
-          data: dto.services.map((s, i) => ({
-            ...this.toServiceData(s, i),
-            project_id: id,
-          })),
-        });
-      }
+      if (dto.services) await this.syncServices(tx, id, dto.services);
 
       return tx.project.update({
         where: { id },
@@ -215,15 +207,7 @@ export class ProjectsService {
     services: ServiceInputDto[],
   ) {
     await this.findOrThrow(organizationId, id);
-    await this.prisma.$transaction([
-      this.prisma.projectService.deleteMany({ where: { project_id: id } }),
-      this.prisma.projectService.createMany({
-        data: services.map((s, i) => ({
-          ...this.toServiceData(s, i),
-          project_id: id,
-        })),
-      }),
-    ]);
+    await this.prisma.$transaction((tx) => this.syncServices(tx, id, services));
     return this.findOne(organizationId, id);
   }
 
@@ -343,6 +327,48 @@ export class ProjectsService {
       .replace(/^\.\/?/, '')
       .replace(/\/+$/, '');
     return trimmed || null;
+  }
+
+  /**
+   * Replaces the project's service list. A service that is still in the list keeps its id (matched by the
+   * `id` the client sent, and only if it belongs to this project); everything else is removed or created.
+   * Ids are what running processes and their ports are attached to, so changing them on every save would
+   * detach the services that are still running.
+   */
+  private async syncServices(
+    tx: Prisma.TransactionClient,
+    projectId: string,
+    services: ServiceInputDto[],
+  ) {
+    const existing = await tx.projectService.findMany({
+      where: { project_id: projectId },
+      select: { id: true },
+    });
+    const known = new Set(existing.map((s) => s.id));
+    const kept = new Set<string>();
+    for (const s of services) {
+      if (s.id && known.has(s.id) && !kept.has(s.id)) kept.add(s.id);
+    }
+
+    await tx.projectService.deleteMany({
+      where: {
+        project_id: projectId,
+        ...(kept.size ? { id: { notIn: [...kept] } } : {}),
+      },
+    });
+
+    const claimed = new Set<string>();
+    for (const [i, s] of services.entries()) {
+      const data = this.toServiceData(s, i);
+      if (s.id && kept.has(s.id) && !claimed.has(s.id)) {
+        claimed.add(s.id);
+        await tx.projectService.update({ where: { id: s.id }, data });
+      } else {
+        await tx.projectService.create({
+          data: { ...data, project_id: projectId },
+        });
+      }
+    }
   }
 
   private toServiceData(service: ServiceInputDto, index: number) {
