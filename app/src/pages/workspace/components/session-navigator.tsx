@@ -118,6 +118,12 @@ function SessionRow({ item, project, showProject, timeHint, active, onOpen, onCl
   const done = state === SessionReviewStates.REVIEWED || state === SessionReviewStates.COMMITTED;
   const markReviewed = useMarkSessionReviewed();
 
+  // Opening a session from its tab counts as reviewing it, the same as dismissing the badge.
+  const open = () => {
+    if (ready) markReviewed.mutate({ id: item.id });
+    onOpen();
+  };
+
   // The name is the only button in the row, so the review and close controls are siblings rather
   // than nested inside it.
   const row = (
@@ -144,7 +150,7 @@ function SessionRow({ item, project, showProject, timeHint, active, onOpen, onCl
         type="button"
         data-session-id={item.id}
         aria-current={active ? "true" : undefined}
-        onClick={onOpen}
+        onClick={open}
         title={`${item.name} · ${project?.name ?? "Unknown project"} · ${item.agent_type ? getAgentTypeLabel(item.agent_type) : ""} · ${label}`}
         className="flex h-full shrink-0 items-center gap-1.5 pl-2 text-left outline-none focus-visible:bg-surface-elevated"
       >
