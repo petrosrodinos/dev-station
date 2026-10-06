@@ -573,6 +573,8 @@ export interface DevStationBridge {
     respondClose(choice: CloseChoice): Promise<void>;
   };
   appUpdates: {
+    /** Current electron-updater status — lets a renderer that mounted late (or reloaded) catch up. */
+    getStatus(): Promise<AppUpdateStatus>;
     /** Triggers a manual electron-updater check (no-ops outside a packaged build). */
     check(): Promise<void>;
     /** Starts downloading an already-detected update. */
@@ -726,6 +728,7 @@ export const IpcChannels = {
   APP_FULLSCREEN_CHANGE: "app:fullscreen-change",
   APP_CLOSE_REQUEST: "app:close-request",
   APP_CLOSE_RESPOND: "app:close-respond",
+  APP_UPDATE_STATUS_GET: "app:update-status-get",
   APP_UPDATE_CHECK: "app:update-check",
   APP_UPDATE_DOWNLOAD: "app:update-download",
   APP_UPDATE_INSTALL: "app:update-install",

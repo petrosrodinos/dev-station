@@ -33,6 +33,7 @@ const bridge: DevStationBridge = {
     respondClose: (choice) => call(C.APP_CLOSE_RESPOND, choice),
   },
   appUpdates: {
+    getStatus: () => call(C.APP_UPDATE_STATUS_GET),
     check: () => call(C.APP_UPDATE_CHECK),
     download: () => call(C.APP_UPDATE_DOWNLOAD),
     install: () => call(C.APP_UPDATE_INSTALL),

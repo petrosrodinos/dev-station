@@ -24,10 +24,9 @@ import { isDesktop } from "@/lib/desktop";
 import { toast } from "@/hooks/use-toast";
 import { environments } from "@/config/environments";
 import { Routes } from "@/routes/routes";
-import { ProcessStatuses } from "@shared/contract";
-import { useAppInfo, useLatestRelease } from "@/features/app-releases/hooks/use-app-releases";
-import { toReleasePlatform } from "@/features/app-releases/utils/app-releases.utils";
-import { isVersionBelow } from "@/lib/semver";
+import { AppUpdateStates, ProcessStatuses } from "@shared/contract";
+import { useAppInfo } from "@/features/app-releases/hooks/use-app-releases";
+import { useAppUpdateStore } from "@/stores/app-update";
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 
 const Scopes = { PROJECT: "project", ALL: "all" } as const;
@@ -52,8 +51,8 @@ export function StatusBar() {
   const projectScoped = scope === Scopes.PROJECT && !!activeProjectId;
   const { data: preferences } = useGetPreferences();
   const { data: appInfo } = useAppInfo();
-  const { data: latestRelease } = useLatestRelease(appInfo ? toReleasePlatform(appInfo.platform) : null);
-  const updateAvailable = !!appInfo && !!latestRelease && isVersionBelow(appInfo.version, latestRelease.version);
+  const updateStatus = useAppUpdateStore((s) => s.status);
+  const updateAvailable = updateStatus.state === AppUpdateStates.AVAILABLE || updateStatus.state === AppUpdateStates.DOWNLOADING || updateStatus.state === AppUpdateStates.DOWNLOADED;
   // Over-fetch so hiding muted event types still leaves a full list.
   const { data: latest } = useGetActivities({ limit: 20, project_id: activeProjectId ?? undefined }, !!activeProjectId);
   const { data: feed, isPending } = useGetActivities({ limit: 100, project_id: projectScoped ? activeProjectId! : undefined }, open);
@@ -226,7 +225,7 @@ export function StatusBar() {
             </button>
           }
         />
-        {updateAvailable && <TooltipContent>Update available — v{latestRelease?.version}</TooltipContent>}
+        {updateAvailable && <TooltipContent>{`Update v${updateStatus.version} — ${updateStatus.state === AppUpdateStates.DOWNLOADED ? "ready to install" : "downloading"}`}</TooltipContent>}
       </Tooltip>
     </footer>
   );
