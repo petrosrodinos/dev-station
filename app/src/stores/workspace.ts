@@ -66,6 +66,8 @@ interface WorkspaceState {
     open_file_tabs: Record<string, OpenFileTab[]>;
     /** Width in px of the Files tab's folder tree panel on this device. */
     files_tree_width: number;
+    /** The file shown in each project's Files tab editor. Kept here, not in the URL, so it survives switching dock tabs. */
+    active_file_by_project: Record<string, string | null>;
 }
 
 interface WorkspaceActions {
@@ -89,6 +91,7 @@ interface WorkspaceActions {
     saveProjectDockLayout(projectId: string, layout: Record<string, unknown>): void;
     setOpenFileTabs(projectId: string, tabs: OpenFileTab[]): void;
     setFilesTreeWidth(width: number): void;
+    setActiveFile(projectId: string, path: string | null): void;
     reset(): void;
 }
 
@@ -109,6 +112,7 @@ const initialValues: WorkspaceState = {
     project_dock_layout: {},
     open_file_tabs: {},
     files_tree_width: DEFAULT_FILES_TREE_WIDTH,
+    active_file_by_project: {},
 };
 
 const STORE_KEY = "workspace";
@@ -182,6 +186,8 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                 setOpenFileTabs: (projectId, tabs) =>
                     set((s) => ({ open_file_tabs: { ...s.open_file_tabs, [projectId]: tabs } })),
                 setFilesTreeWidth: (width) => set({ files_tree_width: width }),
+                setActiveFile: (projectId, path) =>
+                    set((s) => ({ active_file_by_project: { ...s.active_file_by_project, [projectId]: path } })),
                 reset: () => set(initialValues),
             }),
             { name: STORE_KEY },

@@ -139,7 +139,6 @@ export const registerProjectMutations = (queryClient: QueryClient) => {
         },
         onSuccess: () => {
             refreshProjects();
-            toast({ title: "Project order saved", duration: 1200 });
         },
         onError: (error: Error, _ids, context) => {
             if (context?.previous) queryClient.setQueryData(["projects", context.orgId], context.previous);

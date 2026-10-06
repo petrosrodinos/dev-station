@@ -17,6 +17,7 @@ import { useFileContent, useSaveFile } from "@/features/files/hooks/use-files";
 import { useResolvedTheme } from "@/hooks/use-resolved-theme";
 import { cn } from "@/lib/utils";
 import { FileHeader, FileHeaderAction } from "./file-header";
+import { getFileDraft, setFileDraft } from "../utils/file-drafts.utils";
 
 const EXT_LANGUAGE: Record<string, () => Extension> = {
   js: javascript, jsx: () => javascript({ jsx: true }), mjs: javascript, cjs: javascript,
@@ -58,15 +59,20 @@ export function CodeEditor({ projectId, path }: { projectId: string; path: strin
   const showPreview = markdownFile && viewMode !== ViewModes.EDIT;
   const extensions = useMemo(() => languageFor(path), [path]);
 
-  // Reset the draft whenever the selected file changes or its on-disk content is (re)loaded.
+  // Start from the unsaved draft if this file was edited earlier this session, else from the file on disk.
   const loadedFor = useRef<string | null>(null);
   useEffect(() => {
     const key = `${projectId}:${path}`;
     if (data !== undefined && loadedFor.current !== key) {
-      setDraft(data.content);
+      setDraft(getFileDraft(projectId, path) ?? data.content);
       loadedFor.current = key;
     }
   }, [data, projectId, path]);
+
+  const edit = (content: string) => {
+    setDraft(content);
+    setFileDraft(projectId, path, content);
+  };
 
   const dirty = draft !== null && data !== undefined && draft !== data.content;
 
@@ -114,7 +120,7 @@ export function CodeEditor({ projectId, path }: { projectId: string; path: strin
           <div className={cn("min-h-0 min-w-0 overflow-auto", showPreview ? "w-1/2 border-r" : "flex-1")}>
             <CodeMirror
               value={draft}
-              onChange={setDraft}
+              onChange={edit}
               extensions={extensions}
               theme={theme === "light" ? githubLight : githubDark}
               height="100%"

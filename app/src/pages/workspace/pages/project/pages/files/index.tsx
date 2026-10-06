@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FC } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useMemo, useRef, useState, type FC } from "react";
 import { ChevronsDownUp, ChevronsUpDown, Code2, FilePlus, Folder, FolderPlus, MoreHorizontal, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -36,7 +35,6 @@ const NO_TABS: OpenFileTab[] = [];
 /** Browse, search, and edit project files in place; hand off to Cursor / VS Code for anything heavier (Spec §11). */
 const FilesTab: FC = () => {
   const project = useProjectContext();
-  const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState("");
   const debounced = useDebouncedValue(query, 250);
   const { data: results, isFetching } = useFileSearch(project.id, debounced);
@@ -45,9 +43,9 @@ const FilesTab: FC = () => {
   const [command, setCommand] = useState<TreeCommand>({ id: 0, open: false });
   const sendCommand = (open: boolean) => setCommand((c) => ({ id: c.id + 1, open }));
   const [dialog, setDialog] = useState<EntryDialogState>(null);
-  const activeFile = params.get("file");
-  const showFile = (path: string) => setParams((p) => (p.set("file", path), p), { replace: true });
-  const clearFile = () => setParams((p) => (p.delete("file"), p), { replace: true });
+  const activeFile = useWorkspaceStore((s) => s.active_file_by_project[project.id] ?? null);
+  const showFile = (path: string) => useWorkspaceStore.getState().setActiveFile(project.id, path);
+  const clearFile = () => useWorkspaceStore.getState().setActiveFile(project.id, null);
 
   const openTabs = useWorkspaceStore((s) => s.open_file_tabs[project.id]) ?? NO_TABS;
   const currentTabs = () => useWorkspaceStore.getState().open_file_tabs[project.id] ?? NO_TABS;
@@ -77,12 +75,6 @@ const FilesTab: FC = () => {
       else clearFile();
     }
   };
-  // Files opened by link or history (not by clicking the tree) still get a tab.
-  useEffect(() => {
-    if (activeFile) updateTabs((tabs) => openFileTab(tabs, activeFile, false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFile, project.id]);
-
   const moveEntry = useMoveEntry();
   const importFiles = useImportFiles();
   const activeRef = useRef(activeFile);
