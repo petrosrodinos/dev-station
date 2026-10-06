@@ -438,11 +438,16 @@ export const ProjectTabDock: FC<{ projectId: string; routeTab?: ProjectTab }> = 
   // Review layout: brings Preview to the front of its tab group and, if the user has split it out
   // into its own group (dragging it, same as any tab), also maximizes that group over the rest of
   // the project area — the AI panel keeps its own side regardless, since that's a separate dock.
+  // Only a fresh expand brings Preview forward: the flag is remembered per project, so on a project
+  // switch (dock remount) a flag left on from an earlier review must not steal the saved active tab.
+  const previewExpandedRef = useRef(previewExpanded);
   useEffect(() => {
+    const wasExpanded = previewExpandedRef.current;
+    previewExpandedRef.current = previewExpanded;
     const panel = apiRef.current?.getPanel(PREVIEW_PANEL_ID);
     if (!panel) return;
     if (previewExpanded) {
-      panel.api.setActive();
+      if (!wasExpanded) panel.api.setActive();
       if (!panel.api.isMaximized()) panel.api.maximize();
     } else if (panel.api.isMaximized()) {
       panel.api.exitMaximized();
