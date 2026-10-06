@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FC } from "react";
-import { ArrowLeft, ArrowRight, Code2, ExternalLink, Globe, Play, RotateCw, ScrollText, TriangleAlert, Undo2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Code2, Ellipsis, ExternalLink, Globe, Play, RotateCw, ScrollText, TriangleAlert, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -159,15 +160,33 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
           </HeaderButton>
         )}
         <PreviewAddressInput currentUrl={displayUrl} onNavigate={navigateTo} />
-        <HeaderButton label="Open in browser" disabled={!displayUrl} onClick={() => void openUrl(displayUrl)}>
-          <ExternalLink className="size-3.5" />
-        </HeaderButton>
-        <HeaderButton label="Open DevTools (Network, Console, ...)" disabled={!url} onClick={() => void actions.toggleDevTools()}>
-          <Code2 className="size-3.5" />
-        </HeaderButton>
-        <HeaderButton label="View logs" disabled={!selected} onClick={() => selected && setLogsFor(selected.service)}>
-          <ScrollText className="size-3.5" />
-        </HeaderButton>
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <DropdownMenuTrigger
+                  render={
+                    <Button variant="ghost" size="icon" className="size-7 shrink-0 text-muted-foreground" aria-label="More actions">
+                      <Ellipsis className="size-3.5" />
+                    </Button>
+                  }
+                />
+              }
+            />
+            <TooltipContent>More actions</TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem disabled={!displayUrl} onSelect={() => void openUrl(displayUrl)} className="gap-2">
+              <ExternalLink className="size-3.5" /> Open in browser
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={!url} onSelect={() => void actions.toggleDevTools()} className="gap-2">
+              <Code2 className="size-3.5" /> Open DevTools
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={!selected} onSelect={() => selected && setLogsFor(selected.service)} className="gap-2">
+              <ScrollText className="size-3.5" /> View logs
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       {stopped && (
         <div className="flex shrink-0 items-center gap-2 border-b bg-surface-elevated px-3 py-1.5 text-xs text-muted-foreground">
