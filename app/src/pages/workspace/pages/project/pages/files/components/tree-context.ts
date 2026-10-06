@@ -15,6 +15,8 @@ export interface TreeActions {
   onCreate: (dir: string, kind: CreateKind) => void;
   onRename: (entry: FileEntry) => void;
   onDelete: (entry: FileEntry) => void;
+  /** Double-click on a file: keeps it open in the editor row. */
+  onPin: (path: string) => void;
   onMove: (path: string, destDir: string) => void;
   onDropFiles: (files: File[], destDir: string) => void;
 }

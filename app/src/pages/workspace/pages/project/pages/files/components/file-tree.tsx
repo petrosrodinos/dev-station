@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useCopyFilePath, useCopyRelativePath, useDirectory, useOpenInEditor, useRevealFile } from "@/features/files/hooks/use-files";
+import { useCopyFilePath, useCopyRelativePath, useDirectory, useRevealFile } from "@/features/files/hooks/use-files";
 import { GitFileStateOptions } from "@/config/constants/dropdowns/git/git-file-state.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { cn } from "@/lib/utils";
 import { ENTRY_DRAG_TYPE, setDraggedPath, useTreeDropTarget } from "../hooks/use-tree-drop-target";
 import { TreeActionsContext, TreeCommandContext } from "./tree-context";
-import { EditorTargets, FilePreviewKinds, previewTypeFor, type FileEntry, type FilePreviewKind, type GitFileState } from "@shared/contract";
+import { FilePreviewKinds, previewTypeFor, type FileEntry, type FilePreviewKind, type GitFileState } from "@shared/contract";
 
 const GIT_DOT: Record<GitFileState, string> = {
   M: "bg-warning",
@@ -135,7 +135,6 @@ function DirRow({ projectId, entry, depth, gitStates, activePath, onSelect }: { 
 export function FileRow({ projectId, entry, depth, gitState, showPath = false, active = false, onSelect }: { projectId: string; entry: FileEntry; depth: number; gitState?: GitFileState; showPath?: boolean; active?: boolean; onSelect?: (path: string) => void }) {
   const previewKind = previewTypeFor(entry.name)?.kind;
   const Icon = previewKind ? PREVIEW_ICONS[previewKind] : File;
-  const openInEditor = useOpenInEditor();
   const reveal = useRevealFile();
   const copyPath = useCopyFilePath();
   const copyRelativePath = useCopyRelativePath();
@@ -144,11 +143,11 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
   return (
     <div
       onClick={() => onSelect?.(entry.path)}
-      onDoubleClick={() => openInEditor.mutate({ projectId, editor: EditorTargets.CURSOR, path: entry.path })}
+      onDoubleClick={() => actions?.onPin(entry.path)}
       {...(actions ? dragSourceProps(entry.path) : {})}
       className={cn("group flex h-[26px] cursor-pointer items-center gap-1.5 rounded-sm pr-1 text-[0.8125rem] text-body hover:bg-surface-elevated", active && "bg-surface-card")}
       style={{ paddingLeft: depth * 16 + 26 }}
-      title="Click to open · double-click to open in Cursor"
+      title="Click to preview · double-click to keep open"
     >
       <Icon className="size-3.5 shrink-0 text-muted-foreground" />
       <span className="truncate">{showPath ? entry.path : entry.name}</span>

@@ -28,6 +28,13 @@ export interface ProjectPreviewPrefs {
     previewExpanded: boolean;
 }
 
+/** A file open in the Files tab's editor row. Unpinned = the single-click preview tab, replaced by the next single click. */
+export interface OpenFileTab {
+    path: string;
+    pinned: boolean;
+}
+
+export const DEFAULT_FILES_TREE_WIDTH = 320;
 export const DEFAULT_PREVIEW_WIDTH = 480;
 export const DEFAULT_PREVIEW_PREFS: ProjectPreviewPrefs = { previewOpen: false, previewWidth: DEFAULT_PREVIEW_WIDTH, previewServiceId: null, previewUrl: null, previewExpanded: false };
 
@@ -55,6 +62,10 @@ interface WorkspaceState {
     open_project_tabs: Record<string, string[]>;
     /** Each project's dock arrangement (splits/groups/sizes) as `DockviewApi.toJSON()`, per project — restored on revisit so a split layout survives navigating away/reloading, not just which tabs are open. */
     project_dock_layout: Record<string, Record<string, unknown>>;
+    /** Files open in each project's Files tab editor row, in tab order (double-click keeps a file open). */
+    open_file_tabs: Record<string, OpenFileTab[]>;
+    /** Width in px of the Files tab's folder tree panel on this device. */
+    files_tree_width: number;
 }
 
 interface WorkspaceActions {
@@ -76,6 +87,8 @@ interface WorkspaceActions {
     openProjectTab(projectId: string, tab: string): void;
     closeProjectTab(projectId: string, tab: string): void;
     saveProjectDockLayout(projectId: string, layout: Record<string, unknown>): void;
+    setOpenFileTabs(projectId: string, tabs: OpenFileTab[]): void;
+    setFilesTreeWidth(width: number): void;
     reset(): void;
 }
 
@@ -94,6 +107,8 @@ const initialValues: WorkspaceState = {
     preview_by_project: {},
     open_project_tabs: {},
     project_dock_layout: {},
+    open_file_tabs: {},
+    files_tree_width: DEFAULT_FILES_TREE_WIDTH,
 };
 
 const STORE_KEY = "workspace";
@@ -164,6 +179,9 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                     }),
                 saveProjectDockLayout: (projectId, layout) =>
                     set((s) => ({ project_dock_layout: { ...s.project_dock_layout, [projectId]: layout } })),
+                setOpenFileTabs: (projectId, tabs) =>
+                    set((s) => ({ open_file_tabs: { ...s.open_file_tabs, [projectId]: tabs } })),
+                setFilesTreeWidth: (width) => set({ files_tree_width: width }),
                 reset: () => set(initialValues),
             }),
             { name: STORE_KEY },
