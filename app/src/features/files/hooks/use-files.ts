@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { copyFilePath, copyRelativePath, createFile, createFolder, deleteEntry, importExternal, listDirectory, moveEntry, openFileExternally, openInEditor, readFile, renameEntry, revealFile, searchFiles, writeFile } from "../services/files.services";
+import { copyFilePath, copyRelativePath, createFile, createFolder, deleteEntry, importExternal, listDirectory, moveEntry, openFileExternally, openInEditor, readBinaryFile, readFile, renameEntry, revealFile, searchFiles, writeFile } from "../services/files.services";
 import { getEditorTargetLabel } from "@/config/constants/dropdowns/settings/editor-target.options";
 import { toast } from "@/hooks/use-toast";
 
@@ -53,6 +53,15 @@ export const useFileContent = (projectId: string | null, path: string | null) =>
     useQuery({
         queryKey: ["file-content", projectId, path],
         queryFn: () => readFile(projectId!, path!),
+        enabled: !!projectId && !!path,
+        staleTime: 0,
+        retry: false,
+    });
+
+export const useFileBinary = (projectId: string | null, path: string | null) =>
+    useQuery({
+        queryKey: ["file-binary", projectId, path],
+        queryFn: () => readBinaryFile(projectId!, path!),
         enabled: !!projectId && !!path,
         staleTime: 0,
         retry: false,

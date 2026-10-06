@@ -12,12 +12,13 @@ import { useFileSearch, useImportFiles, useMoveEntry } from "@/features/files/ho
 import { useGitStatus } from "@/features/git/hooks/use-git";
 import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import type { FileEntry, GitFileState } from "@shared/contract";
+import { previewTypeFor, type FileEntry, type GitFileState } from "@shared/contract";
 import { useProjectContext } from "../../hooks/use-project-context";
 import { FileTreeNode, FileRow, TreeActionsContext, TreeCommandContext, type CreateKind, type TreeActions, type TreeCommand } from "./components/file-tree";
 import { useTreeDropTarget } from "./hooks/use-tree-drop-target";
 import { EntryDialogs, type EntryDialogState } from "./components/entry-dialogs";
 import { CodeEditor } from "./components/code-editor";
+import { BinaryPreview } from "./components/binary-preview";
 
 const TreeAction: FC<{ label: string; onClick: () => void; children: React.ReactNode }> = ({ label, onClick, children }) => (
   <Tooltip>
@@ -134,10 +135,18 @@ const FilesTab: FC = () => {
           </Panel>
 
           <Panel className="sticky top-16 flex h-[calc(100vh-9rem)] min-w-0 flex-col overflow-hidden">
-            <PanelHeader title={<><Code2 className="size-3.5 text-muted-foreground" /> {activeFile ? <span className="truncate font-mono text-xs font-normal text-muted-foreground">{activeFile}</span> : "Editor"}</>} />
-            <PanelBody className="min-h-0 flex-1 p-0">
-              {activeFile ? <CodeEditor key={activeFile} projectId={project.id} path={activeFile} /> : <EmptyState icon={<Code2 />} title="Select a file to view or edit it" />}
-            </PanelBody>
+            {!activeFile ? (
+              <>
+                <PanelHeader title={<><Code2 className="size-3.5 text-muted-foreground" /> Editor</>} />
+                <PanelBody className="min-h-0 flex-1 p-0">
+                  <EmptyState icon={<Code2 />} title="Select a file to view or edit it" />
+                </PanelBody>
+              </>
+            ) : previewTypeFor(activeFile) ? (
+              <BinaryPreview key={activeFile} projectId={project.id} path={activeFile} />
+            ) : (
+              <CodeEditor key={activeFile} projectId={project.id} path={activeFile} />
+            )}
           </Panel>
         </div>
       </div>

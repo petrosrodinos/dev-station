@@ -146,6 +146,7 @@ export function registerIpc() {
   );
   handle(IpcChannels.FILES_COPY_PATH, args(zId, zRelPath), ([id, rel]) => filesystemManager.copyPath(id, rel));
   handle(IpcChannels.FILES_READ, args(zId, zRelPath), ([id, rel]) => filesystemManager.readFile(id, rel));
+  handle(IpcChannels.FILES_READ_BINARY, args(zId, zRelPath), ([id, rel]) => filesystemManager.readBinary(id, rel));
   handle(IpcChannels.FILES_WRITE, args(zId, zRelPath, z.string().max(5_000_000)), ([id, rel, content]) => filesystemManager.writeFile(id, rel, content));
   handle(IpcChannels.FILES_CREATE_FILE, args(zId, zRelPath), ([id, rel]) => filesystemManager.createFile(id, rel));
   handle(IpcChannels.FILES_CREATE_FOLDER, args(zId, zRelPath), ([id, rel]) => filesystemManager.createFolder(id, rel));

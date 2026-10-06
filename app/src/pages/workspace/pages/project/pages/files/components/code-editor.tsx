@@ -13,10 +13,10 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { MarkdownPreview } from "@/components/ui/markdown-preview";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useFileContent, useSaveFile } from "@/features/files/hooks/use-files";
 import { useResolvedTheme } from "@/hooks/use-resolved-theme";
 import { cn } from "@/lib/utils";
+import { FileHeader, FileHeaderAction } from "./file-header";
 
 const EXT_LANGUAGE: Record<string, () => Extension> = {
   js: javascript, jsx: () => javascript({ jsx: true }), mjs: javascript, cjs: javascript,
@@ -75,35 +75,28 @@ export function CodeEditor({ projectId, path }: { projectId: string; path: strin
     save.mutate({ projectId, path, content: draft });
   };
 
-  if (isPending) return <ListSkeleton rows={10} withIcon={false} />;
-  if (isError) return <EmptyState title="Can't edit this file" description={error.message} />;
-  if (draft === null) return null;
+  const loaded = data !== undefined && draft !== null;
+  const actions = loaded ? (
+    <>
+      <span className={cn("text-[11.5px] text-muted-foreground", dirty && "text-warning")}>{dirty ? "Unsaved changes" : "Saved"}</span>
+      {markdownFile &&
+        VIEW_MODE_BUTTONS.map(({ id, label, icon: Icon }) => (
+          <FileHeaderAction key={id} label={label} active={viewMode === id} onClick={() => setViewMode(id)}>
+            <Icon className="size-3.5" />
+          </FileHeaderAction>
+        ))}
+      <Button size="sm" variant="outline" className="h-6 gap-1.5 px-2 text-xs" disabled={!dirty || save.isPending} onClick={doSave}>
+        {save.isPending ? <Loader2 className="size-3 animate-spin" /> : <Save className="size-3" />}
+        Save
+      </Button>
+    </>
+  ) : undefined;
 
-  return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center justify-between gap-2 border-b px-3 py-1.5">
-        <span className={cn("text-[11.5px] text-muted-foreground", dirty && "text-warning")}>{dirty ? "Unsaved changes" : "Saved"}</span>
-        {markdownFile && (
-          <div className="ml-auto flex items-center gap-0.5">
-            {VIEW_MODE_BUTTONS.map(({ id, label, icon: Icon }) => (
-              <Tooltip key={id}>
-                <TooltipTrigger
-                  render={
-                    <Button variant="ghost" size="icon" className={cn("size-6 text-muted-foreground", viewMode === id && "bg-accent text-foreground")} aria-label={label} aria-pressed={viewMode === id} onClick={() => setViewMode(id)}>
-                      <Icon className="size-3.5" />
-                    </Button>
-                  }
-                />
-                <TooltipContent>{label}</TooltipContent>
-              </Tooltip>
-            ))}
-          </div>
-        )}
-        <Button size="sm" variant="outline" className="h-6 gap-1.5 px-2 text-xs" disabled={!dirty || save.isPending} onClick={doSave}>
-          {save.isPending ? <Loader2 className="size-3 animate-spin" /> : <Save className="size-3" />}
-          Save
-        </Button>
-      </div>
+  let body;
+  if (isPending) body = <ListSkeleton rows={10} withIcon={false} />;
+  else if (isError) body = <EmptyState title="Can't edit this file" description={error.message} />;
+  else if (draft !== null) {
+    body = (
       <div
         className="flex min-h-0 flex-1"
         onKeyDown={(e) => {
@@ -136,6 +129,13 @@ export function CodeEditor({ projectId, path }: { projectId: string; path: strin
           </div>
         )}
       </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <FileHeader path={path} actions={actions} />
+      {body}
     </div>
   );
 }

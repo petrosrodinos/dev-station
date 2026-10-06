@@ -1,4 +1,4 @@
-import type { EditorTarget, FileContent, FileEntry } from "@shared/contract";
+import type { EditorTarget, FileBinary, FileContent, FileEntry } from "@shared/contract";
 import { getBridge, getErrorMessage } from "@/lib/desktop";
 
 const wrap = async <T>(fn: () => Promise<T>, fallback: string): Promise<T> => {
@@ -18,6 +18,7 @@ export const openInEditor = ({ projectId, editor, path }: { projectId: string; e
 export const copyFilePath = ({ projectId, path }: { projectId: string; path: string }) => wrap(() => getBridge().files.copyPath(projectId, path), "Could not copy the path.");
 export const copyRelativePath = ({ path }: { path: string }) => wrap(async () => { await navigator.clipboard.writeText(path); return path; }, "Could not copy the path.");
 export const readFile = (projectId: string, path: string): Promise<FileContent> => wrap(() => getBridge().files.readFile(projectId, path), "Could not read the file.");
+export const readBinaryFile = (projectId: string, path: string): Promise<FileBinary> => wrap(() => getBridge().files.readBinary(projectId, path), "Could not read the file.");
 export const writeFile = ({ projectId, path, content }: { projectId: string; path: string; content: string }) =>
     wrap(() => getBridge().files.writeFile(projectId, path, content), "Could not save the file.");
 export const createFile = ({ projectId, path }: { projectId: string; path: string }) => wrap(() => getBridge().files.createFile(projectId, path), "Could not create the file.");
