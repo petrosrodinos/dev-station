@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { OrganizationBootstrap } from "@/components/providers/organization-bootstrap";
 import { DesktopEventsProvider } from "@/components/providers/desktop-events-provider";
+import { CloseRequestDialog } from "./components/close-request-dialog";
 import { useAppearanceHydration } from "@/features/users/hooks/use-appearance";
 import { useShortcutsHydration } from "@/features/users/hooks/use-shortcuts";
 import { useLayoutHydration } from "@/features/workspace-layouts/hooks/use-layout-persistence";
@@ -49,6 +50,7 @@ const WorkspaceLayout: FC = () => {
   return (
     <OrganizationBootstrap>
       <DesktopEventsProvider />
+      <CloseRequestDialog />
       <DockApiProvider>
         <div className="flex h-screen flex-col bg-canvas text-foreground">
           <OfflineBanner />

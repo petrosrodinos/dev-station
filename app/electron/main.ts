@@ -8,9 +8,10 @@ import { floatingPanelManager } from "./managers/floating-panel-manager";
 import { previewManager } from "./managers/preview-manager";
 import { processManager } from "./managers/process-manager";
 import { terminalManager } from "./managers/terminal-manager";
+import { trayManager } from "./managers/tray-manager";
 import { APP_ICON_PATH } from "./utils/app-icon";
 import { logger } from "./utils/logger";
-import { IpcChannels } from "./shared/contract";
+import { CloseChoices, IpcChannels, type CloseChoice } from "./shared/contract";
 
 // Electron main process: window lifecycle, custom app:// protocol for the packaged renderer,
 // navigation lockdown, IPC registration and orderly shutdown of every child process.
@@ -29,9 +30,12 @@ if (!app.isPackaged && process.env.DEV_STATION_REMOTE_DEBUGGING_PORT) {
   app.commandLine.appendSwitch("remote-debugging-port", process.env.DEV_STATION_REMOTE_DEBUGGING_PORT);
 }
 
-if (!app.requestSingleInstanceLock()) app.quit();
+const hasInstanceLock = app.requestSingleInstanceLock();
+if (!hasInstanceLock) app.quit();
 
 let mainWindow: BrowserWindow | null = null;
+// Set once a quit is underway. Closing the window then goes straight through instead of asking the user.
+let quitting = false;
 
 function isTrustedUrl(url: string | undefined) {
   if (!url) return false;
@@ -77,6 +81,13 @@ function createWindow() {
 
   mainWindow.once("ready-to-show", () => mainWindow?.show());
   previewManager.attach(mainWindow);
+  // The close button asks first: close everything, or keep running in the background. A crashed renderer cannot
+  // answer, so its window closes straight away.
+  mainWindow.on("close", (event) => {
+    if (quitting || mainWindow?.webContents.isCrashed()) return;
+    event.preventDefault();
+    mainWindow?.webContents.send(IpcChannels.APP_CLOSE_REQUEST);
+  });
   mainWindow.on("focus", () => previewManager.reloadActive());
   // Keeps the renderer's toggle button in sync even when full screen is entered/left natively
   // (e.g. the macOS green traffic-light button), not just via our own IPC toggle.
@@ -103,12 +114,22 @@ function createWindow() {
   });
 }
 
-app.on("second-instance", () => {
-  if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
-  }
-});
+/** Brings the window back: from the tray, from a second launch, or from the dock. */
+function showMainWindow() {
+  if (!mainWindow) return createWindow();
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+}
+
+function handleCloseChoice(choice: CloseChoice) {
+  if (choice === CloseChoices.QUIT) return app.quit();
+  // Background: the window goes out of sight, the services keep running, and the tray brings the window back.
+  mainWindow?.hide();
+  trayManager.show({ onOpen: showMainWindow, onQuit: () => app.quit() });
+}
+
+app.on("second-instance", () => showMainWindow());
 
 app.on("web-contents-created", (_e, contents) => {
   contents.on("will-attach-webview", (event) => event.preventDefault());
@@ -123,20 +144,21 @@ app.whenReady().then(() => {
   setTrustedSenderCheck((event) => isTrustedUrl(event.senderFrame?.url));
   if (!DEV_SERVER_URL) serveRenderer();
   floatingPanelManager.configure(APP_ORIGIN, DEV_SERVER_URL, isTrustedUrl);
-  registerIpc();
+  // Only the instance that holds the lock may touch services left over from an earlier run.
+  if (hasInstanceLock) processManager.init();
+  registerIpc({ onCloseChoice: handleCloseChoice });
   createWindow();
   logger.info(`Dev Station ${app.getVersion()} started`);
 
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
+  app.on("activate", () => showMainWindow());
 });
 
-let shuttingDown = false;
+let shutdownStarted = false;
 app.on("before-quit", (event) => {
-  if (shuttingDown) return;
-  shuttingDown = true;
+  quitting = true;
   event.preventDefault();
+  if (shutdownStarted) return;
+  shutdownStarted = true;
 
   // A hung or throwing child must never leave a windowless zombie holding the single-instance lock.
   const forceExit = setTimeout(() => app.exit(0), SHUTDOWN_TIMEOUT_MS);
@@ -152,6 +174,7 @@ app.on("before-quit", (event) => {
   attempt("floating panels", () => floatingPanelManager.closeAll());
   attempt("agents", () => agentManager.stopAll());
   attempt("terminals", () => terminalManager.killAll());
+  attempt("tray", () => trayManager.destroy());
   processManager
     .stopAll()
     .catch((e) => logger.error("Error stopping processes", e))
