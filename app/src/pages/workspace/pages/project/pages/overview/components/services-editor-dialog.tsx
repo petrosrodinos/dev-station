@@ -53,6 +53,7 @@ import {
 } from "./service-env-editor";
 
 const toFormValue = (s: {
+  id?: string;
   name: string;
   kind: string;
   cwd: string;
@@ -63,6 +64,7 @@ const toFormValue = (s: {
   env?: Record<string, string> | null;
   auto_detected?: boolean;
 }): ServiceFormValue => ({
+  id: s.id,
   name: s.name,
   kind: s.kind as ServiceFormValue["kind"],
   cwd: s.cwd || ".",
@@ -85,6 +87,7 @@ const toInput = (v: ServiceFormValue): ServiceInput => {
     v.env.filter((row) => row.key).map((row) => [row.key, row.value]),
   );
   return {
+    id: v.id,
     name: v.name,
     kind: v.kind,
     cwd: v.cwd || ".",

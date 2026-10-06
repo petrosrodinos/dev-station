@@ -69,6 +69,8 @@ export interface Project {
 }
 
 export interface ServiceInput {
+    /** Existing service id, kept on save so a running process stays attached to its service. */
+    id?: string;
     name: string;
     kind?: ServiceKind;
     cwd?: string;

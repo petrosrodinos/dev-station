@@ -2,6 +2,8 @@ import { z } from "zod";
 
 const serviceSchema = z
     .object({
+        /** Existing service id; sent back on save so running processes stay attached. */
+        id: z.string().optional(),
         name: z.string().trim().min(1, "Name is required").max(120),
         kind: z.enum(["FRONTEND", "API", "WORKER", "DATABASE", "STORYBOOK", "OTHER"]),
         cwd: z
