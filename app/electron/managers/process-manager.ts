@@ -7,6 +7,8 @@ import { appendScriptArgs, assignServiceSlugs, localUrl, portFlagFor, resolveTem
 import { IpcError } from "../ipc/ipc-error";
 import { childEnv } from "../utils/platform";
 import { findFreePort, isPortFree } from "../utils/port-allocator";
+import { logger } from "../utils/logger";
+import { forgetService, recordService, reapLeftoverServices } from "./service-ledger";
 import { workspaceConfig } from "./workspace-config";
 
 // Process Manager (Spec §9). Project services run as child processes owned by the main process.
@@ -57,7 +59,16 @@ class ProcessManager {
   /** key -> port held for that service, so references stay stable across restarts. */
   private reservations = new Map<string, number>();
   private allocLock: Promise<unknown> = Promise.resolve();
+  /** Set once the app starts closing: no service may start after this, or it would outlive the app. */
+  private closing = false;
+  /** Leftovers from an earlier run are cleaned up before any service may start. */
+  private ready: Promise<void> = Promise.resolve();
   private emit: (e: ProcessEvent) => void = () => {};
+
+  /** Call once, after the single-instance lock is held (a second instance must never touch the first one's services). */
+  init() {
+    this.ready = reapLeftoverServices().catch((error) => logger.error("Could not clean up services left by an earlier run", error));
+  }
 
   setEmitter(fn: (e: ProcessEvent) => void) {
     this.emit = fn;
@@ -101,6 +112,7 @@ class ProcessManager {
   }
 
   start(projectId: string, spec: ServiceSpec): Promise<ProcessInfo> {
+    if (this.closing) return Promise.reject(new IpcError("Dev Station is closing."));
     const key = `${projectId}:${spec.service_id}`;
     const existing = this.procs.get(key);
     if (existing?.child && existing.info.status === ProcessStatuses.RUNNING) return Promise.resolve(existing.info);
@@ -112,6 +124,7 @@ class ProcessManager {
   }
 
   private async launch(projectId: string, spec: ServiceSpec, key: string): Promise<ProcessInfo> {
+    await this.ready;
     const existing = this.procs.get(key);
     const cwd = workspaceConfig.resolveInProject(projectId, spec.cwd || ".");
     if (!fs.existsSync(cwd)) throw new IpcError(`Working directory does not exist: ${spec.cwd}`);
@@ -126,6 +139,8 @@ class ProcessManager {
 
     const allocation = await this.withAllocLock(() => this.allocatePorts(projectId, spec.service_id, refs));
     const ownPort = allocation.get(spec.service_id) ?? null;
+    // Checked after the last await: from here to the spawn and registration below nothing can interleave with stopAll.
+    if (this.closing) throw new IpcError("Dev Station is closing.");
 
     const ctx: TemplateContext = { self: selfSlug, services: new Map() };
     const idOfSlug = new Map<string, string>();
@@ -203,6 +218,7 @@ class ProcessManager {
       needs_restart: false,
     };
     this.procs.set(key, managed);
+    if (child.pid) recordService(key, child.pid);
     this.append(managed, "system", `$ ${command}  (cwd: ${spec.cwd || "."})`);
     if (ownPort && spec.port && ownPort !== spec.port) this.append(managed, "system", `Port ${spec.port} is taken — running on ${ownPort} instead (PORT=${ownPort}).`);
     else if (ownPort) this.append(managed, "system", `Port ${ownPort} (PORT=${ownPort})`);
@@ -330,6 +346,7 @@ class ProcessManager {
 
   private finish(managed: Managed, code: number) {
     if (managed.info.status !== ProcessStatuses.RUNNING) return;
+    if (managed.info.pid) forgetService(managed.info.key, managed.info.pid);
     const status = managed.stopping || code === 0 ? ProcessStatuses.STOPPED : ProcessStatuses.CRASHED;
     this.append(managed, "system", status === ProcessStatuses.CRASHED ? `Process crashed (exit code ${code})` : `Process exited (${code})`);
     managed.child = null;
@@ -379,7 +396,10 @@ class ProcessManager {
     return this.start(projectId, spec);
   }
 
+  /** Stops every service, including ones still being launched, and refuses new starts from now on. */
   async stopAll() {
+    this.closing = true;
+    await Promise.allSettled([...this.starting.values()]);
     await Promise.all([...this.procs.keys()].map((k) => this.stop(k)));
   }
 }

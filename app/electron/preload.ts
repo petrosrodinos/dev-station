@@ -29,6 +29,8 @@ const bridge: DevStationBridge = {
     openUrl: (url) => call(C.APP_OPEN_URL, url),
     toggleFullScreen: () => call(C.APP_TOGGLE_FULLSCREEN),
     onFullScreenChange: (cb) => on(C.APP_FULLSCREEN_CHANGE, cb),
+    onCloseRequest: (cb) => on(C.APP_CLOSE_REQUEST, cb),
+    respondClose: (choice) => call(C.APP_CLOSE_RESPOND, choice),
   },
   appUpdates: {
     check: () => call(C.APP_UPDATE_CHECK),

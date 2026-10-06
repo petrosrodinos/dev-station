@@ -33,6 +33,13 @@ export const ProcessStatuses = {
 } as const;
 export type ProcessStatus = (typeof ProcessStatuses)[keyof typeof ProcessStatuses];
 
+/** What the user picked when closing the window. Background keeps services running and the app in the tray. */
+export const CloseChoices = {
+  QUIT: "quit",
+  BACKGROUND: "background",
+} as const;
+export type CloseChoice = (typeof CloseChoices)[keyof typeof CloseChoices];
+
 export const EditorTargets = {
   CURSOR: "cursor",
   VSCODE: "vscode",
@@ -561,6 +568,9 @@ export interface DevStationBridge {
     /** Toggles the window's native full-screen state; returns the new state. */
     toggleFullScreen(): Promise<boolean>;
     onFullScreenChange(cb: (isFullScreen: boolean) => void): Unsubscribe;
+    /** The window's close button was pressed: the renderer asks what to do (see CloseChoices). */
+    onCloseRequest(cb: () => void): Unsubscribe;
+    respondClose(choice: CloseChoice): Promise<void>;
   };
   appUpdates: {
     /** Triggers a manual electron-updater check (no-ops outside a packaged build). */
@@ -714,6 +724,8 @@ export const IpcChannels = {
   APP_OPEN_URL: "app:open-url",
   APP_TOGGLE_FULLSCREEN: "app:toggle-fullscreen",
   APP_FULLSCREEN_CHANGE: "app:fullscreen-change",
+  APP_CLOSE_REQUEST: "app:close-request",
+  APP_CLOSE_RESPOND: "app:close-respond",
   APP_UPDATE_CHECK: "app:update-check",
   APP_UPDATE_DOWNLOAD: "app:update-download",
   APP_UPDATE_INSTALL: "app:update-install",

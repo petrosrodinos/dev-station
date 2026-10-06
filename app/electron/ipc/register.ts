@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, shell } from "electron";
 import os from "node:os";
 import path from "node:path";
 import { z } from "zod";
-import { AgentTypes, EditorTargets, IpcChannels, ProcessStatuses, SkillKinds, SkillSendModes } from "../shared/contract";
+import { AgentTypes, CloseChoices, EditorTargets, IpcChannels, ProcessStatuses, SkillKinds, SkillSendModes, type CloseChoice } from "../shared/contract";
 import { accessManager } from "../managers/access-manager";
 import { agentManager } from "../managers/agent-manager";
 import { inspect } from "../managers/detection-manager";
@@ -56,7 +56,7 @@ function broadcast(channel: string, payload: unknown) {
   }
 }
 
-export function registerIpc() {
+export function registerIpc(hooks: { onCloseChoice: (choice: CloseChoice) => void }) {
   // Push events from managers to the renderer.
   processManager.setEmitter((e) => {
     broadcast(IpcChannels.PROC_EVENT, e);
@@ -97,6 +97,7 @@ export function registerIpc() {
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw new IpcError("Only http(s) links can be opened.");
     await shell.openExternal(parsed.toString());
   });
+  handle(IpcChannels.APP_CLOSE_RESPOND, args(z.enum([CloseChoices.QUIT, CloseChoices.BACKGROUND])), ([choice]) => hooks.onCloseChoice(choice));
   handle(IpcChannels.APP_TOGGLE_FULLSCREEN, none, () => {
     const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
     if (!win) return false;
