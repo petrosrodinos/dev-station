@@ -87,15 +87,20 @@ export function referencedSlugs(text: string): string[] {
 }
 
 const ALREADY_PINNED_RE = /(^|\s)(--port|-p)([\s=]|$)|\bPORT=/;
+// Dev servers whose CLI keeps the last value of a repeated flag, so an appended port flag overrides one the
+// script already pins (`next dev -p 3001 -p 3003` listens on 3003).
+const LAST_FLAG_WINS_RE = /\b(next|storybook|vite|webpack\s+serve|webpack-dev-server)\b/;
 // Commands that fan out to several processes — a port flag would land on the wrong one.
 const FAN_OUT_RE = /&&|;|\bconcurrently\b|\bturbo\b|\bnpm-run-all\b|\brun-p\b|\bnx\b|\blerna\b/;
 
 /**
  * The CLI flag that makes a known dev server listen on `port` (most read `PORT`, but Vite, Next and Storybook
- * only take a flag). Empty when the script is unknown, already pins a port, or fans out to several commands.
+ * only take a flag). A pinned port is overridden where the CLI lets a later flag win; otherwise empty when the
+ * script is unknown, already pins a port, or fans out to several commands.
  */
 export function portFlagFor(scriptCommand: string, port: number): string {
-  if (!scriptCommand || FAN_OUT_RE.test(scriptCommand) || ALREADY_PINNED_RE.test(scriptCommand)) return "";
+  if (!scriptCommand || FAN_OUT_RE.test(scriptCommand)) return "";
+  if (ALREADY_PINNED_RE.test(scriptCommand) && !LAST_FLAG_WINS_RE.test(scriptCommand)) return "";
   if (/\bstorybook\b/.test(scriptCommand)) return `-p ${port}`;
   if (/\bnext\b/.test(scriptCommand)) return `-p ${port}`;
   if (/\bng\s+serve\b/.test(scriptCommand)) return `--port ${port}`;

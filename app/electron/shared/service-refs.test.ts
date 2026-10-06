@@ -55,10 +55,15 @@ test("port flags for dev servers that ignore PORT", () => {
   assert.equal(portFlagFor("nest start --watch", 3001), ""); // reads PORT
 });
 
-test("no port flag when the script pins a port or fans out", () => {
-  assert.equal(portFlagFor("vite --port 4000", 5174), "");
-  assert.equal(portFlagFor("next dev -p 4000", 3001), "");
-  assert.equal(portFlagFor("PORT=4000 next dev", 3001), "");
+test("a pinned port is overridden by an appended flag where the last flag wins", () => {
+  assert.equal(portFlagFor("vite --port 4000", 5174), "--port 5174 --strictPort");
+  assert.equal(portFlagFor("next dev -p 3001", 3003), "-p 3003");
+  assert.equal(portFlagFor("PORT=4000 next dev", 3001), "-p 3001");
+});
+
+test("no port flag when an unknown script pins a port or the script fans out", () => {
+  assert.equal(portFlagFor("ng serve --port 4200", 4201), "");
+  assert.equal(portFlagFor("node server.js --port 4000", 3001), "");
   assert.equal(portFlagFor("turbo dev", 3001), "");
   assert.equal(portFlagFor("vite build && vite preview", 3001), "");
 });
