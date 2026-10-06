@@ -31,13 +31,19 @@ export interface OpenSessions {
 }
 
 /**
- * Sessions of one project sit together. Groups follow the order their first session was opened, and a
- * group keeps its sessions in opening order, so a new session lands at the end of its project's run.
+ * Sessions of one project sit together. Groups follow the order the user dragged them into, with any project
+ * not yet placed after those in the order its first session was opened. A group keeps its sessions in opening
+ * order, so a new session lands at the end of its project's run.
  */
-const groupByProject = (items: SessionItem[]): SessionItem[] => {
+const groupByProject = (items: SessionItem[], projectOrder: string[]): SessionItem[] => {
   const groups = new Map<string, SessionItem[]>();
   for (const item of items) groups.set(item.project_id, [...(groups.get(item.project_id) ?? []), item]);
-  return [...groups.values()].flat();
+  const rank = (projectId: string) => {
+    const at = projectOrder.indexOf(projectId);
+    return at === -1 ? Number.MAX_SAFE_INTEGER : at;
+  };
+  // Array sort is stable, so unplaced projects keep their opening order.
+  return [...groups.entries()].sort(([a], [b]) => rank(a) - rank(b)).flatMap(([, group]) => group);
 };
 
 /**
@@ -52,6 +58,7 @@ export const useOpenSessions = (): OpenSessions => {
   const openIds = useWorkspaceStore((s) => s.open_session_tabs);
   const attention = useWorkspaceStore((s) => s.attention_session_ids);
   const reviewed = useWorkspaceStore((s) => s.reviewed_session_ids);
+  const projectOrder = useWorkspaceStore((s) => s.session_project_order);
 
   return useMemo(() => {
     const byId = new Map((sessions?.data ?? []).map((s) => [s.id, s]));
@@ -82,9 +89,9 @@ export const useOpenSessions = (): OpenSessions => {
       });
     }
 
-    const grouped = groupByProject(ordered);
+    const grouped = groupByProject(ordered, projectOrder);
     return { ordered: grouped, ready: grouped.filter((i) => i.review_state === SessionReviewStates.READY) };
-  }, [sessions, runtimeAgents, openIds, attention, reviewed, deviceId]);
+  }, [sessions, runtimeAgents, openIds, attention, reviewed, projectOrder, deviceId]);
 };
 
 /**

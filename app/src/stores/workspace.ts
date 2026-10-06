@@ -43,6 +43,8 @@ interface WorkspaceState {
     active_project_id: string | null;
     /** Session ids open in the AI panel's session list, in the order they were opened. */
     open_session_tabs: string[];
+    /** Project order the user dragged the AI session groups into; projects not listed follow in opening order. */
+    session_project_order: string[];
     active_session_id: string | null;
     ai_panel_mode: AiPanelMode;
     ai_panel_open: boolean;
@@ -75,6 +77,7 @@ interface WorkspaceActions {
     setActiveProject(id: string | null): void;
     openSessionTab(id: string, focus?: boolean): void;
     closeSessionTab(id: string): void;
+    setSessionProjectOrder(projectIds: string[]): void;
     setActiveSession(id: string | null): void;
     setAiPanelMode(mode: AiPanelMode): void;
     setAiPanelOpen(open: boolean): void;
@@ -99,6 +102,7 @@ const initialValues: WorkspaceState = {
     active_organization_id: null,
     active_project_id: null,
     open_session_tabs: [],
+    session_project_order: [],
     active_session_id: null,
     ai_panel_mode: AiPanelModes.TERMINAL,
     ai_panel_open: true,
@@ -145,6 +149,7 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                             reviewed_session_ids: s.reviewed_session_ids.filter((x) => x !== id),
                         };
                     }),
+                setSessionProjectOrder: (projectIds) => set({ session_project_order: projectIds }),
                 setActiveSession: (id) =>
                     set((s) => ({ active_session_id: id, attention_session_ids: id ? s.attention_session_ids.filter((x) => x !== id) : s.attention_session_ids })),
                 setAiPanelMode: (mode) => set({ ai_panel_mode: mode }),

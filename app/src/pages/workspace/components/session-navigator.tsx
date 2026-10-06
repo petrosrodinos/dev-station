@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, type WheelEvent } from "react";
+import { useState, useEffect, useRef, useMemo, type ReactNode, type WheelEvent } from "react";
 import { StatusDot } from "@/components/ui/status-dot";
 import { formatTimelineTime } from "@/lib/date";
 import { useCloseSessionTab, useMarkSessionReviewed } from "@/features/agent-sessions/hooks/use-agent-sessions";
@@ -11,7 +11,11 @@ import { SessionReviewStateOptions } from "@/config/constants/dropdowns/agents/s
 import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { isAgentActive, reviewStateDot } from "@/lib/status";
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Check, X } from "lucide-react";
+import { useWorkspaceStore } from "@/stores/workspace";
 import { cn } from "@/lib/utils";
 import type { OpenSessions, SessionItem } from "../hooks/use-open-sessions";
 import { CloseSessionDialog } from "./close-session-dialog";
@@ -34,6 +38,8 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
   const { can } = usePermissions();
   const [closing, setClosing] = useState<SessionItem | null>(null);
   const navRef = useRef<HTMLElement>(null);
+  const setProjectOrder = useWorkspaceStore((s) => s.setSessionProjectOrder);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const projectById = useMemo(() => new Map((projects ?? []).map((p) => [p.id, p])), [projects]);
   // Two sessions in one project can share a name; those tabs get their start time so they can be told apart.
   const repeatedNames = useMemo(() => {
@@ -53,7 +59,20 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
     if (e.deltaY && !e.deltaX && navRef.current) navRef.current.scrollLeft += e.deltaY;
   };
 
+  // One group per project, in display order; dragging a group's label moves the whole group.
+  const groups = useMemo(() => {
+    const byProject = new Map<string, SessionItem[]>();
+    for (const item of sessions.ordered) byProject.set(item.project_id, [...(byProject.get(item.project_id) ?? []), item]);
+    return [...byProject.entries()].map(([projectId, items]) => ({ projectId, items }));
+  }, [sessions]);
+
   if (!sessions.ordered.length) return null;
+
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const ids = groups.map((g) => g.projectId);
+    setProjectOrder(arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id))));
+  };
 
   const requestClose = (item: SessionItem) => {
     if (item.runtime?.alive && isAgentActive(item.status)) setClosing(item);
@@ -68,25 +87,28 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
       aria-label="Open AI sessions"
     >
       <PlacementMenu target={PlacementTargets.AI_PANEL}>
-        <ul className="flex h-full min-w-0">
-          {sessions.ordered.map((item, index) => {
-            const previous = sessions.ordered[index - 1];
-            return (
-              <li key={item.id} className="flex h-full shrink-0">
-                <SessionRow
-                  item={item}
-                  project={projectById.get(item.project_id)}
-                  // The project name is shown once, where a run of sessions from the same project starts.
-                  showProject={previous?.project_id !== item.project_id}
-                  timeHint={repeatedNames.has(`${item.project_id}\u0000${item.name}`) && item.session ? formatTimelineTime(item.session.started_at) : null}
-                  active={item.id === activeId}
-                  onOpen={() => onOpen(item)}
-                  onClose={can(PermissionKeys.AI_USE_AGENTS) ? () => requestClose(item) : undefined}
-                />
-              </li>
-            );
-          })}
-        </ul>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext items={groups.map((g) => g.projectId)} strategy={horizontalListSortingStrategy}>
+            <ul className="flex h-full min-w-0">
+              {groups.map(({ projectId, items }) => (
+                <ProjectGroup key={projectId} projectId={projectId} project={projectById.get(projectId)}>
+                  {items.map((item) => (
+                    <li key={item.id} className="flex h-full shrink-0">
+                      <SessionRow
+                        item={item}
+                        project={projectById.get(item.project_id)}
+                        timeHint={repeatedNames.has(`${item.project_id}\u0000${item.name}`) && item.session ? formatTimelineTime(item.session.started_at) : null}
+                        active={item.id === activeId}
+                        onOpen={() => onOpen(item)}
+                        onClose={can(PermissionKeys.AI_USE_AGENTS) ? () => requestClose(item) : undefined}
+                      />
+                    </li>
+                  ))}
+                </ProjectGroup>
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
       </PlacementMenu>
       <CloseSessionDialog
         sessionName={closing?.name ?? "This session"}
@@ -99,11 +121,46 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
   );
 }
 
+interface ProjectGroupProps {
+  projectId: string;
+  project?: Project;
+  children: ReactNode;
+}
+
+/** A project's run of session tabs. Its name is the drag handle: dragging it moves the label and all its sessions together. */
+function ProjectGroup({ projectId, project, children }: ProjectGroupProps) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: projectId });
+
+  return (
+    <li
+      ref={setNodeRef}
+      // The strip only scrolls sideways, so the group follows the pointer on the x axis alone.
+      style={{ transform: CSS.Translate.toString(transform && { ...transform, y: 0 }), transition }}
+      className={cn("flex h-full shrink-0", isDragging && "relative z-10 bg-surface-card opacity-80")}
+    >
+      {project && (
+        <span
+          ref={setActivatorNodeRef}
+          {...attributes}
+          {...listeners}
+          title={`Drag to reorder ${project.name}`}
+          style={{ boxShadow: `inset 0 2px 0 ${project.color}` }}
+          className={cn(
+            "flex h-full max-w-24 shrink-0 cursor-grab touch-none items-center border-r border-hairline-soft px-2 text-[0.625rem] font-semibold uppercase tracking-[0.3px] text-ash hover:bg-surface-elevated",
+            isDragging && "cursor-grabbing",
+          )}
+        >
+          <span className="truncate">{project.name}</span>
+        </span>
+      )}
+      <ul className="flex h-full">{children}</ul>
+    </li>
+  );
+}
+
 interface SessionRowProps {
   item: SessionItem;
   project?: Project;
-  /** Whether this tab starts a run of sessions from `project`, and so carries the project's name. */
-  showProject: boolean;
   /** Start time, shown only when another open session in the same project has the same name. */
   timeHint: string | null;
   active: boolean;
@@ -111,7 +168,7 @@ interface SessionRowProps {
   onClose?: () => void;
 }
 
-function SessionRow({ item, project, showProject, timeHint, active, onOpen, onClose }: SessionRowProps) {
+function SessionRow({ item, project, timeHint, active, onOpen, onClose }: SessionRowProps) {
   const state = item.review_state;
   const label = getDropdownOptionLabel(SessionReviewStateOptions, state);
   const ready = state === SessionReviewStates.READY;
@@ -141,11 +198,6 @@ function SessionRow({ item, project, showProject, timeHint, active, onOpen, onCl
         active && "bg-surface-card text-foreground before:absolute before:inset-x-0 before:bottom-0 before:h-0.5 before:bg-foreground",
       )}
     >
-      {showProject && project && (
-        <span className="flex h-full max-w-24 shrink-0 items-center pl-2 text-[0.625rem] font-semibold uppercase tracking-[0.3px] text-ash">
-          <span className="truncate">{project.name}</span>
-        </span>
-      )}
       <button
         type="button"
         data-session-id={item.id}
