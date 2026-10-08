@@ -213,6 +213,47 @@ export interface EnvKeyEntry {
   files: string[];
 }
 
+/** A `.env*` file found in a project (root or a service folder). */
+export interface EnvFileSummary {
+  /** Project-relative path, `/`-separated (`api/.env.staging`). */
+  path: string;
+  /** Project-relative folder (`.` for the root). */
+  dir: string;
+  name: string;
+  /** `.env.example` / `.env.template`: documentation, not loaded by apps. */
+  is_template: boolean;
+}
+
+export interface EnvVariable {
+  key: string;
+  value: string;
+}
+
+export const EnvOverrideSources = {
+  /** Dev Station moved a service to another port and rewrote this `localhost:<port>` value at start. */
+  PORT_SHIFT: "PORT_SHIFT",
+  /** Set in the service's Dev Station environment settings, which win over the file. */
+  SERVICE_ENV: "SERVICE_ENV",
+} as const;
+export type EnvOverrideSource = (typeof EnvOverrideSources)[keyof typeof EnvOverrideSources];
+
+/** The value a running service actually received for a variable, when it differs from the file. */
+export interface EnvRuntimeOverride {
+  key: string;
+  value: string;
+  source: EnvOverrideSource;
+  service_id: string;
+  service_name: string;
+}
+
+export interface EnvFileContent {
+  path: string;
+  variables: EnvVariable[];
+  overrides: EnvRuntimeOverride[];
+  /** Modification time when read; a save is refused if the file changed on disk since. */
+  mtime_ms: number;
+}
+
 export interface DetectedPackage {
   name: string;
   path: string;
@@ -608,6 +649,13 @@ export interface DevStationBridge {
     inspectProject(projectId: string): Promise<DetectionResult>;
     inspectPath(path: string): Promise<DetectionResult>;
   };
+  env: {
+    /** Every `.env*` file in the project root and its service folders. */
+    listFiles(projectId: string): Promise<EnvFileSummary[]>;
+    readFile(projectId: string, relPath: string): Promise<EnvFileContent>;
+    /** Replaces the file's variables (order kept; comments preserved). Fails if the file changed since `mtimeMs`. */
+    writeFile(projectId: string, relPath: string, variables: EnvVariable[], mtimeMs: number): Promise<EnvFileContent>;
+  };
   files: {
     list(projectId: string, relDir: string): Promise<FileEntry[]>;
     search(projectId: string, query: string): Promise<FileEntry[]>;
@@ -753,6 +801,9 @@ export const IpcChannels = {
   DETECT_PROJECT: "detect:project",
   DETECT_PATH: "detect:path",
   DETECT_ENV_KEYS: "detect:env-keys",
+  ENV_LIST_FILES: "env:list-files",
+  ENV_READ_FILE: "env:read-file",
+  ENV_WRITE_FILE: "env:write-file",
   FILES_LIST: "files:list",
   FILES_SEARCH: "files:search",
   FILES_REVEAL: "files:reveal",
@@ -846,4 +897,6 @@ export const IpcErrorCodes = {
   AGENT_NOT_FOUND: "AGENT_NOT_FOUND",
   GIT_FAILED: "GIT_FAILED",
   PREVIEW_URL_NOT_ALLOWED: "PREVIEW_URL_NOT_ALLOWED",
+  /** The file changed on disk after it was read; reload before saving. */
+  FILE_CHANGED: "FILE_CHANGED",
 } as const;

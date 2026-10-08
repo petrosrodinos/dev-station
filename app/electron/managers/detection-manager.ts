@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { DetectedPackage, DetectedService, DetectionResult, PackageManager } from "../shared/contract";
+import { ENV_TEMPLATE_FILE_RE } from "../shared/env-file";
 import { assignServiceSlugs } from "../shared/service-refs";
 import { toPosix } from "../utils/platform";
 import { gitManager } from "./git-manager";
@@ -202,6 +203,28 @@ export function listEnvKeys(dir: string): EnvKeyEntry[] {
     }
   }
   return [...byKey].map(([key, files]) => ({ key, files })).sort((a, b) => a.key.localeCompare(b.key));
+}
+
+/**
+ * Merged values of the `.env*` files in `dir` that a service could load, first file wins. Files the start
+ * command names (`dotenv -e .env.staging`, `--env-file=.env.dev`) come first, then the conventional ones.
+ * Templates (`.env.example`) are skipped. Values stay in this process (used only for the child's env).
+ */
+export function readServiceEnv(dir: string, commandText: string): Record<string, string> {
+  let names: string[] = [];
+  try {
+    names = fs.readdirSync(dir, { withFileTypes: true }).filter((e) => e.isFile() && ENV_FILE_NAME_RE.test(e.name) && !ENV_TEMPLATE_FILE_RE.test(e.name)).map((e) => e.name);
+  } catch {
+    return {};
+  }
+  const mentioned = names.filter((n) => new RegExp(`(^|[\\s=/"'])${n.replace(/\./g, "\\.")}($|[\\s"'])`).test(commandText));
+  const conventional = ENV_FILES.filter((n) => names.includes(n) && !mentioned.includes(n)).reverse(); // .env.development.local before .env
+  const ordered = [...mentioned, ...conventional];
+  const out: Record<string, string> = {};
+  for (const name of ordered.slice(0, MAX_ENV_FILES)) {
+    for (const [k, v] of Object.entries(readEnvFile(path.join(dir, name)))) if (!(k in out)) out[k] = v;
+  }
+  return out;
 }
 
 /**

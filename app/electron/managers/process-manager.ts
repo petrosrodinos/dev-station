@@ -1,11 +1,13 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
+import path from "node:path";
 import treeKill from "tree-kill";
-import type { LogLine, PackageManager, ProcessEvent, ProcessInfo, ServiceSpec } from "../shared/contract";
-import { IpcErrorCodes, ProcessStatuses } from "../shared/contract";
-import { appendScriptArgs, assignServiceSlugs, envTemplateFor, localUrl, portFlagFor, resolveTemplate, slugToEnvSegment, type ServiceRef, type TemplateContext } from "../shared/service-refs";
+import type { EnvOverrideSource, EnvRuntimeOverride, LogLine, PackageManager, ProcessEvent, ProcessInfo, ServiceSpec } from "../shared/contract";
+import { EnvOverrideSources, IpcErrorCodes, ProcessStatuses } from "../shared/contract";
+import { appendScriptArgs, assignServiceSlugs, envTemplateFor, followPortShifts, localUrl, portFlagFor, portShifts, resolveTemplate, slugToEnvSegment, type ServiceRef, type TemplateContext } from "../shared/service-refs";
 import { IpcError } from "../ipc/ipc-error";
 import { childEnv } from "../utils/platform";
+import { readServiceEnv } from "./detection-manager";
 import { findFreePort, isPortFree } from "../utils/port-allocator";
 import { logger } from "../utils/logger";
 import { forgetService, recordService, reapLeftoverServices } from "./service-ledger";
@@ -36,6 +38,8 @@ interface Managed {
   /** service_id -> port, for the other services this process references (env / command templates). */
   usedPorts: Map<string, number>;
   hintedPortInUse: boolean;
+  /** Env values this process got that differ from its .env files (kept in the main process, shown in the env editor). */
+  envOverrides: { key: string; value: string; source: EnvOverrideSource }[];
 }
 
 function runScriptCommand(pm: PackageManager, script: string) {
@@ -72,6 +76,17 @@ class ProcessManager {
 
   setEmitter(fn: (e: ProcessEvent) => void) {
     this.emit = fn;
+  }
+
+  /** What the running services of `projectId` started in `dir` received instead of their .env values. */
+  envOverridesFor(projectId: string, dir: string): EnvRuntimeOverride[] {
+    const out: EnvRuntimeOverride[] = [];
+    for (const p of this.procs.values()) {
+      if (p.info.project_id !== projectId || p.info.status !== ProcessStatuses.RUNNING) continue;
+      if (path.resolve(p.info.cwd) !== path.resolve(dir)) continue;
+      for (const o of p.envOverrides) out.push({ ...o, service_id: p.info.service_id, service_name: p.info.name });
+    }
+    return out;
   }
 
   list(): ProcessInfo[] {
@@ -194,14 +209,40 @@ class ProcessManager {
       if (id && port != null) usedPorts.set(id, port);
     }
 
+    // --- .env files follow port shifts -----------------------------------------------------------
+    // The project's own .env files hardcode `localhost:<port>` (APP_URL, API_URL, CORS_URLS...). When a service
+    // was moved to another port, override those values in the child env with the real port. Process env wins
+    // over .env files in dotenv, Next, Vite and Nest, so the app sees the shifted URL. Keys set here win.
+    const shifted = refs.map((r) => ({ id: r.service_id, port: r.port, actual: allocation.get(r.service_id) ?? null }));
+    const shifts = portShifts(shifted);
+    const followed: Record<string, string> = {};
+    if (shifts.size) {
+      const fileValues = readServiceEnv(cwd, `${command} ${this.scriptText(spec, cwd)}`);
+      for (const [k, v] of Object.entries(followPortShifts(fileValues, shifts))) {
+        if (k in userEnv) continue;
+        followed[k] = v;
+        templated.push(`${k}=${v} (from .env, follows the port shift)`);
+      }
+      // Track the siblings these values point at, so this service is flagged for restart if they move again.
+      const values = Object.values(followed);
+      for (const s of shifted) {
+        if (s.id === spec.service_id || s.actual == null || usedPorts.has(s.id)) continue;
+        if (values.some((v) => v.includes(`:${s.actual}`))) usedPorts.set(s.id, s.actual);
+      }
+    }
+
     // --- spawn ----------------------------------------------------------------------------------
-    const env = childEnv({ ...auto, ...userEnv });
+    const env = childEnv({ ...auto, ...followed, ...userEnv });
     const child = spawn(command, { cwd, env, shell: true, windowsHide: true, detached: process.platform !== "win32" });
 
-    const managed: Managed = existing ?? { info: {} as ProcessInfo, child: null, logs: [], stopping: false, pending: [], flushTimer: null, usedPorts, hintedPortInUse: false };
+    const managed: Managed = existing ?? { info: {} as ProcessInfo, child: null, logs: [], stopping: false, pending: [], flushTimer: null, usedPorts, hintedPortInUse: false, envOverrides: [] };
     managed.child = child;
     managed.stopping = false;
     managed.usedPorts = usedPorts;
+    managed.envOverrides = [
+      ...Object.entries(followed).map(([key, value]) => ({ key, value, source: EnvOverrideSources.PORT_SHIFT })),
+      ...Object.entries(userEnv).map(([key, value]) => ({ key, value, source: EnvOverrideSources.SERVICE_ENV })),
+    ];
     managed.hintedPortInUse = false;
     managed.info = {
       key,
@@ -319,15 +360,21 @@ class ProcessManager {
     return result;
   }
 
+  /** The package.json script body a script service runs (`next dev -p 3001`), or "" for custom commands. */
+  private scriptText(spec: ServiceSpec, cwd: string): string {
+    if (!spec.script) return "";
+    try {
+      return JSON.parse(fs.readFileSync(`${cwd}/package.json`, "utf8")).scripts?.[spec.script] ?? "";
+    } catch {
+      return "";
+    }
+  }
+
   /** Appends the framework's port flag when the script is a known dev server that ignores PORT. */
   private withPortFlag(spec: ServiceSpec, cwd: string, command: string, port: number): string {
     if (spec.script) {
-      let scriptText = "";
-      try {
-        scriptText = JSON.parse(fs.readFileSync(`${cwd}/package.json`, "utf8")).scripts?.[spec.script] ?? "";
-      } catch {
-        return command;
-      }
+      const scriptText = this.scriptText(spec, cwd);
+      if (!scriptText) return command;
       return appendScriptArgs(command, spec.package_manager, portFlagFor(scriptText, port));
     }
     const flag = portFlagFor(command, port);

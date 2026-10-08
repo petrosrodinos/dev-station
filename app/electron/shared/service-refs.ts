@@ -93,6 +93,44 @@ export function envTemplateFor(key: string, value: string): string {
   return value.replace(BARE_HOST_REF_RE, (_whole, slugDot: string | undefined) => `{{${slugDot ?? ""}url}}`);
 }
 
+/**
+ * requested port -> port it actually runs on, for the services of a project that were moved. A requested port
+ * claimed by several services that landed on different ports is ambiguous and left out.
+ */
+export function portShifts(services: { port: number | null; actual: number | null }[]): Map<number, number> {
+  const byRequested = new Map<number, Set<number>>();
+  for (const s of services) {
+    if (s.port == null || s.actual == null) continue;
+    byRequested.set(s.port, (byRequested.get(s.port) ?? new Set()).add(s.actual));
+  }
+  const shifts = new Map<number, number>();
+  for (const [requested, actual] of byRequested) {
+    const [only] = actual;
+    if (actual.size === 1 && only !== requested) shifts.set(requested, only);
+  }
+  return shifts;
+}
+
+const LOCAL_PORT_RE = /\b(localhost|127\.0\.0\.1|0\.0\.0\.0):(\d{2,5})\b/g;
+
+/**
+ * Rewrites `localhost:<requested>` in .env values to the port the service really got, so hardcoded URLs in a
+ * project's own .env files (`APP_URL=http://localhost:3001`) follow a port shift. Returns only changed keys.
+ */
+export function followPortShifts(values: Record<string, string>, shifts: Map<number, number>): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!shifts.size) return out;
+  for (const [key, value] of Object.entries(values)) {
+    if (key === "PORT") continue;
+    const next = value.replace(LOCAL_PORT_RE, (whole, host: string, port: string) => {
+      const to = shifts.get(Number(port));
+      return to == null ? whole : `${host}:${to}`;
+    });
+    if (next !== value) out[key] = next;
+  }
+  return out;
+}
+
 /** Slugs referenced (as `{{slug.x}}`) in a text — used by the UI to show what a service depends on. */
 export function referencedSlugs(text: string): string[] {
   const out = new Set<string>();

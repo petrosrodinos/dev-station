@@ -37,17 +37,17 @@ export function EnvAccessConsentDialog({
           </AlertDialogTitle>
           <AlertDialogDescription render={<div />} className="space-y-2">
             <p>
-              To suggest variable names, Dev Station will read the{" "}
-              <code className="font-mono">.env*</code> files in this service's
-              folder on this computer.
+              Dev Station will read the <code className="font-mono">.env*</code>{" "}
+              files of this project on this computer, to suggest variable names
+              and to let you view and edit them on the Overview tab.
             </p>
             <ul className="list-disc space-y-1 pl-5">
-              <li>Only the variable names are shown. Values are never displayed.</li>
+              <li>Values only appear in the env editor, and secrets are masked until you reveal them.</li>
               <li>
                 Nothing from these files is stored or sent to our servers. Only
                 your choice (you, this project, and when you agreed) is saved.
               </li>
-              <li>The files are read again each time you open the picker.</li>
+              <li>Files are read fresh from disk each time, and changed only when you save.</li>
             </ul>
           </AlertDialogDescription>
         </AlertDialogHeader>

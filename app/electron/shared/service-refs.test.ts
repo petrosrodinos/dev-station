@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 // Node's type-stripping runner needs the explicit extension.
-import { appendScriptArgs, assignServiceSlugs, envTemplateFor, portFlagFor, referencedSlugs, resolveTemplate, slugify, type TemplateContext } from "./service-refs.ts";
+import { appendScriptArgs, assignServiceSlugs, envTemplateFor, followPortShifts, portFlagFor, portShifts, referencedSlugs, resolveTemplate, slugify, type TemplateContext } from "./service-refs.ts";
 
 const ctx = (): TemplateContext => ({
   self: "web",
@@ -34,6 +34,38 @@ test("URL-valued env vars turn host references into full URLs", () => {
   assert.equal(envTemplateFor("API_HOST", "{{api.host}}"), "{{api.host}}");
   assert.equal(envTemplateFor("CURLY", "{{api.host}}"), "{{api.host}}");
   assert.equal(resolveTemplate(envTemplateFor("NEXT_PUBLIC_API_URL", "{{api.host}}"), ctx()).value, "http://localhost:3001");
+});
+
+test("portShifts maps only moved, unambiguous ports", () => {
+  const shifts = portShifts([
+    { port: 3000, actual: 3002 },
+    { port: 3001, actual: 3001 },
+    { port: 4000, actual: 4001 },
+    { port: 4000, actual: 4002 },
+    { port: null, actual: null },
+  ]);
+  assert.deepEqual([...shifts], [[3000, 3002]]);
+});
+
+test(".env values follow port shifts", () => {
+  const shifts = new Map([[3000, 3002], [3001, 3003]]);
+  const out = followPortShifts(
+    {
+      APP_URL: "http://localhost:3001",
+      API_URL: "http://localhost:3000/api",
+      CORS_URLS: "http://localhost:3001,http://127.0.0.1:3001",
+      LANDING_URL: "http://localhost:5173",
+      DATABASE_URL: "postgres://u:p@db.example.com:3000/x",
+      PORT: "3000",
+    },
+    shifts,
+  );
+  assert.deepEqual(out, {
+    APP_URL: "http://localhost:3003",
+    API_URL: "http://localhost:3002/api",
+    CORS_URLS: "http://localhost:3003,http://127.0.0.1:3003",
+  });
+  assert.deepEqual(followPortShifts({ APP_URL: "http://localhost:3001" }, new Map()), {});
 });
 
 test("bare references use the service itself and are not dependencies", () => {

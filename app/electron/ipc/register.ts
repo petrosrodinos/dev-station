@@ -6,6 +6,7 @@ import { AgentTypes, CloseChoices, EditorTargets, IpcChannels, ProcessStatuses, 
 import { accessManager } from "../managers/access-manager";
 import { agentManager } from "../managers/agent-manager";
 import { inspect, listEnvKeys } from "../managers/detection-manager";
+import { envFileManager } from "../managers/env-file-manager";
 import { filesystemManager } from "../managers/filesystem-manager";
 import { floatingPanelManager } from "../managers/floating-panel-manager";
 import { gitManager } from "../managers/git-manager";
@@ -138,6 +139,14 @@ export function registerIpc(hooks: { onCloseChoice: (choice: CloseChoice) => voi
   handle(IpcChannels.DETECT_PROJECT, args(zId), ([id]) => inspect(workspaceConfig.projectRoot(id)));
   handle(IpcChannels.DETECT_ENV_KEYS, args(zId, zRelPath), ([id, rel]) => listEnvKeys(workspaceConfig.resolveInProject(id, rel)));
   handle(IpcChannels.DETECT_PATH, args(zAbsPath), ([dir]) => inspect(path.resolve(dir)));
+
+  // Env files ------------------------------------------------------------------
+  const zEnvVariables = z.array(z.object({ key: z.string().min(1).max(200), value: z.string().max(100_000) })).max(2000);
+  handle(IpcChannels.ENV_LIST_FILES, args(zId), ([id]) => envFileManager.listFiles(id));
+  handle(IpcChannels.ENV_READ_FILE, args(zId, zRelPath), ([id, rel]) => envFileManager.readFile(id, rel));
+  handle(IpcChannels.ENV_WRITE_FILE, args(zId, zRelPath, zEnvVariables, z.number().finite()), ([id, rel, variables, mtime]) =>
+    envFileManager.writeFile(id, rel, variables, mtime),
+  );
 
   // Files ------------------------------------------------------------------------
   handle(IpcChannels.FILES_LIST, args(zId, zRelPath), ([id, rel]) => filesystemManager.list(id, rel));

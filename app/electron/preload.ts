@@ -57,6 +57,11 @@ const bridge: DevStationBridge = {
     inspectProject: (id) => call(C.DETECT_PROJECT, id),
     inspectPath: (path) => call(C.DETECT_PATH, path),
   },
+  env: {
+    listFiles: (id) => call(C.ENV_LIST_FILES, id),
+    readFile: (id, rel) => call(C.ENV_READ_FILE, id, rel),
+    writeFile: (id, rel, variables, mtimeMs) => call(C.ENV_WRITE_FILE, id, rel, variables, mtimeMs),
+  },
   files: {
     list: (id, rel) => call(C.FILES_LIST, id, rel),
     search: (id, q) => call(C.FILES_SEARCH, id, q),
