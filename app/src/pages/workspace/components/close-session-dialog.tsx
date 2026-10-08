@@ -24,7 +24,7 @@ export function CloseSessionDialog({ sessionName, open, isPending, onOpenChange,
             <div className="space-y-1">
               <DialogTitle>Close session tab?</DialogTitle>
               <DialogDescription>
-                “{sessionName}” is still running. Stop the agent process, or keep it running in the background and only remove the tab? You can reopen it from AI Sessions.
+                “{sessionName}” is still running. Stop the agent process, or keep it running in the background and move it to the hidden-sessions list? You can bring it back from the dropdown at the right of the session tabs.
               </DialogDescription>
             </div>
           </div>

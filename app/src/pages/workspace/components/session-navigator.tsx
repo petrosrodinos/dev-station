@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useMemo, type ReactNode, type WheelEvent } from "react";
 import { StatusDot } from "@/components/ui/status-dot";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatTimelineTime } from "@/lib/date";
 import { useCloseSessionTab, useMarkSessionReviewed } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { SessionReviewStates } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
@@ -14,9 +16,10 @@ import { isAgentActive, reviewStateDot } from "@/lib/status";
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Check, X } from "lucide-react";
+import { Check, ChevronDown, X } from "lucide-react";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 import type { OpenSessions, SessionItem } from "../hooks/use-open-sessions";
 import { CloseSessionDialog } from "./close-session-dialog";
 import { SessionContextMenu } from "./session-context-menu";
@@ -35,6 +38,7 @@ interface SessionNavigatorProps {
 export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigatorProps) {
   const { data: projects } = useGetProjects();
   const closeTab = useCloseSessionTab();
+  const backgroundTab = useWorkspaceStore((s) => s.backgroundSessionTab);
   const { can } = usePermissions();
   const [closing, setClosing] = useState<SessionItem | null>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -66,7 +70,7 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
     return [...byProject.entries()].map(([projectId, items]) => ({ projectId, items }));
   }, [sessions]);
 
-  if (!sessions.ordered.length) return null;
+  if (!sessions.ordered.length && !sessions.background.length) return null;
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return;
@@ -79,11 +83,18 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
     else closeTab.mutate({ id: item.id, stopProcess: !!item.runtime });
   };
 
+  // Keeping a session running only takes its tab off the strip; the dropdown on the right brings it back.
+  const keepRunning = (item: SessionItem) => {
+    backgroundTab(item.id);
+    toast({ title: "Session moved to the hidden list — agent keeps running", duration: 1500 });
+  };
+
   return (
+    <div className="flex h-8 shrink-0 items-stretch border-b">
     <nav
       ref={navRef}
       onWheel={scrollOnWheel}
-      className="flex h-8 shrink-0 items-stretch overflow-x-auto overflow-y-hidden border-b [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="flex min-w-0 flex-1 items-stretch overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       aria-label="Open AI sessions"
     >
       <PlacementMenu target={PlacementTargets.AI_PANEL}>
@@ -115,9 +126,72 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
         open={!!closing}
         isPending={closeTab.isPending}
         onOpenChange={(o) => !o && setClosing(null)}
-        onChoose={(stopProcess) => closing && closeTab.mutate({ id: closing.id, stopProcess }, { onSettled: () => setClosing(null) })}
+        onChoose={(stopProcess) => {
+          if (!closing) return;
+          if (stopProcess) closeTab.mutate({ id: closing.id, stopProcess }, { onSettled: () => setClosing(null) });
+          else {
+            keepRunning(closing);
+            setClosing(null);
+          }
+        }}
       />
     </nav>
+    <HiddenSessionsMenu items={sessions.background} projectById={projectById} onOpen={onOpen} />
+    </div>
+  );
+}
+
+interface HiddenSessionsMenuProps {
+  items: SessionItem[];
+  projectById: Map<string, Project>;
+  onOpen: (item: SessionItem) => void;
+}
+
+/** Sessions taken off the strip with "Keep running". Picking one puts its tab back (opening it does that). */
+function HiddenSessionsMenu({ items, projectById, onOpen }: HiddenSessionsMenuProps) {
+  if (!items.length) return null;
+  const needsLook = items.filter((i) => i.unseen || i.review_state === SessionReviewStates.READY).length;
+  return (
+    <DropdownMenu>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <DropdownMenuTrigger
+              render={
+                <button
+                  type="button"
+                  className="flex h-full shrink-0 items-center gap-1 border-l border-hairline-soft px-2 text-[0.6875rem] tabular-nums text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
+                  aria-label={`Hidden sessions (${items.length})`}
+                >
+                  {needsLook > 0 && <span className="size-1.5 rounded-full bg-info" aria-hidden />}
+                  {items.length}
+                  <ChevronDown className="size-3" />
+                </button>
+              }
+            />
+          }
+        />
+        <TooltipContent>Hidden sessions, still running</TooltipContent>
+      </Tooltip>
+      <DropdownMenuContent align="end" className="max-h-80 min-w-56 overflow-y-auto">
+        <DropdownMenuLabel>Hidden sessions</DropdownMenuLabel>
+        {items.map((item) => {
+          const project = projectById.get(item.project_id);
+          const done = item.review_state === SessionReviewStates.REVIEWED || item.review_state === SessionReviewStates.COMMITTED;
+          return (
+            <DropdownMenuItem key={item.id} onSelect={() => onOpen(item)} className="gap-2">
+              {done ? (
+                <Check className="size-3 shrink-0 text-ash" />
+              ) : (
+                <StatusDot status={reviewStateDot(item.review_state)} className={cn("shrink-0", item.unseen && "animate-pulse")} />
+              )}
+              <span className={cn("min-w-0 flex-1 truncate", item.unseen && "font-semibold")}>{item.name}</span>
+              {project && <span className="max-w-24 shrink-0 truncate text-[0.625rem] uppercase text-ash">{project.name}</span>}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

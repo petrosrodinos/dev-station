@@ -28,6 +28,8 @@ export interface OpenSessions {
   ordered: SessionItem[];
   /** Sessions ready for review, in display order. */
   ready: SessionItem[];
+  /** Running sessions the user took off the strip, most recently put away last. They don't take part in next/previous. */
+  background: SessionItem[];
 }
 
 /**
@@ -56,25 +58,23 @@ export const useOpenSessions = (): OpenSessions => {
   const deviceId = workspaceConfig?.device_id ?? null;
   const runtimeAgents = useRuntimeStore((s) => s.agents);
   const openIds = useWorkspaceStore((s) => s.open_session_tabs);
+  const backgroundIds = useWorkspaceStore((s) => s.background_session_tabs);
   const attention = useWorkspaceStore((s) => s.attention_session_ids);
   const reviewed = useWorkspaceStore((s) => s.reviewed_session_ids);
   const projectOrder = useWorkspaceStore((s) => s.session_project_order);
 
   return useMemo(() => {
     const byId = new Map((sessions?.data ?? []).map((s) => [s.id, s]));
-    const ids = [...new Set([...openIds, ...attention])];
-    const ordered: SessionItem[] = [];
-
-    for (const id of ids) {
+    const toItem = (id: string): SessionItem | null => {
       const session = byId.get(id) ?? null;
       const runtime = runtimeAgents[id] ?? null;
       const projectId = runtime?.project_id ?? session?.project_id;
-      if (!projectId) continue;
+      if (!projectId) return null;
       const status = mergeSessionStatus(session, runtime, deviceId);
       // Live sessions on this device are reviewed only when the developer said so; older ones count once a commit is linked.
       const committed = !!session?.commit_sha;
       const isReviewed = reviewed.includes(id) || (committed && !runtime);
-      ordered.push({
+      return {
         id,
         name: session?.name ?? runtime?.name ?? "Session",
         project_id: projectId,
@@ -86,12 +86,17 @@ export const useOpenSessions = (): OpenSessions => {
         session,
         runtime,
         on_this_device: !!runtime || ranOnDevice(session, deviceId),
-      });
-    }
+      };
+    };
+
+    // A session put away stays put even when it needs attention; the dropdown shows that instead.
+    const ids = [...new Set([...openIds, ...attention])].filter((id) => !backgroundIds.includes(id));
+    const ordered = ids.flatMap((id) => toItem(id) ?? []);
+    const background = backgroundIds.flatMap((id) => toItem(id) ?? []);
 
     const grouped = groupByProject(ordered, projectOrder);
-    return { ordered: grouped, ready: grouped.filter((i) => i.review_state === SessionReviewStates.READY) };
-  }, [sessions, runtimeAgents, openIds, attention, reviewed, projectOrder, deviceId]);
+    return { ordered: grouped, ready: grouped.filter((i) => i.review_state === SessionReviewStates.READY), background };
+  }, [sessions, runtimeAgents, openIds, backgroundIds, attention, reviewed, projectOrder, deviceId]);
 };
 
 /**

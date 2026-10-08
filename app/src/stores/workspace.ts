@@ -43,6 +43,8 @@ interface WorkspaceState {
     active_project_id: string | null;
     /** Session ids open in the AI panel's session list, in the order they were opened. */
     open_session_tabs: string[];
+    /** Sessions taken off the strip but still running: reachable from the strip's dropdown, in the order they were put away. */
+    background_session_tabs: string[];
     /** Project order the user dragged the AI session groups into; projects not listed follow in opening order. */
     session_project_order: string[];
     active_session_id: string | null;
@@ -77,6 +79,7 @@ interface WorkspaceActions {
     setActiveProject(id: string | null): void;
     openSessionTab(id: string, focus?: boolean): void;
     closeSessionTab(id: string): void;
+    backgroundSessionTab(id: string): void;
     setSessionProjectOrder(projectIds: string[]): void;
     setActiveSession(id: string | null): void;
     setAiPanelMode(mode: AiPanelMode): void;
@@ -102,6 +105,7 @@ const initialValues: WorkspaceState = {
     active_organization_id: null,
     active_project_id: null,
     open_session_tabs: [],
+    background_session_tabs: [],
     session_project_order: [],
     active_session_id: null,
     ai_panel_mode: AiPanelModes.TERMINAL,
@@ -132,6 +136,7 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                 openSessionTab: (id, focus = true) =>
                     set((s) => ({
                         open_session_tabs: s.open_session_tabs.includes(id) ? s.open_session_tabs : [...s.open_session_tabs, id],
+                        background_session_tabs: s.background_session_tabs.filter((x) => x !== id),
                         active_session_id: focus ? id : s.active_session_id,
                         ai_panel_mode: focus ? AiPanelModes.TERMINAL : s.ai_panel_mode,
                         ai_panel_open: focus ? true : s.ai_panel_open,
@@ -144,9 +149,22 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                         const nextActive = s.active_session_id === id ? tabs[Math.min(idx, tabs.length - 1)] ?? null : s.active_session_id;
                         return {
                             open_session_tabs: tabs,
+                            background_session_tabs: s.background_session_tabs.filter((x) => x !== id),
                             active_session_id: nextActive,
                             attention_session_ids: s.attention_session_ids.filter((x) => x !== id),
                             reviewed_session_ids: s.reviewed_session_ids.filter((x) => x !== id),
+                        };
+                    }),
+                // Unlike closing, the session stays known: its review/attention state is kept for the dropdown.
+                backgroundSessionTab: (id) =>
+                    set((s) => {
+                        const tabs = s.open_session_tabs.filter((x) => x !== id);
+                        const idx = s.open_session_tabs.indexOf(id);
+                        const nextActive = s.active_session_id === id ? tabs[Math.min(idx, tabs.length - 1)] ?? null : s.active_session_id;
+                        return {
+                            open_session_tabs: tabs,
+                            background_session_tabs: [...s.background_session_tabs.filter((x) => x !== id), id],
+                            active_session_id: nextActive,
                         };
                     }),
                 setSessionProjectOrder: (projectIds) => set({ session_project_order: projectIds }),

@@ -4,13 +4,13 @@ import { isDesktop } from "@/lib/desktop";
 import { environments } from "@/config/environments";
 import { AppUpdateStates } from "@shared/contract";
 import { useAppUpdateStore } from "@/stores/app-update";
-import { useAppInfo, useCheckForUpdate, useDownloadUpdate, useInstallUpdate, useLatestRelease, toReleasePlatform } from "@/features/app-releases/hooks/use-app-releases";
+import { useAppInfo, useCheckForUpdate, useInstallUpdate, useLatestRelease, toReleasePlatform } from "@/features/app-releases/hooks/use-app-releases";
 import { SettingsRow, SettingsSectionHeader } from "./settings-row";
 
 const STATUS_LABEL: Partial<Record<string, string>> = {
   [AppUpdateStates.IDLE]: "Up to date",
   [AppUpdateStates.CHECKING]: "Checking for updates…",
-  [AppUpdateStates.AVAILABLE]: "Update available",
+  [AppUpdateStates.AVAILABLE]: "Downloading update…",
   [AppUpdateStates.NOT_AVAILABLE]: "Up to date",
   [AppUpdateStates.DOWNLOADED]: "Ready to install",
   [AppUpdateStates.ERROR]: "Could not check for updates",
@@ -23,10 +23,12 @@ export function AboutSection() {
   const { data: latest } = useLatestRelease(platform);
   const status = useAppUpdateStore((s) => s.status);
   const check = useCheckForUpdate();
-  const download = useDownloadUpdate();
   const install = useInstallUpdate();
 
   if (!isDesktop()) return null;
+
+  // Updates download automatically in the background; the bottom-left banner prompts to install once ready.
+  const downloading = status.state === AppUpdateStates.AVAILABLE || status.state === AppUpdateStates.DOWNLOADING;
 
   const version = info?.version ?? environments.APP_VERSION;
   const statusLabel = status.state === AppUpdateStates.DOWNLOADING ? `Downloading update…${status.percent != null ? ` ${status.percent}%` : ""}` : STATUS_LABEL[status.state];
@@ -40,12 +42,8 @@ export function AboutSection() {
             <Button size="sm" onClick={() => install.mutate()} loading={install.isPending}>
               Restart to update
             </Button>
-          ) : status.state === AppUpdateStates.AVAILABLE ? (
-            <Button size="sm" onClick={() => download.mutate()} loading={download.isPending}>
-              Download update
-            </Button>
           ) : (
-            <Button size="sm" variant="outline" onClick={() => check.mutate()} loading={check.isPending || status.state === AppUpdateStates.CHECKING}>
+            <Button size="sm" variant="outline" onClick={() => check.mutate()} loading={check.isPending || downloading || status.state === AppUpdateStates.CHECKING}>
               <RefreshCw className="size-3.5" />
               Check for updates
             </Button>
