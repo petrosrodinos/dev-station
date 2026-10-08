@@ -5,6 +5,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import Toggle from "@/components/ui/Toggle";
 import { useUpdateDeviceSettings, useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
 import { isDesktop } from "@/lib/desktop";
 import { DirectoryField } from "@/pages/workspace/components/project-form/directory-field";
@@ -15,10 +16,12 @@ import { AboutSection } from "./about-section";
 export function GeneralSettings() {
   const { data: config, isPending } = useWorkspaceConfig();
   const save = useUpdateDeviceSettings();
+  const saveServices = useUpdateDeviceSettings();
   const form = useForm<DeviceSettingsFormData>({ resolver: zodResolver(deviceSettingsSchema), defaultValues: { workspace_dir: "" } });
 
   useEffect(() => {
-    if (config)
+    // Skip while editing: toggling "Services" settings refreshes `config` and must not wipe unsaved fields.
+    if (config && !form.formState.isDirty)
       form.reset({
         workspace_dir: config.settings.workspace_dir,
         default_shell: config.settings.default_shell ?? "",
@@ -28,11 +31,14 @@ export function GeneralSettings() {
   }, [config, form]);
 
   const onSubmit = (data: DeviceSettingsFormData) =>
-    save.mutate({
-      workspace_dir: data.workspace_dir,
-      default_shell: data.default_shell || null,
-      editor_executables: { cursor: data.cursor_path || null, vscode: data.vscode_path || null },
-    });
+    save.mutate(
+      {
+        workspace_dir: data.workspace_dir,
+        default_shell: data.default_shell || null,
+        editor_executables: { cursor: data.cursor_path || null, vscode: data.vscode_path || null },
+      },
+      { onSuccess: () => form.reset(data) },
+    );
 
   return (
     <div className="space-y-8">
@@ -105,6 +111,21 @@ export function GeneralSettings() {
           </Form>
         )}
       </section>
+      {isDesktop() && config && (
+        <section>
+          <SettingsSectionHeader title="Services" description="Applies to every project on this computer." />
+          <SettingsRow
+            label="Move services to a free port"
+            description="If a service's port is taken, start it on the next free one and update the URLs that point to it. Turn off to always use the configured port."
+          >
+            <Toggle
+              enabled={config.settings.auto_shift_ports}
+              isLoading={saveServices.isPending}
+              onCheckedChange={(checked) => saveServices.mutate({ auto_shift_ports: checked })}
+            />
+          </SettingsRow>
+        </section>
+      )}
       <AboutSection />
     </div>
   );

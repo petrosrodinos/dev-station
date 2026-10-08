@@ -48,6 +48,7 @@ const zSettings = z
     agent_executables: z.object({ CLAUDE_CODE: z.string().max(1000).nullable(), CURSOR_CLI: z.string().max(1000).nullable() }).partial(),
     editor_executables: z.object({ cursor: z.string().max(1000).nullable(), vscode: z.string().max(1000).nullable() }).partial(),
     skill_folders: z.array(zAbsPath).max(50),
+    auto_shift_ports: z.boolean(),
   })
   .partial();
 

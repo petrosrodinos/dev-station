@@ -26,6 +26,7 @@ function defaults(): StoredConfig {
       agent_executables: { CLAUDE_CODE: null, CURSOR_CLI: null },
       editor_executables: { cursor: null, vscode: null },
       skill_folders: [],
+      auto_shift_ports: true,
     },
     project_paths: {},
     approved_commands: {},

@@ -69,6 +69,11 @@ export interface DeviceSettings {
   editor_executables: { cursor: string | null; vscode: string | null };
   /** Extra absolute folders scanned for agent skills (in addition to the built-in provider locations). */
   skill_folders: string[];
+  /**
+   * When a service's port is taken, start it on the next free port (and point `{{refs}}` / .env URLs at it).
+   * Off: services always use their configured port and fail to start if it is busy. Applies to every project.
+   */
+  auto_shift_ports: boolean;
 }
 
 export interface WorkspaceConfig {

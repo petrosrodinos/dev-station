@@ -154,6 +154,7 @@ class ProcessManager {
 
     const allocation = await this.withAllocLock(() => this.allocatePorts(projectId, spec.service_id, refs));
     const ownPort = allocation.get(spec.service_id) ?? null;
+    const fixedPortBusy = !workspaceConfig.settings.auto_shift_ports && ownPort != null && !(await isPortFree(ownPort));
     // Checked after the last await: from here to the spawn and registration below nothing can interleave with stopAll.
     if (this.closing) throw new IpcError("Dev Station is closing.");
 
@@ -267,6 +268,13 @@ class ProcessManager {
     this.append(managed, "system", `$ ${command}  (cwd: ${spec.cwd || "."})`);
     if (ownPort && spec.port && ownPort !== spec.port) this.append(managed, "system", `Port ${spec.port} is taken — running on ${ownPort} instead (PORT=${ownPort}).`);
     else if (ownPort) this.append(managed, "system", `Port ${ownPort} (PORT=${ownPort})`);
+    if (fixedPortBusy) {
+      this.append(
+        managed,
+        "system",
+        `Port ${ownPort} is already in use and automatic port switching is off (Settings → General), so this service will likely fail to start. Free the port or turn switching on.`,
+      );
+    }
     for (const line of templated) this.append(managed, "system", `env ${line}`);
     this.emit({ type: "status", process: managed.info });
     this.markStaleDependents(projectId, spec.service_id, ownPort);
@@ -342,6 +350,11 @@ class ProcessManager {
     // The service being started claims its port first, then its siblings in order.
     const ordered = [...refs].sort((a, b) => Number(b.service_id === startingServiceId) - Number(a.service_id === startingServiceId));
     const result = new Map<string, number>();
+    // Port switching turned off (Settings → General): every service gets exactly the port it asks for.
+    if (!workspaceConfig.settings.auto_shift_ports) {
+      for (const ref of ordered) if (ref.port) result.set(ref.service_id, ref.port);
+      return result;
+    }
     for (const ref of ordered) {
       if (!ref.port) continue;
       const key = keyOf(ref.service_id);
