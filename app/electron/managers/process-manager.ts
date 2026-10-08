@@ -3,7 +3,7 @@ import fs from "node:fs";
 import treeKill from "tree-kill";
 import type { LogLine, PackageManager, ProcessEvent, ProcessInfo, ServiceSpec } from "../shared/contract";
 import { IpcErrorCodes, ProcessStatuses } from "../shared/contract";
-import { appendScriptArgs, assignServiceSlugs, localUrl, portFlagFor, resolveTemplate, slugToEnvSegment, type ServiceRef, type TemplateContext } from "../shared/service-refs";
+import { appendScriptArgs, assignServiceSlugs, envTemplateFor, localUrl, portFlagFor, resolveTemplate, slugToEnvSegment, type ServiceRef, type TemplateContext } from "../shared/service-refs";
 import { IpcError } from "../ipc/ipc-error";
 import { childEnv } from "../utils/platform";
 import { findFreePort, isPortFree } from "../utils/port-allocator";
@@ -167,7 +167,9 @@ class ProcessManager {
     for (const [k, v] of Object.entries(spec.env ?? {})) {
       // A name picked from a .env file with no value set here must not blank out the file's own value.
       if (v === "") continue;
-      const r = resolveTemplate(v, ctx);
+      const template = envTemplateFor(k, v);
+      if (template !== v) templated.push(`${k}: ${v} is a URL variable, using ${template} so it includes http://`);
+      const r = resolveTemplate(template, ctx);
       errors.push(...r.errors.map((e) => `${k}: ${e}`));
       r.refs.forEach((x) => dependsOn.add(x));
       userEnv[k] = r.value;

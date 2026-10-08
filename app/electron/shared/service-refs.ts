@@ -79,6 +79,20 @@ export function resolveTemplate(text: string, ctx: TemplateContext): TemplateRes
   return { value, refs: [...refs], errors };
 }
 
+// Env names that hold a full URL (`NEXT_PUBLIC_API_URL`, `APP_URL`, `CORS_URLS`, `ALLOWED_ORIGIN`).
+const URL_ENV_KEY_RE = /(^|_)(URLS?|URIS?|ORIGINS?|ENDPOINTS?)$/i;
+// `{{slug.host}}` not already behind a scheme (`http://{{api.host}}` is left alone).
+const BARE_HOST_REF_RE = /(?<!:\/\/)\{\{\s*([a-z0-9-]+\.)?host\s*\}\}/gi;
+
+/**
+ * A URL-valued env var built from `{{slug.host}}` gets `localhost:3000` with no scheme, which breaks CORS
+ * origins and makes fetch/axios treat the API URL as relative. For such names, `host` references become `url`.
+ */
+export function envTemplateFor(key: string, value: string): string {
+  if (!URL_ENV_KEY_RE.test(key)) return value;
+  return value.replace(BARE_HOST_REF_RE, (_whole, slugDot: string | undefined) => `{{${slugDot ?? ""}url}}`);
+}
+
 /** Slugs referenced (as `{{slug.x}}`) in a text — used by the UI to show what a service depends on. */
 export function referencedSlugs(text: string): string[] {
   const out = new Set<string>();

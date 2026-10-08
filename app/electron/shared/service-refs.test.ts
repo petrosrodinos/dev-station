@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 // Node's type-stripping runner needs the explicit extension.
-import { appendScriptArgs, assignServiceSlugs, portFlagFor, referencedSlugs, resolveTemplate, slugify, type TemplateContext } from "./service-refs.ts";
+import { appendScriptArgs, assignServiceSlugs, envTemplateFor, portFlagFor, referencedSlugs, resolveTemplate, slugify, type TemplateContext } from "./service-refs.ts";
 
 const ctx = (): TemplateContext => ({
   self: "web",
@@ -23,6 +23,17 @@ test("resolves port, url and host references to the allocated port", () => {
   assert.equal(r.value, "http://localhost:3001/v1 3001 localhost:3001");
   assert.deepEqual(r.refs, ["api"]);
   assert.deepEqual(r.errors, []);
+});
+
+test("URL-valued env vars turn host references into full URLs", () => {
+  assert.equal(envTemplateFor("NEXT_PUBLIC_API_URL", "{{api.host}}"), "{{api.url}}");
+  assert.equal(envTemplateFor("APP_URL", "{{ app.host }}/x"), "{{app.url}}/x");
+  assert.equal(envTemplateFor("CORS_URLS", "{{web.host}},{{api.host}}"), "{{web.url}},{{api.url}}");
+  assert.equal(envTemplateFor("ALLOWED_ORIGIN", "{{host}}"), "{{url}}");
+  assert.equal(envTemplateFor("APP_URL", "http://{{app.host}}"), "http://{{app.host}}");
+  assert.equal(envTemplateFor("API_HOST", "{{api.host}}"), "{{api.host}}");
+  assert.equal(envTemplateFor("CURLY", "{{api.host}}"), "{{api.host}}");
+  assert.equal(resolveTemplate(envTemplateFor("NEXT_PUBLIC_API_URL", "{{api.host}}"), ctx()).value, "http://localhost:3001");
 });
 
 test("bare references use the service itself and are not dependencies", () => {
