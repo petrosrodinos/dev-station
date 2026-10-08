@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type FC } from "react";
-import { ChevronsDownUp, ChevronsUpDown, Code2, FilePlus, Folder, FolderPlus, MoreHorizontal, Search } from "lucide-react";
+import { ChevronsDownUp, ChevronsUpDown, Code2, Copy, FilePlus, Folder, FolderPlus, MoreHorizontal, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { useFileSearch, useImportFiles, useMoveEntry } from "@/features/files/ho
 import { useGitStatus } from "@/features/git/hooks/use-git";
 import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { toast } from "@/hooks/use-toast";
 import { DEFAULT_FILES_TREE_WIDTH, useWorkspaceStore, type OpenFileTab } from "@/stores/workspace";
 import { previewTypeFor, type FileEntry, type GitFileState } from "@shared/contract";
 import { useProjectContext } from "../../hooks/use-project-context";
@@ -116,6 +117,11 @@ const FilesTab: FC = () => {
   const searching = debounced.trim().length > 1;
 
   const projectPath = config?.project_paths[project.id];
+  const copyProjectPath = async () => {
+    if (!projectPath) return;
+    await navigator.clipboard.writeText(projectPath);
+    toast({ title: "Project path copied", duration: 1500 });
+  };
 
   // Tree width: the stored width on this device, previewed live while the handle is dragged and saved on release.
   const storedTreeWidth = useWorkspaceStore((s) => s.files_tree_width);
@@ -172,7 +178,10 @@ const FilesTab: FC = () => {
                         render={
                           <div className="flex items-center gap-2 px-1.5 py-1 text-xs text-muted-foreground">
                             <Folder className="size-3.5 shrink-0" />
-                            <span className="truncate">Project path</span>
+                            <span className="flex-1 truncate">Project path</span>
+                            <Button variant="ghost" size="icon" className="size-6 shrink-0" aria-label="Copy project path" onClick={copyProjectPath}>
+                              <Copy className="size-3.5" />
+                            </Button>
                           </div>
                         }
                       />
