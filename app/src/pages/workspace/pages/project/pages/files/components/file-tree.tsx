@@ -138,6 +138,9 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
   const reveal = useRevealFile();
   const copyPath = useCopyFilePath();
   const copyRelativePath = useCopyRelativePath();
+  // The hover-only action bar is display:none once the pointer leaves the row; keep it
+  // rendered while the menu is open so the popup keeps its anchor.
+  const [copyMenuOpen, setCopyMenuOpen] = useState(false);
   const actions = useContext(TreeActionsContext);
 
   return (
@@ -152,8 +155,8 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
       <Icon className="size-3.5 shrink-0 text-muted-foreground" />
       <span className="truncate">{showPath ? entry.path : entry.name}</span>
       {gitState && <span className={cn("size-1.5 shrink-0 rounded-full", GIT_DOT[gitState])} title={getDropdownOptionLabel(GitFileStateOptions, gitState)} />}
-      <div className="ml-auto hidden gap-0.5 group-hover:flex">
-        <DropdownMenu>
+      <div className={cn("ml-auto gap-0.5 group-hover:flex", copyMenuOpen ? "flex" : "hidden")}>
+        <DropdownMenu open={copyMenuOpen} onOpenChange={setCopyMenuOpen}>
           <Tooltip>
             <TooltipTrigger
               render={

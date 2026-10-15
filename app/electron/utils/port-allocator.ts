@@ -43,3 +43,13 @@ export async function findFreePort(preferred: number, opts: FindPortOptions = {}
   }
   throw new Error(`No free port found between ${preferred} and ${last}.`);
 }
+
+/** Polls until `port` can be bound again (e.g. after the process that held it was killed). False on timeout. */
+export async function waitForPortFree(port: number, timeoutMs: number, intervalMs = 100): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    if (await isPortFree(port)) return true;
+    if (Date.now() >= deadline) return false;
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+}

@@ -6,6 +6,7 @@ import {
   DockviewReact,
   type DockviewApi,
   type DockviewReadyEvent,
+  type IDockviewHeaderActionsProps,
   type IDockviewPanelHeaderProps,
   type IDockviewPanelProps,
   type IDockviewReactProps,
@@ -88,6 +89,32 @@ const TerminalTab: FC = () => {
   // panels constantly jittering. Memoizing keeps the identity stable unless the panel component changes.
   const components: IDockviewReactProps["components"] = useMemo(() => ({ [SHELL_PANEL_COMPONENT]: ShellPanel }), [ShellPanel]);
 
+  // Lives in the tab bar, right after the open terminals. Reads create/canEdit through refs so the
+  // component keeps a stable identity (a new one would force dockview to relayout).
+  const createRef = useRef(create);
+  createRef.current = create;
+  const projectIdRef = useRef(project.id);
+  projectIdRef.current = project.id;
+  const NewTerminalAction = useCallback<FC<IDockviewHeaderActionsProps>>(() => {
+    if (!canEditRef.current) return null;
+    const pending = createRef.current.isPending;
+    return (
+      <div className="flex h-full items-center px-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7 text-muted-foreground"
+          onClick={() => createRef.current.mutate({ projectId: projectIdRef.current })}
+          loading={pending}
+          aria-label="New terminal"
+          title="New terminal"
+        >
+          {!pending && <Plus className="size-3.5" />}
+        </Button>
+      </div>
+    );
+  }, []);
+
   const onReady = useCallback((event: DockviewReadyEvent) => {
     apiRef.current = event.api;
     // A tab's native close button removes the panel directly; if that terminal is still a known,
@@ -129,17 +156,10 @@ const TerminalTab: FC = () => {
   const openNew = () => create.mutate({ projectId: project.id });
 
   return (
-    <div className="flex h-full min-h-[420px] flex-col gap-2 p-4">
-      {canEdit && (
-        <div className="flex shrink-0 justify-end">
-          <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={openNew} loading={create.isPending} aria-label="New terminal" title="New terminal">
-            {!create.isPending && <Plus className="size-3.5" />}
-          </Button>
-        </div>
-      )}
+    <div className="flex h-full min-h-[420px] flex-col p-4">
       <div className="min-h-0 flex-1 overflow-hidden rounded-lg border bg-terminal">
         {terminals.length ? (
-          <DockviewReact className="dockview-theme-abyss h-full" components={components} defaultTabComponent={ShellTabHeader} onReady={onReady} />
+          <DockviewReact className="dockview-theme-abyss h-full" components={components} defaultTabComponent={ShellTabHeader} rightHeaderActionsComponent={NewTerminalAction} onReady={onReady} />
         ) : (
           <EmptyState
             className="h-full"

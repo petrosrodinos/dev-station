@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import { ExternalLink, FileKey2 } from "lucide-react";
+import { ChevronRight, ExternalLink, FileKey2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Panel, PanelHeader } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +22,7 @@ export function EnvFilesCard({ project }: { project: Project }) {
   const files = useEnvFiles(project.id, allowed);
   const openInEditor = useOpenInEditor();
   const [consentOpen, setConsentOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -40,13 +42,21 @@ export function EnvFilesCard({ project }: { project: Project }) {
   return (
     <Panel className="@4xl:col-span-2">
       <PanelHeader
+        className={cn(!expanded && "border-b-0")}
         title={
-          <>
+          <button
+            type="button"
+            onClick={() => setExpanded((e) => !e)}
+            aria-expanded={expanded}
+            className="flex items-center gap-2 font-medium hover:text-foreground"
+          >
+            <ChevronRight className={cn("size-3.5 text-muted-foreground transition-transform", expanded && "rotate-90")} />
             <FileKey2 className="size-4 text-muted-foreground" /> Environment files
             {allowed && list.length > 0 && <span className="text-xs font-normal text-muted-foreground">{list.length}</span>}
-          </>
+          </button>
         }
         actions={
+          expanded &&
           allowed &&
           selected && (
             <>
@@ -81,6 +91,8 @@ export function EnvFilesCard({ project }: { project: Project }) {
         }
       />
 
+      {/* Hidden rather than unmounted so unsaved edits survive collapsing. */}
+      <div className={cn(!expanded && "hidden")}>
       {consent.isPending || (allowed && files.isPending) ? (
         <div className="space-y-2 p-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -112,6 +124,7 @@ export function EnvFilesCard({ project }: { project: Project }) {
           <EnvFileEditor key={selected.path} projectId={project.id} file={selected} onDirtyChange={onDirtyChange} />
         </>
       )}
+      </div>
 
       <EnvAccessConsentDialog projectId={project.id} projectName={project.name} open={consentOpen} onOpenChange={setConsentOpen} onAccepted={() => files.refetch()} />
       <ConfirmationDialog

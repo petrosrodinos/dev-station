@@ -8,7 +8,7 @@ import { appendScriptArgs, assignServiceSlugs, envTemplateFor, followPortShifts,
 import { IpcError } from "../ipc/ipc-error";
 import { childEnv } from "../utils/platform";
 import { readServiceEnv } from "./detection-manager";
-import { findFreePort, isPortFree } from "../utils/port-allocator";
+import { findFreePort, isPortFree, waitForPortFree } from "../utils/port-allocator";
 import { logger } from "../utils/logger";
 import { forgetService, recordService, reapLeftoverServices } from "./service-ledger";
 import { workspaceConfig } from "./workspace-config";
@@ -38,6 +38,8 @@ interface Managed {
   /** service_id -> port, for the other services this process references (env / command templates). */
   usedPorts: Map<string, number>;
   hintedPortInUse: boolean;
+  /** Resolvers waiting for this process to exit (see stop). */
+  exitWaiters: (() => void)[];
   /** Env values this process got that differ from its .env files (kept in the main process, shown in the env editor). */
   envOverrides: { key: string; value: string; source: EnvOverrideSource }[];
 }
@@ -236,7 +238,7 @@ class ProcessManager {
     const env = childEnv({ ...auto, ...followed, ...userEnv });
     const child = spawn(command, { cwd, env, shell: true, windowsHide: true, detached: process.platform !== "win32" });
 
-    const managed: Managed = existing ?? { info: {} as ProcessInfo, child: null, logs: [], stopping: false, pending: [], flushTimer: null, usedPorts, hintedPortInUse: false, envOverrides: [] };
+    const managed: Managed = existing ?? { info: {} as ProcessInfo, child: null, logs: [], stopping: false, pending: [], flushTimer: null, usedPorts, hintedPortInUse: false, exitWaiters: [], envOverrides: [] };
     managed.child = child;
     managed.stopping = false;
     managed.usedPorts = usedPorts;
@@ -364,7 +366,9 @@ class ProcessManager {
         this.reservations.set(key, running.info.port);
         continue;
       }
-      const held = this.reservations.get(key);
+      // The service being started always asks for its own requested port first (a restart must not drift to the
+      // next port); siblings keep the port they already hold so references to them stay stable.
+      const held = ref.service_id === startingServiceId ? undefined : this.reservations.get(key);
       const port =
         held && !heldByOthers(held, key) && (await isPortFree(held)) ? held : await findFreePort(ref.port, { isReserved: (p) => heldByOthers(p, key) });
       this.reservations.set(key, port);
@@ -414,9 +418,11 @@ class ProcessManager {
     const status = managed.stopping || code === 0 ? ProcessStatuses.STOPPED : ProcessStatuses.CRASHED;
     this.append(managed, "system", status === ProcessStatuses.CRASHED ? `Process crashed (exit code ${code})` : `Process exited (${code})`);
     managed.child = null;
+    const waiters = managed.exitWaiters.splice(0);
     managed.info = { ...managed.info, status, pid: null, exit_code: code, exited_at: new Date().toISOString() };
     this.flush(managed);
     this.emit({ type: "status", process: managed.info });
+    for (const w of waiters) w();
   }
 
   private append(managed: Managed, stream: LogLine["stream"], text: string) {
@@ -437,26 +443,41 @@ class ProcessManager {
     this.emit({ type: "log", process: managed.info, lines });
   }
 
+  /** Resolves once the process has really exited (not just once the kill was sent). */
   stop(key: string): Promise<void> {
     const managed = this.procs.get(key);
-    if (!managed?.child?.pid) return Promise.resolve();
+    if (!managed?.child?.pid || managed.info.status !== ProcessStatuses.RUNNING) return Promise.resolve();
     managed.stopping = true;
     const pid = managed.child.pid;
-    return new Promise((resolve) => {
-      treeKill(pid, "SIGTERM", () => {
-        // Escalate if the tree ignores SIGTERM.
-        setTimeout(() => {
-          if (managed.child && managed.info.status === ProcessStatuses.RUNNING) treeKill(pid, "SIGKILL");
+    const exited = new Promise<boolean>((resolve) => {
+      const timer = setTimeout(() => resolve(false), 1500);
+      managed.exitWaiters.push(() => {
+        clearTimeout(timer);
+        resolve(true);
+      });
+    });
+    treeKill(pid, "SIGTERM");
+    return exited.then(async (done) => {
+      if (done) return;
+      // The tree ignored SIGTERM: force it and wait for the exit.
+      await new Promise<void>((resolve) => {
+        const timer = setTimeout(resolve, 5000);
+        managed.exitWaiters.push(() => {
+          clearTimeout(timer);
           resolve();
-        }, 1500);
+        });
+        treeKill(pid, "SIGKILL");
       });
     });
   }
 
   async restart(projectId: string, spec: ServiceSpec) {
     const key = `${projectId}:${spec.service_id}`;
+    const previousPort = this.procs.get(key)?.info.port ?? null;
     await this.stop(key);
-    await new Promise((r) => setTimeout(r, 300));
+    // The OS can hold the old port for a moment after the process is gone; starting before it is released
+    // would make the allocator think the port is taken and move the service to the next one.
+    if (previousPort) await waitForPortFree(previousPort, 10_000);
     return this.start(projectId, spec);
   }
 
