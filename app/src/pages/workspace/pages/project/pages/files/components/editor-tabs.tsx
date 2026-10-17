@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type DragEvent } from "react";
-import { File, X } from "lucide-react";
+import { Copy, ExternalLink, File, FolderSearch, Pin, X } from "lucide-react";
 import type { OpenFileTab } from "@/stores/workspace";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { useCopyFilePath, useCopyRelativePath, useOpenFileExternally, useRevealFile } from "@/features/files/hooks/use-files";
 import { cn } from "@/lib/utils";
 
 const EDITOR_TAB_DRAG_TYPE = "application/x-dev-station-editor-tab";
@@ -14,16 +16,18 @@ const parentName = (path: string) => {
 };
 
 interface EditorTabsProps {
+  projectId: string;
   tabs: OpenFileTab[];
   activePath: string | null;
   onSelect: (path: string) => void;
   onPin: (path: string) => void;
   onClose: (path: string) => void;
+  onCloseMany: (paths: string[]) => void;
   onMove: (path: string, insertAt: number) => void;
 }
 
 /** The file row above the editor: one tab per open file, pinned or previewed, reorderable by dragging. */
-export function EditorTabs({ tabs, activePath, onSelect, onPin, onClose, onMove }: EditorTabsProps) {
+export function EditorTabs({ projectId, tabs, activePath, onSelect, onPin, onClose, onCloseMany, onMove }: EditorTabsProps) {
   // Insertion point while a tab is dragged over the row: the index a dropped tab would take.
   const [dropAt, setDropAt] = useState<number | null>(null);
   const rowRef = useRef<HTMLDivElement>(null);
@@ -83,6 +87,7 @@ export function EditorTabs({ tabs, activePath, onSelect, onPin, onClose, onMove 
         return (
           <div key={tab.path} className="flex shrink-0 items-stretch">
             {dropAt === index && <span className="my-1.5 w-0.5 rounded-full bg-primary" />}
+            <TabContextMenu projectId={projectId} tab={tab} tabs={tabs} onPin={onPin} onClose={onClose} onCloseMany={onCloseMany}>
             <div
               role="tab"
               aria-selected={active}
@@ -123,10 +128,67 @@ export function EditorTabs({ tabs, activePath, onSelect, onPin, onClose, onMove 
                 <X className="size-3" />
               </button>
             </div>
+            </TabContextMenu>
           </div>
         );
       })}
       {dropAt === tabs.length && <span className="my-1.5 w-0.5 rounded-full bg-primary" />}
     </div>
+  );
+}
+
+interface TabContextMenuProps {
+  projectId: string;
+  tab: OpenFileTab;
+  tabs: OpenFileTab[];
+  onPin: (path: string) => void;
+  onClose: (path: string) => void;
+  onCloseMany: (paths: string[]) => void;
+  children: React.ReactElement;
+}
+
+/** Right-click a tab for the same close / copy-path / reveal actions VS Code offers. */
+function TabContextMenu({ projectId, tab, tabs, onPin, onClose, onCloseMany, children }: TabContextMenuProps) {
+  const copyPath = useCopyFilePath();
+  const copyRelativePath = useCopyRelativePath();
+  const reveal = useRevealFile();
+  const openExternally = useOpenFileExternally();
+  const index = tabs.findIndex((t) => t.path === tab.path);
+  const others = tabs.filter((t) => t.path !== tab.path).map((t) => t.path);
+  const toTheRight = tabs.slice(index + 1).map((t) => t.path);
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger render={children} />
+      <ContextMenuContent>
+        <ContextMenuItem onSelect={() => onClose(tab.path)}>
+          <X /> Close
+        </ContextMenuItem>
+        <ContextMenuItem disabled={!others.length} onSelect={() => onCloseMany(others)}>
+          Close Others
+        </ContextMenuItem>
+        <ContextMenuItem disabled={!toTheRight.length} onSelect={() => onCloseMany(toTheRight)}>
+          Close to the Right
+        </ContextMenuItem>
+        <ContextMenuItem onSelect={() => onCloseMany(tabs.map((t) => t.path))}>Close All</ContextMenuItem>
+        {!tab.pinned && (
+          <ContextMenuItem onSelect={() => onPin(tab.path)}>
+            <Pin /> Keep Open
+          </ContextMenuItem>
+        )}
+        <ContextMenuSeparator />
+        <ContextMenuItem onSelect={() => copyPath.mutate({ projectId, path: tab.path })}>
+          <Copy /> Copy Path
+        </ContextMenuItem>
+        <ContextMenuItem onSelect={() => copyRelativePath.mutate({ path: tab.path })}>Copy Relative Path</ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem onSelect={() => reveal.mutate({ projectId, path: tab.path })}>
+          <FolderSearch /> Reveal in File Manager
+        </ContextMenuItem>
+        <ContextMenuItem onSelect={() => openExternally.mutate({ projectId, path: tab.path })}>
+          <ExternalLink /> Open in Default App
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }

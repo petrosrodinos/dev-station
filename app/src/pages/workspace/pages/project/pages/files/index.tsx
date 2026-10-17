@@ -76,6 +76,17 @@ const FilesTab: FC = () => {
       else clearFile();
     }
   };
+  const closeTabs = (paths: string[]) => {
+    const closing = new Set(paths);
+    const next = currentTabs().filter((t) => !closing.has(t.path));
+    updateTabs(() => next);
+    // If the shown file went away, fall back to the last remaining tab (or the empty editor).
+    if (activeFile && closing.has(activeFile)) {
+      const fallback = next[next.length - 1];
+      if (fallback) showFile(fallback.path);
+      else clearFile();
+    }
+  };
   const moveEntry = useMoveEntry();
   const importFiles = useImportFiles();
   const activeRef = useRef(activeFile);
@@ -275,11 +286,13 @@ const FilesTab: FC = () => {
         <Panel className="sticky top-4 flex h-[calc(100vh-9rem)] min-w-0 flex-col overflow-hidden">
           {openTabs.length > 0 && (
             <EditorTabs
+              projectId={project.id}
               tabs={openTabs}
               activePath={activeFile}
               onSelect={showFile}
               onPin={pinFile}
               onClose={closeTab}
+              onCloseMany={closeTabs}
               onMove={(path, insertAt) => updateTabs((tabs) => moveFileTab(tabs, path, insertAt))}
             />
           )}

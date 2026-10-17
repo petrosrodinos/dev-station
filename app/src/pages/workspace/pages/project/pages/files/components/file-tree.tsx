@@ -88,6 +88,7 @@ function DirRow({ projectId, entry, depth, gitStates, activePath, onSelect }: { 
     if (command.id > 0) setOpen(followsCommand);
   }, [command.id, followsCommand]);
   const reveal = useRevealFile();
+  const [copyMenuOpen, setCopyMenuOpen] = useState(false);
   const { isOver, dropProps } = useTreeDropTarget(entry.path, actions, () => setOpen(true));
   const changed = [...gitStates.keys()].some((p) => p.startsWith(`${entry.path}/`));
 
@@ -105,7 +106,8 @@ function DirRow({ projectId, entry, depth, gitStates, activePath, onSelect }: { 
         {open ? <FolderOpen className="size-3.5 text-muted-foreground" /> : <Folder className="size-3.5 text-muted-foreground" />}
         <span className={cn("truncate", HEAVY_DIRS.has(entry.name) && "text-ash")}>{entry.name}</span>
         {changed && <span className="size-1.5 rounded-full bg-warning" />}
-        <div className="ml-auto hidden gap-0.5 group-hover:flex">
+        <div className={cn("ml-auto gap-0.5 group-hover:flex", copyMenuOpen ? "flex" : "hidden")}>
+          <CopyPathMenu projectId={projectId} path={entry.path} open={copyMenuOpen} onOpenChange={setCopyMenuOpen} />
           {actions && (
             <>
               <RowAction label="New file" onClick={() => { setOpen(true); actions.onCreate(entry.path, "file"); }}>
@@ -136,8 +138,6 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
   const previewKind = previewTypeFor(entry.name)?.kind;
   const Icon = previewKind ? PREVIEW_ICONS[previewKind] : File;
   const reveal = useRevealFile();
-  const copyPath = useCopyFilePath();
-  const copyRelativePath = useCopyRelativePath();
   // The hover-only action bar is display:none once the pointer leaves the row; keep it
   // rendered while the menu is open so the popup keeps its anchor.
   const [copyMenuOpen, setCopyMenuOpen] = useState(false);
@@ -156,26 +156,7 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
       <span className="truncate">{showPath ? entry.path : entry.name}</span>
       {gitState && <span className={cn("size-1.5 shrink-0 rounded-full", GIT_DOT[gitState])} title={getDropdownOptionLabel(GitFileStateOptions, gitState)} />}
       <div className={cn("ml-auto gap-0.5 group-hover:flex", copyMenuOpen ? "flex" : "hidden")}>
-        <DropdownMenu open={copyMenuOpen} onOpenChange={setCopyMenuOpen}>
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <DropdownMenuTrigger
-                  render={
-                    <Button variant="ghost" size="icon" className="size-5 text-muted-foreground" onClick={(e) => e.stopPropagation()} aria-label="Copy path">
-                      <Copy className="size-3" />
-                    </Button>
-                  }
-                />
-              }
-            />
-            <TooltipContent>Copy path</TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem onSelect={() => copyPath.mutate({ projectId, path: entry.path })}>Copy absolute path</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => copyRelativePath.mutate({ path: entry.path })}>Copy relative path</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <CopyPathMenu projectId={projectId} path={entry.path} open={copyMenuOpen} onOpenChange={setCopyMenuOpen} />
         {actions && (
           <>
             <RowAction label="Rename" onClick={() => actions.onRename(entry)}>
@@ -191,6 +172,34 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
         </RowAction>
       </div>
     </div>
+  );
+}
+
+function CopyPathMenu({ projectId, path, open, onOpenChange }: { projectId: string; path: string; open: boolean; onOpenChange: (open: boolean) => void }) {
+  const copyPath = useCopyFilePath();
+  const copyRelativePath = useCopyRelativePath();
+
+  return (
+    <DropdownMenu open={open} onOpenChange={onOpenChange}>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon" className="size-5 text-muted-foreground" onClick={(e) => e.stopPropagation()} aria-label="Copy path">
+                  <Copy className="size-3" />
+                </Button>
+              }
+            />
+          }
+        />
+        <TooltipContent>Copy path</TooltipContent>
+      </Tooltip>
+      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onSelect={() => copyPath.mutate({ projectId, path })}>Copy absolute path</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => copyRelativePath.mutate({ path })}>Copy relative path</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
