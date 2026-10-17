@@ -1,4 +1,4 @@
-import type { EditorTarget, FileBinary, FileContent, FileEntry } from "@shared/contract";
+import type { ContentReplaceResult, ContentSearchOptions, ContentSearchResult, EditorTarget, FileBinary, FileContent, FileEntry } from "@shared/contract";
 import { getBridge, getErrorMessage } from "@/lib/desktop";
 
 const wrap = async <T>(fn: () => Promise<T>, fallback: string): Promise<T> => {
@@ -11,6 +11,10 @@ const wrap = async <T>(fn: () => Promise<T>, fallback: string): Promise<T> => {
 
 export const listDirectory = (projectId: string, relDir: string): Promise<FileEntry[]> => wrap(() => getBridge().files.list(projectId, relDir), "Failed to read the folder.");
 export const searchFiles = (projectId: string, query: string): Promise<FileEntry[]> => wrap(() => getBridge().files.search(projectId, query), "File search failed.");
+export const searchFileContent = (projectId: string, options: ContentSearchOptions): Promise<ContentSearchResult> =>
+    wrap(() => getBridge().files.searchContent(projectId, options), "Search failed.");
+export const replaceFileContent = ({ projectId, options, replacement, paths }: { projectId: string; options: ContentSearchOptions; replacement: string; paths: string[] }): Promise<ContentReplaceResult> =>
+    wrap(() => getBridge().files.replaceContent(projectId, options, replacement, paths), "Replace failed.");
 export const revealFile = ({ projectId, path }: { projectId: string; path: string }) => wrap(() => getBridge().files.reveal(projectId, path), "Could not reveal the file.");
 export const openFileExternally = ({ projectId, path }: { projectId: string; path: string }) => wrap(() => getBridge().files.openExternal(projectId, path), "Could not open the file.");
 export const openInEditor = ({ projectId, editor, path }: { projectId: string; editor: EditorTarget; path?: string }) =>
@@ -24,6 +28,8 @@ export const writeFile = ({ projectId, path, content }: { projectId: string; pat
 export const createFile = ({ projectId, path }: { projectId: string; path: string }) => wrap(() => getBridge().files.createFile(projectId, path), "Could not create the file.");
 export const createFolder = ({ projectId, path }: { projectId: string; path: string }) => wrap(() => getBridge().files.createFolder(projectId, path), "Could not create the folder.");
 export const renameEntry = ({ projectId, path, name }: { projectId: string; path: string; name: string }) => wrap(() => getBridge().files.rename(projectId, path, name), "Could not rename it.");
+export const copyEntry = ({ projectId, path, destDir }: { projectId: string; path: string; destDir: string }) => wrap(() => getBridge().files.copyEntry(projectId, path, destDir), "Could not paste it.");
+export const addToGitignore = ({ projectId, path }: { projectId: string; path: string }) => wrap(() => getBridge().files.addToGitignore(projectId, path), "Could not update .gitignore.");
 export const deleteEntry = ({ projectId, path }: { projectId: string; path: string }) => wrap(() => getBridge().files.delete(projectId, path), "Could not delete it.");
 export const moveEntry = ({ projectId, path, destDir }: { projectId: string; path: string; destDir: string }) => wrap(() => getBridge().files.move(projectId, path, destDir), "Could not move it.");
 export const importExternal = ({ projectId, destDir, files }: { projectId: string; destDir: string; files: File[] }) =>

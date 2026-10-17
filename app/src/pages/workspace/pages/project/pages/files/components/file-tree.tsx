@@ -1,13 +1,15 @@
 import { useContext, useEffect, useState } from "react";
-import { ChevronRight, Copy, File, Folder, FolderOpen, FilePlus, FolderPlus, FolderSearch, ImageIcon, Pencil, FileText, Trash2 } from "lucide-react";
+import { ChevronRight, Copy, ExternalLink, File, Folder, FolderOpen, FilePlus, FolderPlus, FolderSearch, ImageIcon, Pencil, FileText, Scissors, Search, SearchX, Trash2, ClipboardPaste, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useCopyFilePath, useCopyRelativePath, useDirectory, useRevealFile } from "@/features/files/hooks/use-files";
+import { useAddToGitignore, useCopyEntry, useCopyFilePath, useCopyRelativePath, useDirectory, useOpenFileExternally, useRevealFile } from "@/features/files/hooks/use-files";
 import { GitFileStateOptions } from "@/config/constants/dropdowns/git/git-file-state.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { cn } from "@/lib/utils";
+import { useEntryClipboard } from "../hooks/use-entry-clipboard";
 import { ENTRY_DRAG_TYPE, setDraggedPath, useTreeDropTarget } from "../hooks/use-tree-drop-target";
 import { TreeActionsContext, TreeCommandContext } from "./tree-context";
 import { FilePreviewKinds, previewTypeFor, type FileEntry, type FilePreviewKind, type GitFileState } from "@shared/contract";
@@ -94,6 +96,7 @@ function DirRow({ projectId, entry, depth, gitStates, activePath, onSelect }: { 
 
   return (
     <div {...dropProps}>
+      <EntryContextMenu projectId={projectId} entry={entry} onOpen={() => setOpen((o) => !o)} onBeforeCreate={() => setOpen(true)}>
       <div
         role="treeitem"
         aria-expanded={open}
@@ -129,6 +132,7 @@ function DirRow({ projectId, entry, depth, gitStates, activePath, onSelect }: { 
           </RowAction>
         </div>
       </div>
+      </EntryContextMenu>
       {open && <FileTreeNode projectId={projectId} dir={entry.path} depth={depth + 1} gitStates={gitStates} activePath={activePath} onSelect={onSelect} />}
     </div>
   );
@@ -144,6 +148,7 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
   const actions = useContext(TreeActionsContext);
 
   return (
+    <EntryContextMenu projectId={projectId} entry={entry} onOpen={() => onSelect?.(entry.path)}>
     <div
       onClick={() => onSelect?.(entry.path)}
       onDoubleClick={() => actions?.onPin(entry.path)}
@@ -172,6 +177,115 @@ export function FileRow({ projectId, entry, depth, gitState, showPath = false, a
         </RowAction>
       </div>
     </div>
+    </EntryContextMenu>
+  );
+}
+
+/** Right-click a tree row for everything its hover buttons do, plus search scoping. */
+function EntryContextMenu({ projectId, entry, onOpen, onBeforeCreate, children }: { projectId: string; entry: FileEntry; onOpen: () => void; onBeforeCreate?: () => void; children: React.ReactElement }) {
+  const actions = useContext(TreeActionsContext);
+  const copyPath = useCopyFilePath();
+  const copyRelativePath = useCopyRelativePath();
+  const reveal = useRevealFile();
+  const openExternally = useOpenFileExternally();
+  const addToGitignore = useAddToGitignore();
+  const copyEntry = useCopyEntry();
+  const clipboard = useEntryClipboard((s) => s.entry);
+  const isDir = entry.type === "dir";
+  // Paste into the folder itself, or beside a file.
+  const pasteDir = isDir ? entry.path : entry.path.slice(0, Math.max(0, entry.path.lastIndexOf("/")));
+  const paste = () => {
+    if (!clipboard || !actions || clipboard.projectId !== projectId) return;
+    onBeforeCreate?.();
+    if (clipboard.mode === "copy") copyEntry.mutate({ projectId, path: clipboard.path, destDir: pasteDir });
+    else {
+      actions.onMove(clipboard.path, pasteDir);
+      useEntryClipboard.getState().clear();
+    }
+  };
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger render={children} />
+      <ContextMenuContent className="w-56" onClick={(e) => e.stopPropagation()}>
+        <ContextMenuItem onSelect={onOpen}>
+          {isDir ? <FolderOpen /> : <File />} {isDir ? "Expand / Collapse" : "Open"}
+        </ContextMenuItem>
+        {!isDir && (
+          <ContextMenuItem onSelect={() => openExternally.mutate({ projectId, path: entry.path })}>
+            <ExternalLink /> Open in Default App
+          </ContextMenuItem>
+        )}
+        <ContextMenuItem onSelect={() => addToGitignore.mutate({ projectId, path: entry.path })}>
+          <EyeOff /> Add to .gitignore
+        </ContextMenuItem>
+        {actions && isDir && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              onSelect={() => {
+                onBeforeCreate?.();
+                actions.onCreate(entry.path, "file");
+              }}
+            >
+              <FilePlus /> New File…
+            </ContextMenuItem>
+            <ContextMenuItem
+              onSelect={() => {
+                onBeforeCreate?.();
+                actions.onCreate(entry.path, "folder");
+              }}
+            >
+              <FolderPlus /> New Folder…
+            </ContextMenuItem>
+          </>
+        )}
+        {actions && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem onSelect={() => actions.onRename(entry)}>
+              <Pencil /> Rename…
+            </ContextMenuItem>
+            <ContextMenuItem variant="destructive" onSelect={() => actions.onDelete(entry)}>
+              <Trash2 /> Move to Trash
+            </ContextMenuItem>
+          </>
+        )}
+        <ContextMenuSeparator />
+        {actions && (
+          <ContextMenuItem onSelect={() => useEntryClipboard.getState().set({ projectId, path: entry.path, mode: "cut" })}>
+            <Scissors /> Cut
+          </ContextMenuItem>
+        )}
+        <ContextMenuItem onSelect={() => useEntryClipboard.getState().set({ projectId, path: entry.path, mode: "copy" })}>
+          <Copy /> Copy
+        </ContextMenuItem>
+        {actions && (
+          <ContextMenuItem disabled={!clipboard || clipboard.projectId !== projectId} onSelect={paste}>
+            <ClipboardPaste /> Paste
+          </ContextMenuItem>
+        )}
+        <ContextMenuSeparator />
+        <ContextMenuItem onSelect={() => copyPath.mutate({ projectId, path: entry.path })}>
+          <Copy /> Copy Path
+        </ContextMenuItem>
+        <ContextMenuItem onSelect={() => copyRelativePath.mutate({ path: entry.path })}>Copy Relative Path</ContextMenuItem>
+        <ContextMenuItem onSelect={() => reveal.mutate({ projectId, path: entry.path })}>
+          <FolderSearch /> Reveal in File Manager
+        </ContextMenuItem>
+        {actions && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem onSelect={() => actions.onSearchScope(entry.path, "include", entry.type)}>
+              <Search /> {isDir ? "Find in Folder…" : "Find in This File…"}
+            </ContextMenuItem>
+            <ContextMenuItem onSelect={() => actions.onSearchScope(entry.path, "exclude", entry.type)}>
+              <SearchX /> Exclude from Search
+            </ContextMenuItem>
+          </>
+        )}
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }
 

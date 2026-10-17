@@ -19,5 +19,7 @@ export interface TreeActions {
   onPin: (path: string) => void;
   onMove: (path: string, destDir: string) => void;
   onDropFiles: (files: File[], destDir: string) => void;
+  /** Opens content search limited to (`include`) or skipping (`exclude`) a file or folder. */
+  onSearchScope: (path: string, mode: "include" | "exclude", type: FileEntry["type"]) => void;
 }
 export const TreeActionsContext = createContext<TreeActions | null>(null);

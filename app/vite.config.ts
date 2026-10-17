@@ -7,7 +7,7 @@ import electron from "vite-plugin-electron/simple";
 // `npm run dev` starts the renderer and launches Electron; `npm run dev:web` runs the renderer alone.
 const withElectron = process.env.ELECTRON !== "false";
 
-const nativeExternals = ["node-pty", "tree-kill"];
+const nativeExternals = ["node-pty", "tree-kill", "@vscode/ripgrep"];
 
 export default defineConfig({
   // Electron loads the build via file://, so assets need relative paths ("./"). The web build

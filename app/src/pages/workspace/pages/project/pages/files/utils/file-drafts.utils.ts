@@ -11,3 +11,10 @@ export const getFileDraft = (projectId: string, path: string) => drafts.get(draf
 export const setFileDraft = (projectId: string, path: string, content: string) => {
   drafts.set(draftKey(projectId, path), content);
 };
+
+export const hasFileDraft = (projectId: string, path: string) => drafts.has(draftKey(projectId, path));
+
+/** Forget a file's draft once it is saved, so a later reload shows what is on disk. */
+export const clearFileDraft = (projectId: string, path: string) => {
+  drafts.delete(draftKey(projectId, path));
+};

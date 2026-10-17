@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState, type FC } from "react";
-import { ChevronsDownUp, ChevronsUpDown, Code2, Copy, FilePlus, Folder, FolderPlus, MoreHorizontal, Search } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type FC } from "react";
+import { ChevronsDownUp, ChevronsUpDown, Code2, Copy, FilePlus, Folder, FolderPlus, MoreHorizontal, Search, TextSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-w
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { toast } from "@/hooks/use-toast";
 import { DEFAULT_FILES_TREE_WIDTH, useWorkspaceStore, type OpenFileTab } from "@/stores/workspace";
-import { previewTypeFor, type FileEntry, type GitFileState } from "@shared/contract";
+import { previewTypeFor, type ContentMatch, type FileEntry, type GitFileState } from "@shared/contract";
 import { useProjectContext } from "../../hooks/use-project-context";
 import { FileTreeNode, FileRow } from "./components/file-tree";
 import { TreeActionsContext, TreeCommandContext, type CreateKind, type TreeActions, type TreeCommand } from "./components/tree-context";
@@ -23,6 +23,8 @@ import { EntryDialogs, type EntryDialogState } from "./components/entry-dialogs"
 import { CodeEditor } from "./components/code-editor";
 import { BinaryPreview } from "./components/binary-preview";
 import { EditorTabs } from "./components/editor-tabs";
+import { ContentSearchPanel } from "./components/content-search-panel";
+import { useFileRevealStore } from "./hooks/use-file-reveal";
 import { closeFileTab, isWithin, moveFileTab, openFileTab, remapFileTabs } from "./utils/file-tabs.utils";
 
 /** Grid padding and the handle between the tree and the editor (the grid is `p-4` with a 1rem handle column at `@5xl`). */
@@ -76,6 +78,31 @@ const FilesTab: FC = () => {
       else clearFile();
     }
   };
+  // Left panel: the folder tree (with name search) or search inside file contents.
+  const [mode, setMode] = useState<"files" | "content">("files");
+  const [contentFocus, setContentFocus] = useState(0);
+  // Bumped after a replace so open editors remount and reload the rewritten files.
+  const [reloadNonce, setReloadNonce] = useState(0);
+  const [scopeRequest, setScopeRequest] = useState<{ include?: string; exclude?: string; nonce: number } | null>(null);
+  const openContentSearch = () => {
+    setMode("content");
+    setContentFocus((n) => n + 1);
+  };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        openContentSearch();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  const openMatch = (path: string, match: ContentMatch) => {
+    selectFile(path);
+    useFileRevealStore.getState().reveal({ path, line: match.line, column: match.column, length: match.length });
+  };
+
   const closeTabs = (paths: string[]) => {
     const closing = new Set(paths);
     const next = currentTabs().filter((t) => !closing.has(t.path));
@@ -111,6 +138,12 @@ const FilesTab: FC = () => {
           },
         ),
       onDropFiles: (files: File[], destDir: string) => importFiles.mutate({ projectId: project.id, destDir, files }),
+      onSearchScope: (path: string, mode: "include" | "exclude", type: FileEntry["type"]) => {
+        const glob = type === "dir" ? `${path}/**` : path;
+        setScopeRequest((r) => ({ [mode]: glob, nonce: (r?.nonce ?? 0) + 1 }));
+        setMode("content");
+        setContentFocus((n) => n + 1);
+      },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [project.id, moveEntry.mutate, importFiles.mutate],
@@ -162,6 +195,18 @@ const FilesTab: FC = () => {
       >
         <Panel className={cn("min-w-0 p-2", rootDrop.isOver && "ring-1 ring-primary")} {...rootDrop.dropProps}>
           <TreeCommandContext.Provider value={command}>
+            <div className="mb-1 flex gap-1" role="tablist" aria-label="Sidebar view">
+              <Button variant="ghost" size="sm" role="tab" aria-selected={mode === "files"} className={cn("h-7 flex-1 gap-1.5 text-xs text-muted-foreground", mode === "files" && "bg-accent text-foreground")} onClick={() => setMode("files")}>
+                <Folder className="size-3.5" /> Files
+              </Button>
+              <Button variant="ghost" size="sm" role="tab" aria-selected={mode === "content"} title="Search in files (Ctrl+Shift+F)" className={cn("h-7 flex-1 gap-1.5 text-xs text-muted-foreground", mode === "content" && "bg-accent text-foreground")} onClick={openContentSearch}>
+                <TextSearch className="size-3.5" /> Search
+              </Button>
+            </div>
+            {mode === "content" ? (
+              <ContentSearchPanel projectId={project.id} focusNonce={contentFocus} scopeRequest={scopeRequest} activePath={activeFile} onOpenMatch={openMatch} onReplaced={() => setReloadNonce((n) => n + 1)} />
+            ) : (
+            <>
             <div className="mb-1 flex items-center gap-1 border-b pb-1">
               <div className="relative min-w-0 flex-1">
                 <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ash" />
@@ -239,6 +284,8 @@ const FilesTab: FC = () => {
             ) : (
               <FileTreeNode projectId={project.id} dir="" depth={0} gitStates={gitStates} activePath={activeFile} onSelect={selectFile} />
             )}
+            </>
+            )}
           </TreeCommandContext.Provider>
         </Panel>
 
@@ -306,7 +353,7 @@ const FilesTab: FC = () => {
           ) : previewTypeFor(activeFile) ? (
             <BinaryPreview key={activeFile} projectId={project.id} path={activeFile} />
           ) : (
-            <CodeEditor key={activeFile} projectId={project.id} path={activeFile} />
+            <CodeEditor key={`${activeFile}:${reloadNonce}`} projectId={project.id} path={activeFile} />
           )}
         </Panel>
       </div>

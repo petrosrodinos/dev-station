@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { copyFilePath, copyRelativePath, createFile, createFolder, deleteEntry, importExternal, listDirectory, moveEntry, openFileExternally, openInEditor, readBinaryFile, readFile, renameEntry, revealFile, searchFiles, writeFile } from "../services/files.services";
+import { addToGitignore, copyEntry, copyFilePath, copyRelativePath, createFile, createFolder, deleteEntry, importExternal, listDirectory, moveEntry, openFileExternally, openInEditor, readBinaryFile, readFile, renameEntry, replaceFileContent, revealFile, searchFileContent, searchFiles, writeFile } from "../services/files.services";
 import { getEditorTargetLabel } from "@/config/constants/dropdowns/settings/editor-target.options";
+import type { ContentSearchOptions } from "@shared/contract";
 import { toast } from "@/hooks/use-toast";
 
 export const useDirectory = (projectId: string | null, relDir: string, enabled = true) =>
@@ -13,6 +14,29 @@ export const useFileSearch = (projectId: string | null, query: string) =>
         enabled: !!projectId && query.trim().length > 1,
         placeholderData: keepPreviousData,
     });
+
+export const useContentSearch = (projectId: string | null, options: ContentSearchOptions) =>
+    useQuery({
+        queryKey: ["content-search", projectId, options],
+        queryFn: () => searchFileContent(projectId!, options),
+        enabled: !!projectId && options.query.length > 0,
+        placeholderData: keepPreviousData,
+        staleTime: 0,
+        retry: false,
+    });
+
+export const useReplaceContent = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: replaceFileContent,
+        onSuccess: (_r, vars) => {
+            // Drop cached text so open editors reload what the replace wrote instead of showing the old content.
+            for (const path of vars.paths) queryClient.removeQueries({ queryKey: ["file-content", vars.projectId, path] });
+            void queryClient.invalidateQueries({ queryKey: ["content-search", vars.projectId] });
+        },
+        onError: (error: Error) => toast({ title: "Could not replace", description: error.message, variant: "error" }),
+    });
+};
 
 export const useRevealFile = () =>
     useMutation({
@@ -135,6 +159,25 @@ export const useMoveEntry = () => {
         onError: (error: Error) => toast({ title: "Could not move", description: error.message, variant: "error" }),
     });
 };
+
+export const useCopyEntry = () => {
+    const invalidate = useInvalidateTree();
+    return useMutation({
+        mutationFn: copyEntry,
+        onSuccess: (created, vars) => {
+            invalidate(vars.projectId);
+            toast({ title: "Pasted", description: created, duration: 1500 });
+        },
+        onError: (error: Error) => toast({ title: "Could not paste", description: error.message, variant: "error" }),
+    });
+};
+
+export const useAddToGitignore = () =>
+    useMutation({
+        mutationFn: addToGitignore,
+        onSuccess: (added, vars) => toast({ title: added ? "Added to .gitignore" : "Already in .gitignore", description: vars.path, duration: 1800 }),
+        onError: (error: Error) => toast({ title: "Could not update .gitignore", description: error.message, variant: "error" }),
+    });
 
 export const useImportFiles = () => {
     const invalidate = useInvalidateTree();

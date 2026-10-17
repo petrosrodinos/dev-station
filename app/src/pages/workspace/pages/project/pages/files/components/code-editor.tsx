@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import CodeMirror, { type Extension } from "@uiw/react-codemirror";
+import CodeMirror, { EditorView, type Extension } from "@uiw/react-codemirror";
 import { githubDark, githubLight } from "@uiw/codemirror-theme-github";
 import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
@@ -17,7 +17,8 @@ import { useFileContent, useSaveFile } from "@/features/files/hooks/use-files";
 import { useResolvedTheme } from "@/hooks/use-resolved-theme";
 import { cn } from "@/lib/utils";
 import { FileHeader, FileHeaderAction } from "./file-header";
-import { getFileDraft, setFileDraft } from "../utils/file-drafts.utils";
+import { clearFileDraft, getFileDraft, setFileDraft } from "../utils/file-drafts.utils";
+import { useFileRevealStore } from "../hooks/use-file-reveal";
 
 const EXT_LANGUAGE: Record<string, () => Extension> = {
   js: javascript, jsx: () => javascript({ jsx: true }), mjs: javascript, cjs: javascript,
@@ -69,6 +70,20 @@ export function CodeEditor({ projectId, path }: { projectId: string; path: strin
     }
   }, [data, projectId, path]);
 
+  // Search results jump here: select the match and scroll it into view once the text is in the editor.
+  const [view, setView] = useState<EditorView | null>(null);
+  const reveal = useFileRevealStore((s) => s.request);
+  useEffect(() => {
+    if (!view || draft === null || !reveal || reveal.path !== path) return;
+    useFileRevealStore.setState({ request: null });
+    const doc = view.state.doc;
+    const line = doc.line(Math.min(Math.max(reveal.line, 1), doc.lines));
+    const anchor = Math.min(line.from + reveal.column, line.to);
+    const head = Math.min(anchor + reveal.length, line.to);
+    view.dispatch({ selection: { anchor, head }, effects: EditorView.scrollIntoView(anchor, { y: "center" }) });
+    view.focus();
+  }, [view, draft, reveal, path]);
+
   const edit = (content: string) => {
     setDraft(content);
     setFileDraft(projectId, path, content);
@@ -78,7 +93,7 @@ export function CodeEditor({ projectId, path }: { projectId: string; path: strin
 
   const doSave = () => {
     if (draft === null || !dirty || save.isPending) return;
-    save.mutate({ projectId, path, content: draft });
+    save.mutate({ projectId, path, content: draft }, { onSuccess: () => clearFileDraft(projectId, path) });
   };
 
   const loaded = data !== undefined && draft !== null;
@@ -121,6 +136,7 @@ export function CodeEditor({ projectId, path }: { projectId: string; path: strin
             <CodeMirror
               value={draft}
               onChange={edit}
+              onCreateEditor={setView}
               extensions={extensions}
               theme={theme === "light" ? githubLight : githubDark}
               height="100%"

@@ -293,6 +293,44 @@ export interface FileContent {
   content: string;
 }
 
+/** Search-in-files query. `include` / `exclude` are comma-separated globs relative to the project root. */
+export interface ContentSearchOptions {
+  query: string;
+  regex: boolean;
+  caseSensitive: boolean;
+  wholeWord: boolean;
+  include: string;
+  exclude: string;
+}
+
+export interface ContentMatch {
+  /** 1-based line number. */
+  line: number;
+  /** 0-based column of the match within the full line. */
+  column: number;
+  length: number;
+  /** The line, trimmed to a window around the match; `previewStart` is the match's offset inside it. */
+  preview: string;
+  previewStart: number;
+}
+
+export interface ContentFileResult {
+  path: string;
+  matches: ContentMatch[];
+}
+
+export interface ContentSearchResult {
+  files: ContentFileResult[];
+  totalMatches: number;
+  /** True when the match or file cap was hit, so more results exist than are listed. */
+  truncated: boolean;
+}
+
+export interface ContentReplaceResult {
+  filesChanged: number;
+  replacements: number;
+}
+
 export const FilePreviewKinds = {
   IMAGE: "image",
   PDF: "pdf",
@@ -664,6 +702,10 @@ export interface DevStationBridge {
   files: {
     list(projectId: string, relDir: string): Promise<FileEntry[]>;
     search(projectId: string, query: string): Promise<FileEntry[]>;
+    /** Searches inside text files (VS Code "Find in Files"). */
+    searchContent(projectId: string, options: ContentSearchOptions): Promise<ContentSearchResult>;
+    /** Replaces every match of `options` in the given files; files that look binary or are too large are skipped. */
+    replaceContent(projectId: string, options: ContentSearchOptions, replacement: string, paths: string[]): Promise<ContentReplaceResult>;
     reveal(projectId: string, relPath: string): Promise<void>;
     openExternal(projectId: string, relPath: string): Promise<void>;
     openInEditor(projectId: string, editor: EditorTarget, relPath?: string): Promise<void>;
@@ -679,6 +721,10 @@ export interface DevStationBridge {
     rename(projectId: string, relPath: string, newName: string): Promise<string>;
     /** Moves an entry into another project folder ("" = root); returns the new project-relative path. */
     move(projectId: string, relPath: string, destDir: string): Promise<string>;
+    /** Copies an entry into a project folder under a free name ("a copy.ts" if "a.ts" exists); returns the new project-relative path. */
+    copyEntry(projectId: string, relPath: string, destDir: string): Promise<string>;
+    /** Appends the entry to the project root .gitignore; false when it was already listed. */
+    addToGitignore(projectId: string, relPath: string): Promise<boolean>;
     /** Copies files/folders from anywhere on disk (absolute paths) into a project folder; returns the new relative paths. */
     importExternal(projectId: string, destDir: string, sourcePaths: string[]): Promise<string[]>;
     /** Resolves the absolute path of a File from a drag-and-drop event. */
@@ -811,6 +857,8 @@ export const IpcChannels = {
   ENV_WRITE_FILE: "env:write-file",
   FILES_LIST: "files:list",
   FILES_SEARCH: "files:search",
+  FILES_SEARCH_CONTENT: "files:search-content",
+  FILES_REPLACE_CONTENT: "files:replace-content",
   FILES_REVEAL: "files:reveal",
   FILES_OPEN_EXTERNAL: "files:open-external",
   FILES_OPEN_EDITOR: "files:open-editor",
@@ -822,6 +870,8 @@ export const IpcChannels = {
   FILES_CREATE_FOLDER: "files:create-folder",
   FILES_RENAME: "files:rename",
   FILES_MOVE: "files:move",
+  FILES_COPY_ENTRY: "files:copy-entry",
+  FILES_ADD_GITIGNORE: "files:add-gitignore",
   FILES_IMPORT: "files:import",
   FILES_DELETE: "files:delete",
   GIT_STATUS: "git:status",

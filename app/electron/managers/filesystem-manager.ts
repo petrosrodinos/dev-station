@@ -10,14 +10,14 @@ import { workspaceConfig } from "./workspace-config";
 
 // Filesystem Manager (Spec §11). Browsing, hand-off, and lightweight in-app editing for text files.
 
-const IGNORED_DIRS = new Set([".git", "node_modules", "dist", "build", ".next", ".turbo", ".cache", "coverage", "out", ".venv", "__pycache__", "target"]);
+export const IGNORED_DIRS = new Set([".git", "node_modules", "dist", "build", ".next", ".turbo", ".cache", "coverage", "out", ".venv", "__pycache__", "target"]);
 const MAX_SEARCH_RESULTS = 200;
 const MAX_SEARCH_VISITS = 50_000;
-const MAX_EDITABLE_BYTES = 5 * 1024 * 1024; // 5 MB — larger files go to Cursor / VS Code instead.
+export const MAX_EDITABLE_BYTES = 5 * 1024 * 1024; // 5 MB — larger files go to Cursor / VS Code instead.
 const MAX_PREVIEW_BYTES = 25 * 1024 * 1024; // 25 MB — larger images / PDFs open in their default app instead.
 
 /** Heuristic binary sniff: a NUL byte in the first few KB means "don't try to edit this as text". */
-function looksBinary(buffer: Buffer): boolean {
+export function looksBinary(buffer: Buffer): boolean {
   const len = Math.min(buffer.length, 8000);
   for (let i = 0; i < len; i++) if (buffer[i] === 0) return true;
   return false;
@@ -96,6 +96,52 @@ class FilesystemManager {
       throw new IpcError(`Could not move "${rel}".`);
     });
     return nextRel;
+  }
+
+  async copyEntry(projectId: string, rel: string, destDir: string): Promise<string> {
+    if (!rel) throw new IpcError("The project root cannot be copied.");
+    const root = workspaceConfig.projectRoot(projectId);
+    const from = workspaceConfig.resolveInProject(projectId, rel);
+    const dest = workspaceConfig.resolveInProject(projectId, destDir);
+    const stat = await fs.promises.stat(from).catch(() => null);
+    if (!stat) throw new IpcError(`Cannot read "${rel}".`);
+    const destStat = await fs.promises.stat(dest).catch(() => null);
+    if (!destStat?.isDirectory()) throw new IpcError("The destination is not a folder.");
+    const intoSelf = path.relative(from, dest);
+    if (stat.isDirectory() && !intoSelf.startsWith("..") && !path.isAbsolute(intoSelf)) throw new IpcError("A folder cannot be copied into itself.");
+
+    // Pasting next to the original (or onto a name already taken) gets "name copy", "name copy 2", …
+    const ext = stat.isDirectory() ? "" : path.extname(from);
+    const stem = path.basename(from, ext);
+    let to = path.join(dest, path.basename(from));
+    for (let n = 1; await fs.promises.stat(to).then(() => true, () => false); n++) {
+      to = path.join(dest, `${stem} copy${n > 1 ? ` ${n}` : ""}${ext}`);
+    }
+    const nextRel = toPosix(path.relative(root, to));
+    workspaceConfig.resolveInProject(projectId, nextRel);
+    await fs.promises
+      .cp(from, to, { recursive: true, errorOnExist: true, filter: (src) => path.basename(src) !== ".git" || src === from })
+      .catch(() => {
+        throw new IpcError(`Could not copy "${rel}".`);
+      });
+    return nextRel;
+  }
+
+  async addToGitignore(projectId: string, rel: string): Promise<boolean> {
+    if (!rel) throw new IpcError("The project root cannot be ignored.");
+    const abs = workspaceConfig.resolveInProject(projectId, rel);
+    const stat = await fs.promises.stat(abs).catch(() => null);
+    const bare = `/${rel}`;
+    const entry = stat?.isDirectory() ? `${bare}/` : bare;
+    const file = path.join(workspaceConfig.projectRoot(projectId), ".gitignore");
+    const current = await fs.promises.readFile(file, "utf8").catch(() => "");
+    const listed = current.split(/\r?\n/).map((l) => l.trim());
+    if (listed.includes(entry) || listed.includes(bare)) return false;
+    const eol = current.includes("\r\n") ? "\r\n" : "\n";
+    await fs.promises.appendFile(file, `${current && !current.endsWith("\n") ? eol : ""}${entry}${eol}`, "utf8").catch(() => {
+      throw new IpcError("Could not update .gitignore.");
+    });
+    return true;
   }
 
   async importExternal(projectId: string, destDir: string, sources: string[]): Promise<string[]> {

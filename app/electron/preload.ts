@@ -65,6 +65,8 @@ const bridge: DevStationBridge = {
   files: {
     list: (id, rel) => call(C.FILES_LIST, id, rel),
     search: (id, q) => call(C.FILES_SEARCH, id, q),
+    searchContent: (id, options) => call(C.FILES_SEARCH_CONTENT, id, options),
+    replaceContent: (id, options, replacement, paths) => call(C.FILES_REPLACE_CONTENT, id, options, replacement, paths),
     reveal: (id, rel) => call(C.FILES_REVEAL, id, rel),
     openExternal: (id, rel) => call(C.FILES_OPEN_EXTERNAL, id, rel),
     openInEditor: (id, editor, rel) => call(C.FILES_OPEN_EDITOR, id, editor, rel),
@@ -76,6 +78,8 @@ const bridge: DevStationBridge = {
     createFolder: (id, rel) => call(C.FILES_CREATE_FOLDER, id, rel),
     rename: (id, rel, name) => call(C.FILES_RENAME, id, rel, name),
     move: (id, rel, destDir) => call(C.FILES_MOVE, id, rel, destDir),
+    copyEntry: (id, rel, destDir) => call(C.FILES_COPY_ENTRY, id, rel, destDir),
+    addToGitignore: (id, rel) => call(C.FILES_ADD_GITIGNORE, id, rel),
     importExternal: (id, destDir, sources) => call(C.FILES_IMPORT, id, destDir, sources),
     pathForFile: (file) => webUtils.getPathForFile(file),
     delete: (id, rel) => call(C.FILES_DELETE, id, rel),

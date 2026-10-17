@@ -6,6 +6,7 @@ import { AgentTypes, CloseChoices, EditorTargets, IpcChannels, ProcessStatuses, 
 import { accessManager } from "../managers/access-manager";
 import { agentManager } from "../managers/agent-manager";
 import { inspect, listEnvKeys } from "../managers/detection-manager";
+import { contentSearchManager } from "../managers/content-search-manager";
 import { envFileManager } from "../managers/env-file-manager";
 import { filesystemManager } from "../managers/filesystem-manager";
 import { floatingPanelManager } from "../managers/floating-panel-manager";
@@ -152,6 +153,18 @@ export function registerIpc(hooks: { onCloseChoice: (choice: CloseChoice) => voi
   // Files ------------------------------------------------------------------------
   handle(IpcChannels.FILES_LIST, args(zId, zRelPath), ([id, rel]) => filesystemManager.list(id, rel));
   handle(IpcChannels.FILES_SEARCH, args(zId, z.string().max(200)), ([id, q]) => filesystemManager.search(id, q));
+  const zContentSearch = z.object({
+    query: z.string().min(1).max(500),
+    regex: z.boolean(),
+    caseSensitive: z.boolean(),
+    wholeWord: z.boolean(),
+    include: z.string().max(500),
+    exclude: z.string().max(500),
+  });
+  handle(IpcChannels.FILES_SEARCH_CONTENT, args(zId, zContentSearch), ([id, options]) => contentSearchManager.search(id, options));
+  handle(IpcChannels.FILES_REPLACE_CONTENT, args(zId, zContentSearch, z.string().max(10_000), z.array(zRelPath).min(1).max(5000)), ([id, options, replacement, paths]) =>
+    contentSearchManager.replace(id, options, replacement, paths),
+  );
   handle(IpcChannels.FILES_REVEAL, args(zId, zRelPath), ([id, rel]) => filesystemManager.reveal(id, rel));
   handle(IpcChannels.FILES_OPEN_EXTERNAL, args(zId, zRelPath), ([id, rel]) => filesystemManager.openExternal(id, rel));
   handle(IpcChannels.FILES_OPEN_EDITOR, args(zId, z.enum([EditorTargets.CURSOR, EditorTargets.VSCODE, EditorTargets.DEFAULT]), zRelPath.optional()), ([id, editor, rel]) =>
@@ -165,6 +178,8 @@ export function registerIpc(hooks: { onCloseChoice: (choice: CloseChoice) => voi
   handle(IpcChannels.FILES_CREATE_FOLDER, args(zId, zRelPath), ([id, rel]) => filesystemManager.createFolder(id, rel));
   handle(IpcChannels.FILES_RENAME, args(zId, zRelPath, z.string().max(255)), ([id, rel, name]) => filesystemManager.rename(id, rel, name));
   handle(IpcChannels.FILES_MOVE, args(zId, zRelPath, zRelPath), ([id, rel, dest]) => filesystemManager.move(id, rel, dest));
+  handle(IpcChannels.FILES_COPY_ENTRY, args(zId, zRelPath, zRelPath), ([id, rel, dest]) => filesystemManager.copyEntry(id, rel, dest));
+  handle(IpcChannels.FILES_ADD_GITIGNORE, args(zId, zRelPath), ([id, rel]) => filesystemManager.addToGitignore(id, rel));
   handle(IpcChannels.FILES_IMPORT, args(zId, zRelPath, z.array(z.string().min(1).max(4096)).min(1).max(500)), ([id, dest, sources]) => filesystemManager.importExternal(id, dest, sources));
   handle(IpcChannels.FILES_DELETE, args(zId, zRelPath), ([id, rel]) => filesystemManager.delete(id, rel));
 
