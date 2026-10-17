@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { FileHeader, FileHeaderAction } from "./file-header";
 import { clearFileDraft, getFileDraft, setFileDraft } from "../utils/file-drafts.utils";
 import { useFileRevealStore } from "../hooks/use-file-reveal";
+import { findWidget } from "../utils/find-widget.utils";
 
 const EXT_LANGUAGE: Record<string, () => Extension> = {
   js: javascript, jsx: () => javascript({ jsx: true }), mjs: javascript, cjs: javascript,
@@ -45,7 +46,7 @@ const VIEW_MODE_BUTTONS: { id: ViewMode; label: string; icon: typeof Pencil }[] 
 function languageFor(path: string): Extension[] {
   const ext = path.split(".").pop()?.toLowerCase() ?? "";
   const factory = EXT_LANGUAGE[ext];
-  return factory ? [factory()] : [];
+  return [...(factory ? [factory()] : []), findWidget()];
 }
 
 /** In-app viewer/editor for text files, backed by the local filesystem bridge (Spec §11). */
