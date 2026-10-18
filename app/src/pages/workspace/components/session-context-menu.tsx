@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { EyeOff, Pencil, Trash2 } from "lucide-react";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,15 @@ import type { AgentSession } from "@/features/agent-sessions/interfaces/agent-se
 import { isBlockingMutation, willQueueWrite } from "@/lib/mutation-state";
 import { useCloseWhenParked } from "@/hooks/use-close-when-parked";
 
-/** Right-click a session (tab or list row) to rename or delete it. */
-export function SessionContextMenu({ session, children }: { session: AgentSession; children: ReactNode }) {
+interface SessionContextMenuProps {
+  session: AgentSession;
+  children: ReactNode;
+  /** Offered only where the session can be tucked away (the tab strip); the agent keeps running. */
+  onHide?: () => void;
+}
+
+/** Right-click a session (tab or list row) to rename, hide or delete it. */
+export function SessionContextMenu({ session, onHide, children }: SessionContextMenuProps) {
   const [renaming, setRenaming] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -22,6 +29,11 @@ export function SessionContextMenu({ session, children }: { session: AgentSessio
           <ContextMenuItem onSelect={() => setRenaming(true)}>
             <Pencil /> Rename
           </ContextMenuItem>
+          {onHide && (
+            <ContextMenuItem onSelect={onHide}>
+              <EyeOff /> Hide
+            </ContextMenuItem>
+          )}
           <ContextMenuItem variant="destructive" onSelect={() => setDeleting(true)}>
             <Trash2 /> Delete
           </ContextMenuItem>

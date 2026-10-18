@@ -80,6 +80,7 @@ interface WorkspaceActions {
     openSessionTab(id: string, focus?: boolean): void;
     closeSessionTab(id: string): void;
     backgroundSessionTab(id: string): void;
+    backgroundSessionTabs(ids: string[]): void;
     setSessionProjectOrder(projectIds: string[]): void;
     setActiveSession(id: string | null): void;
     setAiPanelMode(mode: AiPanelMode): void;
@@ -164,6 +165,18 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                         return {
                             open_session_tabs: tabs,
                             background_session_tabs: [...s.background_session_tabs.filter((x) => x !== id), id],
+                            active_session_id: nextActive,
+                        };
+                    }),
+                // Hides several tabs at once (a whole project's group); focus moves to the first tab left on the strip.
+                backgroundSessionTabs: (ids) =>
+                    set((s) => {
+                        const tabs = s.open_session_tabs.filter((x) => !ids.includes(x));
+                        const idx = s.open_session_tabs.findIndex((x) => ids.includes(x));
+                        const nextActive = s.active_session_id && ids.includes(s.active_session_id) ? tabs[Math.min(idx, tabs.length - 1)] ?? null : s.active_session_id;
+                        return {
+                            open_session_tabs: tabs,
+                            background_session_tabs: [...s.background_session_tabs.filter((x) => !ids.includes(x)), ...ids],
                             active_session_id: nextActive,
                         };
                     }),

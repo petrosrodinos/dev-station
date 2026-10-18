@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useMemo, type ReactNode, type WheelEvent } from "react";
 import { StatusDot } from "@/components/ui/status-dot";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ProjectAvatar } from "@/components/ui/project-avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatTimelineTime } from "@/lib/date";
 import { useCloseSessionTab, useMarkSessionReviewed } from "@/features/agent-sessions/hooks/use-agent-sessions";
@@ -16,7 +18,7 @@ import { isAgentActive, reviewStateDot } from "@/lib/status";
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Check, ChevronDown, X } from "lucide-react";
+import { Check, EyeOff, X } from "lucide-react";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -39,6 +41,8 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
   const { data: projects } = useGetProjects();
   const closeTab = useCloseSessionTab();
   const backgroundTab = useWorkspaceStore((s) => s.backgroundSessionTab);
+  const backgroundTabs = useWorkspaceStore((s) => s.backgroundSessionTabs);
+  const openSessionTab = useWorkspaceStore((s) => s.openSessionTab);
   const { can } = usePermissions();
   const [closing, setClosing] = useState<SessionItem | null>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -89,6 +93,17 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
     toast({ title: "Session moved to the hidden list — agent keeps running", duration: 1500 });
   };
 
+  const hideProject = (projectId: string, items: SessionItem[]) => {
+    backgroundTabs(items.map((i) => i.id));
+    toast({ title: `${projectById.get(projectId)?.name ?? "Project"} hidden — its agents keep running`, duration: 1500 });
+  };
+
+  // Bringing a project back puts every one of its hidden tabs on the strip and focuses the first.
+  const showProject = (items: SessionItem[]) => {
+    for (const item of items.slice(1)) openSessionTab(item.id, false);
+    onOpen(items[0]);
+  };
+
   return (
     <div className="flex h-8 shrink-0 items-stretch border-b">
     <nav
@@ -102,7 +117,7 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
           <SortableContext items={groups.map((g) => g.projectId)} strategy={horizontalListSortingStrategy}>
             <ul className="flex h-full min-w-0">
               {groups.map(({ projectId, items }) => (
-                <ProjectGroup key={projectId} projectId={projectId} project={projectById.get(projectId)}>
+                <ProjectGroup key={projectId} projectId={projectId} project={projectById.get(projectId)} onHide={() => hideProject(projectId, items)}>
                   {items.map((item) => (
                     <li key={item.id} className="flex h-full shrink-0">
                       <SessionRow
@@ -112,6 +127,7 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
                         active={item.id === activeId}
                         onOpen={() => onOpen(item)}
                         onClose={can(PermissionKeys.AI_USE_AGENTS) ? () => requestClose(item) : undefined}
+                        onHide={() => keepRunning(item)}
                       />
                     </li>
                   ))}
@@ -136,7 +152,7 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
         }}
       />
     </nav>
-    <HiddenSessionsMenu items={sessions.background} projectById={projectById} onOpen={onOpen} />
+    <HiddenSessionsMenu items={sessions.background} projectById={projectById} onOpen={onOpen} onShowProject={showProject} />
     </div>
   );
 }
@@ -145,12 +161,15 @@ interface HiddenSessionsMenuProps {
   items: SessionItem[];
   projectById: Map<string, Project>;
   onOpen: (item: SessionItem) => void;
+  onShowProject: (items: SessionItem[]) => void;
 }
 
-/** Sessions taken off the strip with "Keep running". Picking one puts its tab back (opening it does that). */
-function HiddenSessionsMenu({ items, projectById, onOpen }: HiddenSessionsMenuProps) {
+/** Sessions and projects taken off the strip with "Hide" / "Keep running", grouped by project. Picking one puts its tab(s) back. */
+function HiddenSessionsMenu({ items, projectById, onOpen, onShowProject }: HiddenSessionsMenuProps) {
   if (!items.length) return null;
   const needsLook = items.filter((i) => i.unseen || i.review_state === SessionReviewStates.READY).length;
+  const byProject = new Map<string, SessionItem[]>();
+  for (const item of items) byProject.set(item.project_id, [...(byProject.get(item.project_id) ?? []), item]);
   return (
     <DropdownMenu>
       <Tooltip>
@@ -160,12 +179,12 @@ function HiddenSessionsMenu({ items, projectById, onOpen }: HiddenSessionsMenuPr
               render={
                 <button
                   type="button"
-                  className="flex h-full shrink-0 items-center gap-1 border-l border-hairline-soft px-2 text-[0.6875rem] tabular-nums text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
+                  className="relative flex h-full shrink-0 items-center gap-1 border-l border-hairline-soft px-2 text-[0.6875rem] tabular-nums text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
                   aria-label={`Hidden sessions (${items.length})`}
                 >
-                  {needsLook > 0 && <span className="size-1.5 rounded-full bg-info" aria-hidden />}
+                  {needsLook > 0 && <span className="absolute right-1 top-1 size-1.5 rounded-full bg-info" aria-hidden />}
+                  <EyeOff className="size-3.5" />
                   {items.length}
-                  <ChevronDown className="size-3" />
                 </button>
               }
             />
@@ -174,20 +193,30 @@ function HiddenSessionsMenu({ items, projectById, onOpen }: HiddenSessionsMenuPr
         <TooltipContent>Hidden sessions, still running</TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="end" className="max-h-80 min-w-56 overflow-y-auto">
-        <DropdownMenuLabel>Hidden sessions</DropdownMenuLabel>
-        {items.map((item) => {
-          const project = projectById.get(item.project_id);
-          const done = item.review_state === SessionReviewStates.REVIEWED || item.review_state === SessionReviewStates.COMMITTED;
+        {[...byProject].map(([projectId, group], i) => {
+          const project = projectById.get(projectId);
           return (
-            <DropdownMenuItem key={item.id} onSelect={() => onOpen(item)} className="gap-2">
-              {done ? (
-                <Check className="size-3 shrink-0 text-ash" />
-              ) : (
-                <StatusDot status={reviewStateDot(item.review_state)} className={cn("shrink-0", item.unseen && "animate-pulse")} />
-              )}
-              <span className={cn("min-w-0 flex-1 truncate", item.unseen && "font-semibold")}>{item.name}</span>
-              {project && <span className="max-w-24 shrink-0 truncate text-[0.625rem] uppercase text-ash">{project.name}</span>}
-            </DropdownMenuItem>
+            <div key={projectId}>
+              {i > 0 && <DropdownMenuSeparator />}
+              <DropdownMenuItem onSelect={() => onShowProject(group)} className="gap-2 text-[0.625rem] font-semibold uppercase tracking-[0.3px] text-ash" title="Show all sessions of this project">
+                {project && <ProjectAvatar name={project.name} color={project.color} size="xs" />}
+                <span className="min-w-0 flex-1 truncate">{project?.name ?? "Unknown project"}</span>
+                <span className="shrink-0 normal-case tracking-normal">Show all</span>
+              </DropdownMenuItem>
+              {group.map((item) => {
+                const done = item.review_state === SessionReviewStates.REVIEWED || item.review_state === SessionReviewStates.COMMITTED;
+                return (
+                  <DropdownMenuItem key={item.id} onSelect={() => onOpen(item)} className="gap-2 pl-4">
+                    {done ? (
+                      <Check className="size-3 shrink-0 text-ash" />
+                    ) : (
+                      <StatusDot status={reviewStateDot(item.review_state)} className={cn("shrink-0", item.unseen && "animate-pulse")} />
+                    )}
+                    <span className={cn("min-w-0 flex-1 truncate", item.unseen && "font-semibold")}>{item.name}</span>
+                  </DropdownMenuItem>
+                );
+              })}
+            </div>
           );
         })}
       </DropdownMenuContent>
@@ -198,11 +227,12 @@ function HiddenSessionsMenu({ items, projectById, onOpen }: HiddenSessionsMenuPr
 interface ProjectGroupProps {
   projectId: string;
   project?: Project;
+  onHide: () => void;
   children: ReactNode;
 }
 
 /** A project's run of session tabs. Its name is the drag handle: dragging it moves the label and all its sessions together. */
-function ProjectGroup({ projectId, project, children }: ProjectGroupProps) {
+function ProjectGroup({ projectId, project, onHide, children }: ProjectGroupProps) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: projectId });
 
   return (
@@ -213,19 +243,28 @@ function ProjectGroup({ projectId, project, children }: ProjectGroupProps) {
       className={cn("flex h-full shrink-0", isDragging && "relative z-10 bg-surface-card opacity-80")}
     >
       {project && (
-        <span
-          ref={setActivatorNodeRef}
-          {...attributes}
-          {...listeners}
-          title={`Drag to reorder ${project.name}`}
-          style={{ boxShadow: `inset 0 2px 0 ${project.color}` }}
-          className={cn(
-            "flex h-full max-w-24 shrink-0 cursor-grab touch-none items-center border-r border-hairline-soft px-2 text-[0.625rem] font-semibold uppercase tracking-[0.3px] text-ash hover:bg-surface-elevated",
-            isDragging && "cursor-grabbing",
-          )}
-        >
-          <span className="truncate">{project.name}</span>
-        </span>
+        <ContextMenu>
+          <ContextMenuTrigger render={<div className="flex h-full shrink-0" onContextMenu={(e) => e.stopPropagation()} />}>
+            <span
+              ref={setActivatorNodeRef}
+              {...attributes}
+              {...listeners}
+              title={`Drag to reorder ${project.name}`}
+              style={{ boxShadow: `inset 0 2px 0 ${project.color}` }}
+              className={cn(
+                "flex h-full max-w-24 shrink-0 cursor-grab touch-none items-center border-r border-hairline-soft px-2 text-[0.625rem] font-semibold uppercase tracking-[0.3px] text-ash hover:bg-surface-elevated",
+                isDragging && "cursor-grabbing",
+              )}
+            >
+              <span className="truncate">{project.name}</span>
+            </span>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onSelect={onHide}>
+              <EyeOff /> Hide project
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
       )}
       <ul className="flex h-full">{children}</ul>
     </li>
@@ -240,9 +279,10 @@ interface SessionRowProps {
   active: boolean;
   onOpen: () => void;
   onClose?: () => void;
+  onHide: () => void;
 }
 
-function SessionRow({ item, project, timeHint, active, onOpen, onClose }: SessionRowProps) {
+function SessionRow({ item, project, timeHint, active, onOpen, onClose, onHide }: SessionRowProps) {
   const state = item.review_state;
   const label = getDropdownOptionLabel(SessionReviewStateOptions, state);
   const ready = state === SessionReviewStates.READY;
@@ -315,5 +355,5 @@ function SessionRow({ item, project, timeHint, active, onOpen, onClose }: Sessio
     </div>
   );
 
-  return item.session ? <SessionContextMenu session={item.session}>{row}</SessionContextMenu> : row;
+  return item.session ? <SessionContextMenu session={item.session} onHide={onHide}>{row}</SessionContextMenu> : row;
 }
