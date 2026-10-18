@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
 import { useDialogsStore } from "@/stores/dialogs";
 import { useWorkspaceStore } from "@/stores/workspace";
+import { useLayoutStore } from "@/stores/layout";
 import { useShortcutsStore } from "@/stores/shortcuts";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
@@ -91,6 +92,12 @@ const runShortcutAction = (actionId: string, ctx: ActionContext): boolean => {
     case ShortcutActions.TOGGLE_AI_PANEL:
       if (ctx.can(PermissionKeys.AI_USE_AGENTS)) cycleAiPanelLayout();
       return true;
+    case ShortcutActions.TOGGLE_WORKSPACE_DRAWER: {
+      const layout = useLayoutStore.getState();
+      if (!layout.ai_full_width) return false;
+      layout.setWorkspaceDrawerOpen(!layout.workspace_drawer_open);
+      return true;
+    }
     case ShortcutActions.NEXT_SESSION_TAB:
       return cycleSession(ctx, 1);
     case ShortcutActions.PREV_SESSION_TAB:

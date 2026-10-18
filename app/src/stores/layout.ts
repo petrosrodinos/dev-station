@@ -22,10 +22,16 @@ interface LayoutState {
     outer_layout_by_project: Record<string, Record<string, unknown>>;
     /** Hides the main content panel so the AI panel fills the dock. Per device; not part of a saved preset. */
     ai_full_width: boolean;
+    /** While the AI panel is full width, the workspace can be pulled back in as a drawer beside it. Not persisted: it starts closed. */
+    workspace_drawer_open: boolean;
+    /** Width the workspace drawer opens at; follows the user's resizing. */
+    workspace_drawer_width: number;
 }
 
 interface LayoutActions {
     setAiFullWidth(on: boolean): void;
+    setWorkspaceDrawerOpen(open: boolean): void;
+    setWorkspaceDrawerWidth(width: number): void;
     setActivePreset(id: string | null): void;
     rememberProjectPreset(projectId: string, presetId: string): void;
     markDirty(): void;
@@ -45,6 +51,8 @@ const initialValues: LayoutState = {
     floating: [],
     outer_layout_by_project: {},
     ai_full_width: false,
+    workspace_drawer_open: false,
+    workspace_drawer_width: 560,
 };
 
 const STORE_KEY = "layout";
@@ -53,7 +61,10 @@ export const useLayoutStore = create<LayoutState & LayoutActions>()(
     persist(
         (set) => ({
             ...initialValues,
-            setAiFullWidth: (on) => set({ ai_full_width: on }),
+            // Leaving full width has nothing left to pull the workspace into, so the drawer closes with it.
+            setAiFullWidth: (on) => set((s) => ({ ai_full_width: on, workspace_drawer_open: on && s.workspace_drawer_open })),
+            setWorkspaceDrawerOpen: (open) => set((s) => ({ workspace_drawer_open: open && s.ai_full_width })),
+            setWorkspaceDrawerWidth: (width) => set({ workspace_drawer_width: width }),
             setActivePreset: (id) => set({ active_preset_id: id, customized: true, dirty: false }),
             rememberProjectPreset: (projectId, presetId) =>
                 set((s) => ({ preset_by_project: { ...s.preset_by_project, [projectId]: presetId }, customized: true })),
@@ -66,7 +77,7 @@ export const useLayoutStore = create<LayoutState & LayoutActions>()(
             saveOuterLayout: (context, layout) => set((s) => ({ outer_layout_by_project: { ...s.outer_layout_by_project, [context]: layout } })),
             hydrateFromServer: (values) => set({ ...values, dirty: false }),
         }),
-        { name: STORE_KEY },
+        { name: STORE_KEY, partialize: ({ workspace_drawer_open: _open, ...persisted }) => persisted },
     ),
 );
 

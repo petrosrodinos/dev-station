@@ -3,6 +3,7 @@ export const SHORTCUT_ACTION_IDS = [
   'new_session',
   'new_terminal',
   'toggle_ai_panel',
+  'toggle_workspace_drawer',
   'next_session_tab',
   'prev_session_tab',
   'go_to_finished_session',

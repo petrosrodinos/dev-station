@@ -21,6 +21,7 @@ export const MAIN_CONTENT_PANEL_ID = "main-content";
 export const AI_PANEL_ID = "ai-panel";
 const AI_PANEL_MIN_WIDTH = 320;
 export const AI_PANEL_DEFAULT_WIDTH = 420;
+const DRAWER_MIN_WIDTH = 280;
 
 /** Routed project/workspace content — unchanged from the previous fixed shell. */
 const MainContentPanel: FC<IDockviewPanelProps> = () => (
@@ -56,6 +57,11 @@ export const WorkspaceDock: FC = () => {
   const aiFullWidth = useLayoutStore((s) => s.ai_full_width);
   const aiFullWidthRef = useRef(aiFullWidth);
   aiFullWidthRef.current = aiFullWidth;
+  const drawerOpen = useLayoutStore((s) => s.workspace_drawer_open);
+  const drawerOpenRef = useRef(drawerOpen);
+  drawerOpenRef.current = drawerOpen;
+  /** The drawer resized the main group, so leaving full width must put the default split back. */
+  const drawerUsedRef = useRef(false);
   /** A context with no saved layout (a project never visited, or home) gets the default AI panel width. */
   const resetToDefault = useCallback((dock: DockviewApi) => {
     // Full width has the AI panel fill the dock; a fixed width here would leave the space beside it empty.
@@ -72,8 +78,16 @@ export const WorkspaceDock: FC = () => {
   const syncMainContentVisibility = useCallback((api: DockviewApi) => {
     const main = api.getPanel(MAIN_CONTENT_PANEL_ID);
     if (!main) return;
-    const visible = !(aiFullWidthRef.current && aiPanelOpenRef.current && api.getPanel(AI_PANEL_ID));
-    if (main.group.api.isVisible !== visible) main.group.api.setVisible(visible);
+    // The workspace drawer brings the hidden group back beside the full-width AI panel, at the width the user last dragged it to.
+    const fullWidthActive = aiFullWidthRef.current && aiPanelOpenRef.current && !!api.getPanel(AI_PANEL_ID);
+    const visible = !fullWidthActive || drawerOpenRef.current;
+    if (main.group.api.isVisible === visible) return;
+    main.group.api.setVisible(visible);
+    // Only when it opens: sizing on every layout change would fight the user dragging the sash.
+    if (visible && fullWidthActive) {
+      drawerUsedRef.current = true;
+      main.group.api.setSize({ width: useLayoutStore.getState().workspace_drawer_width });
+    }
   }, []);
 
   /**
@@ -167,8 +181,25 @@ export const WorkspaceDock: FC = () => {
 
   useEffect(() => {
     const api = apiRef.current;
-    if (api) syncMainContentVisibility(api);
-  }, [aiFullWidth, aiPanelOpen, syncMainContentVisibility]);
+    if (!api) return;
+    syncMainContentVisibility(api);
+    if (!aiFullWidth && drawerUsedRef.current) {
+      drawerUsedRef.current = false;
+      resetToDefault(api);
+    }
+  }, [aiFullWidth, aiPanelOpen, drawerOpen, syncMainContentVisibility, resetToDefault]);
+
+  // Dragging the sash between the drawer and the AI panel remembers the drawer's width for next time.
+  useEffect(() => {
+    if (!api || !aiFullWidth || !drawerOpen) return;
+    const main = api.getPanel(MAIN_CONTENT_PANEL_ID);
+    if (!main) return;
+    const sub = main.group.api.onDidDimensionsChange(({ width }) => {
+      const rounded = Math.round(width);
+      if (rounded >= DRAWER_MIN_WIDTH && rounded !== useLayoutStore.getState().workspace_drawer_width) useLayoutStore.getState().setWorkspaceDrawerWidth(rounded);
+    });
+    return () => sub.dispose();
+  }, [api, aiFullWidth, drawerOpen]);
 
   return (
     <DockviewReact

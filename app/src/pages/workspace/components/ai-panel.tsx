@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, History, Plus, Trash2 } from "lucide-react";
+import { Bot, History, PanelLeft, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatusDot } from "@/components/ui/status-dot";
@@ -20,6 +20,10 @@ import { agentStatusDot } from "@/lib/status";
 import { jumpToSession } from "@/lib/session-navigation.utils";
 import { formatRelative } from "@/lib/date";
 import { AiPanelModes, useWorkspaceStore } from "@/stores/workspace";
+import { useLayoutStore } from "@/stores/layout";
+import { useResolvedShortcuts } from "@/features/users/hooks/use-shortcuts";
+import { ShortcutActions } from "@/config/constants/dropdowns/shared/shortcut-action.options";
+import { formatComboParts } from "@/lib/shortcuts.utils";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
 import { Routes } from "@/routes/routes";
@@ -43,6 +47,11 @@ export function AiPanel({ sessions }: { sessions: OpenSessions }) {
   const history = mode === AiPanelModes.SESSIONS;
   const setMode = useWorkspaceStore((s) => s.setAiPanelMode);
   const historyLabel = history ? "Back to open sessions" : "Session history";
+  const aiFullWidth = useLayoutStore((s) => s.ai_full_width);
+  const drawerOpen = useLayoutStore((s) => s.workspace_drawer_open);
+  const setDrawerOpen = useLayoutStore((s) => s.setWorkspaceDrawerOpen);
+  const drawerLabel = drawerOpen ? "Close workspace drawer" : "Open workspace drawer";
+  const drawerCombo = useResolvedShortcuts().find((s) => s.id === ShortcutActions.TOGGLE_WORKSPACE_DRAWER)?.combo;
   const { can } = usePermissions();
   const openNewSession = useDialogsStore((s) => s.openNewSession);
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
@@ -59,6 +68,26 @@ export function AiPanel({ sessions }: { sessions: OpenSessions }) {
     <aside className="flex h-full min-w-0 flex-col bg-surface" aria-label="AI panel">
       <PlacementMenu target={PlacementTargets.AI_PANEL}>
       <div className="flex h-9 shrink-0 items-center gap-2 border-b px-2">
+        {aiFullWidth && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  onClick={() => setDrawerOpen(!drawerOpen)}
+                  aria-label={drawerLabel}
+                  aria-pressed={drawerOpen}
+                  className={cn("flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground", drawerOpen && "bg-accent text-foreground")}
+                >
+                  <PanelLeft className="size-3.5" />
+                </button>
+              }
+            />
+            <TooltipContent>
+              {drawerLabel}
+              {drawerCombo ? ` (${formatComboParts(drawerCombo).join(" ")})` : ""}
+            </TooltipContent>
+          </Tooltip>
+        )}
         <span className="px-1 text-[0.7813rem] font-medium text-muted-foreground">{history ? "Session history" : "AI sessions"}</span>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           {can(PermissionKeys.AI_START_AGENTS) && (
