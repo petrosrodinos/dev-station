@@ -1,5 +1,5 @@
 import { useNavigate, useNavigationType } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Keyboard, LogOut, Maximize, Minimize, Moon, PanelRight, Search, Settings, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, Keyboard, LogOut, Maximize, Minimize, Moon, PanelLeftClose, PanelRight, PanelRightClose, Search, Settings, UserRound, type LucideIcon } from "lucide-react";
 import { AppLogo } from "@/components/brand/app-logo";
 import { Button } from "@/components/ui/button";
 import { ShortcutKeys } from "@/components/ui/shortcut-keys";
@@ -24,6 +24,7 @@ import { generateInitials } from "@/features/auth/utils/auth.utils";
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { useDialogsStore } from "@/stores/dialogs";
 import { useWorkspaceStore } from "@/stores/workspace";
+import { AiPanelLayouts, setAiPanelLayout, useAiPanelLayout, type AiPanelLayout } from "../hooks/use-ai-panel-layout";
 import { useTheme } from "@/hooks/use-theme";
 import { useFullScreen } from "@/hooks/use-fullscreen";
 import { isDesktop } from "@/lib/desktop";
@@ -70,13 +71,18 @@ function useHistoryNav() {
   };
 }
 
+const AI_PANEL_LAYOUT_OPTIONS: { layout: AiPanelLayout; label: string; Icon: LucideIcon }[] = [
+  { layout: AiPanelLayouts.CLOSED, label: "Close AI panel", Icon: PanelRightClose },
+  { layout: AiPanelLayouts.DEFAULT, label: "AI panel beside workspace", Icon: PanelRight },
+  { layout: AiPanelLayouts.FULL_WIDTH, label: "Full-width AI panel", Icon: PanelLeftClose },
+];
+
 export function TopBar() {
   const navigate = useNavigate();
   const { canGoBack, canGoForward, goBack, goForward } = useHistoryNav();
   const { me } = useCurrentOrganization();
   const { can } = usePermissions();
-  const aiPanelOpen = useWorkspaceStore((s) => s.ai_panel_open);
-  const setAiPanelOpen = useWorkspaceStore((s) => s.setAiPanelOpen);
+  const aiPanelLayout = useAiPanelLayout();
   const setActiveProject = useWorkspaceStore((s) => s.setActiveProject);
   const setCommandPalette = useDialogsStore((s) => s.setCommandPalette);
   const signOut = useSignOut();
@@ -172,16 +178,29 @@ export function TopBar() {
         </Tooltip>
         <LayoutMenu />
         {can(PermissionKeys.AI_USE_AGENTS) && (
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button variant="ghost" size="icon" className={cn("size-7 text-muted-foreground", aiPanelOpen && "text-foreground")} onClick={() => setAiPanelOpen(!aiPanelOpen)} aria-label="Toggle AI panel">
-                  <PanelRight className="size-4" />
-                </Button>
-              }
-            />
-            <TooltipContent>Toggle AI panel{aiPanelCombo ? ` (${formatComboParts(aiPanelCombo).join(" ")})` : ""}</TooltipContent>
-          </Tooltip>
+          <div role="group" aria-label="AI panel" className="flex items-center rounded-md border bg-surface-elevated p-0.5">
+            {AI_PANEL_LAYOUT_OPTIONS.map(({ layout, label, Icon }) => (
+              <Tooltip key={layout}>
+                <TooltipTrigger
+                  render={
+                    <button
+                      type="button"
+                      onClick={() => setAiPanelLayout(layout)}
+                      aria-label={label}
+                      aria-pressed={aiPanelLayout === layout}
+                      className={cn("flex size-6 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground", aiPanelLayout === layout && "bg-accent text-foreground")}
+                    >
+                      <Icon className="size-3.5" />
+                    </button>
+                  }
+                />
+                <TooltipContent>
+                  {label}
+                  {aiPanelCombo ? ` (cycle: ${formatComboParts(aiPanelCombo).join(" ")})` : ""}
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
         )}
         <DropdownMenu>
           <DropdownMenuTrigger

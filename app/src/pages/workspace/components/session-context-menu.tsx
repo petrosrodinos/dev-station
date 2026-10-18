@@ -1,11 +1,27 @@
 import { useState, type FormEvent, type ReactNode } from "react";
-import { EyeOff, Pencil, Trash2 } from "lucide-react";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { useNavigate } from "react-router-dom";
+import { ExternalLink, EyeOff, FileDiff, Pencil, RotateCw, Square, Trash2 } from "lucide-react";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useDeleteAgentSession, useDeleteAgentSessions, useRenameAgentSession } from "@/features/agent-sessions/hooks/use-agent-sessions";
+import {
+  useDeleteAgentSession,
+  useDeleteAgentSessions,
+  useOpenAgentExternally,
+  useRelaunchAgentSession,
+  useRenameAgentSession,
+  useStopAgentSession,
+} from "@/features/agent-sessions/hooks/use-agent-sessions";
 import type { AgentSession } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
+import { usePermissions } from "@/features/organizations/hooks/use-organizations";
+import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
+import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
+import { isDesktop } from "@/lib/desktop";
+import { FloatTargetMenuItems } from "@/features/workspace-layouts/components/float-target-menu-items";
+import { floatPanel } from "@/features/workspace-layouts/utils/float-panel.utils";
+import { Routes } from "@/routes/routes";
+import type { SessionItem } from "../hooks/use-open-sessions";
 import { isBlockingMutation, willQueueWrite } from "@/lib/mutation-state";
 import { useCloseWhenParked } from "@/hooks/use-close-when-parked";
 
@@ -14,12 +30,27 @@ interface SessionContextMenuProps {
   children: ReactNode;
   /** Offered only where the session can be tucked away (the tab strip); the agent keeps running. */
   onHide?: () => void;
+  /** Where the live session state is known (the tab strip): adds review, restart, stop, external terminal and float. */
+  item?: SessionItem;
 }
 
-/** Right-click a session (tab or list row) to rename, hide or delete it. */
-export function SessionContextMenu({ session, onHide, children }: SessionContextMenuProps) {
+/** Right-click a session (tab or list row) to rename, hide or delete it, plus run actions when `item` is given. */
+export function SessionContextMenu({ session, onHide, item, children }: SessionContextMenuProps) {
+  const navigate = useNavigate();
+  const { can } = usePermissions();
   const [renaming, setRenaming] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const relaunch = useRelaunchAgentSession();
+  const stop = useStopAgentSession();
+  const openExternal = useOpenAgentExternally();
+  const runtime = item?.runtime ?? null;
+  const canUseAgents = can(PermissionKeys.AI_USE_AGENTS);
+  const hasChanges = !!item?.changes && item.changes.files_changed > 0;
+
+  const floatSession = (windowId: string | undefined) => {
+    if (!item) return;
+    floatPanel({ panelId: `session:${item.id}`, componentType: "session-terminal", params: { sessionId: item.id }, title: item.name, windowId });
+  };
 
   return (
     <>
@@ -33,6 +64,26 @@ export function SessionContextMenu({ session, onHide, children }: SessionContext
             <ContextMenuItem onSelect={onHide}>
               <EyeOff /> Hide
             </ContextMenuItem>
+          )}
+          {item && (
+            <>
+              <ContextMenuSeparator />
+              <ContextMenuItem onSelect={() => navigate(Routes.workspace.project_tab(item.project_id, ProjectTabs.GIT))} disabled={!hasChanges}>
+                <FileDiff /> Review changes
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem onSelect={() => relaunch.mutate({ session: item.session, runtime: item.runtime })} disabled={!item.on_this_device || !canUseAgents || relaunch.isPending}>
+                <RotateCw /> {runtime?.alive ? "Restart" : "Resume"}
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => runtime && stop.mutate(runtime.id)} disabled={!runtime?.alive || !canUseAgents || stop.isPending}>
+                <Square /> Stop
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => runtime && openExternal.mutate(runtime.id)} disabled={!runtime || !canUseAgents}>
+                <ExternalLink /> Open in external terminal
+              </ContextMenuItem>
+              {isDesktop() && <FloatTargetMenuItems Item={ContextMenuItem} onFloat={floatSession} />}
+              <ContextMenuSeparator />
+            </>
           )}
           <ContextMenuItem variant="destructive" onSelect={() => setDeleting(true)}>
             <Trash2 /> Delete

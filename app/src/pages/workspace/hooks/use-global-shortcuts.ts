@@ -20,6 +20,7 @@ import { toast } from "@/hooks/use-toast";
 import { isDesktop } from "@/lib/desktop";
 import { Routes } from "@/routes/routes";
 import { nextReviewSession, type OpenSessions } from "./use-open-sessions";
+import { cycleAiPanelLayout } from "./use-ai-panel-layout";
 import { useQuickStartSession } from "@/features/agent-sessions/hooks/use-quick-start-session";
 import { SessionReviewStates } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 
@@ -88,7 +89,7 @@ const runShortcutAction = (actionId: string, ctx: ActionContext): boolean => {
     case ShortcutActions.NEW_TERMINAL:
       return openNewTerminal(ctx);
     case ShortcutActions.TOGGLE_AI_PANEL:
-      if (ctx.can(PermissionKeys.AI_USE_AGENTS)) ws.setAiPanelOpen(!ws.ai_panel_open);
+      if (ctx.can(PermissionKeys.AI_USE_AGENTS)) cycleAiPanelLayout();
       return true;
     case ShortcutActions.NEXT_SESSION_TAB:
       return cycleSession(ctx, 1);

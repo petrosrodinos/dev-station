@@ -67,7 +67,7 @@ export const ShortcutActionOptions: ShortcutActionOption[] = [
   { id: ShortcutActions.TOGGLE_SIDEBAR, label: "Toggle sidebar", group: ShortcutGroups.NAVIGATION, default_combo: "mod+b", rebindable: false },
   { id: ShortcutActions.NEW_SESSION, label: "New AI session", group: ShortcutGroups.SESSIONS, default_combo: "mod+shift+t", rebindable: true },
   { id: ShortcutActions.NEW_TERMINAL, label: "New terminal", group: ShortcutGroups.PROJECT, default_combo: "mod+t", rebindable: true },
-  { id: ShortcutActions.TOGGLE_AI_PANEL, label: "Toggle AI panel", group: ShortcutGroups.SESSIONS, default_combo: "mod+j", rebindable: true },
+  { id: ShortcutActions.TOGGLE_AI_PANEL, label: "Cycle AI panel (close / default / full width)", group: ShortcutGroups.SESSIONS, default_combo: "mod+j", rebindable: true },
   { id: ShortcutActions.NEXT_SESSION_TAB, label: "Next session", group: ShortcutGroups.SESSIONS, default_combo: "mod+down", rebindable: true },
   { id: ShortcutActions.PREV_SESSION_TAB, label: "Previous session", group: ShortcutGroups.SESSIONS, default_combo: "mod+up", rebindable: true },
   { id: ShortcutActions.GO_TO_FINISHED_SESSION, label: "Next session to review", group: ShortcutGroups.SESSIONS, default_combo: "mod+shift+j", rebindable: true },

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, History, PanelLeftClose, PanelLeftOpen, Plus, Trash2 } from "lucide-react";
+import { Bot, History, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatusDot } from "@/components/ui/status-dot";
@@ -20,14 +20,12 @@ import { agentStatusDot } from "@/lib/status";
 import { jumpToSession } from "@/lib/session-navigation.utils";
 import { formatRelative } from "@/lib/date";
 import { AiPanelModes, useWorkspaceStore } from "@/stores/workspace";
-import { useLayoutStore } from "@/stores/layout";
 import { useRuntimeStore } from "@/stores/runtime";
 import { useDialogsStore } from "@/stores/dialogs";
 import { Routes } from "@/routes/routes";
 import { DeleteSessionsDialog, SessionContextMenu } from "./session-context-menu";
 import { PlacementMenu, PlacementTargets } from "./placement-menu";
 import { SessionNavigator } from "./session-navigator";
-import { SessionActionsMenu } from "./session-actions-menu";
 import { SessionTerminalStage } from "./session-terminal-stage";
 import { nextReviewSession, type OpenSessions, type SessionItem } from "../hooks/use-open-sessions";
 import { cn } from "@/lib/utils";
@@ -43,12 +41,8 @@ export function AiPanel({ sessions }: { sessions: OpenSessions }) {
   const activeId = useWorkspaceStore((s) => s.active_session_id);
   const { data: projects } = useGetProjects();
   const history = mode === AiPanelModes.SESSIONS;
-  const activeItem = sessions.ordered.find((i) => i.id === activeId) ?? null;
   const setMode = useWorkspaceStore((s) => s.setAiPanelMode);
   const historyLabel = history ? "Back to open sessions" : "Session history";
-  const aiFullWidth = useLayoutStore((s) => s.ai_full_width);
-  const setAiFullWidth = useLayoutStore((s) => s.setAiFullWidth);
-  const fullWidthLabel = aiFullWidth ? "Show workspace" : "Full-width AI panel";
   const { can } = usePermissions();
   const openNewSession = useDialogsStore((s) => s.openNewSession);
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
@@ -67,7 +61,6 @@ export function AiPanel({ sessions }: { sessions: OpenSessions }) {
       <div className="flex h-9 shrink-0 items-center gap-2 border-b px-2">
         <span className="px-1 text-[0.7813rem] font-medium text-muted-foreground">{history ? "Session history" : "AI sessions"}</span>
         <div className="ml-auto flex shrink-0 items-center gap-1">
-          <SessionActionsMenu item={activeItem} />
           {can(PermissionKeys.AI_START_AGENTS) && (
             <Tooltip>
               <TooltipTrigger
@@ -98,21 +91,6 @@ export function AiPanel({ sessions }: { sessions: OpenSessions }) {
               }
             />
             <TooltipContent>{historyLabel}</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <button
-                  onClick={() => setAiFullWidth(!aiFullWidth)}
-                  aria-label={fullWidthLabel}
-                  aria-pressed={aiFullWidth}
-                  className={cn("flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground", aiFullWidth && "bg-accent text-foreground")}
-                >
-                  {aiFullWidth ? <PanelLeftOpen className="size-3.5" /> : <PanelLeftClose className="size-3.5" />}
-                </button>
-              }
-            />
-            <TooltipContent>{fullWidthLabel}</TooltipContent>
           </Tooltip>
         </div>
       </div>

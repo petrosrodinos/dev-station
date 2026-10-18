@@ -82,6 +82,7 @@ interface WorkspaceActions {
     backgroundSessionTab(id: string): void;
     backgroundSessionTabs(ids: string[]): void;
     setSessionProjectOrder(projectIds: string[]): void;
+    setProjectSessionOrder(ids: string[]): void;
     setActiveSession(id: string | null): void;
     setAiPanelMode(mode: AiPanelMode): void;
     setAiPanelOpen(open: boolean): void;
@@ -181,6 +182,14 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
                         };
                     }),
                 setSessionProjectOrder: (projectIds) => set({ session_project_order: projectIds }),
+                // Puts one project's sessions in the given order; its first few are the ones shown on the strip.
+                setProjectSessionOrder: (ids) =>
+                    set((s) => {
+                        const at = s.open_session_tabs.findIndex((x) => ids.includes(x));
+                        const rest = s.open_session_tabs.filter((x) => !ids.includes(x));
+                        const tabs = [...rest.slice(0, at === -1 ? rest.length : at), ...ids, ...rest.slice(at === -1 ? rest.length : at)];
+                        return { open_session_tabs: tabs };
+                    }),
                 setActiveSession: (id) =>
                     set((s) => ({ active_session_id: id, attention_session_ids: id ? s.attention_session_ids.filter((x) => x !== id) : s.attention_session_ids })),
                 setAiPanelMode: (mode) => set({ ai_panel_mode: mode }),

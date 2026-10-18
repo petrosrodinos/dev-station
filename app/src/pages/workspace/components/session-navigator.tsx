@@ -15,10 +15,10 @@ import { SessionReviewStateOptions } from "@/config/constants/dropdowns/agents/s
 import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { isAgentActive, reviewStateDot } from "@/lib/status";
-import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, PointerSensor, closestCenter, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Check, EyeOff, X } from "lucide-react";
+import { Check, EyeOff, Plus, X } from "lucide-react";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -47,6 +47,8 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
   const [closing, setClosing] = useState<SessionItem | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const setProjectOrder = useWorkspaceStore((s) => s.setSessionProjectOrder);
+  const setProjectSessionOrder = useWorkspaceStore((s) => s.setProjectSessionOrder);
+  const promotedRef = useRef<string | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const projectById = useMemo(() => new Map((projects ?? []).map((p) => [p.id, p])), [projects]);
   // Two sessions in one project can share a name; those tabs get their start time so they can be told apart.
@@ -73,6 +75,21 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
     for (const item of sessions.ordered) byProject.set(item.project_id, [...(byProject.get(item.project_id) ?? []), item]);
     return [...byProject.entries()].map(([projectId, items]) => ({ projectId, items }));
   }, [sessions]);
+
+  // A session focused from the "+" menu, a shortcut or anywhere else takes the last main slot, so the focused tab is always on the strip.
+  // Runs once per focused session (not on every reorder), so dragging the focused tab into the "+" menu sticks.
+  const promote = (id: string): boolean => {
+    const group = groups.find((g) => g.items.some((i) => i.id === id));
+    if (!group) return false;
+    const ids = group.items.map((i) => i.id);
+    if (ids.indexOf(id) >= MAX_MAIN_SESSIONS) setProjectSessionOrder(arrayMove(ids, ids.indexOf(id), MAX_MAIN_SESSIONS - 1));
+    return true;
+  };
+  useEffect(() => {
+    if (!activeId || promotedRef.current === activeId) return;
+    if (promote(activeId)) promotedRef.current = activeId;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `promote` only reads `groups`
+  }, [activeId, groups]);
 
   if (!sessions.ordered.length && !sessions.background.length) return null;
 
@@ -118,8 +135,16 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
             <ul className="flex h-full min-w-0">
               {groups.map(({ projectId, items }) => (
                 <ProjectGroup key={projectId} projectId={projectId} project={projectById.get(projectId)} onHide={() => hideProject(projectId, items)}>
-                  {items.map((item) => (
-                    <li key={item.id} className="flex h-full shrink-0">
+                  <GroupSessions
+                    projectId={projectId}
+                    items={items}
+                    activeId={activeId}
+                    onOpen={(item) => {
+                      promote(item.id);
+                      onOpen(item);
+                    }}
+                    onReorder={setProjectSessionOrder}
+                    renderRow={(item) => (
                       <SessionRow
                         item={item}
                         project={projectById.get(item.project_id)}
@@ -129,8 +154,8 @@ export function SessionNavigator({ sessions, activeId, onOpen }: SessionNavigato
                         onClose={can(PermissionKeys.AI_USE_AGENTS) ? () => requestClose(item) : undefined}
                         onHide={() => keepRunning(item)}
                       />
-                    </li>
-                  ))}
+                    )}
+                  />
                 </ProjectGroup>
               ))}
             </ul>
@@ -221,6 +246,127 @@ function HiddenSessionsMenu({ items, projectById, onOpen, onShowProject }: Hidde
         })}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+/** How many of a project's sessions sit on the strip; the rest wait behind its "+" menu. */
+const MAX_MAIN_SESSIONS = 3;
+const OVERFLOW_DROP_PREFIX = "overflow:";
+
+interface GroupSessionsProps {
+  projectId: string;
+  items: SessionItem[];
+  activeId: string | null;
+  onOpen: (item: SessionItem) => void;
+  onReorder: (ids: string[]) => void;
+  renderRow: (item: SessionItem) => ReactNode;
+}
+
+/**
+ * One project's session tabs: the first few, sortable by dragging, then a "+" menu holding the rest. Dropping a
+ * tab on the "+" moves it there; picking a session from the menu (or reaching one with the keyboard) makes it a main tab.
+ */
+function GroupSessions({ projectId, items, activeId, onOpen, onReorder, renderRow }: GroupSessionsProps) {
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  const main = items.slice(0, MAX_MAIN_SESSIONS);
+  const overflow = items.slice(MAX_MAIN_SESSIONS);
+  const ids = items.map((i) => i.id);
+
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const from = ids.indexOf(String(active.id));
+    if (over.id === `${OVERFLOW_DROP_PREFIX}${projectId}`) {
+      onReorder(arrayMove(ids, from, ids.length - 1));
+      return;
+    }
+    onReorder(arrayMove(ids, from, ids.indexOf(String(over.id))));
+  };
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <SortableContext items={main.map((i) => i.id)} strategy={horizontalListSortingStrategy}>
+        {main.map((item) => (
+          <SortableSessionTab key={item.id} id={item.id}>
+            {renderRow(item)}
+          </SortableSessionTab>
+        ))}
+      </SortableContext>
+      {overflow.length > 0 && <OverflowSessionsMenu projectId={projectId} items={overflow} activeId={activeId} onOpen={onOpen} />}
+    </DndContext>
+  );
+}
+
+function SortableSessionTab({ id, children }: { id: string; children: ReactNode }) {
+  // Only the pointer listeners: the `attributes` would turn the tab into a focusable role="button" around its own buttons.
+  const { listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  return (
+    <li
+      ref={setNodeRef}
+      {...listeners}
+      // The strip only scrolls sideways, so a dragged tab follows the pointer on the x axis alone.
+      style={{ transform: CSS.Translate.toString(transform && { ...transform, y: 0 }), transition }}
+      className={cn("flex h-full shrink-0", isDragging && "relative z-10 bg-surface-card opacity-80")}
+    >
+      {children}
+    </li>
+  );
+}
+
+interface OverflowSessionsMenuProps {
+  projectId: string;
+  items: SessionItem[];
+  activeId: string | null;
+  onOpen: (item: SessionItem) => void;
+}
+
+function OverflowSessionsMenu({ projectId, items, activeId, onOpen }: OverflowSessionsMenuProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: `${OVERFLOW_DROP_PREFIX}${projectId}` });
+  const needsLook = items.some((i) => i.unseen || i.review_state === SessionReviewStates.READY);
+  const hasActive = items.some((i) => i.id === activeId);
+
+  return (
+    <li ref={setNodeRef} className="flex h-full shrink-0">
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    className={cn(
+                      "relative flex h-full shrink-0 items-center gap-0.5 border-r border-hairline-soft px-2 text-[0.6875rem] tabular-nums text-muted-foreground hover:bg-surface-elevated hover:text-foreground",
+                      (isOver || hasActive) && "bg-surface-card text-foreground",
+                    )}
+                    aria-label={`${items.length} more sessions`}
+                  >
+                    {needsLook && <span className="absolute right-1 top-1 size-1.5 rounded-full bg-info" aria-hidden />}
+                    <Plus className="size-3.5" />
+                    {items.length}
+                  </button>
+                }
+              />
+            }
+          />
+          <TooltipContent>More sessions — drop a tab here to move it</TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent align="start" className="max-h-80 min-w-56 overflow-y-auto">
+          {items.map((item) => {
+            const done = item.review_state === SessionReviewStates.REVIEWED || item.review_state === SessionReviewStates.COMMITTED;
+            return (
+              <DropdownMenuItem key={item.id} onSelect={() => onOpen(item)} className="gap-2">
+                {done ? (
+                  <Check className="size-3 shrink-0 text-ash" />
+                ) : (
+                  <StatusDot status={reviewStateDot(item.review_state)} className={cn("shrink-0", item.unseen && "animate-pulse")} />
+                )}
+                <span className={cn("min-w-0 flex-1 truncate", item.unseen && "font-semibold", item.id === activeId && "text-foreground")}>{item.name}</span>
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </li>
   );
 }
 
@@ -355,5 +501,5 @@ function SessionRow({ item, project, timeHint, active, onOpen, onClose, onHide }
     </div>
   );
 
-  return item.session ? <SessionContextMenu session={item.session} onHide={onHide}>{row}</SessionContextMenu> : row;
+  return item.session ? <SessionContextMenu session={item.session} item={item} onHide={onHide}>{row}</SessionContextMenu> : row;
 }
