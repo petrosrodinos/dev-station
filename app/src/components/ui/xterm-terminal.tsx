@@ -15,7 +15,12 @@ export interface XtermSource {
   write: (data: string) => void;
   resize: (cols: number, rows: number) => void;
   openLink?: (url: string) => void;
+  /** Resolves a dropped File to its absolute path; enables file drag-and-drop onto the terminal. */
+  pathForFile?: (file: File) => string;
 }
+
+/** Quotes a path the way agent CLIs expect when it contains whitespace. */
+const formatDroppedPath = (path: string) => (/\s/.test(path) ? `"${path}"` : path);
 
 interface XtermTerminalProps {
   source: XtermSource;
@@ -98,6 +103,28 @@ export function XtermTerminal({ source, sourceKey, readOnly = false, className, 
       if (!readOnly) sourceRef.current.write(data);
     });
 
+    // Dropping files inserts their absolute paths at the prompt (as a paste), like Claude Code / Cursor CLI.
+    const hasFiles = (e: DragEvent) => !readOnly && !!sourceRef.current.pathForFile && !!e.dataTransfer?.types.includes("Files");
+    const onDragOver = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+    };
+    const onDrop = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      const resolve = sourceRef.current.pathForFile;
+      const paths = Array.from(e.dataTransfer?.files ?? [])
+        .map((file) => resolve?.(file))
+        .filter((path): path is string => !!path)
+        .map(formatDroppedPath);
+      if (!paths.length) return;
+      term.paste(`${paths.join(" ")} `);
+      term.focus();
+    };
+    container.addEventListener("dragover", onDragOver);
+    container.addEventListener("drop", onDrop);
+
     const doFit = () => {
       if (disposed || !container.offsetWidth || !container.offsetHeight) return;
       try {
@@ -125,6 +152,8 @@ export function XtermTerminal({ source, sourceKey, readOnly = false, className, 
 
     return () => {
       disposed = true;
+      container.removeEventListener("dragover", onDragOver);
+      container.removeEventListener("drop", onDrop);
       observer.disconnect();
       unsubscribeAppearance();
       inputDisposable.dispose();

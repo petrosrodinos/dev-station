@@ -10,6 +10,7 @@ export const createAgentTerminalSource = (sessionId: string): XtermSource => ({
     write: (data) => void getBridge().agents.write(sessionId, data).catch(() => undefined),
     resize: (cols, rows) => void getBridge().agents.resize(sessionId, cols, rows).catch(() => undefined),
     openLink: (url) => void openUrl(url),
+    pathForFile: (file) => getBridge().files.pathForFile(file),
 });
 
 export const createShellTerminalSource = (terminalId: string): XtermSource => ({
@@ -18,4 +19,5 @@ export const createShellTerminalSource = (terminalId: string): XtermSource => ({
     write: (data) => void getBridge().terminals.write(terminalId, data).catch(() => undefined),
     resize: (cols, rows) => void getBridge().terminals.resize(terminalId, cols, rows).catch(() => undefined),
     openLink: (url) => void openUrl(url),
+    pathForFile: (file) => getBridge().files.pathForFile(file),
 });
