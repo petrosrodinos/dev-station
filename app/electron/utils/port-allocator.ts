@@ -2,8 +2,9 @@ import net from "node:net";
 
 // Free-port probing. Binds (then immediately releases) the port on every common local address, because a
 // dev server bound to 0.0.0.0 or ::1 does not always block a bind on 127.0.0.1 (notably on Windows).
+// `::1` is probed explicitly: a server bound to `localhost` (Vite's default) listens there only, and a bind on `::` still succeeds.
 
-const PROBE_HOSTS = ["127.0.0.1", "0.0.0.0", "::"];
+const PROBE_HOSTS = ["127.0.0.1", "0.0.0.0", "::", "::1"];
 const MAX_PORT = 65535;
 
 function probe(port: number, host: string): Promise<boolean> {

@@ -14,8 +14,9 @@ const run = (file: string, args: string[]): Promise<string> =>
 export async function findListeningPids(port: number): Promise<number[]> {
   const pids = new Set<number>();
   if (process.platform === "win32") {
-    const out = await run("netstat", ["-ano", "-p", "TCP"]);
-    for (const line of out.split(/\r?\n/)) {
+    // `-p TCP` lists IPv4 only; a dev server bound to `localhost` (Vite) listens on [::1] and needs TCPv6.
+    const outputs = await Promise.all([run("netstat", ["-ano", "-p", "TCP"]), run("netstat", ["-ano", "-p", "TCPv6"])]);
+    for (const line of outputs.join("\n").split(/\r?\n/)) {
       const cols = line.trim().split(/\s+/);
       // Proto  Local  Foreign  State  PID
       if (cols.length < 5 || !/^LISTENING$/i.test(cols[3])) continue;
