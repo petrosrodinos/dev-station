@@ -8,7 +8,7 @@ import { ProjectFlag } from "@/components/ui/project-avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { useAgentSessions } from "@/features/agent-sessions/hooks/use-agent-sessions";
-import { SessionReviewStates, type AgentSession } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
+import type { AgentSession } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 import { useGetProjects } from "@/features/projects/hooks/use-projects";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
@@ -43,7 +43,6 @@ export function AiPanel({ sessions }: { sessions: OpenSessions }) {
   const navigate = useNavigate();
   const mode = useWorkspaceStore((s) => s.ai_panel_mode);
   const activeId = useWorkspaceStore((s) => s.active_session_id);
-  const { data: projects } = useGetProjects();
   const history = mode === AiPanelModes.SESSIONS;
   const setMode = useWorkspaceStore((s) => s.setAiPanelMode);
   const historyLabel = history ? "Back to open sessions" : "Session history";
@@ -56,8 +55,7 @@ export function AiPanel({ sessions }: { sessions: OpenSessions }) {
   const openNewSession = useDialogsStore((s) => s.openNewSession);
   const activeProjectId = useWorkspaceStore((s) => s.active_project_id);
 
-  const openItem = (item: SessionItem) =>
-    jumpToSession(item.id, navigate, { fallbackProjectId: item.project_id, review: item.review_state === SessionReviewStates.READY ? { projects } : undefined });
+  const openItem = (item: SessionItem) => jumpToSession(item.id, navigate, { fallbackProjectId: item.project_id });
 
   const openNext = () => {
     const next = nextReviewSession(sessions, activeId, useWorkspaceStore.getState().attention_session_ids);

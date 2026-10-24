@@ -24,7 +24,7 @@ import { generateInitials } from "@/features/auth/utils/auth.utils";
 import { SettingsSections } from "@/config/constants/dropdowns/settings/settings-section.options";
 import { useDialogsStore } from "@/stores/dialogs";
 import { useWorkspaceStore } from "@/stores/workspace";
-import { AiPanelLayouts, setAiPanelLayout, useAiPanelLayout, type AiPanelLayout } from "../hooks/use-ai-panel-layout";
+import { AiPanelLayouts, cycleAiPanelLayout, useAiPanelLayout, type AiPanelLayout } from "../hooks/use-ai-panel-layout";
 import { useTheme } from "@/hooks/use-theme";
 import { useFullScreen } from "@/hooks/use-fullscreen";
 import { isDesktop } from "@/lib/desktop";
@@ -71,11 +71,17 @@ function useHistoryNav() {
   };
 }
 
-const AI_PANEL_LAYOUT_OPTIONS: { layout: AiPanelLayout; label: string; Icon: LucideIcon }[] = [
-  { layout: AiPanelLayouts.CLOSED, label: "Close AI panel", Icon: PanelRightClose },
-  { layout: AiPanelLayouts.DEFAULT, label: "AI panel beside workspace", Icon: PanelRight },
-  { layout: AiPanelLayouts.FULL_WIDTH, label: "Full-width AI panel", Icon: PanelLeftClose },
-];
+const AI_PANEL_LAYOUT_ICONS: Record<AiPanelLayout, LucideIcon> = {
+  [AiPanelLayouts.CLOSED]: PanelRightClose,
+  [AiPanelLayouts.DEFAULT]: PanelRight,
+  [AiPanelLayouts.FULL_WIDTH]: PanelLeftClose,
+};
+
+const AI_PANEL_LAYOUT_LABELS: Record<AiPanelLayout, string> = {
+  [AiPanelLayouts.CLOSED]: "AI panel closed",
+  [AiPanelLayouts.DEFAULT]: "AI panel beside workspace",
+  [AiPanelLayouts.FULL_WIDTH]: "AI panel full width",
+};
 
 export function TopBar() {
   const navigate = useNavigate();
@@ -178,29 +184,28 @@ export function TopBar() {
         </Tooltip>
         <LayoutMenu />
         {can(PermissionKeys.AI_USE_AGENTS) && (
-          <div role="group" aria-label="AI panel" className="flex items-center rounded-md border bg-surface-elevated p-0.5">
-            {AI_PANEL_LAYOUT_OPTIONS.map(({ layout, label, Icon }) => (
-              <Tooltip key={layout}>
-                <TooltipTrigger
-                  render={
-                    <button
-                      type="button"
-                      onClick={() => setAiPanelLayout(layout)}
-                      aria-label={label}
-                      aria-pressed={aiPanelLayout === layout}
-                      className={cn("flex size-6 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground", aiPanelLayout === layout && "bg-accent text-foreground")}
-                    >
-                      <Icon className="size-3.5" />
-                    </button>
-                  }
-                />
-                <TooltipContent>
-                  {label}
-                  {aiPanelCombo ? ` (cycle: ${formatComboParts(aiPanelCombo).join(" ")})` : ""}
-                </TooltipContent>
-              </Tooltip>
-            ))}
-          </div>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("size-7 text-muted-foreground", aiPanelLayout !== AiPanelLayouts.CLOSED && "bg-accent text-foreground")}
+                  onClick={cycleAiPanelLayout}
+                  aria-label={`AI panel: ${AI_PANEL_LAYOUT_LABELS[aiPanelLayout]}. Click to change`}
+                >
+                  {(() => {
+                    const Icon = AI_PANEL_LAYOUT_ICONS[aiPanelLayout];
+                    return <Icon className="size-4" />;
+                  })()}
+                </Button>
+              }
+            />
+            <TooltipContent>
+              {AI_PANEL_LAYOUT_LABELS[aiPanelLayout]}
+              {aiPanelCombo ? ` (${formatComboParts(aiPanelCombo).join(" ")})` : ""}
+            </TooltipContent>
+          </Tooltip>
         )}
         <DropdownMenu>
           <DropdownMenuTrigger

@@ -11,6 +11,7 @@ import {
     gitDiscard,
     gitFetch, gitInit,
     gitMerge,
+    gitMergeInto,
     gitPull,
     gitPush,
     gitStash,
@@ -117,6 +118,9 @@ export const useGitCreateBranch = () =>
 
 export const useGitMerge = () =>
     useGitMutation({ mutationFn: gitMerge, success: (vars) => `Merged ${vars.branch}`, failure: "Merge failed", activity: ActivityTypes.GIT_BRANCH });
+
+export const useGitMergeInto = () =>
+    useGitMutation({ mutationFn: gitMergeInto, success: (vars) => `Merged ${vars.source} into ${vars.target}`, failure: "Merge failed", activity: ActivityTypes.GIT_BRANCH });
 
 export const useGitStash = () =>
     useGitMutation({ mutationFn: gitStash, success: () => "Changes stashed", failure: "Stash failed", activity: ActivityTypes.GIT_STASH });

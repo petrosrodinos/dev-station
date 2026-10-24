@@ -31,9 +31,13 @@ class TerminalManager {
     return [...this.terms.values()].map((t) => t.info);
   }
 
-  create(projectId: string, cols = 100, rows = 30): TerminalInfo {
+  /** `subdir` (relative to the project root) sets the start folder; `command` is typed into the shell once it is up. */
+  create(projectId: string, cols = 100, rows = 30, opts: { subdir?: string; command?: string } = {}): TerminalInfo {
     if (this.terms.size >= MAX_TERMINALS) throw new IpcError("Too many open terminals — close some first.");
-    const cwd = workspaceConfig.projectRoot(projectId);
+    const root = workspaceConfig.projectRoot(projectId);
+    const cwd = path.resolve(root, opts.subdir || ".");
+    const rel = path.relative(root, cwd);
+    if (rel.startsWith("..") || path.isAbsolute(rel)) throw new IpcError("Folder is outside the project.");
     const shell = workspaceConfig.shell();
     const id = crypto.randomUUID();
     const proc = pty.spawn(shell, [], { name: "xterm-256color", cols, rows, cwd, env: childEnv() as Record<string, string> });
@@ -45,6 +49,7 @@ class TerminalManager {
       info: { id, project_id: projectId, title: `${path.basename(shell).replace(/\.exe$/i, "")} ${count}`, shell, cwd, pid: proc.pid, alive: true, created_at: new Date().toISOString() },
     };
     this.terms.set(id, managed);
+    if (opts.command) proc.write(`${opts.command}`);
 
     proc.onData((data) => {
       managed.scrollback.push(data);

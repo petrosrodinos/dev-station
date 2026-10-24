@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FC } from "react";
-import { Plus, SquareTerminal, X } from "lucide-react";
+import { ChevronDown, Play, Plus, SquareTerminal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
@@ -12,6 +12,8 @@ import {
   type IDockviewReactProps,
 } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useInspectProject } from "@/features/local-workspace/hooks/use-local-workspace";
 import { useCreateTerminal, useKillTerminal, useProjectTerminals } from "@/features/terminals/hooks/use-terminals";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
@@ -96,10 +98,20 @@ const TerminalTab: FC = () => {
   const projectIdRef = useRef(project.id);
   projectIdRef.current = project.id;
   const NewTerminalAction = useCallback<FC<IDockviewHeaderActionsProps>>(() => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const detection = useInspectProject(projectIdRef.current);
     if (!canEditRef.current) return null;
     const pending = createRef.current.isPending;
+    const pm = detection.data?.package_manager ?? "npm";
+    const packages = (detection.data?.packages ?? []).filter((p) => Object.keys(p.scripts).length);
+    const runScript = (pkgPath: string, script: string) =>
+      createRef.current.mutate({
+        projectId: projectIdRef.current,
+        subdir: pkgPath && pkgPath !== "." ? pkgPath : undefined,
+        command: pm === "yarn" ? `yarn ${script}` : `${pm} run ${script}`,
+      });
     return (
-      <div className="flex h-full items-center px-1">
+      <div className="flex h-full items-center gap-0.5 px-1">
         <Button
           variant="ghost"
           size="icon"
@@ -111,6 +123,31 @@ const TerminalTab: FC = () => {
         >
           {!pending && <Plus className="size-3.5" />}
         </Button>
+        {packages.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs text-muted-foreground" aria-label="Run a package.json script in a new terminal">
+                  <Play className="size-3" /> Run script <ChevronDown className="size-3" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end" className="max-h-80 w-64 overflow-y-auto">
+              {packages.map((pkg, i) => (
+                <DropdownMenuGroup key={pkg.path}>
+                  {i > 0 && <DropdownMenuSeparator />}
+                  {packages.length > 1 && <DropdownMenuLabel className="truncate text-xs">{pkg.name || pkg.path}</DropdownMenuLabel>}
+                  {Object.entries(pkg.scripts).map(([name, command]) => (
+                    <DropdownMenuItem key={name} onSelect={() => runScript(pkg.path, name)} className="flex-col items-start gap-0">
+                      <span className="text-[0.8125rem]">{name}</span>
+                      <span className="max-w-full truncate font-mono text-[0.6875rem] text-muted-foreground">{command}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     );
   }, []);

@@ -769,7 +769,7 @@ export interface DevStationBridge {
   };
   terminals: {
     list(): Promise<TerminalInfo[]>;
-    create(projectId: string, input?: { cols?: number; rows?: number }): Promise<TerminalInfo>;
+    create(projectId: string, input?: { cols?: number; rows?: number; subdir?: string; command?: string }): Promise<TerminalInfo>;
     write(id: string, data: string): Promise<void>;
     resize(id: string, cols: number, rows: number): Promise<void>;
     kill(id: string): Promise<void>;

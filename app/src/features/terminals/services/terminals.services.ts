@@ -1,9 +1,9 @@
 import type { TerminalInfo } from "@shared/contract";
 import { getBridge, getErrorMessage } from "@/lib/desktop";
 
-export const createTerminal = async ({ projectId, cols, rows }: { projectId: string; cols?: number; rows?: number }): Promise<TerminalInfo> => {
+export const createTerminal = async ({ projectId, cols, rows, subdir, command }: { projectId: string; cols?: number; rows?: number; subdir?: string; command?: string }): Promise<TerminalInfo> => {
     try {
-        return await getBridge().terminals.create(projectId, { cols, rows });
+        return await getBridge().terminals.create(projectId, { cols, rows, subdir, command });
     } catch (error) {
         throw new Error(getErrorMessage(error, "Could not open a terminal."));
     }

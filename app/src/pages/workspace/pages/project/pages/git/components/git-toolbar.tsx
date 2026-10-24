@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
-import { useBranches, useGitCheckout, useGitFetch, useGitMerge, useGitPull, useGitPush, useGitStash, useGitStashPop, useStashes } from "@/features/git/hooks/use-git";
+import { useBranches, useGitCheckout, useGitFetch, useGitMerge, useGitMergeInto, useGitPull, useGitPush, useGitStash, useGitStashPop, useStashes } from "@/features/git/hooks/use-git";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import type { GitStatus } from "@shared/contract";
@@ -25,6 +25,7 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
   const [branchMenuOpen, setBranchMenuOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [mergeTarget, setMergeTarget] = useState<string | null>(null);
+  const [mergeIntoTarget, setMergeIntoTarget] = useState<string | null>(null);
   const { data: branches } = useBranches(project.id, branchMenuOpen);
   const { data: stashes } = useStashes(project.id);
   const fetch = useGitFetch();
@@ -32,6 +33,7 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
   const push = useGitPush();
   const checkout = useGitCheckout();
   const merge = useGitMerge();
+  const mergeInto = useGitMergeInto();
   const stash = useGitStash();
   const stashPop = useGitStashPop();
   const { can } = usePermissions();
@@ -41,6 +43,7 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
   const canBranch = can(PermissionKeys.GIT_MANAGE_BRANCHES);
 
   const local = branches?.filter((b) => !b.remote) ?? [];
+  const otherLocal = local.filter((b) => !b.current);
   const remote = branches?.filter((b) => b.remote && !local.some((l) => b.name.endsWith(`/${l.name}`))) ?? [];
 
   return (
@@ -67,16 +70,29 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
           <DropdownMenuLabel className="text-xs text-muted-foreground">Local branches</DropdownMenuLabel>
           {local.map((b) => (
             <DropdownMenuSub key={b.name}>
-              <DropdownMenuSubTrigger className="gap-2 font-mono text-xs" disabled={b.current}>
+              <DropdownMenuSubTrigger className="gap-2 font-mono text-xs" disabled={b.current && !(canCommit && otherLocal.length > 0)}>
                 <span className="flex-1 truncate">{b.name}</span>
                 {b.current && <Badge variant="secondary">current</Badge>}
               </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem onSelect={() => checkout.mutate({ projectId, branch: b.name })}>Switch to branch</DropdownMenuItem>
-                {canCommit && (
-                  <DropdownMenuItem onSelect={() => setMergeTarget(b.name)} className="gap-2">
-                    <GitMerge className="size-3.5" /> Merge into {status.branch}
-                  </DropdownMenuItem>
+              <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
+                {b.current ? (
+                  <>
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">Merge {b.name} into…</DropdownMenuLabel>
+                    {otherLocal.map((o) => (
+                      <DropdownMenuItem key={o.name} onSelect={() => setMergeIntoTarget(o.name)} className="gap-2 font-mono text-xs">
+                        <GitMerge className="size-3.5" /> {o.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem onSelect={() => checkout.mutate({ projectId, branch: b.name })}>Switch to branch</DropdownMenuItem>
+                    {canCommit && (
+                      <DropdownMenuItem onSelect={() => setMergeTarget(b.name)} className="gap-2">
+                        <GitMerge className="size-3.5" /> Merge into {status.branch}
+                      </DropdownMenuItem>
+                    )}
+                  </>
                 )}
               </DropdownMenuSubContent>
             </DropdownMenuSub>
@@ -155,6 +171,17 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
         description="Creates a merge commit if needed. Conflicts must be resolved in your editor."
         confirmText="Merge"
         isLoading={merge.isPending}
+      />
+      <ConfirmationDialog
+        isOpen={!!mergeIntoTarget}
+        onClose={() => setMergeIntoTarget(null)}
+        onConfirm={() =>
+          mergeIntoTarget && status.branch && mergeInto.mutate({ projectId, source: status.branch, target: mergeIntoTarget }, { onSettled: () => setMergeIntoTarget(null) })
+        }
+        title={`Merge ${status.branch} into ${mergeIntoTarget}?`}
+        description={`Switches to ${mergeIntoTarget} and merges ${status.branch} into it. You'll stay on ${mergeIntoTarget} afterwards. Uncommitted changes may block the switch; conflicts must be resolved in your editor.`}
+        confirmText="Merge"
+        isLoading={mergeInto.isPending}
       />
     </div>
   );

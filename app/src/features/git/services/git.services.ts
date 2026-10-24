@@ -26,6 +26,11 @@ export const gitCheckout = ({ projectId, branch }: { projectId: string; branch: 
 export const gitCreateBranch = ({ projectId, name, checkout }: { projectId: string; name: string; checkout: boolean }) =>
     wrap(() => getBridge().git.createBranch(projectId, name, checkout), "Could not create branch.");
 export const gitMerge = ({ projectId, branch }: { projectId: string; branch: string }) => wrap(() => getBridge().git.merge(projectId, branch), "Merge failed.");
+/** Merges `source` into `target`: switches to `target` first, so the repo is left on `target` (also when the merge conflicts). */
+export const gitMergeInto = async ({ projectId, source, target }: { projectId: string; source: string; target: string }) => {
+    await gitCheckout({ projectId, branch: target });
+    return gitMerge({ projectId, branch: source });
+};
 export const gitStash = ({ projectId, message }: { projectId: string; message?: string }) => wrap(() => getBridge().git.stash(projectId, message), "Stash failed.");
 export const gitStashPop = ({ projectId, ref }: { projectId: string; ref?: string }) => wrap(() => getBridge().git.stashPop(projectId, ref), "Could not apply stash.");
 export const gitDiscard = ({ projectId, paths }: { projectId: string; paths?: string[] }) =>

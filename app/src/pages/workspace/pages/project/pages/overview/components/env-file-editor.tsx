@@ -144,7 +144,7 @@ export function EnvFileEditor({ projectId, file, onDirtyChange }: EnvFileEditorP
           </Alert>
         )}
 
-        <div className="flex items-center gap-2 px-4 pt-4">
+        <div className="sticky top-0 z-10 flex items-center gap-2 bg-surface px-4 py-3">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Filter variables" aria-label="Filter variables" className="h-8 pl-8 text-xs" />
@@ -162,6 +162,13 @@ export function EnvFileEditor({ projectId, file, onDirtyChange }: EnvFileEditorP
             />
             <TooltipContent>Reload from disk</TooltipContent>
           </Tooltip>
+          <span className={cn("shrink-0 text-[0.7188rem] text-muted-foreground", dirty && "font-medium text-foreground")}>{dirty ? "Unsaved changes" : `${fields.length} variable${fields.length === 1 ? "" : "s"}`}</span>
+          <Button type="button" variant="ghost" size="sm" disabled={!dirty || save.isPending} onClick={() => content && form.reset({ variables: content.variables })}>
+            Discard
+          </Button>
+          <Button type="submit" size="sm" disabled={!dirty} loading={save.isPending}>
+            Save
+          </Button>
         </div>
 
         <div className="space-y-1.5 p-4">
@@ -234,13 +241,6 @@ export function EnvFileEditor({ projectId, file, onDirtyChange }: EnvFileEditorP
         <div className="flex items-center gap-2 border-t px-4 py-3">
           <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => append({ key: "", value: "" }, { shouldFocus: true })}>
             <Plus className="size-3.5" /> Add variable
-          </Button>
-          <span className="ml-auto text-[0.7188rem] text-muted-foreground">{dirty ? "Unsaved changes" : `${fields.length} variable${fields.length === 1 ? "" : "s"}`}</span>
-          <Button type="button" variant="ghost" size="sm" disabled={!dirty || save.isPending} onClick={() => content && form.reset({ variables: content.variables })}>
-            Discard
-          </Button>
-          <Button type="submit" size="sm" disabled={!dirty} loading={save.isPending}>
-            Save
           </Button>
         </div>
       </form>

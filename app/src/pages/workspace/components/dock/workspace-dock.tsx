@@ -15,6 +15,7 @@ import { useLayoutStore } from "@/stores/layout";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { useDockApi } from "../../context/dock-api-context";
+import { cn } from "@/lib/utils";
 import { useLayoutPersistence } from "@/features/workspace-layouts/hooks/use-layout-persistence";
 
 export const MAIN_CONTENT_PANEL_ID = "main-content";
@@ -201,11 +202,18 @@ export const WorkspaceDock: FC = () => {
     return () => sub.dispose();
   }, [api, aiFullWidth, drawerOpen]);
 
+  const overlayDrawer = aiFullWidth && drawerOpen && aiPanelOpen;
+
   return (
-    <DockviewReact
-      className="dockview-theme-abyss min-w-0 flex-1"
-      components={components}
-      onReady={onReady}
-    />
+    <div className={cn("relative flex min-w-0 flex-1", overlayDrawer && "ai-drawer-overlay")}>
+      <DockviewReact className="dockview-theme-abyss min-w-0 flex-1" components={components} onReady={onReady} />
+      {overlayDrawer && (
+        <div
+          aria-hidden
+          className="absolute inset-0 z-20 bg-black/40"
+          onMouseDown={() => useLayoutStore.getState().setWorkspaceDrawerOpen(false)}
+        />
+      )}
+    </div>
   );
 };

@@ -154,3 +154,14 @@
 .project-tab-dock .dv-tabs-container {
   padding-left: 1rem;
 }
+
+/* Full-width AI panel + workspace drawer: the drawer (first view of the root split) floats over the
+   AI panel on the left instead of squeezing it. The AI view's inline left/width are overridden. */
+.ai-drawer-overlay .dv-split-view-container:not(aside .dv-split-view-container) > .dv-view-container > .dv-view:nth-child(2) {
+  left: 0 !important;
+  width: 100% !important;
+}
+.ai-drawer-overlay .dv-split-view-container:not(aside .dv-split-view-container) > .dv-view-container > .dv-view:nth-child(1) {
+  z-index: 30;
+  box-shadow: 0 0 40px rgb(0 0 0 / 0.45);
+}

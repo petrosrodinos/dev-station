@@ -230,7 +230,7 @@ export function registerIpc(hooks: { onCloseChoice: (choice: CloseChoice) => voi
 
   // Terminals ----------------------------------------------------------------------------
   handle(IpcChannels.TERM_LIST, none, () => terminalManager.list());
-  handle(IpcChannels.TERM_CREATE, args(zId, z.object({ cols: zCols.optional(), rows: zRows.optional() }).optional()), ([id, size]) => terminalManager.create(id, size?.cols, size?.rows), { requires: ["PROJECTS_EDIT"] });
+  handle(IpcChannels.TERM_CREATE, args(zId, z.object({ cols: zCols.optional(), rows: zRows.optional(), subdir: z.string().max(500).optional(), command: z.string().max(500).optional() }).optional()), ([id, size]) => terminalManager.create(id, size?.cols, size?.rows, { subdir: size?.subdir, command: size?.command }), { requires: ["PROJECTS_EDIT"] });
   handle(IpcChannels.TERM_WRITE, args(zId, z.string().max(100_000)), ([id, data]) => terminalManager.write(id, data), { requires: ["PROJECTS_EDIT"] });
   handle(IpcChannels.TERM_RESIZE, args(zId, zCols, zRows), ([id, c, r]) => terminalManager.resize(id, c, r));
   handle(IpcChannels.TERM_KILL, args(zId), ([id]) => terminalManager.kill(id), { requires: ["PROJECTS_EDIT"] });
