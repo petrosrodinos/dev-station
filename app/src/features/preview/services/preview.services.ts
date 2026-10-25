@@ -21,7 +21,15 @@ export const hidePreview = async (projectId: string): Promise<void> => {
     }
 };
 
-export const setPreviewBounds = async (projectId: string, bounds: PreviewBounds): Promise<void> => {
+export const destroyPreview = async (projectId: string): Promise<void> => {
+    try {
+        await getBridge().preview.destroy({ projectId });
+    } catch (error) {
+        throw new Error(getErrorMessage(error, "Failed to close the preview."));
+    }
+};
+
+export const setPreviewBounds =async (projectId: string, bounds: PreviewBounds): Promise<void> => {
     try {
         await getBridge().preview.setBounds({ projectId, bounds });
     } catch (error) {

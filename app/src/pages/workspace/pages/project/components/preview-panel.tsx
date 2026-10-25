@@ -95,7 +95,8 @@ export const PreviewPanel: FC<PreviewPanelProps> = ({ project }) => {
     }
   }, [visible, url, actions, measure]);
 
-  useEffect(() => () => void actions.hide(), [actions]);
+  // Closing the panel closes the site too: destroying the view stops any audio/video it was playing.
+  useEffect(() => () => void actions.destroy(), [actions]);
 
   // Keep bounds in sync. Polled once per frame while visible: the panel can move without resizing
   // (e.g. another sidebar is dragged), which ResizeObserver and window resize events never report.

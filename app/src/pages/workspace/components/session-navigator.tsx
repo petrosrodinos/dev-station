@@ -224,7 +224,7 @@ function HiddenSessionsMenu({ items, projectById, onOpen, onShowProject }: Hidde
             <div key={projectId}>
               {i > 0 && <DropdownMenuSeparator />}
               <DropdownMenuItem onSelect={() => onShowProject(group)} className="gap-2 text-[0.625rem] font-semibold uppercase tracking-[0.3px] text-ash" title="Show all sessions of this project">
-                {project && <ProjectAvatar name={project.name} color={project.color} size="xs" />}
+                {project && <ProjectAvatar name={project.name} color={project.color} seed={project.avatar_seed} size="xs" />}
                 <span className="min-w-0 flex-1 truncate">{project?.name ?? "Unknown project"}</span>
                 <span className="shrink-0 normal-case tracking-normal">Show all</span>
               </DropdownMenuItem>
