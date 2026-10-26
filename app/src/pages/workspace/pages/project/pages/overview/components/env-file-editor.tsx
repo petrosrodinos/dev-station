@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRightLeft, Eye, EyeOff, Plus, RotateCw, Search, Trash2, TriangleAlert } from "lucide-react";
@@ -25,10 +25,12 @@ interface EnvFileEditorProps {
   file: EnvFileSummary;
   /** Reports unsaved changes so the parent can confirm before switching files. */
   onDirtyChange: (dirty: boolean) => void;
+  /** Called after Dev Station wrote service-applied values (e.g. a moved port) into the file on its own. */
+  onAutoSynced: (path: string, keys: string[]) => void;
 }
 
 /** Key/value editor for one `.env*` file, with the values running services actually received. */
-export function EnvFileEditor({ projectId, file, onDirtyChange }: EnvFileEditorProps) {
+export function EnvFileEditor({ projectId, file, onDirtyChange, onAutoSynced }: EnvFileEditorProps) {
   const query = useEnvFile(projectId, file.path, true);
   const save = useSaveEnvFile();
   const [search, setSearch] = useState("");
@@ -59,6 +61,29 @@ export function EnvFileEditor({ projectId, file, onDirtyChange }: EnvFileEditorP
     void refetch();
   }, [runSignature, refetch]);
 
+  // Dev Station changed values at start (e.g. moved a port): write them to the file itself instead of
+  // asking the user to. Skipped while the user has unsaved edits; retried once they save or discard.
+  const autoSave = useSaveEnvFile({ silent: true });
+  const { mutate: autoSaveMutate } = autoSave;
+  const attemptedRef = useRef("");
+  useEffect(() => {
+    if (!content || dirty) return;
+    const newValues = new Map<string, string>();
+    for (const o of content.overrides) {
+      if (content.variables.some((v) => v.key === o.key && v.value !== o.value)) newValues.set(o.key, o.value);
+    }
+    if (newValues.size === 0) return;
+    // One attempt per file version, so a failed write can't loop.
+    const signature = `${content.mtime_ms}:${[...newValues].join("|")}`;
+    if (attemptedRef.current === signature) return;
+    attemptedRef.current = signature;
+    const variables = content.variables.map((v) => ({ key: v.key, value: newValues.get(v.key) ?? v.value }));
+    autoSaveMutate(
+      { projectId, path: file.path, variables, mtimeMs: content.mtime_ms },
+      { onSuccess: () => onAutoSynced(file.path, [...newValues.keys()]) },
+    );
+  }, [content, dirty, projectId, file.path, autoSaveMutate, onAutoSynced]);
+
   const overridesByKey = useMemo(() => {
     const map = new Map<string, EnvRuntimeOverride[]>();
     for (const o of content?.overrides ?? []) map.set(o.key, [...(map.get(o.key) ?? []), o]);
@@ -86,8 +111,6 @@ export function EnvFileEditor({ projectId, file, onDirtyChange }: EnvFileEditorP
   const visible = fields
     .map((field, index) => ({ field, index }))
     .filter(({ index }) => !needle || `${rows[index]?.key ?? ""} ${rows[index]?.value ?? ""}`.toLowerCase().includes(needle));
-  const pendingOverrides = [...overridesByKey.values()].flat().filter((o) => rows.find((r) => r.key === o.key)?.value !== o.value);
-
   const reload = async () => {
     setConflict(false);
     const fresh = await refetch();
@@ -106,11 +129,6 @@ export function EnvFileEditor({ projectId, file, onDirtyChange }: EnvFileEditorP
     );
   };
 
-  const applyOverride = (o: EnvRuntimeOverride) => {
-    const index = rows.findIndex((r) => r.key === o.key);
-    if (index >= 0) form.setValue(`variables.${index}.value`, o.value, { shouldDirty: true });
-  };
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
@@ -122,23 +140,6 @@ export function EnvFileEditor({ projectId, file, onDirtyChange }: EnvFileEditorP
             <AlertAction>
               <Button type="button" size="sm" variant="outline" onClick={reload}>
                 Reload
-              </Button>
-            </AlertAction>
-          </Alert>
-        )}
-
-        {pendingOverrides.length > 0 && (
-          <Alert className="m-4 mb-0 w-auto">
-            <ArrowRightLeft />
-            <AlertTitle>
-              {pendingOverrides.length} variable{pendingOverrides.length === 1 ? " differs" : "s differ"} from what running services received
-            </AlertTitle>
-            <AlertDescription>
-              The service runs fine as is — Dev Station passes the right values at start. Write them to the file only if you want them to stay this way outside Dev Station.
-            </AlertDescription>
-            <AlertAction>
-              <Button type="button" size="sm" variant="outline" onClick={() => pendingOverrides.forEach(applyOverride)}>
-                Write all to file
               </Button>
             </AlertAction>
           </Alert>
@@ -228,9 +229,6 @@ export function EnvFileEditor({ projectId, file, onDirtyChange }: EnvFileEditorP
                       <TooltipTrigger render={<span className="shrink-0 rounded bg-info-soft px-1.5 py-0.5 text-[0.6563rem]">{getDropdownOptionLabel(EnvOverrideSourceOptions, o.source)}</span>} />
                       <TooltipContent className="max-w-xs">{getEnvOverrideSourceDescription(o.source)}</TooltipContent>
                     </Tooltip>
-                    <Button type="button" variant="link" size="sm" className="h-auto shrink-0 p-0 text-[0.7188rem]" onClick={() => applyOverride(o)}>
-                      Write to file
-                    </Button>
                   </div>
                 ))}
               </div>

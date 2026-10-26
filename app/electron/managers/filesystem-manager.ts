@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import type { EditorTarget, FileBinary, FileContent, FileEntry } from "../shared/contract";
-import { EditorTargets, previewTypeFor } from "../shared/contract";
+import { EditorTargets, IpcErrorCodes, previewTypeFor } from "../shared/contract";
 import { IpcError } from "../ipc/ipc-error";
 import { isWindows, toPosix, which } from "../utils/platform";
 import { workspaceConfig } from "./workspace-config";
@@ -272,7 +272,7 @@ class FilesystemManager {
 
     const buffer = await fs.promises.readFile(abs);
     if (looksBinary(buffer)) throw new IpcError("This looks like a binary file and can't be edited here.");
-    return { content: buffer.toString("utf8") };
+    return { content: buffer.toString("utf8"), mtime_ms: stat.mtimeMs };
   }
 
   async readBinary(projectId: string, rel: string): Promise<FileBinary> {
@@ -292,7 +292,7 @@ class FilesystemManager {
     return { kind: preview.kind, mime: preview.mime, data: new Uint8Array(buffer) };
   }
 
-  async writeFile(projectId: string, rel: string, content: string): Promise<void> {
+  async writeFile(projectId: string, rel: string, content: string, mtimeMs: number | null): Promise<FileContent> {
     const abs = workspaceConfig.resolveInProject(projectId, rel);
     let stat: fs.Stats;
     try {
@@ -303,7 +303,14 @@ class FilesystemManager {
     if (!stat.isFile()) throw new IpcError(`Not a file: ${rel}`);
     if (Buffer.byteLength(content, "utf8") > MAX_EDITABLE_BYTES) throw new IpcError("This file is too large to save here (over 5 MB).");
 
+    // The editor's buffer may be older than the file (an agent or another editor wrote to it since it was read);
+    // saving it would silently revert that work.
+    if (mtimeMs != null && Math.abs(stat.mtimeMs - mtimeMs) > 1) {
+      throw new IpcError("This file changed on disk since you opened it.", IpcErrorCodes.FILE_CHANGED);
+    }
+
     await fs.promises.writeFile(abs, content, "utf8");
+    return { content, mtime_ms: (await fs.promises.stat(abs)).mtimeMs };
   }
 }
 

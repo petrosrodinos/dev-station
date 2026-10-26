@@ -39,6 +39,18 @@ export function XtermTerminal({ source, sourceKey, readOnly = false, className, 
   const containerRef = useRef<HTMLDivElement>(null);
   const sourceRef = useRef(source);
   sourceRef.current = source;
+  // readOnly changes with the session's live/permission state; it must not rebuild the terminal, or the
+  // focused textarea is destroyed mid-typing and keyboard focus is lost.
+  const readOnlyRef = useRef(readOnly);
+  readOnlyRef.current = readOnly;
+  const termRef = useRef<Terminal | null>(null);
+
+  useEffect(() => {
+    const term = termRef.current;
+    if (!term) return;
+    term.options.disableStdin = readOnly;
+    term.options.cursorBlink = !readOnly;
+  }, [readOnly]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -65,15 +77,43 @@ export function XtermTerminal({ source, sourceKey, readOnly = false, className, 
     term.loadAddon(fit);
     term.loadAddon(new WebLinksAddon((_e, uri) => sourceRef.current.openLink?.(uri)));
     term.open(container);
-    // xterm turns Ctrl+V into a raw ^V keystroke and cancels the browser's paste event, so nothing
-    // is pasted. Returning false hands the key back to the browser, whose paste event xterm
-    // already turns into (bracketed) paste input. Shift+Insert and Ctrl+Shift+V follow the same path.
+    termRef.current = term;
+    const copySelection = () => {
+      const text = term.getSelection();
+      if (!text) return false;
+      void navigator.clipboard.writeText(text).catch(() => {});
+      return true;
+    };
     term.attachCustomKeyEventHandler((e) => {
       if (e.type !== "keydown") return true;
       const key = e.key.toLowerCase();
+      // Ctrl+C copies when text is selected (otherwise it stays SIGINT); Ctrl+Shift+C and Ctrl+Insert always copy.
+      const isCopy = (e.ctrlKey && !e.altKey && key === "c" && (e.shiftKey || term.hasSelection())) || (e.ctrlKey && e.key === "Insert");
+      if (isCopy) {
+        copySelection();
+        return false;
+      }
+      // xterm turns Ctrl+V into a raw ^V keystroke and cancels the browser's paste event, so nothing
+      // is pasted. Returning false hands the key back to the browser, whose paste event xterm
+      // already turns into (bracketed) paste input. Shift+Insert and Ctrl+Shift+V follow the same path.
       const isPaste = (e.ctrlKey && !e.altKey && key === "v") || (e.shiftKey && e.key === "Insert");
       return !isPaste;
     });
+    // Right-click like Windows Terminal: copy the selection if there is one, otherwise paste.
+    const onContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      if (term.hasSelection()) {
+        copySelection();
+        term.clearSelection();
+      } else if (!readOnlyRef.current) {
+        void navigator.clipboard
+          .readText()
+          .then((text) => text && term.paste(text))
+          .catch(() => {});
+      }
+      term.focus();
+    };
+    container.addEventListener("contextmenu", onContextMenu);
 
     let disposed = false;
     let buffered: string[] = [];
@@ -100,11 +140,11 @@ export function XtermTerminal({ source, sourceKey, readOnly = false, className, 
       });
 
     const inputDisposable = term.onData((data) => {
-      if (!readOnly) sourceRef.current.write(data);
+      if (!readOnlyRef.current) sourceRef.current.write(data);
     });
 
     // Dropping files inserts their absolute paths at the prompt (as a paste), like Claude Code / Cursor CLI.
-    const hasFiles = (e: DragEvent) => !readOnly && !!sourceRef.current.pathForFile && !!e.dataTransfer?.types.includes("Files");
+    const hasFiles = (e: DragEvent) => !readOnlyRef.current &&!!sourceRef.current.pathForFile && !!e.dataTransfer?.types.includes("Files");
     const onDragOver = (e: DragEvent) => {
       if (!hasFiles(e)) return;
       e.preventDefault();
@@ -147,11 +187,13 @@ export function XtermTerminal({ source, sourceKey, readOnly = false, className, 
     observer.observe(container);
     requestAnimationFrame(() => {
       doFit();
-      if (autoFocus && !readOnly) term.focus();
+      if (autoFocus && !readOnlyRef.current) term.focus();
     });
 
     return () => {
       disposed = true;
+      termRef.current = null;
+      container.removeEventListener("contextmenu", onContextMenu);
       container.removeEventListener("dragover", onDragOver);
       container.removeEventListener("drop", onDrop);
       observer.disconnect();
@@ -160,7 +202,7 @@ export function XtermTerminal({ source, sourceKey, readOnly = false, className, 
       unsubscribe();
       term.dispose();
     };
-  }, [sourceKey, readOnly, autoFocus]);
+  }, [sourceKey, autoFocus]);
 
   return <div ref={containerRef} className={cn("h-full w-full overflow-hidden bg-terminal", className)} />;
 }

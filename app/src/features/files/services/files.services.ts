@@ -23,8 +23,9 @@ export const copyFilePath = ({ projectId, path }: { projectId: string; path: str
 export const copyRelativePath = ({ path }: { path: string }) => wrap(async () => { await navigator.clipboard.writeText(path); return path; }, "Could not copy the path.");
 export const readFile = (projectId: string, path: string): Promise<FileContent> => wrap(() => getBridge().files.readFile(projectId, path), "Could not read the file.");
 export const readBinaryFile = (projectId: string, path: string): Promise<FileBinary> => wrap(() => getBridge().files.readBinary(projectId, path), "Could not read the file.");
-export const writeFile = ({ projectId, path, content }: { projectId: string; path: string; content: string }) =>
-    wrap(() => getBridge().files.writeFile(projectId, path, content), "Could not save the file.");
+/** `mtimeMs` is the file's modified time the content was based on; null overwrites whatever is on disk. */
+export const writeFile = ({ projectId, path, content, mtimeMs }: { projectId: string; path: string; content: string; mtimeMs: number | null }): Promise<FileContent> =>
+    wrap(() => getBridge().files.writeFile(projectId, path, content, mtimeMs), "Could not save the file.");
 export const createFile = ({ projectId, path }: { projectId: string; path: string }) => wrap(() => getBridge().files.createFile(projectId, path), "Could not create the file.");
 export const createFolder = ({ projectId, path }: { projectId: string; path: string }) => wrap(() => getBridge().files.createFolder(projectId, path), "Could not create the folder.");
 export const renameEntry = ({ projectId, path, name }: { projectId: string; path: string; name: string }) => wrap(() => getBridge().files.rename(projectId, path, name), "Could not rename it.");

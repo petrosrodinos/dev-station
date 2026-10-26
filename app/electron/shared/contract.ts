@@ -291,6 +291,8 @@ export interface FileEntry {
 
 export interface FileContent {
   content: string;
+  /** Modified time on disk when read; a save passes it back so it can refuse to overwrite a newer version. */
+  mtime_ms: number;
 }
 
 /** Search-in-files query. `include` / `exclude` are comma-separated globs relative to the project root. */
@@ -713,7 +715,8 @@ export interface DevStationBridge {
     readFile(projectId: string, relPath: string): Promise<FileContent>;
     /** Raw bytes of an image or PDF for the in-app viewer (see PREVIEW_FILE_TYPES). */
     readBinary(projectId: string, relPath: string): Promise<FileBinary>;
-    writeFile(projectId: string, relPath: string, content: string): Promise<void>;
+    /** Fails with FILE_CHANGED if the file changed since `mtimeMs`; pass null to overwrite regardless. Returns what is now on disk. */
+    writeFile(projectId: string, relPath: string, content: string, mtimeMs: number | null): Promise<FileContent>;
     /** Returns the created project-relative path. `relPath` may contain "/" to create intermediate folders. */
     createFile(projectId: string, relPath: string): Promise<string>;
     createFolder(projectId: string, relPath: string): Promise<string>;

@@ -1,7 +1,8 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addToGitignore, copyEntry, copyFilePath, copyRelativePath, createFile, createFolder, deleteEntry, importExternal, listDirectory, moveEntry, openFileExternally, openInEditor, readBinaryFile, readFile, renameEntry, replaceFileContent, revealFile, searchFileContent, searchFiles, writeFile } from "../services/files.services";
 import { getEditorTargetLabel } from "@/config/constants/dropdowns/settings/editor-target.options";
-import type { ContentSearchOptions } from "@shared/contract";
+import { IpcErrorCodes, type ContentSearchOptions } from "@shared/contract";
+import { getBridgeErrorCode } from "@/lib/desktop";
 import { toast } from "@/hooks/use-toast";
 
 export const useDirectory = (projectId: string | null, relDir: string, enabled = true) =>
@@ -80,6 +81,9 @@ export const useFileContent = (projectId: string | null, path: string | null) =>
         enabled: !!projectId && !!path,
         staleTime: 0,
         retry: false,
+        // Agents running in Dev Station edit files while they are open here; poll so the editor notices instead of
+        // holding an older copy that a save would write back over theirs. Unchanged data keeps its reference (no re-render).
+        refetchInterval: 2000,
     });
 
 export const useFileBinary = (projectId: string | null, path: string | null) =>
@@ -95,11 +99,20 @@ export const useSaveFile = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: writeFile,
-        onSuccess: (_r, vars) => {
-            queryClient.setQueryData(["file-content", vars.projectId, vars.path], { content: vars.content });
+        // An in-flight poll that started before the write would land after it and look like an outside edit.
+        onMutate: (vars) => queryClient.cancelQueries({ queryKey: ["file-content", vars.projectId, vars.path] }),
+        onSuccess: (saved, vars) => {
+            queryClient.setQueryData(["file-content", vars.projectId, vars.path], saved);
             toast({ title: "Saved", duration: 1000 });
         },
-        onError: (error: Error) => toast({ title: "Could not save file", description: error.message, variant: "error" }),
+        onError: (error: Error, vars) => {
+            if (getBridgeErrorCode(error) === IpcErrorCodes.FILE_CHANGED) {
+                // The editor shows its own conflict banner once the fresh copy arrives.
+                void queryClient.invalidateQueries({ queryKey: ["file-content", vars.projectId, vars.path] });
+                return;
+            }
+            toast({ title: "Could not save file", description: error.message, variant: "error" });
+        },
     });
 };
 

@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { ChevronRight, ExternalLink, FileKey2 } from "lucide-react";
+import { ChevronRight, ExternalLink, FileKey2, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Panel, PanelHeader } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,8 @@ export function EnvFilesCard({ project }: { project: Project }) {
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const onDirtyChange = useCallback((d: boolean) => setDirty(d), []);
+  const [autoSynced, setAutoSynced] = useState<{ path: string; keys: string[] } | null>(null);
+  const onAutoSynced = useCallback((path: string, keys: string[]) => setAutoSynced({ path, keys }), []);
 
   const list = files.data ?? [];
   // Default to the first real (non-template) file; templates are documentation.
@@ -91,6 +93,18 @@ export function EnvFilesCard({ project }: { project: Project }) {
         }
       />
 
+      {autoSynced && (
+        <div className={cn("flex items-center gap-2 bg-info-soft px-4 py-2 text-[0.7188rem] text-info", !expanded && "border-t")}>
+          <Info className="size-3.5 shrink-0" />
+          <span className="min-w-0 flex-1 truncate">
+            Updated {autoSynced.keys.join(", ")} in <span className="font-mono">{autoSynced.path}</span> to match what your services are running with.
+          </span>
+          <Button type="button" variant="ghost" size="icon-sm" aria-label="Dismiss" className="size-5" onClick={() => setAutoSynced(null)}>
+            <X className="size-3" />
+          </Button>
+        </div>
+      )}
+
       {/* Hidden rather than unmounted so unsaved edits survive collapsing. */}
       <div className={cn(!expanded && "hidden")}>
       {consent.isPending || (allowed && files.isPending) ? (
@@ -121,7 +135,7 @@ export function EnvFilesCard({ project }: { project: Project }) {
               This is a template: apps don't load it. It documents the variables other .env files should define.
             </div>
           )}
-          <EnvFileEditor key={selected.path} projectId={project.id} file={selected} onDirtyChange={onDirtyChange} />
+          <EnvFileEditor key={selected.path} projectId={project.id} file={selected} onDirtyChange={onDirtyChange} onAutoSynced={onAutoSynced} />
         </>
       )}
       </div>

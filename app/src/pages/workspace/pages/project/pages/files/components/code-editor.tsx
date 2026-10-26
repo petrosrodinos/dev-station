@@ -8,7 +8,8 @@ import { html } from "@codemirror/lang-html";
 import { markdown } from "@codemirror/lang-markdown";
 import { python } from "@codemirror/lang-python";
 import { yaml } from "@codemirror/lang-yaml";
-import { Columns2, Eye, Loader2, Pencil, Save } from "lucide-react";
+import { Columns2, Eye, Loader2, Pencil, Save, TriangleAlert } from "lucide-react";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
@@ -54,6 +55,10 @@ export function CodeEditor({ projectId, path }: { projectId: string; path: strin
   const { data, isPending, isError, error } = useFileContent(projectId, path);
   const save = useSaveFile();
   const [draft, setDraft] = useState<string | null>(null);
+  // The version of the file the editor is in sync with (what was last read or saved); `draft` differs from it when edited.
+  const [base, setBase] = useState<{ content: string; mtime: number } | null>(null);
+  const draftRef = useRef<string | null>(null);
+  draftRef.current = draft;
   const theme = useResolvedTheme();
   const markdownFile = isMarkdown(path);
   const [viewMode, setViewMode] = useState<ViewMode>(ViewModes.EDIT);
@@ -61,15 +66,30 @@ export function CodeEditor({ projectId, path }: { projectId: string; path: strin
   const showPreview = markdownFile && viewMode !== ViewModes.EDIT;
   const extensions = useMemo(() => languageFor(path), [path]);
 
-  // Start from the unsaved draft if this file was edited earlier this session, else from the file on disk.
-  const loadedFor = useRef<string | null>(null);
+  // Start from the unsaved draft if this file was edited earlier this session, else from the file on disk. After that,
+  // follow the file: when it changes on disk and there are no unsaved edits the editor takes the new text, so a later
+  // save never writes an outdated copy over what an agent or another editor wrote. With unsaved edits it is a conflict.
   useEffect(() => {
-    const key = `${projectId}:${path}`;
-    if (data !== undefined && loadedFor.current !== key) {
-      setDraft(getFileDraft(projectId, path) ?? data.content);
-      loadedFor.current = key;
+    if (data === undefined) return;
+    if (base === null) {
+      const stored = getFileDraft(projectId, path);
+      if (stored) {
+        setDraft(stored.content);
+        setBase({ content: stored.baseContent, mtime: stored.baseMtime });
+      } else {
+        setDraft(data.content);
+        setBase({ content: data.content, mtime: data.mtime_ms });
+      }
+      return;
     }
-  }, [data, projectId, path]);
+    if (data.mtime_ms === base.mtime) return;
+    const clean = draft === base.content;
+    if (data.content === base.content || clean || draft === data.content) {
+      setBase({ content: data.content, mtime: data.mtime_ms });
+      if (clean) setDraft(data.content);
+      if (clean || draft === data.content) clearFileDraft(projectId, path);
+    }
+  }, [data, base, draft, projectId, path]);
 
   // Search results jump here: select the match and scroll it into view once the text is in the editor.
   const [view, setView] = useState<EditorView | null>(null);
@@ -87,14 +107,36 @@ export function CodeEditor({ projectId, path }: { projectId: string; path: strin
 
   const edit = (content: string) => {
     setDraft(content);
-    setFileDraft(projectId, path, content);
+    if (base) setFileDraft(projectId, path, { content, baseContent: base.content, baseMtime: base.mtime });
   };
 
-  const dirty = draft !== null && data !== undefined && draft !== data.content;
+  const dirty = draft !== null && base !== null && draft !== base.content;
+  // The file on disk moved on while the editor holds unsaved edits made against the older version.
+  const conflict = dirty && data !== undefined && base !== null && data.mtime_ms !== base.mtime && data.content !== draft;
 
-  const doSave = () => {
-    if (draft === null || !dirty || save.isPending) return;
-    save.mutate({ projectId, path, content: draft }, { onSuccess: () => clearFileDraft(projectId, path) });
+  // `mtimeMs` null overwrites what is on disk (the "Overwrite" choice); otherwise the save is refused if the file changed.
+  const doSave = (overwrite = false) => {
+    if (draft === null || base === null || !dirty || save.isPending) return;
+    if (conflict && !overwrite) return;
+    save.mutate(
+      { projectId, path, content: draft, mtimeMs: overwrite ? null : base.mtime },
+      {
+        onSuccess: (saved) => {
+          const next = { content: saved.content, mtime: saved.mtime_ms };
+          setBase(next);
+          // Typing may have continued while the save ran; keep that as a draft against the new version.
+          if (draftRef.current === saved.content) clearFileDraft(projectId, path);
+          else if (draftRef.current !== null) setFileDraft(projectId, path, { content: draftRef.current, baseContent: next.content, baseMtime: next.mtime });
+        },
+      },
+    );
+  };
+
+  const reloadFromDisk = () => {
+    if (!data) return;
+    setBase({ content: data.content, mtime: data.mtime_ms });
+    setDraft(data.content);
+    clearFileDraft(projectId, path);
   };
 
   const loaded = data !== undefined && draft !== null;
@@ -107,7 +149,7 @@ export function CodeEditor({ projectId, path }: { projectId: string; path: strin
             <Icon className="size-3.5" />
           </FileHeaderAction>
         ))}
-      <Button size="sm" variant="outline" className="h-6 gap-1.5 px-2 text-xs" disabled={!dirty || save.isPending} onClick={doSave}>
+      <Button size="sm" variant="outline" className="h-6 gap-1.5 px-2 text-xs" disabled={!dirty || conflict || save.isPending} onClick={() => doSave()}>
         {save.isPending ? <Loader2 className="size-3 animate-spin" /> : <Save className="size-3" />}
         Save
       </Button>
@@ -158,6 +200,21 @@ export function CodeEditor({ projectId, path }: { projectId: string; path: strin
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <FileHeader path={path} actions={actions} />
+      {conflict && (
+        <Alert variant="destructive" className="m-2 w-auto">
+          <TriangleAlert />
+          <AlertTitle>This file changed on disk</AlertTitle>
+          <AlertDescription>Another program or an agent edited it after you started typing. Saving now would overwrite their changes.</AlertDescription>
+          <AlertAction>
+            <Button type="button" size="sm" variant="outline" onClick={reloadFromDisk}>
+              Load their version
+            </Button>
+            <Button type="button" size="sm" variant="outline" disabled={save.isPending} onClick={() => doSave(true)}>
+              Overwrite with mine
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
       {body}
     </div>
   );

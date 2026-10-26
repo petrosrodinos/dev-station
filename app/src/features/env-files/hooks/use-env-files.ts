@@ -17,7 +17,8 @@ export const useEnvFile = (projectId: string, path: string | null, enabled: bool
         refetchOnWindowFocus: false,
     });
 
-export const useSaveEnvFile = () => {
+/** `silent` skips the success toast, for writes Dev Station makes on its own (the caller shows its own notice). */
+export const useSaveEnvFile = ({ silent = false }: { silent?: boolean } = {}) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: writeEnvFile,
@@ -25,7 +26,7 @@ export const useSaveEnvFile = () => {
             queryClient.setQueryData(["env-file", vars.projectId, vars.path], content);
             queryClient.invalidateQueries({ queryKey: ["env-files"] });
             queryClient.invalidateQueries({ queryKey: ["project-env-keys"] });
-            toast({ title: "Environment file saved", description: "Restart running services to pick up the changes.", duration: 2500 });
+            if (!silent) toast({ title: "Environment file saved", description: "Restart running services to pick up the changes.", duration: 2500 });
         },
         onError: (error: Error) => toast({ title: "Could not save the file", description: getErrorMessage(error), variant: "error", duration: 6000 }),
     });

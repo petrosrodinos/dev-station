@@ -9,6 +9,7 @@ import { IpcError } from "../ipc/ipc-error";
 import { childEnv } from "../utils/platform";
 import { readServiceEnv } from "./detection-manager";
 import { findFreePort, isPortFree, waitForPortFree } from "../utils/port-allocator";
+import { killPorts } from "../utils/port-killer";
 import { logger } from "../utils/logger";
 import { forgetService, recordService, reapLeftoverServices } from "./service-ledger";
 import { workspaceConfig } from "./workspace-config";
@@ -449,6 +450,9 @@ class ProcessManager {
     if (!managed?.child?.pid || managed.info.status !== ProcessStatuses.RUNNING) return Promise.resolve();
     managed.stopping = true;
     const pid = managed.child.pid;
+    const ports = this.portsOf(managed);
+    // A service that hit "port in use" is not what holds that port, so its ports are never reaped.
+    const reap = !managed.hintedPortInUse;
     const exited = new Promise<boolean>((resolve) => {
       const timer = setTimeout(() => resolve(false), 1500);
       managed.exitWaiters.push(() => {
@@ -457,18 +461,42 @@ class ProcessManager {
       });
     });
     treeKill(pid, "SIGTERM");
-    return exited.then(async (done) => {
-      if (done) return;
-      // The tree ignored SIGTERM: force it and wait for the exit.
-      await new Promise<void>((resolve) => {
-        const timer = setTimeout(resolve, 5000);
-        managed.exitWaiters.push(() => {
-          clearTimeout(timer);
-          resolve();
+    return exited
+      .then(async (done) => {
+        if (done) return;
+        // The tree ignored SIGTERM: force it and wait for the exit.
+        await new Promise<void>((resolve) => {
+          const timer = setTimeout(resolve, 5000);
+          managed.exitWaiters.push(() => {
+            clearTimeout(timer);
+            resolve();
+          });
+          treeKill(pid, "SIGKILL");
         });
-        treeKill(pid, "SIGKILL");
-      });
-    });
+      })
+      .then(() => (reap ? this.reapPorts(managed.info.name, ports) : undefined));
+  }
+
+  /** Ports this service was listening on: the one allocated for it plus the one its own output announced. */
+  private portsOf(managed: Managed): number[] {
+    const ports = new Set<number>();
+    if (managed.info.port) ports.add(managed.info.port);
+    const fromUrl = Number(managed.info.url?.match(/:(\d{2,5})(?:\/|$)/)?.[1]);
+    if (Number.isInteger(fromUrl) && fromUrl > 0) ports.add(fromUrl);
+    return [...ports];
+  }
+
+  /**
+   * The shell exiting does not prove the dev server is gone: on Windows a child can survive the tree kill (watchers
+   * that respawn node, detached workers) and keep serving the old build on the old port, while the next start
+   * moves to a new port. Anything still listening on the stopped service's ports after a short grace is that orphan.
+   */
+  private async reapPorts(name: string, ports: number[]) {
+    for (const port of ports) {
+      if (await waitForPortFree(port, 1500)) continue;
+      const [result] = await killPorts([port]);
+      if (result?.pids.length) logger.warn(`Stopped ${name} left a process on port ${port}; terminated pid ${result.pids.join(", ")}${result.freed ? "" : " (port still busy)"}`);
+    }
   }
 
   async restart(projectId: string, spec: ServiceSpec) {
