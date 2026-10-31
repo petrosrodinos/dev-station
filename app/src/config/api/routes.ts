@@ -48,6 +48,8 @@ export const ApiRoutes = {
         services: (id: string) => `/projects/${id}/services`,
         issues: (id: string) => `/projects/${id}/issues`,
         env_consent: (id: string) => `/projects/${id}/env-consent`,
+        secret_sets: (id: string) => `/projects/${id}/secret-sets`,
+        secret_set: (id: string, setId: string) => `/projects/${id}/secret-sets/${setId}`,
     },
     integrations: {
         prefix: "/integrations",

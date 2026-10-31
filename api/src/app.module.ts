@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { ProjectsModule } from './modules/projects/projects.module';
+import { ProjectSecretsModule } from './modules/project-secrets/project-secrets.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { AgentsModule } from './modules/agents/agents.module';
 import { AgentSessionsModule } from './modules/agent-sessions/agent-sessions.module';
@@ -30,6 +31,7 @@ import { AccessModule } from './shared/services/access/access.module';
     UsersModule,
     OrganizationsModule,
     ProjectsModule,
+    ProjectSecretsModule,
     IntegrationsModule,
     AgentsModule,
     AgentSessionsModule,

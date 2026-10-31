@@ -40,6 +40,7 @@ const EnvSchema = z.object({
   BULL_BOARD_USER: z.string().optional(),
   BULL_BOARD_PASSWORD: z.string().optional(),
   RELEASE_PUBLISH_TOKEN: z.string().optional(),
+  SECRETS_ENCRYPTION_KEY: z.string().optional(),
 });
 
 export function validateEnv(config: Record<string, unknown>) {

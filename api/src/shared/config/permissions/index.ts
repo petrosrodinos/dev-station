@@ -5,6 +5,7 @@ export const PermissionGroups = {
   GIT: 'Git',
   AI: 'AI',
   INTEGRATIONS: 'Integrations',
+  SECRETS: 'Secrets',
   ORGANIZATION: 'Organization',
 } as const;
 
@@ -80,6 +81,16 @@ export const PermissionCatalog: {
     label: 'Manage',
   },
   {
+    key: PermissionKey.SECRETS_VIEW,
+    group: PermissionGroups.SECRETS,
+    label: 'View',
+  },
+  {
+    key: PermissionKey.SECRETS_MANAGE,
+    group: PermissionGroups.SECRETS,
+    label: 'Manage',
+  },
+  {
     key: PermissionKey.ORG_MANAGE_MEMBERS,
     group: PermissionGroups.ORGANIZATION,
     label: 'Manage members',
@@ -147,6 +158,8 @@ export const SystemRoles: {
       ...AI_ALL,
       PermissionKey.INTEGRATIONS_VIEW,
       PermissionKey.INTEGRATIONS_CONNECT,
+      PermissionKey.SECRETS_VIEW,
+      PermissionKey.SECRETS_MANAGE,
     ],
   },
   {
@@ -159,6 +172,7 @@ export const SystemRoles: {
       ...GIT_ALL,
       ...AI_ALL,
       PermissionKey.INTEGRATIONS_VIEW,
+      PermissionKey.SECRETS_VIEW,
     ],
   },
   {

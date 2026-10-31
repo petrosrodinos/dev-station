@@ -331,6 +331,21 @@ exports.Prisma.ProjectEnvConsentScalarFieldEnum = {
   accepted_at: 'accepted_at'
 };
 
+exports.Prisma.ProjectSecretSetScalarFieldEnum = {
+  id: 'id',
+  organization_id: 'organization_id',
+  project_id: 'project_id',
+  name: 'name',
+  description: 'description',
+  payload: 'payload',
+  key_version: 'key_version',
+  variable_count: 'variable_count',
+  created_by: 'created_by',
+  updated_by: 'updated_by',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.ProjectIssueScalarFieldEnum = {
   id: 'id',
   project_id: 'project_id',
@@ -516,7 +531,9 @@ exports.PermissionKey = exports.$Enums.PermissionKey = {
   INTEGRATIONS_MANAGE: 'INTEGRATIONS_MANAGE',
   ORG_MANAGE_MEMBERS: 'ORG_MANAGE_MEMBERS',
   ORG_MANAGE_ROLES: 'ORG_MANAGE_ROLES',
-  ORG_MANAGE_SETTINGS: 'ORG_MANAGE_SETTINGS'
+  ORG_MANAGE_SETTINGS: 'ORG_MANAGE_SETTINGS',
+  SECRETS_VIEW: 'SECRETS_VIEW',
+  SECRETS_MANAGE: 'SECRETS_MANAGE'
 };
 
 exports.MemberStatus = exports.$Enums.MemberStatus = {
@@ -586,6 +603,9 @@ exports.ActivityType = exports.$Enums.ActivityType = {
   INTEGRATION_CONNECTED: 'INTEGRATION_CONNECTED',
   INTEGRATION_DISCONNECTED: 'INTEGRATION_DISCONNECTED',
   MEMBER_JOINED: 'MEMBER_JOINED',
+  SECRET_SET_CREATED: 'SECRET_SET_CREATED',
+  SECRET_SET_UPDATED: 'SECRET_SET_UPDATED',
+  SECRET_SET_DELETED: 'SECRET_SET_DELETED',
   OTHER: 'OTHER'
 };
 
@@ -629,6 +649,7 @@ exports.Prisma.ModelName = {
   Project: 'Project',
   ProjectService: 'ProjectService',
   ProjectEnvConsent: 'ProjectEnvConsent',
+  ProjectSecretSet: 'ProjectSecretSet',
   ProjectIssue: 'ProjectIssue',
   IntegrationConnection: 'IntegrationConnection',
   AgentSession: 'AgentSession',

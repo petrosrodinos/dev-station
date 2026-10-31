@@ -106,6 +106,13 @@ export type ProjectService = $Result.DefaultSelection<Prisma.$ProjectServicePayl
  */
 export type ProjectEnvConsent = $Result.DefaultSelection<Prisma.$ProjectEnvConsentPayload>
 /**
+ * Model ProjectSecretSet
+ * A named set of env values shared with the project's team. The whole `{variables:[{key,value}]}`
+ * document is AES-256-GCM encrypted server-side into `payload` (key names included); only the count
+ * is kept in clear so lists render without decrypting. `key_version` allows master-key rotation later.
+ */
+export type ProjectSecretSet = $Result.DefaultSelection<Prisma.$ProjectSecretSetPayload>
+/**
  * Model ProjectIssue
  * External issue reference linked to a project (we store the external id, never a copy of the issue).
  */
@@ -210,7 +217,9 @@ export const PermissionKey: {
   INTEGRATIONS_MANAGE: 'INTEGRATIONS_MANAGE',
   ORG_MANAGE_MEMBERS: 'ORG_MANAGE_MEMBERS',
   ORG_MANAGE_ROLES: 'ORG_MANAGE_ROLES',
-  ORG_MANAGE_SETTINGS: 'ORG_MANAGE_SETTINGS'
+  ORG_MANAGE_SETTINGS: 'ORG_MANAGE_SETTINGS',
+  SECRETS_VIEW: 'SECRETS_VIEW',
+  SECRETS_MANAGE: 'SECRETS_MANAGE'
 };
 
 export type PermissionKey = (typeof PermissionKey)[keyof typeof PermissionKey]
@@ -340,6 +349,9 @@ export const ActivityType: {
   INTEGRATION_CONNECTED: 'INTEGRATION_CONNECTED',
   INTEGRATION_DISCONNECTED: 'INTEGRATION_DISCONNECTED',
   MEMBER_JOINED: 'MEMBER_JOINED',
+  SECRET_SET_CREATED: 'SECRET_SET_CREATED',
+  SECRET_SET_UPDATED: 'SECRET_SET_UPDATED',
+  SECRET_SET_DELETED: 'SECRET_SET_DELETED',
   OTHER: 'OTHER'
 };
 
@@ -693,6 +705,16 @@ export class PrismaClient<
     * ```
     */
   get projectEnvConsent(): Prisma.ProjectEnvConsentDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.projectSecretSet`: Exposes CRUD operations for the **ProjectSecretSet** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ProjectSecretSets
+    * const projectSecretSets = await prisma.projectSecretSet.findMany()
+    * ```
+    */
+  get projectSecretSet(): Prisma.ProjectSecretSetDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.projectIssue`: Exposes CRUD operations for the **ProjectIssue** model.
@@ -1224,6 +1246,7 @@ export namespace Prisma {
     Project: 'Project',
     ProjectService: 'ProjectService',
     ProjectEnvConsent: 'ProjectEnvConsent',
+    ProjectSecretSet: 'ProjectSecretSet',
     ProjectIssue: 'ProjectIssue',
     IntegrationConnection: 'IntegrationConnection',
     AgentSession: 'AgentSession',
@@ -1247,7 +1270,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "passwordResetToken" | "document" | "gitIdentity" | "agentCommand" | "userPreference" | "workspaceLayoutPreset" | "workspaceLayoutState" | "organization" | "role" | "rolePermission" | "organizationMember" | "organizationInvitation" | "repository" | "project" | "projectService" | "projectEnvConsent" | "projectIssue" | "integrationConnection" | "agentSession" | "activity" | "skill" | "skillFavorite" | "appRelease" | "appInstall"
+      modelProps: "user" | "passwordResetToken" | "document" | "gitIdentity" | "agentCommand" | "userPreference" | "workspaceLayoutPreset" | "workspaceLayoutState" | "organization" | "role" | "rolePermission" | "organizationMember" | "organizationInvitation" | "repository" | "project" | "projectService" | "projectEnvConsent" | "projectSecretSet" | "projectIssue" | "integrationConnection" | "agentSession" | "activity" | "skill" | "skillFavorite" | "appRelease" | "appInstall"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2509,6 +2532,80 @@ export namespace Prisma {
           }
         }
       }
+      ProjectSecretSet: {
+        payload: Prisma.$ProjectSecretSetPayload<ExtArgs>
+        fields: Prisma.ProjectSecretSetFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ProjectSecretSetFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectSecretSetPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ProjectSecretSetFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectSecretSetPayload>
+          }
+          findFirst: {
+            args: Prisma.ProjectSecretSetFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectSecretSetPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ProjectSecretSetFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectSecretSetPayload>
+          }
+          findMany: {
+            args: Prisma.ProjectSecretSetFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectSecretSetPayload>[]
+          }
+          create: {
+            args: Prisma.ProjectSecretSetCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectSecretSetPayload>
+          }
+          createMany: {
+            args: Prisma.ProjectSecretSetCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ProjectSecretSetCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectSecretSetPayload>[]
+          }
+          delete: {
+            args: Prisma.ProjectSecretSetDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectSecretSetPayload>
+          }
+          update: {
+            args: Prisma.ProjectSecretSetUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectSecretSetPayload>
+          }
+          deleteMany: {
+            args: Prisma.ProjectSecretSetDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ProjectSecretSetUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ProjectSecretSetUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectSecretSetPayload>[]
+          }
+          upsert: {
+            args: Prisma.ProjectSecretSetUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectSecretSetPayload>
+          }
+          aggregate: {
+            args: Prisma.ProjectSecretSetAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateProjectSecretSet>
+          }
+          groupBy: {
+            args: Prisma.ProjectSecretSetGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ProjectSecretSetGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ProjectSecretSetCountArgs<ExtArgs>
+            result: $Utils.Optional<ProjectSecretSetCountAggregateOutputType> | number
+          }
+        }
+      }
       ProjectIssue: {
         payload: Prisma.$ProjectIssuePayload<ExtArgs>
         fields: Prisma.ProjectIssueFieldRefs
@@ -3226,6 +3323,7 @@ export namespace Prisma {
     project?: ProjectOmit
     projectService?: ProjectServiceOmit
     projectEnvConsent?: ProjectEnvConsentOmit
+    projectSecretSet?: ProjectSecretSetOmit
     projectIssue?: ProjectIssueOmit
     integrationConnection?: IntegrationConnectionOmit
     agentSession?: AgentSessionOmit
@@ -3324,6 +3422,8 @@ export namespace Prisma {
     skill_favorites: number
     workspace_layouts: number
     env_consents: number
+    secret_sets_created: number
+    secret_sets_updated: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3337,6 +3437,8 @@ export namespace Prisma {
     skill_favorites?: boolean | UserCountOutputTypeCountSkill_favoritesArgs
     workspace_layouts?: boolean | UserCountOutputTypeCountWorkspace_layoutsArgs
     env_consents?: boolean | UserCountOutputTypeCountEnv_consentsArgs
+    secret_sets_created?: boolean | UserCountOutputTypeCountSecret_sets_createdArgs
+    secret_sets_updated?: boolean | UserCountOutputTypeCountSecret_sets_updatedArgs
   }
 
   // Custom InputTypes
@@ -3420,6 +3522,20 @@ export namespace Prisma {
     where?: ProjectEnvConsentWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountSecret_sets_createdArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProjectSecretSetWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountSecret_sets_updatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProjectSecretSetWhereInput
+  }
+
 
   /**
    * Count Type WorkspaceLayoutPresetCountOutputType
@@ -3467,6 +3583,7 @@ export namespace Prisma {
     activities: number
     skills: number
     skill_favorites: number
+    secret_sets: number
   }
 
   export type OrganizationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3480,6 +3597,7 @@ export namespace Prisma {
     activities?: boolean | OrganizationCountOutputTypeCountActivitiesArgs
     skills?: boolean | OrganizationCountOutputTypeCountSkillsArgs
     skill_favorites?: boolean | OrganizationCountOutputTypeCountSkill_favoritesArgs
+    secret_sets?: boolean | OrganizationCountOutputTypeCountSecret_setsArgs
   }
 
   // Custom InputTypes
@@ -3561,6 +3679,13 @@ export namespace Prisma {
    */
   export type OrganizationCountOutputTypeCountSkill_favoritesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SkillFavoriteWhereInput
+  }
+
+  /**
+   * OrganizationCountOutputType without action
+   */
+  export type OrganizationCountOutputTypeCountSecret_setsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProjectSecretSetWhereInput
   }
 
 
@@ -3654,6 +3779,7 @@ export namespace Prisma {
     sessions: number
     activities: number
     env_consents: number
+    secret_sets: number
   }
 
   export type ProjectCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3662,6 +3788,7 @@ export namespace Prisma {
     sessions?: boolean | ProjectCountOutputTypeCountSessionsArgs
     activities?: boolean | ProjectCountOutputTypeCountActivitiesArgs
     env_consents?: boolean | ProjectCountOutputTypeCountEnv_consentsArgs
+    secret_sets?: boolean | ProjectCountOutputTypeCountSecret_setsArgs
   }
 
   // Custom InputTypes
@@ -3708,6 +3835,13 @@ export namespace Prisma {
    */
   export type ProjectCountOutputTypeCountEnv_consentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProjectEnvConsentWhereInput
+  }
+
+  /**
+   * ProjectCountOutputType without action
+   */
+  export type ProjectCountOutputTypeCountSecret_setsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProjectSecretSetWhereInput
   }
 
 
@@ -4012,6 +4146,8 @@ export namespace Prisma {
     workspace_layouts?: boolean | User$workspace_layoutsArgs<ExtArgs>
     env_consents?: boolean | User$env_consentsArgs<ExtArgs>
     workspace_layout_state?: boolean | User$workspace_layout_stateArgs<ExtArgs>
+    secret_sets_created?: boolean | User$secret_sets_createdArgs<ExtArgs>
+    secret_sets_updated?: boolean | User$secret_sets_updatedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -4065,6 +4201,8 @@ export namespace Prisma {
     workspace_layouts?: boolean | User$workspace_layoutsArgs<ExtArgs>
     env_consents?: boolean | User$env_consentsArgs<ExtArgs>
     workspace_layout_state?: boolean | User$workspace_layout_stateArgs<ExtArgs>
+    secret_sets_created?: boolean | User$secret_sets_createdArgs<ExtArgs>
+    secret_sets_updated?: boolean | User$secret_sets_updatedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -4085,6 +4223,8 @@ export namespace Prisma {
       workspace_layouts: Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>[]
       env_consents: Prisma.$ProjectEnvConsentPayload<ExtArgs>[]
       workspace_layout_state: Prisma.$WorkspaceLayoutStatePayload<ExtArgs> | null
+      secret_sets_created: Prisma.$ProjectSecretSetPayload<ExtArgs>[]
+      secret_sets_updated: Prisma.$ProjectSecretSetPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -4502,6 +4642,8 @@ export namespace Prisma {
     workspace_layouts<T extends User$workspace_layoutsArgs<ExtArgs> = {}>(args?: Subset<T, User$workspace_layoutsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceLayoutPresetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     env_consents<T extends User$env_consentsArgs<ExtArgs> = {}>(args?: Subset<T, User$env_consentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     workspace_layout_state<T extends User$workspace_layout_stateArgs<ExtArgs> = {}>(args?: Subset<T, User$workspace_layout_stateArgs<ExtArgs>>): Prisma__WorkspaceLayoutStateClient<$Result.GetResult<Prisma.$WorkspaceLayoutStatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    secret_sets_created<T extends User$secret_sets_createdArgs<ExtArgs> = {}>(args?: Subset<T, User$secret_sets_createdArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    secret_sets_updated<T extends User$secret_sets_updatedArgs<ExtArgs> = {}>(args?: Subset<T, User$secret_sets_updatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5203,6 +5345,54 @@ export namespace Prisma {
      */
     include?: WorkspaceLayoutStateInclude<ExtArgs> | null
     where?: WorkspaceLayoutStateWhereInput
+  }
+
+  /**
+   * User.secret_sets_created
+   */
+  export type User$secret_sets_createdArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    where?: ProjectSecretSetWhereInput
+    orderBy?: ProjectSecretSetOrderByWithRelationInput | ProjectSecretSetOrderByWithRelationInput[]
+    cursor?: ProjectSecretSetWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProjectSecretSetScalarFieldEnum | ProjectSecretSetScalarFieldEnum[]
+  }
+
+  /**
+   * User.secret_sets_updated
+   */
+  export type User$secret_sets_updatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    where?: ProjectSecretSetWhereInput
+    orderBy?: ProjectSecretSetOrderByWithRelationInput | ProjectSecretSetOrderByWithRelationInput[]
+    cursor?: ProjectSecretSetWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProjectSecretSetScalarFieldEnum | ProjectSecretSetScalarFieldEnum[]
   }
 
   /**
@@ -13323,6 +13513,7 @@ export namespace Prisma {
     activities?: boolean | Organization$activitiesArgs<ExtArgs>
     skills?: boolean | Organization$skillsArgs<ExtArgs>
     skill_favorites?: boolean | Organization$skill_favoritesArgs<ExtArgs>
+    secret_sets?: boolean | Organization$secret_setsArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["organization"]>
 
@@ -13365,6 +13556,7 @@ export namespace Prisma {
     activities?: boolean | Organization$activitiesArgs<ExtArgs>
     skills?: boolean | Organization$skillsArgs<ExtArgs>
     skill_favorites?: boolean | Organization$skill_favoritesArgs<ExtArgs>
+    secret_sets?: boolean | Organization$secret_setsArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -13383,6 +13575,7 @@ export namespace Prisma {
       activities: Prisma.$ActivityPayload<ExtArgs>[]
       skills: Prisma.$SkillPayload<ExtArgs>[]
       skill_favorites: Prisma.$SkillFavoritePayload<ExtArgs>[]
+      secret_sets: Prisma.$ProjectSecretSetPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -13795,6 +13988,7 @@ export namespace Prisma {
     activities<T extends Organization$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, Organization$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     skills<T extends Organization$skillsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$skillsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SkillPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     skill_favorites<T extends Organization$skill_favoritesArgs<ExtArgs> = {}>(args?: Subset<T, Organization$skill_favoritesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SkillFavoritePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    secret_sets<T extends Organization$secret_setsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$secret_setsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -14455,6 +14649,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SkillFavoriteScalarFieldEnum | SkillFavoriteScalarFieldEnum[]
+  }
+
+  /**
+   * Organization.secret_sets
+   */
+  export type Organization$secret_setsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    where?: ProjectSecretSetWhereInput
+    orderBy?: ProjectSecretSetOrderByWithRelationInput | ProjectSecretSetOrderByWithRelationInput[]
+    cursor?: ProjectSecretSetWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProjectSecretSetScalarFieldEnum | ProjectSecretSetScalarFieldEnum[]
   }
 
   /**
@@ -20485,6 +20703,7 @@ export namespace Prisma {
     sessions?: boolean | Project$sessionsArgs<ExtArgs>
     activities?: boolean | Project$activitiesArgs<ExtArgs>
     env_consents?: boolean | Project$env_consentsArgs<ExtArgs>
+    secret_sets?: boolean | Project$secret_setsArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["project"]>
 
@@ -20582,6 +20801,7 @@ export namespace Prisma {
     sessions?: boolean | Project$sessionsArgs<ExtArgs>
     activities?: boolean | Project$activitiesArgs<ExtArgs>
     env_consents?: boolean | Project$env_consentsArgs<ExtArgs>
+    secret_sets?: boolean | Project$secret_setsArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProjectIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -20612,6 +20832,7 @@ export namespace Prisma {
       sessions: Prisma.$AgentSessionPayload<ExtArgs>[]
       activities: Prisma.$ActivityPayload<ExtArgs>[]
       env_consents: Prisma.$ProjectEnvConsentPayload<ExtArgs>[]
+      secret_sets: Prisma.$ProjectSecretSetPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -21042,6 +21263,7 @@ export namespace Prisma {
     sessions<T extends Project$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, Project$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     activities<T extends Project$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, Project$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     env_consents<T extends Project$env_consentsArgs<ExtArgs> = {}>(args?: Subset<T, Project$env_consentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectEnvConsentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    secret_sets<T extends Project$secret_setsArgs<ExtArgs> = {}>(args?: Subset<T, Project$secret_setsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -21681,6 +21903,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ProjectEnvConsentScalarFieldEnum | ProjectEnvConsentScalarFieldEnum[]
+  }
+
+  /**
+   * Project.secret_sets
+   */
+  export type Project$secret_setsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    where?: ProjectSecretSetWhereInput
+    orderBy?: ProjectSecretSetOrderByWithRelationInput | ProjectSecretSetOrderByWithRelationInput[]
+    cursor?: ProjectSecretSetWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProjectSecretSetScalarFieldEnum | ProjectSecretSetScalarFieldEnum[]
   }
 
   /**
@@ -23974,6 +24220,1255 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ProjectEnvConsentInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ProjectSecretSet
+   */
+
+  export type AggregateProjectSecretSet = {
+    _count: ProjectSecretSetCountAggregateOutputType | null
+    _avg: ProjectSecretSetAvgAggregateOutputType | null
+    _sum: ProjectSecretSetSumAggregateOutputType | null
+    _min: ProjectSecretSetMinAggregateOutputType | null
+    _max: ProjectSecretSetMaxAggregateOutputType | null
+  }
+
+  export type ProjectSecretSetAvgAggregateOutputType = {
+    key_version: number | null
+    variable_count: number | null
+  }
+
+  export type ProjectSecretSetSumAggregateOutputType = {
+    key_version: number | null
+    variable_count: number | null
+  }
+
+  export type ProjectSecretSetMinAggregateOutputType = {
+    id: string | null
+    organization_id: string | null
+    project_id: string | null
+    name: string | null
+    description: string | null
+    payload: string | null
+    key_version: number | null
+    variable_count: number | null
+    created_by: string | null
+    updated_by: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type ProjectSecretSetMaxAggregateOutputType = {
+    id: string | null
+    organization_id: string | null
+    project_id: string | null
+    name: string | null
+    description: string | null
+    payload: string | null
+    key_version: number | null
+    variable_count: number | null
+    created_by: string | null
+    updated_by: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type ProjectSecretSetCountAggregateOutputType = {
+    id: number
+    organization_id: number
+    project_id: number
+    name: number
+    description: number
+    payload: number
+    key_version: number
+    variable_count: number
+    created_by: number
+    updated_by: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type ProjectSecretSetAvgAggregateInputType = {
+    key_version?: true
+    variable_count?: true
+  }
+
+  export type ProjectSecretSetSumAggregateInputType = {
+    key_version?: true
+    variable_count?: true
+  }
+
+  export type ProjectSecretSetMinAggregateInputType = {
+    id?: true
+    organization_id?: true
+    project_id?: true
+    name?: true
+    description?: true
+    payload?: true
+    key_version?: true
+    variable_count?: true
+    created_by?: true
+    updated_by?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type ProjectSecretSetMaxAggregateInputType = {
+    id?: true
+    organization_id?: true
+    project_id?: true
+    name?: true
+    description?: true
+    payload?: true
+    key_version?: true
+    variable_count?: true
+    created_by?: true
+    updated_by?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type ProjectSecretSetCountAggregateInputType = {
+    id?: true
+    organization_id?: true
+    project_id?: true
+    name?: true
+    description?: true
+    payload?: true
+    key_version?: true
+    variable_count?: true
+    created_by?: true
+    updated_by?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type ProjectSecretSetAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProjectSecretSet to aggregate.
+     */
+    where?: ProjectSecretSetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProjectSecretSets to fetch.
+     */
+    orderBy?: ProjectSecretSetOrderByWithRelationInput | ProjectSecretSetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ProjectSecretSetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProjectSecretSets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProjectSecretSets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ProjectSecretSets
+    **/
+    _count?: true | ProjectSecretSetCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ProjectSecretSetAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ProjectSecretSetSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ProjectSecretSetMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ProjectSecretSetMaxAggregateInputType
+  }
+
+  export type GetProjectSecretSetAggregateType<T extends ProjectSecretSetAggregateArgs> = {
+        [P in keyof T & keyof AggregateProjectSecretSet]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateProjectSecretSet[P]>
+      : GetScalarType<T[P], AggregateProjectSecretSet[P]>
+  }
+
+
+
+
+  export type ProjectSecretSetGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProjectSecretSetWhereInput
+    orderBy?: ProjectSecretSetOrderByWithAggregationInput | ProjectSecretSetOrderByWithAggregationInput[]
+    by: ProjectSecretSetScalarFieldEnum[] | ProjectSecretSetScalarFieldEnum
+    having?: ProjectSecretSetScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ProjectSecretSetCountAggregateInputType | true
+    _avg?: ProjectSecretSetAvgAggregateInputType
+    _sum?: ProjectSecretSetSumAggregateInputType
+    _min?: ProjectSecretSetMinAggregateInputType
+    _max?: ProjectSecretSetMaxAggregateInputType
+  }
+
+  export type ProjectSecretSetGroupByOutputType = {
+    id: string
+    organization_id: string
+    project_id: string
+    name: string
+    description: string | null
+    payload: string
+    key_version: number
+    variable_count: number
+    created_by: string | null
+    updated_by: string | null
+    created_at: Date
+    updated_at: Date
+    _count: ProjectSecretSetCountAggregateOutputType | null
+    _avg: ProjectSecretSetAvgAggregateOutputType | null
+    _sum: ProjectSecretSetSumAggregateOutputType | null
+    _min: ProjectSecretSetMinAggregateOutputType | null
+    _max: ProjectSecretSetMaxAggregateOutputType | null
+  }
+
+  type GetProjectSecretSetGroupByPayload<T extends ProjectSecretSetGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ProjectSecretSetGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ProjectSecretSetGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ProjectSecretSetGroupByOutputType[P]>
+            : GetScalarType<T[P], ProjectSecretSetGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ProjectSecretSetSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    organization_id?: boolean
+    project_id?: boolean
+    name?: boolean
+    description?: boolean
+    payload?: boolean
+    key_version?: boolean
+    variable_count?: boolean
+    created_by?: boolean
+    updated_by?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+    creator?: boolean | ProjectSecretSet$creatorArgs<ExtArgs>
+    updater?: boolean | ProjectSecretSet$updaterArgs<ExtArgs>
+  }, ExtArgs["result"]["projectSecretSet"]>
+
+  export type ProjectSecretSetSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    organization_id?: boolean
+    project_id?: boolean
+    name?: boolean
+    description?: boolean
+    payload?: boolean
+    key_version?: boolean
+    variable_count?: boolean
+    created_by?: boolean
+    updated_by?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+    creator?: boolean | ProjectSecretSet$creatorArgs<ExtArgs>
+    updater?: boolean | ProjectSecretSet$updaterArgs<ExtArgs>
+  }, ExtArgs["result"]["projectSecretSet"]>
+
+  export type ProjectSecretSetSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    organization_id?: boolean
+    project_id?: boolean
+    name?: boolean
+    description?: boolean
+    payload?: boolean
+    key_version?: boolean
+    variable_count?: boolean
+    created_by?: boolean
+    updated_by?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+    creator?: boolean | ProjectSecretSet$creatorArgs<ExtArgs>
+    updater?: boolean | ProjectSecretSet$updaterArgs<ExtArgs>
+  }, ExtArgs["result"]["projectSecretSet"]>
+
+  export type ProjectSecretSetSelectScalar = {
+    id?: boolean
+    organization_id?: boolean
+    project_id?: boolean
+    name?: boolean
+    description?: boolean
+    payload?: boolean
+    key_version?: boolean
+    variable_count?: boolean
+    created_by?: boolean
+    updated_by?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type ProjectSecretSetOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organization_id" | "project_id" | "name" | "description" | "payload" | "key_version" | "variable_count" | "created_by" | "updated_by" | "created_at" | "updated_at", ExtArgs["result"]["projectSecretSet"]>
+  export type ProjectSecretSetInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+    creator?: boolean | ProjectSecretSet$creatorArgs<ExtArgs>
+    updater?: boolean | ProjectSecretSet$updaterArgs<ExtArgs>
+  }
+  export type ProjectSecretSetIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+    creator?: boolean | ProjectSecretSet$creatorArgs<ExtArgs>
+    updater?: boolean | ProjectSecretSet$updaterArgs<ExtArgs>
+  }
+  export type ProjectSecretSetIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+    creator?: boolean | ProjectSecretSet$creatorArgs<ExtArgs>
+    updater?: boolean | ProjectSecretSet$updaterArgs<ExtArgs>
+  }
+
+  export type $ProjectSecretSetPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ProjectSecretSet"
+    objects: {
+      organization: Prisma.$OrganizationPayload<ExtArgs>
+      project: Prisma.$ProjectPayload<ExtArgs>
+      creator: Prisma.$UserPayload<ExtArgs> | null
+      updater: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      organization_id: string
+      project_id: string
+      name: string
+      description: string | null
+      payload: string
+      key_version: number
+      variable_count: number
+      created_by: string | null
+      updated_by: string | null
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["projectSecretSet"]>
+    composites: {}
+  }
+
+  type ProjectSecretSetGetPayload<S extends boolean | null | undefined | ProjectSecretSetDefaultArgs> = $Result.GetResult<Prisma.$ProjectSecretSetPayload, S>
+
+  type ProjectSecretSetCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ProjectSecretSetFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ProjectSecretSetCountAggregateInputType | true
+    }
+
+  export interface ProjectSecretSetDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ProjectSecretSet'], meta: { name: 'ProjectSecretSet' } }
+    /**
+     * Find zero or one ProjectSecretSet that matches the filter.
+     * @param {ProjectSecretSetFindUniqueArgs} args - Arguments to find a ProjectSecretSet
+     * @example
+     * // Get one ProjectSecretSet
+     * const projectSecretSet = await prisma.projectSecretSet.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ProjectSecretSetFindUniqueArgs>(args: SelectSubset<T, ProjectSecretSetFindUniqueArgs<ExtArgs>>): Prisma__ProjectSecretSetClient<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ProjectSecretSet that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ProjectSecretSetFindUniqueOrThrowArgs} args - Arguments to find a ProjectSecretSet
+     * @example
+     * // Get one ProjectSecretSet
+     * const projectSecretSet = await prisma.projectSecretSet.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ProjectSecretSetFindUniqueOrThrowArgs>(args: SelectSubset<T, ProjectSecretSetFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProjectSecretSetClient<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProjectSecretSet that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectSecretSetFindFirstArgs} args - Arguments to find a ProjectSecretSet
+     * @example
+     * // Get one ProjectSecretSet
+     * const projectSecretSet = await prisma.projectSecretSet.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ProjectSecretSetFindFirstArgs>(args?: SelectSubset<T, ProjectSecretSetFindFirstArgs<ExtArgs>>): Prisma__ProjectSecretSetClient<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProjectSecretSet that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectSecretSetFindFirstOrThrowArgs} args - Arguments to find a ProjectSecretSet
+     * @example
+     * // Get one ProjectSecretSet
+     * const projectSecretSet = await prisma.projectSecretSet.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ProjectSecretSetFindFirstOrThrowArgs>(args?: SelectSubset<T, ProjectSecretSetFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProjectSecretSetClient<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ProjectSecretSets that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectSecretSetFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ProjectSecretSets
+     * const projectSecretSets = await prisma.projectSecretSet.findMany()
+     * 
+     * // Get first 10 ProjectSecretSets
+     * const projectSecretSets = await prisma.projectSecretSet.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const projectSecretSetWithIdOnly = await prisma.projectSecretSet.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ProjectSecretSetFindManyArgs>(args?: SelectSubset<T, ProjectSecretSetFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ProjectSecretSet.
+     * @param {ProjectSecretSetCreateArgs} args - Arguments to create a ProjectSecretSet.
+     * @example
+     * // Create one ProjectSecretSet
+     * const ProjectSecretSet = await prisma.projectSecretSet.create({
+     *   data: {
+     *     // ... data to create a ProjectSecretSet
+     *   }
+     * })
+     * 
+     */
+    create<T extends ProjectSecretSetCreateArgs>(args: SelectSubset<T, ProjectSecretSetCreateArgs<ExtArgs>>): Prisma__ProjectSecretSetClient<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ProjectSecretSets.
+     * @param {ProjectSecretSetCreateManyArgs} args - Arguments to create many ProjectSecretSets.
+     * @example
+     * // Create many ProjectSecretSets
+     * const projectSecretSet = await prisma.projectSecretSet.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ProjectSecretSetCreateManyArgs>(args?: SelectSubset<T, ProjectSecretSetCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ProjectSecretSets and returns the data saved in the database.
+     * @param {ProjectSecretSetCreateManyAndReturnArgs} args - Arguments to create many ProjectSecretSets.
+     * @example
+     * // Create many ProjectSecretSets
+     * const projectSecretSet = await prisma.projectSecretSet.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ProjectSecretSets and only return the `id`
+     * const projectSecretSetWithIdOnly = await prisma.projectSecretSet.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ProjectSecretSetCreateManyAndReturnArgs>(args?: SelectSubset<T, ProjectSecretSetCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ProjectSecretSet.
+     * @param {ProjectSecretSetDeleteArgs} args - Arguments to delete one ProjectSecretSet.
+     * @example
+     * // Delete one ProjectSecretSet
+     * const ProjectSecretSet = await prisma.projectSecretSet.delete({
+     *   where: {
+     *     // ... filter to delete one ProjectSecretSet
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ProjectSecretSetDeleteArgs>(args: SelectSubset<T, ProjectSecretSetDeleteArgs<ExtArgs>>): Prisma__ProjectSecretSetClient<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ProjectSecretSet.
+     * @param {ProjectSecretSetUpdateArgs} args - Arguments to update one ProjectSecretSet.
+     * @example
+     * // Update one ProjectSecretSet
+     * const projectSecretSet = await prisma.projectSecretSet.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ProjectSecretSetUpdateArgs>(args: SelectSubset<T, ProjectSecretSetUpdateArgs<ExtArgs>>): Prisma__ProjectSecretSetClient<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ProjectSecretSets.
+     * @param {ProjectSecretSetDeleteManyArgs} args - Arguments to filter ProjectSecretSets to delete.
+     * @example
+     * // Delete a few ProjectSecretSets
+     * const { count } = await prisma.projectSecretSet.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ProjectSecretSetDeleteManyArgs>(args?: SelectSubset<T, ProjectSecretSetDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProjectSecretSets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectSecretSetUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ProjectSecretSets
+     * const projectSecretSet = await prisma.projectSecretSet.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ProjectSecretSetUpdateManyArgs>(args: SelectSubset<T, ProjectSecretSetUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProjectSecretSets and returns the data updated in the database.
+     * @param {ProjectSecretSetUpdateManyAndReturnArgs} args - Arguments to update many ProjectSecretSets.
+     * @example
+     * // Update many ProjectSecretSets
+     * const projectSecretSet = await prisma.projectSecretSet.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ProjectSecretSets and only return the `id`
+     * const projectSecretSetWithIdOnly = await prisma.projectSecretSet.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ProjectSecretSetUpdateManyAndReturnArgs>(args: SelectSubset<T, ProjectSecretSetUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ProjectSecretSet.
+     * @param {ProjectSecretSetUpsertArgs} args - Arguments to update or create a ProjectSecretSet.
+     * @example
+     * // Update or create a ProjectSecretSet
+     * const projectSecretSet = await prisma.projectSecretSet.upsert({
+     *   create: {
+     *     // ... data to create a ProjectSecretSet
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ProjectSecretSet we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ProjectSecretSetUpsertArgs>(args: SelectSubset<T, ProjectSecretSetUpsertArgs<ExtArgs>>): Prisma__ProjectSecretSetClient<$Result.GetResult<Prisma.$ProjectSecretSetPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ProjectSecretSets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectSecretSetCountArgs} args - Arguments to filter ProjectSecretSets to count.
+     * @example
+     * // Count the number of ProjectSecretSets
+     * const count = await prisma.projectSecretSet.count({
+     *   where: {
+     *     // ... the filter for the ProjectSecretSets we want to count
+     *   }
+     * })
+    **/
+    count<T extends ProjectSecretSetCountArgs>(
+      args?: Subset<T, ProjectSecretSetCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ProjectSecretSetCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ProjectSecretSet.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectSecretSetAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ProjectSecretSetAggregateArgs>(args: Subset<T, ProjectSecretSetAggregateArgs>): Prisma.PrismaPromise<GetProjectSecretSetAggregateType<T>>
+
+    /**
+     * Group by ProjectSecretSet.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectSecretSetGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ProjectSecretSetGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ProjectSecretSetGroupByArgs['orderBy'] }
+        : { orderBy?: ProjectSecretSetGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ProjectSecretSetGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProjectSecretSetGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ProjectSecretSet model
+   */
+  readonly fields: ProjectSecretSetFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ProjectSecretSet.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ProjectSecretSetClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    organization<T extends OrganizationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizationDefaultArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    project<T extends ProjectDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProjectDefaultArgs<ExtArgs>>): Prisma__ProjectClient<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    creator<T extends ProjectSecretSet$creatorArgs<ExtArgs> = {}>(args?: Subset<T, ProjectSecretSet$creatorArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    updater<T extends ProjectSecretSet$updaterArgs<ExtArgs> = {}>(args?: Subset<T, ProjectSecretSet$updaterArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ProjectSecretSet model
+   */
+  interface ProjectSecretSetFieldRefs {
+    readonly id: FieldRef<"ProjectSecretSet", 'String'>
+    readonly organization_id: FieldRef<"ProjectSecretSet", 'String'>
+    readonly project_id: FieldRef<"ProjectSecretSet", 'String'>
+    readonly name: FieldRef<"ProjectSecretSet", 'String'>
+    readonly description: FieldRef<"ProjectSecretSet", 'String'>
+    readonly payload: FieldRef<"ProjectSecretSet", 'String'>
+    readonly key_version: FieldRef<"ProjectSecretSet", 'Int'>
+    readonly variable_count: FieldRef<"ProjectSecretSet", 'Int'>
+    readonly created_by: FieldRef<"ProjectSecretSet", 'String'>
+    readonly updated_by: FieldRef<"ProjectSecretSet", 'String'>
+    readonly created_at: FieldRef<"ProjectSecretSet", 'DateTime'>
+    readonly updated_at: FieldRef<"ProjectSecretSet", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ProjectSecretSet findUnique
+   */
+  export type ProjectSecretSetFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectSecretSet to fetch.
+     */
+    where: ProjectSecretSetWhereUniqueInput
+  }
+
+  /**
+   * ProjectSecretSet findUniqueOrThrow
+   */
+  export type ProjectSecretSetFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectSecretSet to fetch.
+     */
+    where: ProjectSecretSetWhereUniqueInput
+  }
+
+  /**
+   * ProjectSecretSet findFirst
+   */
+  export type ProjectSecretSetFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectSecretSet to fetch.
+     */
+    where?: ProjectSecretSetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProjectSecretSets to fetch.
+     */
+    orderBy?: ProjectSecretSetOrderByWithRelationInput | ProjectSecretSetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProjectSecretSets.
+     */
+    cursor?: ProjectSecretSetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProjectSecretSets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProjectSecretSets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProjectSecretSets.
+     */
+    distinct?: ProjectSecretSetScalarFieldEnum | ProjectSecretSetScalarFieldEnum[]
+  }
+
+  /**
+   * ProjectSecretSet findFirstOrThrow
+   */
+  export type ProjectSecretSetFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectSecretSet to fetch.
+     */
+    where?: ProjectSecretSetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProjectSecretSets to fetch.
+     */
+    orderBy?: ProjectSecretSetOrderByWithRelationInput | ProjectSecretSetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProjectSecretSets.
+     */
+    cursor?: ProjectSecretSetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProjectSecretSets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProjectSecretSets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProjectSecretSets.
+     */
+    distinct?: ProjectSecretSetScalarFieldEnum | ProjectSecretSetScalarFieldEnum[]
+  }
+
+  /**
+   * ProjectSecretSet findMany
+   */
+  export type ProjectSecretSetFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectSecretSets to fetch.
+     */
+    where?: ProjectSecretSetWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProjectSecretSets to fetch.
+     */
+    orderBy?: ProjectSecretSetOrderByWithRelationInput | ProjectSecretSetOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ProjectSecretSets.
+     */
+    cursor?: ProjectSecretSetWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProjectSecretSets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProjectSecretSets.
+     */
+    skip?: number
+    distinct?: ProjectSecretSetScalarFieldEnum | ProjectSecretSetScalarFieldEnum[]
+  }
+
+  /**
+   * ProjectSecretSet create
+   */
+  export type ProjectSecretSetCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ProjectSecretSet.
+     */
+    data: XOR<ProjectSecretSetCreateInput, ProjectSecretSetUncheckedCreateInput>
+  }
+
+  /**
+   * ProjectSecretSet createMany
+   */
+  export type ProjectSecretSetCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ProjectSecretSets.
+     */
+    data: ProjectSecretSetCreateManyInput | ProjectSecretSetCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ProjectSecretSet createManyAndReturn
+   */
+  export type ProjectSecretSetCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * The data used to create many ProjectSecretSets.
+     */
+    data: ProjectSecretSetCreateManyInput | ProjectSecretSetCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ProjectSecretSet update
+   */
+  export type ProjectSecretSetUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ProjectSecretSet.
+     */
+    data: XOR<ProjectSecretSetUpdateInput, ProjectSecretSetUncheckedUpdateInput>
+    /**
+     * Choose, which ProjectSecretSet to update.
+     */
+    where: ProjectSecretSetWhereUniqueInput
+  }
+
+  /**
+   * ProjectSecretSet updateMany
+   */
+  export type ProjectSecretSetUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ProjectSecretSets.
+     */
+    data: XOR<ProjectSecretSetUpdateManyMutationInput, ProjectSecretSetUncheckedUpdateManyInput>
+    /**
+     * Filter which ProjectSecretSets to update
+     */
+    where?: ProjectSecretSetWhereInput
+    /**
+     * Limit how many ProjectSecretSets to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProjectSecretSet updateManyAndReturn
+   */
+  export type ProjectSecretSetUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * The data used to update ProjectSecretSets.
+     */
+    data: XOR<ProjectSecretSetUpdateManyMutationInput, ProjectSecretSetUncheckedUpdateManyInput>
+    /**
+     * Filter which ProjectSecretSets to update
+     */
+    where?: ProjectSecretSetWhereInput
+    /**
+     * Limit how many ProjectSecretSets to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ProjectSecretSet upsert
+   */
+  export type ProjectSecretSetUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ProjectSecretSet to update in case it exists.
+     */
+    where: ProjectSecretSetWhereUniqueInput
+    /**
+     * In case the ProjectSecretSet found by the `where` argument doesn't exist, create a new ProjectSecretSet with this data.
+     */
+    create: XOR<ProjectSecretSetCreateInput, ProjectSecretSetUncheckedCreateInput>
+    /**
+     * In case the ProjectSecretSet was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ProjectSecretSetUpdateInput, ProjectSecretSetUncheckedUpdateInput>
+  }
+
+  /**
+   * ProjectSecretSet delete
+   */
+  export type ProjectSecretSetDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
+    /**
+     * Filter which ProjectSecretSet to delete.
+     */
+    where: ProjectSecretSetWhereUniqueInput
+  }
+
+  /**
+   * ProjectSecretSet deleteMany
+   */
+  export type ProjectSecretSetDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProjectSecretSets to delete
+     */
+    where?: ProjectSecretSetWhereInput
+    /**
+     * Limit how many ProjectSecretSets to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProjectSecretSet.creator
+   */
+  export type ProjectSecretSet$creatorArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * ProjectSecretSet.updater
+   */
+  export type ProjectSecretSet$updaterArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * ProjectSecretSet without action
+   */
+  export type ProjectSecretSetDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectSecretSet
+     */
+    select?: ProjectSecretSetSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectSecretSet
+     */
+    omit?: ProjectSecretSetOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectSecretSetInclude<ExtArgs> | null
   }
 
 
@@ -33483,6 +34978,24 @@ export namespace Prisma {
   export type ProjectEnvConsentScalarFieldEnum = (typeof ProjectEnvConsentScalarFieldEnum)[keyof typeof ProjectEnvConsentScalarFieldEnum]
 
 
+  export const ProjectSecretSetScalarFieldEnum: {
+    id: 'id',
+    organization_id: 'organization_id',
+    project_id: 'project_id',
+    name: 'name',
+    description: 'description',
+    payload: 'payload',
+    key_version: 'key_version',
+    variable_count: 'variable_count',
+    created_by: 'created_by',
+    updated_by: 'updated_by',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type ProjectSecretSetScalarFieldEnum = (typeof ProjectSecretSetScalarFieldEnum)[keyof typeof ProjectSecretSetScalarFieldEnum]
+
+
   export const ProjectIssueScalarFieldEnum: {
     id: 'id',
     project_id: 'project_id',
@@ -33982,6 +35495,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetListRelationFilter
     env_consents?: ProjectEnvConsentListRelationFilter
     workspace_layout_state?: XOR<WorkspaceLayoutStateNullableScalarRelationFilter, WorkspaceLayoutStateWhereInput> | null
+    secret_sets_created?: ProjectSecretSetListRelationFilter
+    secret_sets_updated?: ProjectSecretSetListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -34006,6 +35521,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetOrderByRelationAggregateInput
     env_consents?: ProjectEnvConsentOrderByRelationAggregateInput
     workspace_layout_state?: WorkspaceLayoutStateOrderByWithRelationInput
+    secret_sets_created?: ProjectSecretSetOrderByRelationAggregateInput
+    secret_sets_updated?: ProjectSecretSetOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -34033,6 +35550,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetListRelationFilter
     env_consents?: ProjectEnvConsentListRelationFilter
     workspace_layout_state?: XOR<WorkspaceLayoutStateNullableScalarRelationFilter, WorkspaceLayoutStateWhereInput> | null
+    secret_sets_created?: ProjectSecretSetListRelationFilter
+    secret_sets_updated?: ProjectSecretSetListRelationFilter
   }, "id" | "email" | "phone">
 
   export type UserOrderByWithAggregationInput = {
@@ -34637,6 +36156,7 @@ export namespace Prisma {
     activities?: ActivityListRelationFilter
     skills?: SkillListRelationFilter
     skill_favorites?: SkillFavoriteListRelationFilter
+    secret_sets?: ProjectSecretSetListRelationFilter
   }
 
   export type OrganizationOrderByWithRelationInput = {
@@ -34656,6 +36176,7 @@ export namespace Prisma {
     activities?: ActivityOrderByRelationAggregateInput
     skills?: SkillOrderByRelationAggregateInput
     skill_favorites?: SkillFavoriteOrderByRelationAggregateInput
+    secret_sets?: ProjectSecretSetOrderByRelationAggregateInput
   }
 
   export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -34678,6 +36199,7 @@ export namespace Prisma {
     activities?: ActivityListRelationFilter
     skills?: SkillListRelationFilter
     skill_favorites?: SkillFavoriteListRelationFilter
+    secret_sets?: ProjectSecretSetListRelationFilter
   }, "id" | "slug">
 
   export type OrganizationOrderByWithAggregationInput = {
@@ -35114,6 +36636,7 @@ export namespace Prisma {
     sessions?: AgentSessionListRelationFilter
     activities?: ActivityListRelationFilter
     env_consents?: ProjectEnvConsentListRelationFilter
+    secret_sets?: ProjectSecretSetListRelationFilter
   }
 
   export type ProjectOrderByWithRelationInput = {
@@ -35148,6 +36671,7 @@ export namespace Prisma {
     sessions?: AgentSessionOrderByRelationAggregateInput
     activities?: ActivityOrderByRelationAggregateInput
     env_consents?: ProjectEnvConsentOrderByRelationAggregateInput
+    secret_sets?: ProjectSecretSetOrderByRelationAggregateInput
   }
 
   export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -35185,6 +36709,7 @@ export namespace Prisma {
     sessions?: AgentSessionListRelationFilter
     activities?: ActivityListRelationFilter
     env_consents?: ProjectEnvConsentListRelationFilter
+    secret_sets?: ProjectSecretSetListRelationFilter
   }, "id">
 
   export type ProjectOrderByWithAggregationInput = {
@@ -35402,6 +36927,108 @@ export namespace Prisma {
     project_id?: StringWithAggregatesFilter<"ProjectEnvConsent"> | string
     user_id?: StringWithAggregatesFilter<"ProjectEnvConsent"> | string
     accepted_at?: DateTimeWithAggregatesFilter<"ProjectEnvConsent"> | Date | string
+  }
+
+  export type ProjectSecretSetWhereInput = {
+    AND?: ProjectSecretSetWhereInput | ProjectSecretSetWhereInput[]
+    OR?: ProjectSecretSetWhereInput[]
+    NOT?: ProjectSecretSetWhereInput | ProjectSecretSetWhereInput[]
+    id?: StringFilter<"ProjectSecretSet"> | string
+    organization_id?: StringFilter<"ProjectSecretSet"> | string
+    project_id?: StringFilter<"ProjectSecretSet"> | string
+    name?: StringFilter<"ProjectSecretSet"> | string
+    description?: StringNullableFilter<"ProjectSecretSet"> | string | null
+    payload?: StringFilter<"ProjectSecretSet"> | string
+    key_version?: IntFilter<"ProjectSecretSet"> | number
+    variable_count?: IntFilter<"ProjectSecretSet"> | number
+    created_by?: StringNullableFilter<"ProjectSecretSet"> | string | null
+    updated_by?: StringNullableFilter<"ProjectSecretSet"> | string | null
+    created_at?: DateTimeFilter<"ProjectSecretSet"> | Date | string
+    updated_at?: DateTimeFilter<"ProjectSecretSet"> | Date | string
+    organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
+    project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
+    creator?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    updater?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type ProjectSecretSetOrderByWithRelationInput = {
+    id?: SortOrder
+    organization_id?: SortOrder
+    project_id?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    payload?: SortOrder
+    key_version?: SortOrder
+    variable_count?: SortOrder
+    created_by?: SortOrderInput | SortOrder
+    updated_by?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    organization?: OrganizationOrderByWithRelationInput
+    project?: ProjectOrderByWithRelationInput
+    creator?: UserOrderByWithRelationInput
+    updater?: UserOrderByWithRelationInput
+  }
+
+  export type ProjectSecretSetWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    project_id_name?: ProjectSecretSetProject_idNameCompoundUniqueInput
+    AND?: ProjectSecretSetWhereInput | ProjectSecretSetWhereInput[]
+    OR?: ProjectSecretSetWhereInput[]
+    NOT?: ProjectSecretSetWhereInput | ProjectSecretSetWhereInput[]
+    organization_id?: StringFilter<"ProjectSecretSet"> | string
+    project_id?: StringFilter<"ProjectSecretSet"> | string
+    name?: StringFilter<"ProjectSecretSet"> | string
+    description?: StringNullableFilter<"ProjectSecretSet"> | string | null
+    payload?: StringFilter<"ProjectSecretSet"> | string
+    key_version?: IntFilter<"ProjectSecretSet"> | number
+    variable_count?: IntFilter<"ProjectSecretSet"> | number
+    created_by?: StringNullableFilter<"ProjectSecretSet"> | string | null
+    updated_by?: StringNullableFilter<"ProjectSecretSet"> | string | null
+    created_at?: DateTimeFilter<"ProjectSecretSet"> | Date | string
+    updated_at?: DateTimeFilter<"ProjectSecretSet"> | Date | string
+    organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
+    project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
+    creator?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    updater?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id" | "project_id_name">
+
+  export type ProjectSecretSetOrderByWithAggregationInput = {
+    id?: SortOrder
+    organization_id?: SortOrder
+    project_id?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    payload?: SortOrder
+    key_version?: SortOrder
+    variable_count?: SortOrder
+    created_by?: SortOrderInput | SortOrder
+    updated_by?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: ProjectSecretSetCountOrderByAggregateInput
+    _avg?: ProjectSecretSetAvgOrderByAggregateInput
+    _max?: ProjectSecretSetMaxOrderByAggregateInput
+    _min?: ProjectSecretSetMinOrderByAggregateInput
+    _sum?: ProjectSecretSetSumOrderByAggregateInput
+  }
+
+  export type ProjectSecretSetScalarWhereWithAggregatesInput = {
+    AND?: ProjectSecretSetScalarWhereWithAggregatesInput | ProjectSecretSetScalarWhereWithAggregatesInput[]
+    OR?: ProjectSecretSetScalarWhereWithAggregatesInput[]
+    NOT?: ProjectSecretSetScalarWhereWithAggregatesInput | ProjectSecretSetScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ProjectSecretSet"> | string
+    organization_id?: StringWithAggregatesFilter<"ProjectSecretSet"> | string
+    project_id?: StringWithAggregatesFilter<"ProjectSecretSet"> | string
+    name?: StringWithAggregatesFilter<"ProjectSecretSet"> | string
+    description?: StringNullableWithAggregatesFilter<"ProjectSecretSet"> | string | null
+    payload?: StringWithAggregatesFilter<"ProjectSecretSet"> | string
+    key_version?: IntWithAggregatesFilter<"ProjectSecretSet"> | number
+    variable_count?: IntWithAggregatesFilter<"ProjectSecretSet"> | number
+    created_by?: StringNullableWithAggregatesFilter<"ProjectSecretSet"> | string | null
+    updated_by?: StringNullableWithAggregatesFilter<"ProjectSecretSet"> | string | null
+    created_at?: DateTimeWithAggregatesFilter<"ProjectSecretSet"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"ProjectSecretSet"> | Date | string
   }
 
   export type ProjectIssueWhereInput = {
@@ -36117,6 +37744,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -36141,6 +37770,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUpdateInput = {
@@ -36165,6 +37796,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -36189,6 +37822,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -36850,6 +38485,7 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutOrganizationInput
     skills?: SkillCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateInput = {
@@ -36869,6 +38505,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
     skills?: SkillUncheckedCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUpdateInput = {
@@ -36888,6 +38525,7 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateInput = {
@@ -36907,6 +38545,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUncheckedUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationCreateManyInput = {
@@ -37348,6 +38987,7 @@ export namespace Prisma {
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateInput = {
@@ -37377,6 +39017,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUpdateInput = {
@@ -37406,6 +39047,7 @@ export namespace Prisma {
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateInput = {
@@ -37435,6 +39077,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectCreateManyInput = {
@@ -37674,6 +39317,107 @@ export namespace Prisma {
     project_id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectSecretSetCreateInput = {
+    id?: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    organization: OrganizationCreateNestedOneWithoutSecret_setsInput
+    project: ProjectCreateNestedOneWithoutSecret_setsInput
+    creator?: UserCreateNestedOneWithoutSecret_sets_createdInput
+    updater?: UserCreateNestedOneWithoutSecret_sets_updatedInput
+  }
+
+  export type ProjectSecretSetUncheckedCreateInput = {
+    id?: string
+    organization_id: string
+    project_id: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_by?: string | null
+    updated_by?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ProjectSecretSetUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneRequiredWithoutSecret_setsNestedInput
+    project?: ProjectUpdateOneRequiredWithoutSecret_setsNestedInput
+    creator?: UserUpdateOneWithoutSecret_sets_createdNestedInput
+    updater?: UserUpdateOneWithoutSecret_sets_updatedNestedInput
+  }
+
+  export type ProjectSecretSetUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organization_id?: StringFieldUpdateOperationsInput | string
+    project_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_by?: NullableStringFieldUpdateOperationsInput | string | null
+    updated_by?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectSecretSetCreateManyInput = {
+    id?: string
+    organization_id: string
+    project_id: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_by?: string | null
+    updated_by?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ProjectSecretSetUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectSecretSetUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organization_id?: StringFieldUpdateOperationsInput | string
+    project_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_by?: NullableStringFieldUpdateOperationsInput | string | null
+    updated_by?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ProjectIssueCreateInput = {
@@ -38550,6 +40294,12 @@ export namespace Prisma {
     isNot?: WorkspaceLayoutStateWhereInput | null
   }
 
+  export type ProjectSecretSetListRelationFilter = {
+    every?: ProjectSecretSetWhereInput
+    some?: ProjectSecretSetWhereInput
+    none?: ProjectSecretSetWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -38592,6 +40342,10 @@ export namespace Prisma {
   }
 
   export type ProjectEnvConsentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ProjectSecretSetOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -39818,6 +41572,71 @@ export namespace Prisma {
     accepted_at?: SortOrder
   }
 
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
+  export type ProjectSecretSetProject_idNameCompoundUniqueInput = {
+    project_id: string
+    name: string
+  }
+
+  export type ProjectSecretSetCountOrderByAggregateInput = {
+    id?: SortOrder
+    organization_id?: SortOrder
+    project_id?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    payload?: SortOrder
+    key_version?: SortOrder
+    variable_count?: SortOrder
+    created_by?: SortOrder
+    updated_by?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type ProjectSecretSetAvgOrderByAggregateInput = {
+    key_version?: SortOrder
+    variable_count?: SortOrder
+  }
+
+  export type ProjectSecretSetMaxOrderByAggregateInput = {
+    id?: SortOrder
+    organization_id?: SortOrder
+    project_id?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    payload?: SortOrder
+    key_version?: SortOrder
+    variable_count?: SortOrder
+    created_by?: SortOrder
+    updated_by?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type ProjectSecretSetMinOrderByAggregateInput = {
+    id?: SortOrder
+    organization_id?: SortOrder
+    project_id?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    payload?: SortOrder
+    key_version?: SortOrder
+    variable_count?: SortOrder
+    created_by?: SortOrder
+    updated_by?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type ProjectSecretSetSumOrderByAggregateInput = {
+    key_version?: SortOrder
+    variable_count?: SortOrder
+  }
+
   export type EnumIntegrationProviderFilter<$PrismaModel = never> = {
     equals?: $Enums.IntegrationProvider | EnumIntegrationProviderFieldRefInput<$PrismaModel>
     in?: $Enums.IntegrationProvider[] | ListEnumIntegrationProviderFieldRefInput<$PrismaModel>
@@ -40066,11 +41885,6 @@ export namespace Prisma {
   export type ProjectNullableScalarRelationFilter = {
     is?: ProjectWhereInput | null
     isNot?: ProjectWhereInput | null
-  }
-
-  export type UserNullableScalarRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
   }
 
   export type AgentSessionNullableScalarRelationFilter = {
@@ -40404,6 +42218,20 @@ export namespace Prisma {
     connect?: WorkspaceLayoutStateWhereUniqueInput
   }
 
+  export type ProjectSecretSetCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutCreatorInput, ProjectSecretSetUncheckedCreateWithoutCreatorInput> | ProjectSecretSetCreateWithoutCreatorInput[] | ProjectSecretSetUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutCreatorInput | ProjectSecretSetCreateOrConnectWithoutCreatorInput[]
+    createMany?: ProjectSecretSetCreateManyCreatorInputEnvelope
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+  }
+
+  export type ProjectSecretSetCreateNestedManyWithoutUpdaterInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutUpdaterInput, ProjectSecretSetUncheckedCreateWithoutUpdaterInput> | ProjectSecretSetCreateWithoutUpdaterInput[] | ProjectSecretSetUncheckedCreateWithoutUpdaterInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutUpdaterInput | ProjectSecretSetCreateOrConnectWithoutUpdaterInput[]
+    createMany?: ProjectSecretSetCreateManyUpdaterInputEnvelope
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+  }
+
   export type PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<PasswordResetTokenCreateWithoutUserInput, PasswordResetTokenUncheckedCreateWithoutUserInput> | PasswordResetTokenCreateWithoutUserInput[] | PasswordResetTokenUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PasswordResetTokenCreateOrConnectWithoutUserInput | PasswordResetTokenCreateOrConnectWithoutUserInput[]
@@ -40484,6 +42312,20 @@ export namespace Prisma {
     create?: XOR<WorkspaceLayoutStateCreateWithoutUserInput, WorkspaceLayoutStateUncheckedCreateWithoutUserInput>
     connectOrCreate?: WorkspaceLayoutStateCreateOrConnectWithoutUserInput
     connect?: WorkspaceLayoutStateWhereUniqueInput
+  }
+
+  export type ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutCreatorInput, ProjectSecretSetUncheckedCreateWithoutCreatorInput> | ProjectSecretSetCreateWithoutCreatorInput[] | ProjectSecretSetUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutCreatorInput | ProjectSecretSetCreateOrConnectWithoutCreatorInput[]
+    createMany?: ProjectSecretSetCreateManyCreatorInputEnvelope
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+  }
+
+  export type ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutUpdaterInput, ProjectSecretSetUncheckedCreateWithoutUpdaterInput> | ProjectSecretSetCreateWithoutUpdaterInput[] | ProjectSecretSetUncheckedCreateWithoutUpdaterInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutUpdaterInput | ProjectSecretSetCreateOrConnectWithoutUpdaterInput[]
+    createMany?: ProjectSecretSetCreateManyUpdaterInputEnvelope
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -40662,6 +42504,34 @@ export namespace Prisma {
     update?: XOR<XOR<WorkspaceLayoutStateUpdateToOneWithWhereWithoutUserInput, WorkspaceLayoutStateUpdateWithoutUserInput>, WorkspaceLayoutStateUncheckedUpdateWithoutUserInput>
   }
 
+  export type ProjectSecretSetUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutCreatorInput, ProjectSecretSetUncheckedCreateWithoutCreatorInput> | ProjectSecretSetCreateWithoutCreatorInput[] | ProjectSecretSetUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutCreatorInput | ProjectSecretSetCreateOrConnectWithoutCreatorInput[]
+    upsert?: ProjectSecretSetUpsertWithWhereUniqueWithoutCreatorInput | ProjectSecretSetUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: ProjectSecretSetCreateManyCreatorInputEnvelope
+    set?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    disconnect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    delete?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    update?: ProjectSecretSetUpdateWithWhereUniqueWithoutCreatorInput | ProjectSecretSetUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: ProjectSecretSetUpdateManyWithWhereWithoutCreatorInput | ProjectSecretSetUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: ProjectSecretSetScalarWhereInput | ProjectSecretSetScalarWhereInput[]
+  }
+
+  export type ProjectSecretSetUpdateManyWithoutUpdaterNestedInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutUpdaterInput, ProjectSecretSetUncheckedCreateWithoutUpdaterInput> | ProjectSecretSetCreateWithoutUpdaterInput[] | ProjectSecretSetUncheckedCreateWithoutUpdaterInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutUpdaterInput | ProjectSecretSetCreateOrConnectWithoutUpdaterInput[]
+    upsert?: ProjectSecretSetUpsertWithWhereUniqueWithoutUpdaterInput | ProjectSecretSetUpsertWithWhereUniqueWithoutUpdaterInput[]
+    createMany?: ProjectSecretSetCreateManyUpdaterInputEnvelope
+    set?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    disconnect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    delete?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    update?: ProjectSecretSetUpdateWithWhereUniqueWithoutUpdaterInput | ProjectSecretSetUpdateWithWhereUniqueWithoutUpdaterInput[]
+    updateMany?: ProjectSecretSetUpdateManyWithWhereWithoutUpdaterInput | ProjectSecretSetUpdateManyWithWhereWithoutUpdaterInput[]
+    deleteMany?: ProjectSecretSetScalarWhereInput | ProjectSecretSetScalarWhereInput[]
+  }
+
   export type PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<PasswordResetTokenCreateWithoutUserInput, PasswordResetTokenUncheckedCreateWithoutUserInput> | PasswordResetTokenCreateWithoutUserInput[] | PasswordResetTokenUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PasswordResetTokenCreateOrConnectWithoutUserInput | PasswordResetTokenCreateOrConnectWithoutUserInput[]
@@ -40820,6 +42690,34 @@ export namespace Prisma {
     delete?: WorkspaceLayoutStateWhereInput | boolean
     connect?: WorkspaceLayoutStateWhereUniqueInput
     update?: XOR<XOR<WorkspaceLayoutStateUpdateToOneWithWhereWithoutUserInput, WorkspaceLayoutStateUpdateWithoutUserInput>, WorkspaceLayoutStateUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutCreatorInput, ProjectSecretSetUncheckedCreateWithoutCreatorInput> | ProjectSecretSetCreateWithoutCreatorInput[] | ProjectSecretSetUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutCreatorInput | ProjectSecretSetCreateOrConnectWithoutCreatorInput[]
+    upsert?: ProjectSecretSetUpsertWithWhereUniqueWithoutCreatorInput | ProjectSecretSetUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: ProjectSecretSetCreateManyCreatorInputEnvelope
+    set?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    disconnect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    delete?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    update?: ProjectSecretSetUpdateWithWhereUniqueWithoutCreatorInput | ProjectSecretSetUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: ProjectSecretSetUpdateManyWithWhereWithoutCreatorInput | ProjectSecretSetUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: ProjectSecretSetScalarWhereInput | ProjectSecretSetScalarWhereInput[]
+  }
+
+  export type ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutUpdaterInput, ProjectSecretSetUncheckedCreateWithoutUpdaterInput> | ProjectSecretSetCreateWithoutUpdaterInput[] | ProjectSecretSetUncheckedCreateWithoutUpdaterInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutUpdaterInput | ProjectSecretSetCreateOrConnectWithoutUpdaterInput[]
+    upsert?: ProjectSecretSetUpsertWithWhereUniqueWithoutUpdaterInput | ProjectSecretSetUpsertWithWhereUniqueWithoutUpdaterInput[]
+    createMany?: ProjectSecretSetCreateManyUpdaterInputEnvelope
+    set?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    disconnect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    delete?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    update?: ProjectSecretSetUpdateWithWhereUniqueWithoutUpdaterInput | ProjectSecretSetUpdateWithWhereUniqueWithoutUpdaterInput[]
+    updateMany?: ProjectSecretSetUpdateManyWithWhereWithoutUpdaterInput | ProjectSecretSetUpdateManyWithWhereWithoutUpdaterInput[]
+    deleteMany?: ProjectSecretSetScalarWhereInput | ProjectSecretSetScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutPassword_reset_tokensInput = {
@@ -41058,6 +42956,13 @@ export namespace Prisma {
     connect?: SkillFavoriteWhereUniqueInput | SkillFavoriteWhereUniqueInput[]
   }
 
+  export type ProjectSecretSetCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutOrganizationInput, ProjectSecretSetUncheckedCreateWithoutOrganizationInput> | ProjectSecretSetCreateWithoutOrganizationInput[] | ProjectSecretSetUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutOrganizationInput | ProjectSecretSetCreateOrConnectWithoutOrganizationInput[]
+    createMany?: ProjectSecretSetCreateManyOrganizationInputEnvelope
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+  }
+
   export type OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput = {
     create?: XOR<OrganizationMemberCreateWithoutOrganizationInput, OrganizationMemberUncheckedCreateWithoutOrganizationInput> | OrganizationMemberCreateWithoutOrganizationInput[] | OrganizationMemberUncheckedCreateWithoutOrganizationInput[]
     connectOrCreate?: OrganizationMemberCreateOrConnectWithoutOrganizationInput | OrganizationMemberCreateOrConnectWithoutOrganizationInput[]
@@ -41126,6 +43031,13 @@ export namespace Prisma {
     connectOrCreate?: SkillFavoriteCreateOrConnectWithoutOrganizationInput | SkillFavoriteCreateOrConnectWithoutOrganizationInput[]
     createMany?: SkillFavoriteCreateManyOrganizationInputEnvelope
     connect?: SkillFavoriteWhereUniqueInput | SkillFavoriteWhereUniqueInput[]
+  }
+
+  export type ProjectSecretSetUncheckedCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutOrganizationInput, ProjectSecretSetUncheckedCreateWithoutOrganizationInput> | ProjectSecretSetCreateWithoutOrganizationInput[] | ProjectSecretSetUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutOrganizationInput | ProjectSecretSetCreateOrConnectWithoutOrganizationInput[]
+    createMany?: ProjectSecretSetCreateManyOrganizationInputEnvelope
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
   }
 
   export type OrganizationMemberUpdateManyWithoutOrganizationNestedInput = {
@@ -41268,6 +43180,20 @@ export namespace Prisma {
     deleteMany?: SkillFavoriteScalarWhereInput | SkillFavoriteScalarWhereInput[]
   }
 
+  export type ProjectSecretSetUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutOrganizationInput, ProjectSecretSetUncheckedCreateWithoutOrganizationInput> | ProjectSecretSetCreateWithoutOrganizationInput[] | ProjectSecretSetUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutOrganizationInput | ProjectSecretSetCreateOrConnectWithoutOrganizationInput[]
+    upsert?: ProjectSecretSetUpsertWithWhereUniqueWithoutOrganizationInput | ProjectSecretSetUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: ProjectSecretSetCreateManyOrganizationInputEnvelope
+    set?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    disconnect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    delete?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    update?: ProjectSecretSetUpdateWithWhereUniqueWithoutOrganizationInput | ProjectSecretSetUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: ProjectSecretSetUpdateManyWithWhereWithoutOrganizationInput | ProjectSecretSetUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: ProjectSecretSetScalarWhereInput | ProjectSecretSetScalarWhereInput[]
+  }
+
   export type OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput = {
     create?: XOR<OrganizationMemberCreateWithoutOrganizationInput, OrganizationMemberUncheckedCreateWithoutOrganizationInput> | OrganizationMemberCreateWithoutOrganizationInput[] | OrganizationMemberUncheckedCreateWithoutOrganizationInput[]
     connectOrCreate?: OrganizationMemberCreateOrConnectWithoutOrganizationInput | OrganizationMemberCreateOrConnectWithoutOrganizationInput[]
@@ -41406,6 +43332,20 @@ export namespace Prisma {
     update?: SkillFavoriteUpdateWithWhereUniqueWithoutOrganizationInput | SkillFavoriteUpdateWithWhereUniqueWithoutOrganizationInput[]
     updateMany?: SkillFavoriteUpdateManyWithWhereWithoutOrganizationInput | SkillFavoriteUpdateManyWithWhereWithoutOrganizationInput[]
     deleteMany?: SkillFavoriteScalarWhereInput | SkillFavoriteScalarWhereInput[]
+  }
+
+  export type ProjectSecretSetUncheckedUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutOrganizationInput, ProjectSecretSetUncheckedCreateWithoutOrganizationInput> | ProjectSecretSetCreateWithoutOrganizationInput[] | ProjectSecretSetUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutOrganizationInput | ProjectSecretSetCreateOrConnectWithoutOrganizationInput[]
+    upsert?: ProjectSecretSetUpsertWithWhereUniqueWithoutOrganizationInput | ProjectSecretSetUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: ProjectSecretSetCreateManyOrganizationInputEnvelope
+    set?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    disconnect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    delete?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    update?: ProjectSecretSetUpdateWithWhereUniqueWithoutOrganizationInput | ProjectSecretSetUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: ProjectSecretSetUpdateManyWithWhereWithoutOrganizationInput | ProjectSecretSetUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: ProjectSecretSetScalarWhereInput | ProjectSecretSetScalarWhereInput[]
   }
 
   export type OrganizationCreateNestedOneWithoutRolesInput = {
@@ -41785,6 +43725,13 @@ export namespace Prisma {
     connect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
   }
 
+  export type ProjectSecretSetCreateNestedManyWithoutProjectInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutProjectInput, ProjectSecretSetUncheckedCreateWithoutProjectInput> | ProjectSecretSetCreateWithoutProjectInput[] | ProjectSecretSetUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutProjectInput | ProjectSecretSetCreateOrConnectWithoutProjectInput[]
+    createMany?: ProjectSecretSetCreateManyProjectInputEnvelope
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+  }
+
   export type ProjectServiceUncheckedCreateNestedManyWithoutProjectInput = {
     create?: XOR<ProjectServiceCreateWithoutProjectInput, ProjectServiceUncheckedCreateWithoutProjectInput> | ProjectServiceCreateWithoutProjectInput[] | ProjectServiceUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ProjectServiceCreateOrConnectWithoutProjectInput | ProjectServiceCreateOrConnectWithoutProjectInput[]
@@ -41818,6 +43765,13 @@ export namespace Prisma {
     connectOrCreate?: ProjectEnvConsentCreateOrConnectWithoutProjectInput | ProjectEnvConsentCreateOrConnectWithoutProjectInput[]
     createMany?: ProjectEnvConsentCreateManyProjectInputEnvelope
     connect?: ProjectEnvConsentWhereUniqueInput | ProjectEnvConsentWhereUniqueInput[]
+  }
+
+  export type ProjectSecretSetUncheckedCreateNestedManyWithoutProjectInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutProjectInput, ProjectSecretSetUncheckedCreateWithoutProjectInput> | ProjectSecretSetCreateWithoutProjectInput[] | ProjectSecretSetUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutProjectInput | ProjectSecretSetCreateOrConnectWithoutProjectInput[]
+    createMany?: ProjectSecretSetCreateManyProjectInputEnvelope
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
   }
 
   export type NullableEnumAgentTypeFieldUpdateOperationsInput = {
@@ -41942,6 +43896,20 @@ export namespace Prisma {
     deleteMany?: ProjectEnvConsentScalarWhereInput | ProjectEnvConsentScalarWhereInput[]
   }
 
+  export type ProjectSecretSetUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutProjectInput, ProjectSecretSetUncheckedCreateWithoutProjectInput> | ProjectSecretSetCreateWithoutProjectInput[] | ProjectSecretSetUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutProjectInput | ProjectSecretSetCreateOrConnectWithoutProjectInput[]
+    upsert?: ProjectSecretSetUpsertWithWhereUniqueWithoutProjectInput | ProjectSecretSetUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: ProjectSecretSetCreateManyProjectInputEnvelope
+    set?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    disconnect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    delete?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    update?: ProjectSecretSetUpdateWithWhereUniqueWithoutProjectInput | ProjectSecretSetUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: ProjectSecretSetUpdateManyWithWhereWithoutProjectInput | ProjectSecretSetUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: ProjectSecretSetScalarWhereInput | ProjectSecretSetScalarWhereInput[]
+  }
+
   export type ProjectServiceUncheckedUpdateManyWithoutProjectNestedInput = {
     create?: XOR<ProjectServiceCreateWithoutProjectInput, ProjectServiceUncheckedCreateWithoutProjectInput> | ProjectServiceCreateWithoutProjectInput[] | ProjectServiceUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ProjectServiceCreateOrConnectWithoutProjectInput | ProjectServiceCreateOrConnectWithoutProjectInput[]
@@ -42012,6 +43980,20 @@ export namespace Prisma {
     deleteMany?: ProjectEnvConsentScalarWhereInput | ProjectEnvConsentScalarWhereInput[]
   }
 
+  export type ProjectSecretSetUncheckedUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<ProjectSecretSetCreateWithoutProjectInput, ProjectSecretSetUncheckedCreateWithoutProjectInput> | ProjectSecretSetCreateWithoutProjectInput[] | ProjectSecretSetUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: ProjectSecretSetCreateOrConnectWithoutProjectInput | ProjectSecretSetCreateOrConnectWithoutProjectInput[]
+    upsert?: ProjectSecretSetUpsertWithWhereUniqueWithoutProjectInput | ProjectSecretSetUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: ProjectSecretSetCreateManyProjectInputEnvelope
+    set?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    disconnect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    delete?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    connect?: ProjectSecretSetWhereUniqueInput | ProjectSecretSetWhereUniqueInput[]
+    update?: ProjectSecretSetUpdateWithWhereUniqueWithoutProjectInput | ProjectSecretSetUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: ProjectSecretSetUpdateManyWithWhereWithoutProjectInput | ProjectSecretSetUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: ProjectSecretSetScalarWhereInput | ProjectSecretSetScalarWhereInput[]
+  }
+
   export type ProjectCreateNestedOneWithoutServicesInput = {
     create?: XOR<ProjectCreateWithoutServicesInput, ProjectUncheckedCreateWithoutServicesInput>
     connectOrCreate?: ProjectCreateOrConnectWithoutServicesInput
@@ -42064,6 +44046,66 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutEnv_consentsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutEnv_consentsInput, UserUpdateWithoutEnv_consentsInput>, UserUncheckedUpdateWithoutEnv_consentsInput>
+  }
+
+  export type OrganizationCreateNestedOneWithoutSecret_setsInput = {
+    create?: XOR<OrganizationCreateWithoutSecret_setsInput, OrganizationUncheckedCreateWithoutSecret_setsInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutSecret_setsInput
+    connect?: OrganizationWhereUniqueInput
+  }
+
+  export type ProjectCreateNestedOneWithoutSecret_setsInput = {
+    create?: XOR<ProjectCreateWithoutSecret_setsInput, ProjectUncheckedCreateWithoutSecret_setsInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutSecret_setsInput
+    connect?: ProjectWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutSecret_sets_createdInput = {
+    create?: XOR<UserCreateWithoutSecret_sets_createdInput, UserUncheckedCreateWithoutSecret_sets_createdInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSecret_sets_createdInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutSecret_sets_updatedInput = {
+    create?: XOR<UserCreateWithoutSecret_sets_updatedInput, UserUncheckedCreateWithoutSecret_sets_updatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSecret_sets_updatedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type OrganizationUpdateOneRequiredWithoutSecret_setsNestedInput = {
+    create?: XOR<OrganizationCreateWithoutSecret_setsInput, OrganizationUncheckedCreateWithoutSecret_setsInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutSecret_setsInput
+    upsert?: OrganizationUpsertWithoutSecret_setsInput
+    connect?: OrganizationWhereUniqueInput
+    update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutSecret_setsInput, OrganizationUpdateWithoutSecret_setsInput>, OrganizationUncheckedUpdateWithoutSecret_setsInput>
+  }
+
+  export type ProjectUpdateOneRequiredWithoutSecret_setsNestedInput = {
+    create?: XOR<ProjectCreateWithoutSecret_setsInput, ProjectUncheckedCreateWithoutSecret_setsInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutSecret_setsInput
+    upsert?: ProjectUpsertWithoutSecret_setsInput
+    connect?: ProjectWhereUniqueInput
+    update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutSecret_setsInput, ProjectUpdateWithoutSecret_setsInput>, ProjectUncheckedUpdateWithoutSecret_setsInput>
+  }
+
+  export type UserUpdateOneWithoutSecret_sets_createdNestedInput = {
+    create?: XOR<UserCreateWithoutSecret_sets_createdInput, UserUncheckedCreateWithoutSecret_sets_createdInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSecret_sets_createdInput
+    upsert?: UserUpsertWithoutSecret_sets_createdInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSecret_sets_createdInput, UserUpdateWithoutSecret_sets_createdInput>, UserUncheckedUpdateWithoutSecret_sets_createdInput>
+  }
+
+  export type UserUpdateOneWithoutSecret_sets_updatedNestedInput = {
+    create?: XOR<UserCreateWithoutSecret_sets_updatedInput, UserUncheckedCreateWithoutSecret_sets_updatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSecret_sets_updatedInput
+    upsert?: UserUpsertWithoutSecret_sets_updatedInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSecret_sets_updatedInput, UserUpdateWithoutSecret_sets_updatedInput>, UserUncheckedUpdateWithoutSecret_sets_updatedInput>
   }
 
   export type ProjectCreateNestedOneWithoutIssuesInput = {
@@ -43436,6 +45478,82 @@ export namespace Prisma {
     create: XOR<WorkspaceLayoutStateCreateWithoutUserInput, WorkspaceLayoutStateUncheckedCreateWithoutUserInput>
   }
 
+  export type ProjectSecretSetCreateWithoutCreatorInput = {
+    id?: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    organization: OrganizationCreateNestedOneWithoutSecret_setsInput
+    project: ProjectCreateNestedOneWithoutSecret_setsInput
+    updater?: UserCreateNestedOneWithoutSecret_sets_updatedInput
+  }
+
+  export type ProjectSecretSetUncheckedCreateWithoutCreatorInput = {
+    id?: string
+    organization_id: string
+    project_id: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    updated_by?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ProjectSecretSetCreateOrConnectWithoutCreatorInput = {
+    where: ProjectSecretSetWhereUniqueInput
+    create: XOR<ProjectSecretSetCreateWithoutCreatorInput, ProjectSecretSetUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type ProjectSecretSetCreateManyCreatorInputEnvelope = {
+    data: ProjectSecretSetCreateManyCreatorInput | ProjectSecretSetCreateManyCreatorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ProjectSecretSetCreateWithoutUpdaterInput = {
+    id?: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    organization: OrganizationCreateNestedOneWithoutSecret_setsInput
+    project: ProjectCreateNestedOneWithoutSecret_setsInput
+    creator?: UserCreateNestedOneWithoutSecret_sets_createdInput
+  }
+
+  export type ProjectSecretSetUncheckedCreateWithoutUpdaterInput = {
+    id?: string
+    organization_id: string
+    project_id: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_by?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ProjectSecretSetCreateOrConnectWithoutUpdaterInput = {
+    where: ProjectSecretSetWhereUniqueInput
+    create: XOR<ProjectSecretSetCreateWithoutUpdaterInput, ProjectSecretSetUncheckedCreateWithoutUpdaterInput>
+  }
+
+  export type ProjectSecretSetCreateManyUpdaterInputEnvelope = {
+    data: ProjectSecretSetCreateManyUpdaterInput | ProjectSecretSetCreateManyUpdaterInput[]
+    skipDuplicates?: boolean
+  }
+
   export type PasswordResetTokenUpsertWithWhereUniqueWithoutUserInput = {
     where: PasswordResetTokenWhereUniqueInput
     update: XOR<PasswordResetTokenUpdateWithoutUserInput, PasswordResetTokenUncheckedUpdateWithoutUserInput>
@@ -43829,6 +45947,56 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ProjectSecretSetUpsertWithWhereUniqueWithoutCreatorInput = {
+    where: ProjectSecretSetWhereUniqueInput
+    update: XOR<ProjectSecretSetUpdateWithoutCreatorInput, ProjectSecretSetUncheckedUpdateWithoutCreatorInput>
+    create: XOR<ProjectSecretSetCreateWithoutCreatorInput, ProjectSecretSetUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type ProjectSecretSetUpdateWithWhereUniqueWithoutCreatorInput = {
+    where: ProjectSecretSetWhereUniqueInput
+    data: XOR<ProjectSecretSetUpdateWithoutCreatorInput, ProjectSecretSetUncheckedUpdateWithoutCreatorInput>
+  }
+
+  export type ProjectSecretSetUpdateManyWithWhereWithoutCreatorInput = {
+    where: ProjectSecretSetScalarWhereInput
+    data: XOR<ProjectSecretSetUpdateManyMutationInput, ProjectSecretSetUncheckedUpdateManyWithoutCreatorInput>
+  }
+
+  export type ProjectSecretSetScalarWhereInput = {
+    AND?: ProjectSecretSetScalarWhereInput | ProjectSecretSetScalarWhereInput[]
+    OR?: ProjectSecretSetScalarWhereInput[]
+    NOT?: ProjectSecretSetScalarWhereInput | ProjectSecretSetScalarWhereInput[]
+    id?: StringFilter<"ProjectSecretSet"> | string
+    organization_id?: StringFilter<"ProjectSecretSet"> | string
+    project_id?: StringFilter<"ProjectSecretSet"> | string
+    name?: StringFilter<"ProjectSecretSet"> | string
+    description?: StringNullableFilter<"ProjectSecretSet"> | string | null
+    payload?: StringFilter<"ProjectSecretSet"> | string
+    key_version?: IntFilter<"ProjectSecretSet"> | number
+    variable_count?: IntFilter<"ProjectSecretSet"> | number
+    created_by?: StringNullableFilter<"ProjectSecretSet"> | string | null
+    updated_by?: StringNullableFilter<"ProjectSecretSet"> | string | null
+    created_at?: DateTimeFilter<"ProjectSecretSet"> | Date | string
+    updated_at?: DateTimeFilter<"ProjectSecretSet"> | Date | string
+  }
+
+  export type ProjectSecretSetUpsertWithWhereUniqueWithoutUpdaterInput = {
+    where: ProjectSecretSetWhereUniqueInput
+    update: XOR<ProjectSecretSetUpdateWithoutUpdaterInput, ProjectSecretSetUncheckedUpdateWithoutUpdaterInput>
+    create: XOR<ProjectSecretSetCreateWithoutUpdaterInput, ProjectSecretSetUncheckedCreateWithoutUpdaterInput>
+  }
+
+  export type ProjectSecretSetUpdateWithWhereUniqueWithoutUpdaterInput = {
+    where: ProjectSecretSetWhereUniqueInput
+    data: XOR<ProjectSecretSetUpdateWithoutUpdaterInput, ProjectSecretSetUncheckedUpdateWithoutUpdaterInput>
+  }
+
+  export type ProjectSecretSetUpdateManyWithWhereWithoutUpdaterInput = {
+    where: ProjectSecretSetScalarWhereInput
+    data: XOR<ProjectSecretSetUpdateManyMutationInput, ProjectSecretSetUncheckedUpdateManyWithoutUpdaterInput>
+  }
+
   export type UserCreateWithoutPassword_reset_tokensInput = {
     id?: string
     email: string
@@ -43850,6 +46018,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateWithoutPassword_reset_tokensInput = {
@@ -43873,6 +46043,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserCreateOrConnectWithoutPassword_reset_tokensInput = {
@@ -43912,6 +46084,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPassword_reset_tokensInput = {
@@ -43935,6 +46109,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserCreateWithoutGit_identitiesInput = {
@@ -43958,6 +46134,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateWithoutGit_identitiesInput = {
@@ -43981,6 +46159,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserCreateOrConnectWithoutGit_identitiesInput = {
@@ -44020,6 +46200,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGit_identitiesInput = {
@@ -44043,6 +46225,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserCreateWithoutAgent_commandsInput = {
@@ -44066,6 +46250,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateWithoutAgent_commandsInput = {
@@ -44089,6 +46275,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserCreateOrConnectWithoutAgent_commandsInput = {
@@ -44128,6 +46316,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAgent_commandsInput = {
@@ -44151,6 +46341,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserCreateWithoutPreferenceInput = {
@@ -44174,6 +46366,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateWithoutPreferenceInput = {
@@ -44197,6 +46391,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserCreateOrConnectWithoutPreferenceInput = {
@@ -44236,6 +46432,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPreferenceInput = {
@@ -44259,6 +46457,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserCreateWithoutWorkspace_layoutsInput = {
@@ -44282,6 +46482,8 @@ export namespace Prisma {
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateWithoutWorkspace_layoutsInput = {
@@ -44305,6 +46507,8 @@ export namespace Prisma {
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserCreateOrConnectWithoutWorkspace_layoutsInput = {
@@ -44370,6 +46574,8 @@ export namespace Prisma {
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWorkspace_layoutsInput = {
@@ -44393,6 +46599,8 @@ export namespace Prisma {
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
   }
 
   export type WorkspaceLayoutStateUpsertWithWhereUniqueWithoutActive_presetInput = {
@@ -44444,6 +46652,8 @@ export namespace Prisma {
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateWithoutWorkspace_layout_stateInput = {
@@ -44467,6 +46677,8 @@ export namespace Prisma {
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserCreateOrConnectWithoutWorkspace_layout_stateInput = {
@@ -44535,6 +46747,8 @@ export namespace Prisma {
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWorkspace_layout_stateInput = {
@@ -44558,6 +46772,8 @@ export namespace Prisma {
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
   }
 
   export type WorkspaceLayoutPresetUpsertWithoutStateInput = {
@@ -44721,6 +46937,7 @@ export namespace Prisma {
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutOrganizationInput = {
@@ -44749,6 +46966,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutOrganizationInput = {
@@ -44994,6 +47212,44 @@ export namespace Prisma {
 
   export type SkillFavoriteCreateManyOrganizationInputEnvelope = {
     data: SkillFavoriteCreateManyOrganizationInput | SkillFavoriteCreateManyOrganizationInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ProjectSecretSetCreateWithoutOrganizationInput = {
+    id?: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    project: ProjectCreateNestedOneWithoutSecret_setsInput
+    creator?: UserCreateNestedOneWithoutSecret_sets_createdInput
+    updater?: UserCreateNestedOneWithoutSecret_sets_updatedInput
+  }
+
+  export type ProjectSecretSetUncheckedCreateWithoutOrganizationInput = {
+    id?: string
+    project_id: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_by?: string | null
+    updated_by?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ProjectSecretSetCreateOrConnectWithoutOrganizationInput = {
+    where: ProjectSecretSetWhereUniqueInput
+    create: XOR<ProjectSecretSetCreateWithoutOrganizationInput, ProjectSecretSetUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type ProjectSecretSetCreateManyOrganizationInputEnvelope = {
+    data: ProjectSecretSetCreateManyOrganizationInput | ProjectSecretSetCreateManyOrganizationInput[]
     skipDuplicates?: boolean
   }
 
@@ -45248,6 +47504,22 @@ export namespace Prisma {
     data: XOR<SkillFavoriteUpdateManyMutationInput, SkillFavoriteUncheckedUpdateManyWithoutOrganizationInput>
   }
 
+  export type ProjectSecretSetUpsertWithWhereUniqueWithoutOrganizationInput = {
+    where: ProjectSecretSetWhereUniqueInput
+    update: XOR<ProjectSecretSetUpdateWithoutOrganizationInput, ProjectSecretSetUncheckedUpdateWithoutOrganizationInput>
+    create: XOR<ProjectSecretSetCreateWithoutOrganizationInput, ProjectSecretSetUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type ProjectSecretSetUpdateWithWhereUniqueWithoutOrganizationInput = {
+    where: ProjectSecretSetWhereUniqueInput
+    data: XOR<ProjectSecretSetUpdateWithoutOrganizationInput, ProjectSecretSetUncheckedUpdateWithoutOrganizationInput>
+  }
+
+  export type ProjectSecretSetUpdateManyWithWhereWithoutOrganizationInput = {
+    where: ProjectSecretSetScalarWhereInput
+    data: XOR<ProjectSecretSetUpdateManyMutationInput, ProjectSecretSetUncheckedUpdateManyWithoutOrganizationInput>
+  }
+
   export type OrganizationCreateWithoutRolesInput = {
     id?: string
     name: string
@@ -45264,6 +47536,7 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutOrganizationInput
     skills?: SkillCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutRolesInput = {
@@ -45282,6 +47555,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
     skills?: SkillUncheckedCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutRolesInput = {
@@ -45398,6 +47672,7 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutRolesInput = {
@@ -45416,6 +47691,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUncheckedUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type RolePermissionUpsertWithWhereUniqueWithoutRoleInput = {
@@ -45563,6 +47839,7 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutOrganizationInput
     skills?: SkillCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutMembersInput = {
@@ -45581,6 +47858,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
     skills?: SkillUncheckedCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutMembersInput = {
@@ -45609,6 +47887,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -45632,6 +47912,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -45699,6 +47981,7 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutMembersInput = {
@@ -45717,6 +48000,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUncheckedUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutMembershipsInput = {
@@ -45751,6 +48035,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -45774,6 +48060,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
   }
 
   export type RoleUpsertWithoutMembersInput = {
@@ -45831,6 +48119,7 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutOrganizationInput
     skills?: SkillCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutInvitationsInput = {
@@ -45849,6 +48138,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
     skills?: SkillUncheckedCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutInvitationsInput = {
@@ -45916,6 +48206,7 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutInvitationsInput = {
@@ -45934,6 +48225,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUncheckedUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type RoleUpsertWithoutInvitationsInput = {
@@ -45991,6 +48283,7 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutOrganizationInput
     skills?: SkillCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutRepositoriesInput = {
@@ -46009,6 +48302,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
     skills?: SkillUncheckedCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutRepositoriesInput = {
@@ -46085,6 +48379,7 @@ export namespace Prisma {
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutRepositoryInput = {
@@ -46113,6 +48408,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutRepositoryInput = {
@@ -46152,6 +48448,7 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutRepositoriesInput = {
@@ -46170,6 +48467,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUncheckedUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type IntegrationConnectionUpsertWithoutRepositoriesInput = {
@@ -46253,6 +48551,7 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutOrganizationInput
     skills?: SkillCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutProjectsInput = {
@@ -46271,6 +48570,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
     skills?: SkillUncheckedCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutProjectsInput = {
@@ -46622,6 +48922,44 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ProjectSecretSetCreateWithoutProjectInput = {
+    id?: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    organization: OrganizationCreateNestedOneWithoutSecret_setsInput
+    creator?: UserCreateNestedOneWithoutSecret_sets_createdInput
+    updater?: UserCreateNestedOneWithoutSecret_sets_updatedInput
+  }
+
+  export type ProjectSecretSetUncheckedCreateWithoutProjectInput = {
+    id?: string
+    organization_id: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_by?: string | null
+    updated_by?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ProjectSecretSetCreateOrConnectWithoutProjectInput = {
+    where: ProjectSecretSetWhereUniqueInput
+    create: XOR<ProjectSecretSetCreateWithoutProjectInput, ProjectSecretSetUncheckedCreateWithoutProjectInput>
+  }
+
+  export type ProjectSecretSetCreateManyProjectInputEnvelope = {
+    data: ProjectSecretSetCreateManyProjectInput | ProjectSecretSetCreateManyProjectInput[]
+    skipDuplicates?: boolean
+  }
+
   export type OrganizationUpsertWithoutProjectsInput = {
     update: XOR<OrganizationUpdateWithoutProjectsInput, OrganizationUncheckedUpdateWithoutProjectsInput>
     create: XOR<OrganizationCreateWithoutProjectsInput, OrganizationUncheckedCreateWithoutProjectsInput>
@@ -46649,6 +48987,7 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutProjectsInput = {
@@ -46667,6 +49006,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUncheckedUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type RepositoryUpsertWithoutProjectsInput = {
@@ -46967,6 +49307,22 @@ export namespace Prisma {
     data: XOR<ProjectEnvConsentUpdateManyMutationInput, ProjectEnvConsentUncheckedUpdateManyWithoutProjectInput>
   }
 
+  export type ProjectSecretSetUpsertWithWhereUniqueWithoutProjectInput = {
+    where: ProjectSecretSetWhereUniqueInput
+    update: XOR<ProjectSecretSetUpdateWithoutProjectInput, ProjectSecretSetUncheckedUpdateWithoutProjectInput>
+    create: XOR<ProjectSecretSetCreateWithoutProjectInput, ProjectSecretSetUncheckedCreateWithoutProjectInput>
+  }
+
+  export type ProjectSecretSetUpdateWithWhereUniqueWithoutProjectInput = {
+    where: ProjectSecretSetWhereUniqueInput
+    data: XOR<ProjectSecretSetUpdateWithoutProjectInput, ProjectSecretSetUncheckedUpdateWithoutProjectInput>
+  }
+
+  export type ProjectSecretSetUpdateManyWithWhereWithoutProjectInput = {
+    where: ProjectSecretSetScalarWhereInput
+    data: XOR<ProjectSecretSetUpdateManyMutationInput, ProjectSecretSetUncheckedUpdateManyWithoutProjectInput>
+  }
+
   export type ProjectCreateWithoutServicesInput = {
     id?: string
     name: string
@@ -46993,6 +49349,7 @@ export namespace Prisma {
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutServicesInput = {
@@ -47021,6 +49378,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutServicesInput = {
@@ -47065,6 +49423,7 @@ export namespace Prisma {
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutServicesInput = {
@@ -47093,6 +49452,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectCreateWithoutEnv_consentsInput = {
@@ -47121,6 +49481,7 @@ export namespace Prisma {
     issues?: ProjectIssueCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutEnv_consentsInput = {
@@ -47149,6 +49510,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutEnv_consentsInput = {
@@ -47177,6 +49539,8 @@ export namespace Prisma {
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateWithoutEnv_consentsInput = {
@@ -47200,6 +49564,8 @@ export namespace Prisma {
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserCreateOrConnectWithoutEnv_consentsInput = {
@@ -47244,6 +49610,7 @@ export namespace Prisma {
     issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutEnv_consentsInput = {
@@ -47272,6 +49639,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type UserUpsertWithoutEnv_consentsInput = {
@@ -47306,6 +49674,8 @@ export namespace Prisma {
     skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEnv_consentsInput = {
@@ -47329,6 +49699,464 @@ export namespace Prisma {
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
+  }
+
+  export type OrganizationCreateWithoutSecret_setsInput = {
+    id?: string
+    name: string
+    slug: string
+    created_by: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
+    roles?: RoleCreateNestedManyWithoutOrganizationInput
+    invitations?: OrganizationInvitationCreateNestedManyWithoutOrganizationInput
+    projects?: ProjectCreateNestedManyWithoutOrganizationInput
+    repositories?: RepositoryCreateNestedManyWithoutOrganizationInput
+    connections?: IntegrationConnectionCreateNestedManyWithoutOrganizationInput
+    sessions?: AgentSessionCreateNestedManyWithoutOrganizationInput
+    activities?: ActivityCreateNestedManyWithoutOrganizationInput
+    skills?: SkillCreateNestedManyWithoutOrganizationInput
+    skill_favorites?: SkillFavoriteCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationUncheckedCreateWithoutSecret_setsInput = {
+    id?: string
+    name: string
+    slug: string
+    created_by: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
+    roles?: RoleUncheckedCreateNestedManyWithoutOrganizationInput
+    invitations?: OrganizationInvitationUncheckedCreateNestedManyWithoutOrganizationInput
+    projects?: ProjectUncheckedCreateNestedManyWithoutOrganizationInput
+    repositories?: RepositoryUncheckedCreateNestedManyWithoutOrganizationInput
+    connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutOrganizationInput
+    sessions?: AgentSessionUncheckedCreateNestedManyWithoutOrganizationInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
+    skills?: SkillUncheckedCreateNestedManyWithoutOrganizationInput
+    skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationCreateOrConnectWithoutSecret_setsInput = {
+    where: OrganizationWhereUniqueInput
+    create: XOR<OrganizationCreateWithoutSecret_setsInput, OrganizationUncheckedCreateWithoutSecret_setsInput>
+  }
+
+  export type ProjectCreateWithoutSecret_setsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    color: string
+    avatar_seed?: string | null
+    sort_order?: number
+    sub_path?: string | null
+    preferred_agent?: $Enums.AgentType | null
+    linear_team_id?: string | null
+    linear_project_id?: string | null
+    notion_root_page_id?: string | null
+    last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
+    created_by: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    organization: OrganizationCreateNestedOneWithoutProjectsInput
+    repository?: RepositoryCreateNestedOneWithoutProjectsInput
+    github_connection?: IntegrationConnectionCreateNestedOneWithoutGithub_projectsInput
+    linear_connection?: IntegrationConnectionCreateNestedOneWithoutLinear_projectsInput
+    notion_connection?: IntegrationConnectionCreateNestedOneWithoutNotion_projectsInput
+    services?: ProjectServiceCreateNestedManyWithoutProjectInput
+    issues?: ProjectIssueCreateNestedManyWithoutProjectInput
+    sessions?: AgentSessionCreateNestedManyWithoutProjectInput
+    activities?: ActivityCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectUncheckedCreateWithoutSecret_setsInput = {
+    id?: string
+    organization_id: string
+    repository_id?: string | null
+    name: string
+    description?: string | null
+    color: string
+    avatar_seed?: string | null
+    sort_order?: number
+    sub_path?: string | null
+    preferred_agent?: $Enums.AgentType | null
+    github_connection_id?: string | null
+    linear_connection_id?: string | null
+    linear_team_id?: string | null
+    linear_project_id?: string | null
+    notion_connection_id?: string | null
+    notion_root_page_id?: string | null
+    last_activity_at?: Date | string | null
+    archived_at?: Date | string | null
+    created_by: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    services?: ProjectServiceUncheckedCreateNestedManyWithoutProjectInput
+    issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
+    sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectCreateOrConnectWithoutSecret_setsInput = {
+    where: ProjectWhereUniqueInput
+    create: XOR<ProjectCreateWithoutSecret_setsInput, ProjectUncheckedCreateWithoutSecret_setsInput>
+  }
+
+  export type UserCreateWithoutSecret_sets_createdInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
+    activities?: ActivityCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
+    skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
+  }
+
+  export type UserUncheckedCreateWithoutSecret_sets_createdInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
+    skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
+  }
+
+  export type UserCreateOrConnectWithoutSecret_sets_createdInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutSecret_sets_createdInput, UserUncheckedCreateWithoutSecret_sets_createdInput>
+  }
+
+  export type UserCreateWithoutSecret_sets_updatedInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionCreateNestedManyWithoutUserInput
+    activities?: ActivityCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandCreateNestedManyWithoutUserInput
+    skill_favorites?: SkillFavoriteCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserUncheckedCreateWithoutSecret_sets_updatedInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    full_name?: string | null
+    avatar_url?: string | null
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+    memberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    preference?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    connections?: IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
+    agent_sessions?: AgentSessionUncheckedCreateNestedManyWithoutUserInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutUserInput
+    git_identities?: GitIdentityUncheckedCreateNestedManyWithoutUserInput
+    agent_commands?: AgentCommandUncheckedCreateNestedManyWithoutUserInput
+    skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutUserInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
+    env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserCreateOrConnectWithoutSecret_sets_updatedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutSecret_sets_updatedInput, UserUncheckedCreateWithoutSecret_sets_updatedInput>
+  }
+
+  export type OrganizationUpsertWithoutSecret_setsInput = {
+    update: XOR<OrganizationUpdateWithoutSecret_setsInput, OrganizationUncheckedUpdateWithoutSecret_setsInput>
+    create: XOR<OrganizationCreateWithoutSecret_setsInput, OrganizationUncheckedCreateWithoutSecret_setsInput>
+    where?: OrganizationWhereInput
+  }
+
+  export type OrganizationUpdateToOneWithWhereWithoutSecret_setsInput = {
+    where?: OrganizationWhereInput
+    data: XOR<OrganizationUpdateWithoutSecret_setsInput, OrganizationUncheckedUpdateWithoutSecret_setsInput>
+  }
+
+  export type OrganizationUpdateWithoutSecret_setsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    created_by?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
+    roles?: RoleUpdateManyWithoutOrganizationNestedInput
+    invitations?: OrganizationInvitationUpdateManyWithoutOrganizationNestedInput
+    projects?: ProjectUpdateManyWithoutOrganizationNestedInput
+    repositories?: RepositoryUpdateManyWithoutOrganizationNestedInput
+    connections?: IntegrationConnectionUpdateManyWithoutOrganizationNestedInput
+    sessions?: AgentSessionUpdateManyWithoutOrganizationNestedInput
+    activities?: ActivityUpdateManyWithoutOrganizationNestedInput
+    skills?: SkillUpdateManyWithoutOrganizationNestedInput
+    skill_favorites?: SkillFavoriteUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type OrganizationUncheckedUpdateWithoutSecret_setsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    created_by?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
+    roles?: RoleUncheckedUpdateManyWithoutOrganizationNestedInput
+    invitations?: OrganizationInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
+    projects?: ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
+    repositories?: RepositoryUncheckedUpdateManyWithoutOrganizationNestedInput
+    connections?: IntegrationConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
+    sessions?: AgentSessionUncheckedUpdateManyWithoutOrganizationNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
+    skills?: SkillUncheckedUpdateManyWithoutOrganizationNestedInput
+    skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type ProjectUpsertWithoutSecret_setsInput = {
+    update: XOR<ProjectUpdateWithoutSecret_setsInput, ProjectUncheckedUpdateWithoutSecret_setsInput>
+    create: XOR<ProjectCreateWithoutSecret_setsInput, ProjectUncheckedCreateWithoutSecret_setsInput>
+    where?: ProjectWhereInput
+  }
+
+  export type ProjectUpdateToOneWithWhereWithoutSecret_setsInput = {
+    where?: ProjectWhereInput
+    data: XOR<ProjectUpdateWithoutSecret_setsInput, ProjectUncheckedUpdateWithoutSecret_setsInput>
+  }
+
+  export type ProjectUpdateWithoutSecret_setsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
+    sort_order?: IntFieldUpdateOperationsInput | number
+    sub_path?: NullableStringFieldUpdateOperationsInput | string | null
+    preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
+    linear_team_id?: NullableStringFieldUpdateOperationsInput | string | null
+    linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
+    notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
+    last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_by?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
+    repository?: RepositoryUpdateOneWithoutProjectsNestedInput
+    github_connection?: IntegrationConnectionUpdateOneWithoutGithub_projectsNestedInput
+    linear_connection?: IntegrationConnectionUpdateOneWithoutLinear_projectsNestedInput
+    notion_connection?: IntegrationConnectionUpdateOneWithoutNotion_projectsNestedInput
+    services?: ProjectServiceUpdateManyWithoutProjectNestedInput
+    issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
+    sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
+    activities?: ActivityUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
+  }
+
+  export type ProjectUncheckedUpdateWithoutSecret_setsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organization_id?: StringFieldUpdateOperationsInput | string
+    repository_id?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    color?: StringFieldUpdateOperationsInput | string
+    avatar_seed?: NullableStringFieldUpdateOperationsInput | string | null
+    sort_order?: IntFieldUpdateOperationsInput | number
+    sub_path?: NullableStringFieldUpdateOperationsInput | string | null
+    preferred_agent?: NullableEnumAgentTypeFieldUpdateOperationsInput | $Enums.AgentType | null
+    github_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
+    linear_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
+    linear_team_id?: NullableStringFieldUpdateOperationsInput | string | null
+    linear_project_id?: NullableStringFieldUpdateOperationsInput | string | null
+    notion_connection_id?: NullableStringFieldUpdateOperationsInput | string | null
+    notion_root_page_id?: NullableStringFieldUpdateOperationsInput | string | null
+    last_activity_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archived_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_by?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    services?: ProjectServiceUncheckedUpdateManyWithoutProjectNestedInput
+    issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
+    sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
+  }
+
+  export type UserUpsertWithoutSecret_sets_createdInput = {
+    update: XOR<UserUpdateWithoutSecret_sets_createdInput, UserUncheckedUpdateWithoutSecret_sets_createdInput>
+    create: XOR<UserCreateWithoutSecret_sets_createdInput, UserUncheckedCreateWithoutSecret_sets_createdInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutSecret_sets_createdInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutSecret_sets_createdInput, UserUncheckedUpdateWithoutSecret_sets_createdInput>
+  }
+
+  export type UserUpdateWithoutSecret_sets_createdInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
+    activities?: ActivityUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
+    skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutSecret_sets_createdInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
+    skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
+  }
+
+  export type UserUpsertWithoutSecret_sets_updatedInput = {
+    update: XOR<UserUpdateWithoutSecret_sets_updatedInput, UserUncheckedUpdateWithoutSecret_sets_updatedInput>
+    create: XOR<UserCreateWithoutSecret_sets_updatedInput, UserUncheckedCreateWithoutSecret_sets_updatedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutSecret_sets_updatedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutSecret_sets_updatedInput, UserUncheckedUpdateWithoutSecret_sets_updatedInput>
+  }
+
+  export type UserUpdateWithoutSecret_sets_updatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUpdateManyWithoutUserNestedInput
+    activities?: ActivityUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUpdateManyWithoutUserNestedInput
+    skill_favorites?: SkillFavoriteUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutSecret_sets_updatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    full_name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar_url?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    password_reset_tokens?: PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+    memberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    preference?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    connections?: IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
+    agent_sessions?: AgentSessionUncheckedUpdateManyWithoutUserNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutUserNestedInput
+    git_identities?: GitIdentityUncheckedUpdateManyWithoutUserNestedInput
+    agent_commands?: AgentCommandUncheckedUpdateManyWithoutUserNestedInput
+    skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
+    env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
+    workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
   }
 
   export type ProjectCreateWithoutIssuesInput = {
@@ -47357,6 +50185,7 @@ export namespace Prisma {
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutIssuesInput = {
@@ -47385,6 +50214,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutIssuesInput = {
@@ -47429,6 +50259,7 @@ export namespace Prisma {
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutIssuesInput = {
@@ -47457,6 +50288,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type OrganizationCreateWithoutConnectionsInput = {
@@ -47475,6 +50307,7 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutOrganizationInput
     skills?: SkillCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutConnectionsInput = {
@@ -47493,6 +50326,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
     skills?: SkillUncheckedCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutConnectionsInput = {
@@ -47521,6 +50355,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateWithoutConnectionsInput = {
@@ -47544,6 +50380,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserCreateOrConnectWithoutConnectionsInput = {
@@ -47613,6 +50451,7 @@ export namespace Prisma {
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutGithub_connectionInput = {
@@ -47641,6 +50480,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutGithub_connectionInput = {
@@ -47679,6 +50519,7 @@ export namespace Prisma {
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutLinear_connectionInput = {
@@ -47707,6 +50548,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutLinear_connectionInput = {
@@ -47745,6 +50587,7 @@ export namespace Prisma {
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutNotion_connectionInput = {
@@ -47773,6 +50616,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutNotion_connectionInput = {
@@ -47812,6 +50656,7 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutConnectionsInput = {
@@ -47830,6 +50675,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUncheckedUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutConnectionsInput = {
@@ -47864,6 +50710,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConnectionsInput = {
@@ -47887,6 +50735,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
   }
 
   export type RepositoryUpsertWithWhereUniqueWithoutConnectionInput = {
@@ -47969,6 +50819,7 @@ export namespace Prisma {
     activities?: ActivityCreateNestedManyWithoutOrganizationInput
     skills?: SkillCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutSessionsInput = {
@@ -47987,6 +50838,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
     skills?: SkillUncheckedCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutSessionsInput = {
@@ -48020,6 +50872,7 @@ export namespace Prisma {
     issues?: ProjectIssueCreateNestedManyWithoutProjectInput
     activities?: ActivityCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutSessionsInput = {
@@ -48048,6 +50901,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
     activities?: ActivityUncheckedCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutSessionsInput = {
@@ -48076,6 +50930,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateWithoutAgent_sessionsInput = {
@@ -48099,6 +50955,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserCreateOrConnectWithoutAgent_sessionsInput = {
@@ -48165,6 +51023,7 @@ export namespace Prisma {
     activities?: ActivityUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutSessionsInput = {
@@ -48183,6 +51042,7 @@ export namespace Prisma {
     activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUncheckedUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type ProjectUpsertWithoutSessionsInput = {
@@ -48222,6 +51082,7 @@ export namespace Prisma {
     issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutSessionsInput = {
@@ -48250,6 +51111,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type UserUpsertWithoutAgent_sessionsInput = {
@@ -48284,6 +51146,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAgent_sessionsInput = {
@@ -48307,6 +51171,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
   }
 
   export type ActivityUpsertWithWhereUniqueWithoutAgent_sessionInput = {
@@ -48341,6 +51207,7 @@ export namespace Prisma {
     sessions?: AgentSessionCreateNestedManyWithoutOrganizationInput
     skills?: SkillCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutActivitiesInput = {
@@ -48359,6 +51226,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutOrganizationInput
     skills?: SkillUncheckedCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutActivitiesInput = {
@@ -48392,6 +51260,7 @@ export namespace Prisma {
     issues?: ProjectIssueCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutActivitiesInput = {
@@ -48420,6 +51289,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedCreateNestedManyWithoutProjectInput
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutProjectInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutProjectInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutActivitiesInput = {
@@ -48448,6 +51318,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateWithoutActivitiesInput = {
@@ -48471,6 +51343,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserCreateOrConnectWithoutActivitiesInput = {
@@ -48558,6 +51432,7 @@ export namespace Prisma {
     sessions?: AgentSessionUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutActivitiesInput = {
@@ -48576,6 +51451,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUncheckedUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type ProjectUpsertWithoutActivitiesInput = {
@@ -48615,6 +51491,7 @@ export namespace Prisma {
     issues?: ProjectIssueUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutActivitiesInput = {
@@ -48643,6 +51520,7 @@ export namespace Prisma {
     issues?: ProjectIssueUncheckedUpdateManyWithoutProjectNestedInput
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type UserUpsertWithoutActivitiesInput = {
@@ -48677,6 +51555,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateWithoutActivitiesInput = {
@@ -48700,6 +51580,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
   }
 
   export type AgentSessionUpsertWithoutActivitiesInput = {
@@ -48777,6 +51659,7 @@ export namespace Prisma {
     sessions?: AgentSessionCreateNestedManyWithoutOrganizationInput
     activities?: ActivityCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutSkillsInput = {
@@ -48795,6 +51678,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutOrganizationInput
     activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
     skill_favorites?: SkillFavoriteUncheckedCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutSkillsInput = {
@@ -48829,6 +51713,7 @@ export namespace Prisma {
     sessions?: AgentSessionUpdateManyWithoutOrganizationNestedInput
     activities?: ActivityUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutSkillsInput = {
@@ -48847,6 +51732,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedUpdateManyWithoutOrganizationNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
     skill_favorites?: SkillFavoriteUncheckedUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserCreateWithoutSkill_favoritesInput = {
@@ -48870,6 +51756,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserUncheckedCreateWithoutSkill_favoritesInput = {
@@ -48893,6 +51781,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedCreateNestedManyWithoutUserInput
     env_consents?: ProjectEnvConsentUncheckedCreateNestedManyWithoutUserInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedCreateNestedOneWithoutUserInput
+    secret_sets_created?: ProjectSecretSetUncheckedCreateNestedManyWithoutCreatorInput
+    secret_sets_updated?: ProjectSecretSetUncheckedCreateNestedManyWithoutUpdaterInput
   }
 
   export type UserCreateOrConnectWithoutSkill_favoritesInput = {
@@ -48916,6 +51806,7 @@ export namespace Prisma {
     sessions?: AgentSessionCreateNestedManyWithoutOrganizationInput
     activities?: ActivityCreateNestedManyWithoutOrganizationInput
     skills?: SkillCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutSkill_favoritesInput = {
@@ -48934,6 +51825,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedCreateNestedManyWithoutOrganizationInput
     activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
     skills?: SkillUncheckedCreateNestedManyWithoutOrganizationInput
+    secret_sets?: ProjectSecretSetUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutSkill_favoritesInput = {
@@ -48973,6 +51865,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUpdateManyWithoutUpdaterNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSkill_favoritesInput = {
@@ -48996,6 +51890,8 @@ export namespace Prisma {
     workspace_layouts?: WorkspaceLayoutPresetUncheckedUpdateManyWithoutUserNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutUserNestedInput
     workspace_layout_state?: WorkspaceLayoutStateUncheckedUpdateOneWithoutUserNestedInput
+    secret_sets_created?: ProjectSecretSetUncheckedUpdateManyWithoutCreatorNestedInput
+    secret_sets_updated?: ProjectSecretSetUncheckedUpdateManyWithoutUpdaterNestedInput
   }
 
   export type OrganizationUpsertWithoutSkill_favoritesInput = {
@@ -49025,6 +51921,7 @@ export namespace Prisma {
     sessions?: AgentSessionUpdateManyWithoutOrganizationNestedInput
     activities?: ActivityUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutSkill_favoritesInput = {
@@ -49043,6 +51940,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedUpdateManyWithoutOrganizationNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
     skills?: SkillUncheckedUpdateManyWithoutOrganizationNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type PasswordResetTokenCreateManyUserInput = {
@@ -49154,6 +52052,34 @@ export namespace Prisma {
     id?: string
     project_id: string
     accepted_at?: Date | string
+  }
+
+  export type ProjectSecretSetCreateManyCreatorInput = {
+    id?: string
+    organization_id: string
+    project_id: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    updated_by?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ProjectSecretSetCreateManyUpdaterInput = {
+    id?: string
+    organization_id: string
+    project_id: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_by?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
   }
 
   export type PasswordResetTokenUpdateWithoutUserInput = {
@@ -49501,6 +52427,90 @@ export namespace Prisma {
     accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ProjectSecretSetUpdateWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneRequiredWithoutSecret_setsNestedInput
+    project?: ProjectUpdateOneRequiredWithoutSecret_setsNestedInput
+    updater?: UserUpdateOneWithoutSecret_sets_updatedNestedInput
+  }
+
+  export type ProjectSecretSetUncheckedUpdateWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organization_id?: StringFieldUpdateOperationsInput | string
+    project_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    updated_by?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectSecretSetUncheckedUpdateManyWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organization_id?: StringFieldUpdateOperationsInput | string
+    project_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    updated_by?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectSecretSetUpdateWithoutUpdaterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneRequiredWithoutSecret_setsNestedInput
+    project?: ProjectUpdateOneRequiredWithoutSecret_setsNestedInput
+    creator?: UserUpdateOneWithoutSecret_sets_createdNestedInput
+  }
+
+  export type ProjectSecretSetUncheckedUpdateWithoutUpdaterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organization_id?: StringFieldUpdateOperationsInput | string
+    project_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_by?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectSecretSetUncheckedUpdateManyWithoutUpdaterInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organization_id?: StringFieldUpdateOperationsInput | string
+    project_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_by?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type WorkspaceLayoutStateCreateManyActive_presetInput = {
     id?: string
     user_id: string
@@ -49670,6 +52680,20 @@ export namespace Prisma {
     created_at?: Date | string
   }
 
+  export type ProjectSecretSetCreateManyOrganizationInput = {
+    id?: string
+    project_id: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_by?: string | null
+    updated_by?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
   export type OrganizationMemberUpdateWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumMemberStatusFieldUpdateOperationsInput | $Enums.MemberStatus
@@ -49798,6 +52822,7 @@ export namespace Prisma {
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutOrganizationInput = {
@@ -49826,6 +52851,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutOrganizationInput = {
@@ -50109,6 +53135,48 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ProjectSecretSetUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    project?: ProjectUpdateOneRequiredWithoutSecret_setsNestedInput
+    creator?: UserUpdateOneWithoutSecret_sets_createdNestedInput
+    updater?: UserUpdateOneWithoutSecret_sets_updatedNestedInput
+  }
+
+  export type ProjectSecretSetUncheckedUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    project_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_by?: NullableStringFieldUpdateOperationsInput | string | null
+    updated_by?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectSecretSetUncheckedUpdateManyWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    project_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_by?: NullableStringFieldUpdateOperationsInput | string | null
+    updated_by?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type RolePermissionCreateManyRoleInput = {
     id?: string
     permission: $Enums.PermissionKey
@@ -50262,6 +53330,7 @@ export namespace Prisma {
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutRepositoryInput = {
@@ -50290,6 +53359,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutRepositoryInput = {
@@ -50379,6 +53449,20 @@ export namespace Prisma {
     id?: string
     user_id: string
     accepted_at?: Date | string
+  }
+
+  export type ProjectSecretSetCreateManyProjectInput = {
+    id?: string
+    organization_id: string
+    name: string
+    description?: string | null
+    payload: string
+    key_version?: number
+    variable_count?: number
+    created_by?: string | null
+    updated_by?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
   }
 
   export type ProjectServiceUpdateWithoutProjectInput = {
@@ -50581,6 +53665,48 @@ export namespace Prisma {
     accepted_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ProjectSecretSetUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneRequiredWithoutSecret_setsNestedInput
+    creator?: UserUpdateOneWithoutSecret_sets_createdNestedInput
+    updater?: UserUpdateOneWithoutSecret_sets_updatedNestedInput
+  }
+
+  export type ProjectSecretSetUncheckedUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organization_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_by?: NullableStringFieldUpdateOperationsInput | string | null
+    updated_by?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectSecretSetUncheckedUpdateManyWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organization_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: StringFieldUpdateOperationsInput | string
+    key_version?: IntFieldUpdateOperationsInput | number
+    variable_count?: IntFieldUpdateOperationsInput | number
+    created_by?: NullableStringFieldUpdateOperationsInput | string | null
+    updated_by?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type RepositoryCreateManyConnectionInput = {
     id?: string
     organization_id: string
@@ -50726,6 +53852,7 @@ export namespace Prisma {
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutGithub_connectionInput = {
@@ -50754,6 +53881,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutGithub_connectionInput = {
@@ -50805,6 +53933,7 @@ export namespace Prisma {
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutLinear_connectionInput = {
@@ -50833,6 +53962,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutLinear_connectionInput = {
@@ -50884,6 +54014,7 @@ export namespace Prisma {
     sessions?: AgentSessionUpdateManyWithoutProjectNestedInput
     activities?: ActivityUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutNotion_connectionInput = {
@@ -50912,6 +54043,7 @@ export namespace Prisma {
     sessions?: AgentSessionUncheckedUpdateManyWithoutProjectNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutProjectNestedInput
     env_consents?: ProjectEnvConsentUncheckedUpdateManyWithoutProjectNestedInput
+    secret_sets?: ProjectSecretSetUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutNotion_connectionInput = {

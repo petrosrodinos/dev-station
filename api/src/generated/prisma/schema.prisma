@@ -56,6 +56,8 @@ enum PermissionKey {
   ORG_MANAGE_MEMBERS
   ORG_MANAGE_ROLES
   ORG_MANAGE_SETTINGS
+  SECRETS_VIEW
+  SECRETS_MANAGE
 }
 
 enum MemberStatus {
@@ -152,6 +154,9 @@ enum ActivityType {
   INTEGRATION_CONNECTED
   INTEGRATION_DISCONNECTED
   MEMBER_JOINED
+  SECRET_SET_CREATED
+  SECRET_SET_UPDATED
+  SECRET_SET_DELETED
   OTHER
 }
 
@@ -178,6 +183,8 @@ model User {
   workspace_layouts      WorkspaceLayoutPreset[]
   env_consents           ProjectEnvConsent[]
   workspace_layout_state WorkspaceLayoutState?
+  secret_sets_created    ProjectSecretSet[]      @relation("SecretSetCreator")
+  secret_sets_updated    ProjectSecretSet[]      @relation("SecretSetUpdater")
 
   @@index([email])
   @@index([phone])
@@ -350,6 +357,7 @@ model Organization {
   activities      Activity[]
   skills          Skill[]
   skill_favorites SkillFavorite[]
+  secret_sets     ProjectSecretSet[]
 
   @@map("organizations")
 }
@@ -480,6 +488,7 @@ model Project {
   sessions          AgentSession[]
   activities        Activity[]
   env_consents      ProjectEnvConsent[]
+  secret_sets       ProjectSecretSet[]
 
   @@index([organization_id])
   @@map("projects")
@@ -524,6 +533,33 @@ model ProjectEnvConsent {
   @@unique([project_id, user_id])
   @@index([user_id])
   @@map("project_env_consents")
+}
+
+/// A named set of env values shared with the project's team. The whole `{variables:[{key,value}]}`
+/// document is AES-256-GCM encrypted server-side into `payload` (key names included); only the count
+/// is kept in clear so lists render without decrypting. `key_version` allows master-key rotation later.
+model ProjectSecretSet {
+  id              String   @id @default(uuid())
+  organization_id String
+  project_id      String
+  name            String
+  description     String?
+  payload         String
+  key_version     Int      @default(1)
+  variable_count  Int      @default(0)
+  created_by      String?
+  updated_by      String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  creator      User?        @relation("SecretSetCreator", fields: [created_by], references: [id], onDelete: SetNull)
+  updater      User?        @relation("SecretSetUpdater", fields: [updated_by], references: [id], onDelete: SetNull)
+
+  @@unique([project_id, name])
+  @@index([organization_id])
+  @@map("project_secret_sets")
 }
 
 /// External issue reference linked to a project (we store the external id, never a copy of the issue).

@@ -27,6 +27,7 @@ import { useProjectContext } from "../../hooks/use-project-context";
 import { ServicesCard } from "./components/services-card";
 import { PortsCard } from "./components/ports-card";
 import { EnvFilesCard } from "./components/env-files-card";
+import { SharedSecretsCard } from "./components/shared-secrets-card";
 import { isDesktop } from "@/lib/desktop";
 import { ProjectActivityCard } from "./components/project-activity-card";
 import { LinearSummaryCard } from "./components/linear-summary-card";
@@ -101,6 +102,7 @@ const OverviewTab: FC = () => {
         <ServicesCard project={project} />
         {isDesktop() && <PortsCard projectId={project.id} />}
         {isDesktop() && localPath && <EnvFilesCard project={project} />}
+        {can(PermissionKeys.SECRETS_VIEW) && <SharedSecretsCard project={project} hasLocalCopy={!!localPath} />}
 
         <Panel>
           <PanelHeader title="Project" />

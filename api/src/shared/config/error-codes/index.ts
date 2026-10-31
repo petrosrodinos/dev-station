@@ -1,4 +1,7 @@
 export const ErrorCodes = {
+  Secrets: {
+    NOT_CONFIGURED: 'SECRETS_NOT_CONFIGURED',
+  },
   Organizations: {
     LAST_OWNER: 'LAST_OWNER',
     INVALID_INVITATION: 'INVALID_INVITATION',
