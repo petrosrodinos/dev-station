@@ -1,7 +1,7 @@
 import { execFile, spawn, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import type { CloneProgressEvent, GitBranch, GitCommitEntry, GitFileChange, GitFileState, GitStashEntry, GitStatus } from "../shared/contract";
+import type { CloneProgressEvent, GitBranch, GitCommitEntry, GitConflictFile, GitConflictSide, GitFileChange, GitFileState, GitOperation, GitStashEntry, GitStatus } from "../shared/contract";
 import { IpcErrorCodes } from "../shared/contract";
 import { IpcError } from "../ipc/ipc-error";
 
@@ -9,6 +9,7 @@ import { IpcError } from "../ipc/ipc-error";
 // run in a validated project root. Destructive operations require an explicit confirm flag.
 
 const MAX_BUFFER = 64 * 1024 * 1024;
+const CONFLICT_STOP = "Sync stopped: there are merge conflicts. Resolve them in the Git tab, then sync again.";
 
 interface RunOptions {
   allowExitCodes?: number[];
@@ -131,6 +132,7 @@ class GitManager {
       behind: 0,
       commits: 0,
       detached: false,
+      operation: null,
       files: [],
       counts: { modified: 0, added: 0, deleted: 0, untracked: 0, conflicted: 0, renamed: 0 },
       totals: { additions: 0, deletions: 0 },
@@ -205,7 +207,89 @@ class GitManager {
       result.totals.deletions += f.deletions;
     }
     result.files = files.sort((a, b) => a.path.localeCompare(b.path));
+    result.operation = await this.operation(cwd);
     return result;
+  }
+
+  /** The unfinished merge/rebase, if any (detected from the markers Git leaves in its directory). */
+  async operation(cwd: string): Promise<GitOperation | null> {
+    try {
+      const { stdout } = await run(cwd, ["rev-parse", "--git-path", "MERGE_HEAD", "--git-path", "rebase-merge", "--git-path", "rebase-apply"]);
+      const [merge, rebaseMerge, rebaseApply] = stdout.split(/\r?\n/).map((p) => path.resolve(cwd, p.trim()));
+      if (fs.existsSync(rebaseMerge) || fs.existsSync(rebaseApply)) return "rebase";
+      if (fs.existsSync(merge)) return "merge";
+    } catch {
+      /* not a repo */
+    }
+    return null;
+  }
+
+  private async conflictedPaths(cwd: string): Promise<string[]> {
+    const { stdout } = await run(cwd, ["diff", "--name-only", "--diff-filter=U", "-z"]);
+    return stdout.split("\0").filter(Boolean);
+  }
+
+  private async assertConflicted(cwd: string, file: string): Promise<string> {
+    const [safe] = normalizePaths([file]);
+    if (!(await this.conflictedPaths(cwd)).includes(safe)) throw new IpcError(`${safe} has no unresolved conflicts.`);
+    return safe;
+  }
+
+  async conflictRead(cwd: string, file: string): Promise<GitConflictFile> {
+    const safe = await this.assertConflicted(cwd, file);
+    const abs = path.join(cwd, safe);
+    const stat = await fs.promises.stat(abs).catch(() => null);
+    // Deleted on one side: no working-tree file to merge by hand, the UI offers take-side only.
+    if (!stat) return { content: "", binary: true, too_large: false };
+    if (stat.size > 2 * 1024 * 1024) return { content: "", binary: false, too_large: true };
+    const content = await fs.promises.readFile(abs, "utf8");
+    return { content, binary: content.includes("\0"), too_large: false };
+  }
+
+  async conflictResolve(cwd: string, file: string, content: string) {
+    const safe = await this.assertConflicted(cwd, file);
+    if (/^(<{7}|>{7})( |$)/m.test(content)) throw new IpcError("The file still contains conflict markers. Resolve every conflict first.");
+    await fs.promises.writeFile(path.join(cwd, safe), content, "utf8");
+    await run(cwd, ["add", "--", safe]);
+    return `Resolved ${safe}`;
+  }
+
+  async conflictTake(cwd: string, file: string, side: GitConflictSide) {
+    const safe = await this.assertConflicted(cwd, file);
+    const flag = side === "current" ? "--ours" : "--theirs";
+    try {
+      await run(cwd, ["checkout", flag, "--", safe]);
+      await run(cwd, ["add", "--", safe]);
+    } catch {
+      // The chosen side deleted the file (or never had it): taking that side means removing it.
+      await run(cwd, ["rm", "-f", "--", safe]);
+    }
+    return `Resolved ${safe}`;
+  }
+
+  async operationContinue(cwd: string, identity: { name?: string | null; email?: string | null }) {
+    const op = await this.operation(cwd);
+    if (!op) throw new IpcError("There is no merge or rebase in progress.");
+    if ((await this.conflictedPaths(cwd)).length > 0) throw new IpcError("Resolve all conflicts before continuing.");
+    const config: string[] = [];
+    if (identity.name) config.push("-c", `user.name=${identity.name}`);
+    if (identity.email) config.push("-c", `user.email=${identity.email}`);
+    const env = { GIT_EDITOR: "true", GIT_MERGE_AUTOEDIT: "no" };
+    try {
+      const r = op === "merge" ? await run(cwd, [...config, "commit", "--no-edit"], { env }) : await run(cwd, [...config, "rebase", "--continue"], { env });
+      return { done: (await this.operation(cwd)) === null, output: (r.stdout || r.stderr).trim() };
+    } catch (e) {
+      // A rebase stopping at its next conflicting commit is progress, not a failure.
+      if (op === "rebase" && (await this.conflictedPaths(cwd)).length > 0) return { done: false, output: "Next commit has conflicts" };
+      throw e;
+    }
+  }
+
+  async operationAbort(cwd: string) {
+    const op = await this.operation(cwd);
+    if (!op) throw new IpcError("There is no merge or rebase in progress.");
+    await run(cwd, [op === "merge" ? "merge" : "rebase", "--abort"]);
+    return op === "merge" ? "Merge aborted" : "Rebase aborted";
   }
 
   /** Working-tree change summary vs HEAD — used to attach "changes produced" to agent sessions. */
@@ -294,6 +378,7 @@ class GitManager {
   async sync(cwd: string): Promise<{ pulled: number; pushed: number; output: string }> {
     const initial = await this.status(cwd);
     if (!initial.branch) throw new IpcError("Cannot sync from a detached HEAD.");
+    if (initial.operation || initial.counts.conflicted > 0) throw new IpcError("Finish the merge in progress (resolve conflicts, then Continue) before syncing.", IpcErrorCodes.GIT_FAILED);
     if (!initial.upstream) {
       // Never published: sync degenerates to publishing the branch.
       await this.push(cwd);
@@ -311,13 +396,14 @@ class GitManager {
       try {
         output = (await run(cwd, args)).stdout.trim();
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        if (/conflict/i.test(msg)) throw new IpcError(`Sync stopped: merge conflicts. Resolve them in your editor, commit, then sync again.\n${msg}`, IpcErrorCodes.GIT_FAILED);
+        if ((await this.conflictedPaths(cwd)).length > 0) throw new IpcError(CONFLICT_STOP, IpcErrorCodes.GIT_FAILED);
         throw e;
       }
     }
 
     const after = await this.status(cwd);
+    // An autostash that couldn't be re-applied cleanly leaves conflicts behind without failing the pull.
+    if (after.counts.conflicted > 0 || after.operation) throw new IpcError(CONFLICT_STOP, IpcErrorCodes.GIT_FAILED);
     let pushed = 0;
     if (after.ahead > 0) {
       await run(cwd, ["push"], { timeoutMs: 300_000 });
@@ -340,6 +426,8 @@ class GitManager {
 
   async commit(cwd: string, message: string, paths: string[] | undefined, identity: { name?: string | null; email?: string | null }) {
     if (!message.trim()) throw new IpcError("A commit message is required.");
+    if ((await this.conflictedPaths(cwd)).length > 0) throw new IpcError("Resolve all merge conflicts before committing.");
+    if (await this.operation(cwd)) throw new IpcError("A merge or rebase is in progress. Use Continue in the Git tab to finish it.");
     if (paths?.length) await run(cwd, ["add", "-A", "--", ...normalizePaths(paths)]);
     else await run(cwd, ["add", "-A"]);
 

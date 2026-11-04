@@ -1,4 +1,4 @@
-import type { GitBranch, GitCommitEntry, GitStashEntry, GitStatus } from "@shared/contract";
+import type { GitBranch, GitCommitEntry, GitConflictFile, GitConflictSide, GitStashEntry, GitStatus } from "@shared/contract";
 import { getBridge, getErrorMessage } from "@/lib/desktop";
 
 // Git operations run in the Electron main process (Git Manager) against the project's local clone.
@@ -19,7 +19,15 @@ export const getStashes = (projectId: string): Promise<GitStashEntry[]> => wrap(
 export const gitInit = (projectId: string) => wrap(() => getBridge().git.init(projectId), "Could not initialize Git.");
 export const gitFetch = (projectId: string) => wrap(() => getBridge().git.fetch(projectId), "Fetch failed.");
 export const gitPull = (projectId: string) => wrap(() => getBridge().git.pull(projectId), "Pull failed.");
-export const gitSync = (projectId: string) => wrap(() => getBridge().git.sync(projectId), "Sync failed.");
+export const getConflictFile = (projectId: string, path: string): Promise<GitConflictFile> => wrap(() => getBridge().git.conflictRead(projectId, path), "Could not read the conflicted file.");
+export const gitResolveConflict = ({ projectId, path, content }: { projectId: string; path: string; content: string }) =>
+    wrap(() => getBridge().git.conflictResolve(projectId, path, content), "Could not mark the file as resolved.");
+export const gitTakeSide = ({ projectId, path, side }: { projectId: string; path: string; side: GitConflictSide }) =>
+    wrap(() => getBridge().git.conflictTake(projectId, path, side), "Could not resolve the conflict.");
+export const gitContinueOperation = ({ projectId, name, email }: { projectId: string; name?: string | null; email?: string | null }) =>
+    wrap(() => getBridge().git.operationContinue(projectId, { name, email }), "Could not continue.");
+export const gitAbortOperation = ({ projectId }: { projectId: string }) => wrap(() => getBridge().git.operationAbort(projectId), "Could not abort.");
+export const gitSync =(projectId: string) => wrap(() => getBridge().git.sync(projectId), "Sync failed.");
 export const gitPush =(projectId: string) => wrap(() => getBridge().git.push(projectId), "Push failed.");
 export const gitCommit = ({ projectId, ...input }: { projectId: string; message: string; paths?: string[]; name?: string | null; email?: string | null }) =>
     wrap(() => getBridge().git.commit(projectId, input), "Commit failed.");

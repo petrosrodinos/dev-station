@@ -15,6 +15,11 @@ import {
     gitPull,
     gitPush,
     gitSync,
+    getConflictFile,
+    gitAbortOperation,
+    gitContinueOperation,
+    gitResolveConflict,
+    gitTakeSide,
     gitStash,
     gitStashPop,
 } from "../services/git.services";
@@ -26,7 +31,7 @@ import { toast } from "@/hooks/use-toast";
 import { NotificationChannels, NotificationEventTypes, type NotificationEventType, type UserPreference } from "@/features/users/interfaces/users.interfaces";
 import { shouldNotify } from "@/features/users/utils/notification-settings.utils";
 
-const GIT_KEYS = ["git-status", "git-branches", "git-log", "git-stashes", "git-diff"];
+const GIT_KEYS = ["git-status", "git-branches", "git-log", "git-stashes", "git-diff", "git-conflict"];
 
 const useInvalidateGit = () => {
     const queryClient = useQueryClient();
@@ -101,6 +106,30 @@ export const useGitSync = () =>
         activity: ActivityTypes.GIT_PUSH,
         event: NotificationEventTypes.GIT_PUSH,
     });
+
+export const useConflictFile = (projectId: string, path: string) =>
+    useQuery({ queryKey: ["git-conflict", projectId, path], queryFn: () => getConflictFile(projectId, path), staleTime: Infinity, refetchOnWindowFocus: false });
+
+export const useResolveConflict = () =>
+    useGitMutation({ mutationFn: gitResolveConflict, success: (vars) => `Resolved ${vars.path}`, failure: "Could not resolve the file" });
+
+export const useTakeConflictSide = () =>
+    useGitMutation({
+        mutationFn: gitTakeSide,
+        success: (vars) => `Resolved ${vars.path} using ${vars.side === "current" ? "current" : "incoming"} version`,
+        failure: "Could not resolve the file",
+    });
+
+export const useContinueOperation = () =>
+    useGitMutation({
+        mutationFn: gitContinueOperation,
+        success: (_vars, r) => (r.done ? "Merge completed" : "Continuing — the next commit has conflicts"),
+        failure: "Could not continue",
+        activity: ActivityTypes.GIT_BRANCH,
+    });
+
+export const useAbortOperation = () =>
+    useGitMutation({ mutationFn: gitAbortOperation, success: (_vars, message) => message, failure: "Could not abort" });
 
 export const useGitPush = () =>
     useGitMutation({

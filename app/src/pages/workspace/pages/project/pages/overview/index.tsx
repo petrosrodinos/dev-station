@@ -1,11 +1,11 @@
 import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle, ArrowDown, ArrowUp, ChevronRight, ExternalLink, GitCommitHorizontal, Plus } from "lucide-react";
+import { AlertCircle, ArrowDown, ArrowUp, ChevronRight, ExternalLink, GitCommitHorizontal, Plus, RefreshCw } from "lucide-react";
 import { Panel, PanelBody, PanelHeader, StatRow } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
 import { StatusDot } from "@/components/ui/status-dot";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useGitPull, useGitPush, useGitStatus } from "@/features/git/hooks/use-git";
+import { useGitPull, useGitPush, useGitStatus, useGitSync } from "@/features/git/hooks/use-git";
 import { useOpenInEditor } from "@/features/files/hooks/use-files";
 import { useAgentSessions } from "@/features/agent-sessions/hooks/use-agent-sessions";
 import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
@@ -44,6 +44,7 @@ const OverviewTab: FC = () => {
   const openNewSession = useDialogsStore((s) => s.openNewSession);
   const push = useGitPush();
   const pull = useGitPull();
+  const sync = useGitSync();
   const openInEditor = useOpenInEditor();
   const githubAccount = useIntegrationConnectionLabel(project.github_connection_id);
   const { can } = usePermissions();
@@ -60,6 +61,11 @@ const OverviewTab: FC = () => {
           {can(PermissionKeys.GIT_COMMIT) && (
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(Routes.workspace.project_tab(project.id, ProjectTabs.GIT))}>
               <GitCommitHorizontal className="size-3.5" /> Commit {git?.files.length ? `(${git.files.length})` : ""}
+            </Button>
+          )}
+          {can(PermissionKeys.GIT_COMMIT) && can(PermissionKeys.GIT_PUSH) && !git?.operation && !!git?.upstream && git.ahead > 0 && git.behind > 0 && (
+            <Button size="sm" className="gap-1.5" loading={sync.isPending} onClick={() => sync.mutate({ projectId: project.id })}>
+              <RefreshCw className="size-3.5" /> Sync ({git.behind}↓ {git.ahead}↑)
             </Button>
           )}
           {can(PermissionKeys.GIT_PUSH) && (

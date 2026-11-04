@@ -43,6 +43,7 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
   const canCommit = can(PermissionKeys.GIT_COMMIT);
   const canBranch = can(PermissionKeys.GIT_MANAGE_BRANCHES);
   const canPush = can(PermissionKeys.GIT_PUSH);
+  const inOperation = !!status.operation || status.counts.conflicted > 0;
 
   const local = branches?.filter((b) => !b.remote) ?? [];
   const otherLocal = local.filter((b) => !b.current);
@@ -114,7 +115,7 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
       </DropdownMenu>
       )}
 
-      {canCommit && canPush && status.upstream && (status.ahead > 0 || status.behind > 0) && (
+      {canCommit && canPush && status.upstream && !inOperation && (status.ahead > 0 || status.behind > 0) && (
         <Button size="sm" className="h-[30px] gap-1.5" loading={sync.isPending} onClick={() => sync.mutate({ projectId })}>
           {!sync.isPending && <RefreshCw className="size-3.5" />} Sync
           <span className="text-[0.6875rem] opacity-80">
@@ -127,14 +128,14 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
           <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={fetch.isPending} onClick={() => fetch.mutate({ projectId })}>
             {!fetch.isPending && <RefreshCw className="size-3.5" />} Fetch
           </Button>
-          <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={pull.isPending} onClick={() => pull.mutate({ projectId })}>
+          <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={pull.isPending} disabled={inOperation} onClick={() => pull.mutate({ projectId })}>
             {!pull.isPending && <ArrowDown className="size-3.5" />} Pull
             {status.behind > 0 && <span className="rounded-xs bg-info-soft px-1.5 text-[0.6875rem] text-info">{status.behind}</span>}
           </Button>
         </>
       )}
       {can(PermissionKeys.GIT_PUSH) && (
-        <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={push.isPending} onClick={() => push.mutate({ projectId })}>
+        <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={push.isPending} disabled={inOperation} onClick={() => push.mutate({ projectId })}>
           {!push.isPending && <ArrowUp className="size-3.5" />} Push
           {status.ahead > 0 && <span className="rounded-xs bg-success-soft px-1.5 text-[0.6875rem] text-success">{status.ahead}</span>}
           {!status.upstream && status.branch && <span className="text-[0.6875rem] text-ash">(publish)</span>}

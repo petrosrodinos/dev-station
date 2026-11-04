@@ -383,6 +383,15 @@ export interface GitFileChange {
   binary: boolean;
 }
 
+export type GitOperation = "merge" | "rebase";
+export type GitConflictSide = "current" | "incoming";
+
+export interface GitConflictFile {
+  content: string;
+  binary: boolean;
+  too_large: boolean;
+}
+
 export interface GitStatus {
   is_repo: boolean;
   branch: string | null;
@@ -391,6 +400,8 @@ export interface GitStatus {
   behind: number;
   commits: number;
   detached: boolean;
+  /** An unfinished merge/rebase waiting on the user (conflicts to resolve, or ready to continue). */
+  operation: GitOperation | null;
   files: GitFileChange[];
   counts: { modified: number; added: number; deleted: number; untracked: number; conflicted: number; renamed: number };
   totals: { additions: number; deletions: number };
@@ -746,6 +757,13 @@ export interface DevStationBridge {
     fetch(projectId: string): Promise<string>;
     pull(projectId: string): Promise<string>;
     sync(projectId: string): Promise<{ pulled: number; pushed: number; output: string }>;
+    conflictRead(projectId: string, path: string): Promise<GitConflictFile>;
+    /** Writes the resolved content and stages the file. Rejects content that still has conflict markers. */
+    conflictResolve(projectId: string, path: string, content: string): Promise<string>;
+    /** Resolves a whole file to one side (`current` = HEAD side, `incoming` = the other). */
+    conflictTake(projectId: string, path: string, side: GitConflictSide): Promise<string>;
+    operationContinue(projectId: string, identity?: { name?: string | null; email?: string | null }): Promise<{ done: boolean; output: string }>;
+    operationAbort(projectId: string): Promise<string>;
     push(projectId: string): Promise<{ pushed: boolean; output: string }>;
     commit(projectId: string, input: { message: string; paths?: string[]; name?: string | null; email?: string | null }): Promise<{ sha: string; output: string }>;
     checkout(projectId: string, branch: string): Promise<string>;
@@ -888,6 +906,11 @@ export const IpcChannels = {
   GIT_PULL: "git:pull",
   GIT_PUSH: "git:push",
   GIT_SYNC: "git:sync",
+  GIT_CONFLICT_READ: "git:conflict-read",
+  GIT_CONFLICT_RESOLVE: "git:conflict-resolve",
+  GIT_CONFLICT_TAKE: "git:conflict-take",
+  GIT_OP_CONTINUE: "git:op-continue",
+  GIT_OP_ABORT: "git:op-abort",
   GIT_COMMIT: "git:commit",
   GIT_CHECKOUT: "git:checkout",
   GIT_CREATE_BRANCH: "git:create-branch",

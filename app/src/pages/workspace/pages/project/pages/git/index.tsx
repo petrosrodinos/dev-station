@@ -20,6 +20,8 @@ import { GitToolbar } from "./components/git-toolbar";
 import { FileDiffPanel } from "./components/file-diff-panel";
 import { CommitBox } from "./components/commit-box";
 import { RecentCommits } from "./components/recent-commits";
+import { ConflictResolver } from "./components/conflict-resolver";
+import { OperationBanner } from "./components/operation-banner";
 
 const STATE_TAG: Record<GitFileChange["state"], string> = {
   M: "bg-warning-soft text-warning",
@@ -46,11 +48,18 @@ const GitTab: FC = () => {
   // Keep the selection in sync with the working tree: newly appearing files are selected by default,
   // files the user unticked stay unticked.
   const knownPaths = useRef<Set<string>>(new Set());
+  const conflictPaths = useRef<Set<string>>(new Set());
   useEffect(() => {
     const known = knownPaths.current;
     setSelected((prev) => new Set(files.filter((f) => prev.has(f.path) || !known.has(f.path)).map((f) => f.path)));
     knownPaths.current = new Set(files.map((f) => f.path));
-    if (!activeFile && files[0]) setParams((p) => (p.set("file", files[0].path), p), { replace: true });
+    // Open the resolver straight away, and move on to the next conflict once the open one is resolved.
+    const firstConflict = files.find((f) => f.state === "C");
+    const justResolved = !!activeFile && conflictPaths.current.has(activeFile) && files.find((f) => f.path === activeFile)?.state !== "C";
+    const conflictsAppeared = !!firstConflict && conflictPaths.current.size === 0;
+    conflictPaths.current = new Set(files.filter((f) => f.state === "C").map((f) => f.path));
+    if (firstConflict && (!activeFile || justResolved || conflictsAppeared)) setParams((p) => (p.set("file", firstConflict.path), p), { replace: true });
+    else if (!activeFile && files[0]) setParams((p) => (p.set("file", files[0].path), p), { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files]);
 
@@ -82,12 +91,16 @@ const GitTab: FC = () => {
 
   const allSelected = files.length > 0 && selected.size === files.length;
   const selectedPaths = files.filter((f) => selected.has(f.path)).map((f) => f.path);
+  const inOperation = !!status.operation || status.counts.conflicted > 0;
+  const activeChange = files.find((f) => f.path === activeFile);
 
   return (
     <div className="space-y-4 p-4">
       <GitToolbar project={project} status={status} onDiscardAll={() => setDiscardTarget("all")} />
 
-      {files.length > 0 && can(PermissionKeys.GIT_COMMIT) && <CommitBox project={project} selectedPaths={selectedPaths} totalFiles={files.length} />}
+      {inOperation && can(PermissionKeys.GIT_COMMIT) && <OperationBanner projectId={project.id} status={status} />}
+
+      {files.length > 0 && !inOperation && can(PermissionKeys.GIT_COMMIT) && <CommitBox project={project} selectedPaths={selectedPaths} totalFiles={files.length} />}
 
       <div className="grid grid-cols-1 items-start gap-4 @5xl:grid-cols-[minmax(320px,2fr)_3fr]">
         <Panel className="overflow-hidden">
@@ -167,7 +180,9 @@ const GitTab: FC = () => {
             }
           />
           <PanelBody className="p-0">
-            {activeFile && files.some((f) => f.path === activeFile) ? (
+            {activeFile && activeChange?.state === "C" && can(PermissionKeys.GIT_COMMIT) ? (
+              <ConflictResolver key={activeFile} projectId={project.id} path={activeFile} />
+            ) : activeFile && activeChange ? (
               <FileDiffPanel projectId={project.id} path={activeFile} />
             ) : (
               <EmptyState icon={<Code2 />} title="Select a file to preview its diff" />

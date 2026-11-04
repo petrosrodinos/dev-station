@@ -197,6 +197,20 @@ export function registerIpc(hooks: { onCloseChoice: (choice: CloseChoice) => voi
   handle(IpcChannels.GIT_PULL, args(zId), async ([id]) => gitManager.pull(await root(id)), { requires: ["GIT_COMMIT"] });
   handle(IpcChannels.GIT_PUSH, args(zId), async ([id]) => gitManager.push(await root(id)), { requires: ["GIT_PUSH"] });
   handle(IpcChannels.GIT_SYNC, args(zId), async ([id]) => gitManager.sync(await root(id)), { requires: ["GIT_COMMIT", "GIT_PUSH"] });
+  handle(IpcChannels.GIT_CONFLICT_READ, args(zId, zRelPath), async ([id, file]) => gitManager.conflictRead(await root(id), file), { requires: ["GIT_COMMIT"] });
+  handle(IpcChannels.GIT_CONFLICT_RESOLVE, args(zId, zRelPath, z.string().max(10_000_000)), async ([id, file, content]) => gitManager.conflictResolve(await root(id), file, content), {
+    requires: ["GIT_COMMIT"],
+  });
+  handle(IpcChannels.GIT_CONFLICT_TAKE, args(zId, zRelPath, z.enum(["current", "incoming"])), async ([id, file, side]) => gitManager.conflictTake(await root(id), file, side), {
+    requires: ["GIT_COMMIT"],
+  });
+  handle(
+    IpcChannels.GIT_OP_CONTINUE,
+    args(zId, z.object({ name: z.string().max(200).nullable().optional(), email: z.string().max(320).nullable().optional() }).optional()),
+    async ([id, identity]) => gitManager.operationContinue(await root(id), identity ?? {}),
+    { requires: ["GIT_COMMIT"] },
+  );
+  handle(IpcChannels.GIT_OP_ABORT, args(zId), async ([id]) => gitManager.operationAbort(await root(id)), { requires: ["GIT_COMMIT"] });
   handle(
     IpcChannels.GIT_COMMIT,
     args(zId, z.object({ message: z.string().min(1).max(20_000), paths: zPaths.optional(), name: z.string().max(200).nullable().optional(), email: z.string().max(320).nullable().optional() })),
