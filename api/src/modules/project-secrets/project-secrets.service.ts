@@ -72,6 +72,7 @@ export class ProjectSecretsService {
         project_id: projectId,
         name,
         description: dto.description?.trim() || null,
+        source_path: dto.source_path?.trim() || null,
         payload: this.encryptVariables(variables, organizationId, projectId, id),
         variable_count: variables.length,
         created_by: userId,
@@ -113,6 +114,10 @@ export class ProjectSecretsService {
           dto.description === undefined
             ? undefined
             : dto.description.trim() || null,
+        source_path:
+          dto.source_path === undefined
+            ? undefined
+            : dto.source_path.trim() || null,
         ...(variables && {
           payload: this.encryptVariables(
             variables,
@@ -230,6 +235,7 @@ export class ProjectSecretsService {
       project_id: set.project_id,
       name: set.name,
       description: set.description,
+      source_path: set.source_path,
       variable_count: set.variable_count,
       created_at: set.created_at,
       updated_at: set.updated_at,

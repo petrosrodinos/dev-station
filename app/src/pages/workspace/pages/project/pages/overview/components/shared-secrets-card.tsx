@@ -27,7 +27,7 @@ export function SharedSecretsCard({ project, hasLocalCopy }: { project: Project;
   const remove = useDeleteSecretSet();
 
   const [editor, setEditor] = useState<{ open: boolean; setId: string | null }>({ open: false, setId: null });
-  const [applying, setApplying] = useState<SecretSetSummary | null>(null);
+  const [applying, setApplying] = useState<{ set: SecretSetSummary; presetPath: string | null } | null>(null);
   const [deleting, setDeleting] = useState<SecretSetSummary | null>(null);
 
   const list = sets.data ?? [];
@@ -95,6 +95,7 @@ export function SharedSecretsCard({ project, hasLocalCopy }: { project: Project;
                 <div className="truncate text-[0.8125rem] font-medium">{set.name}</div>
                 <div className="truncate text-[0.7188rem] text-muted-foreground">
                   {set.variable_count} variable{set.variable_count === 1 ? "" : "s"}
+                  {set.source_path ? ` · ${set.source_path}` : ""}
                   {set.description ? ` · ${set.description}` : ""} · updated {formatRelative(set.updated_at)}
                   {set.updated_by ? ` by ${set.updated_by.full_name || set.updated_by.email}` : ""}
                 </div>
@@ -111,9 +112,14 @@ export function SharedSecretsCard({ project, hasLocalCopy }: { project: Project;
                   }
                 />
                 <DropdownMenuContent align="end" className="w-52">
+                  {canApply && set.source_path && (
+                    <DropdownMenuItem onSelect={() => setApplying({ set, presetPath: set.source_path })} className="gap-2">
+                      <FileDown className="size-3.5" /> <span className="truncate">Apply to {set.source_path}</span>
+                    </DropdownMenuItem>
+                  )}
                   {canApply && (
-                    <DropdownMenuItem onSelect={() => setApplying(set)} className="gap-2">
-                      <FileDown className="size-3.5" /> Apply to local .env
+                    <DropdownMenuItem onSelect={() => setApplying({ set, presetPath: null })} className="gap-2">
+                      <FileDown className="size-3.5" /> {set.source_path ? "Apply to another file…" : "Apply to local .env"}
                     </DropdownMenuItem>
                   )}
                   {canManage && (
@@ -134,8 +140,8 @@ export function SharedSecretsCard({ project, hasLocalCopy }: { project: Project;
         </ul>
       )}
 
-      <SecretSetDialog projectId={project.id} setId={editor.setId} open={editor.open} onOpenChange={(open) => setEditor((e) => ({ ...e, open }))} />
-      <ApplySecretSetDialog project={project} set={applying} open={!!applying} onOpenChange={(open) => !open && setApplying(null)} />
+      <SecretSetDialog projectId={project.id} setId={editor.setId} hasLocalCopy={hasLocalCopy} open={editor.open} onOpenChange={(open) => setEditor((e) => ({ ...e, open }))} />
+      <ApplySecretSetDialog project={project} set={applying?.set ?? null} presetPath={applying?.presetPath ?? null} open={!!applying} onOpenChange={(open) => !open && setApplying(null)} />
       <ConfirmationDialog
         isOpen={!!deleting}
         onClose={() => setDeleting(null)}

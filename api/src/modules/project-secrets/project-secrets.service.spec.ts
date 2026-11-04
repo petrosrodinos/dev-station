@@ -139,6 +139,29 @@ describe('ProjectSecretsService', () => {
     );
   });
 
+  it('stores the source env file path in clear, and lets an update change or clear it', async () => {
+    const { service, rows } = setup();
+    const created = await service.create(
+      ORG,
+      PROJECT,
+      USER,
+      dto({ source_path: ' apps/api/.env ' }),
+    );
+    expect(created.source_path).toBe('apps/api/.env');
+    expect(rows.get(created.id).source_path).toBe('apps/api/.env');
+
+    const kept = await service.update(ORG, PROJECT, created.id, USER, {
+      name: 'renamed',
+    } as never);
+    expect(kept.source_path).toBe('apps/api/.env');
+
+    const cleared = await service.update(ORG, PROJECT, created.id, USER, {
+      source_path: '',
+    } as never);
+    expect(cleared.source_path).toBeNull();
+    expect((await service.findAll(ORG, PROJECT))[0].source_path).toBeNull();
+  });
+
   it('keeps the existing values when an update only renames the set', async () => {
     const { service } = setup();
     const created = await service.create(ORG, PROJECT, USER, dto());

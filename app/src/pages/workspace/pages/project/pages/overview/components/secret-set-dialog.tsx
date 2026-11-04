@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ClipboardPaste, Eye, EyeOff, Lock, Plus, Trash2 } from "lucide-react";
+import { ClipboardPaste, Eye, EyeOff, FileInput, Lock, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
+import { isDesktop } from "@/lib/desktop";
+import { useProjectEnvConsent } from "@/features/projects/hooks/use-projects";
+import { useEnvFiles } from "@/features/env-files/hooks/use-env-files";
+import { readEnvFile } from "@/features/env-files/services/env-files.services";
+import type { EnvFileSummary } from "@shared/contract";
 import { cn } from "@/lib/utils";
 import { useCreateSecretSet, useSecretSet, useUpdateSecretSet } from "@/features/project-secrets/hooks/use-project-secrets";
 import { parseEnvText } from "@/features/project-secrets/utils/env-text.utils";
@@ -15,17 +22,20 @@ import type { SecretSet } from "@/features/project-secrets/interfaces/project-se
 import { secretSetFormSchema, type SecretSetFormData } from "../../../validation-schemas/secret-set.schema";
 
 // Values whose names look like credentials are masked until "Show values" is on.
+const NO_SOURCE = "__none__";
 const SECRET_KEY_RE = /(SECRET|TOKEN|PASSWORD|PASSWD|PASS$|PRIVATE|CREDENTIAL|API_KEY|_KEY$|^KEY$|DSN|AUTH)/i;
 
 interface SecretSetDialogProps {
   projectId: string;
   /** `null` creates a new set; an id edits that set (its values are fetched and decrypted on open). */
   setId: string | null;
+  /** This device has the project checked out, so local env files can be read. */
+  hasLocalCopy: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function SecretSetDialog({ projectId, setId, open, onOpenChange }: SecretSetDialogProps) {
+export function SecretSetDialog({ projectId, setId, hasLocalCopy, open, onOpenChange }: SecretSetDialogProps) {
   const editing = setId !== null;
   const existing = useSecretSet(projectId, setId, open && editing);
 
@@ -48,28 +58,60 @@ export function SecretSetDialog({ projectId, setId, open, onOpenChange }: Secret
           <div className="py-6 text-center text-[0.8125rem] text-muted-foreground">{existing.error.message}</div>
         ) : (
           // Keyed so each opening starts from the freshly fetched values.
-          <SecretSetForm key={existing.data?.id ?? "new"} projectId={projectId} set={existing.data ?? null} onDone={() => onOpenChange(false)} />
+          <SecretSetForm key={existing.data?.id ?? "new"} projectId={projectId} hasLocalCopy={hasLocalCopy} set={existing.data ?? null} onDone={() => onOpenChange(false)} />
         )}
       </DialogContent>
     </Dialog>
   );
 }
 
-function SecretSetForm({ projectId, set, onDone }: { projectId: string; set: SecretSet | null; onDone: () => void }) {
+function SecretSetForm({ projectId, hasLocalCopy, set, onDone }: { projectId: string; hasLocalCopy: boolean; set: SecretSet | null; onDone: () => void }) {
   const create = useCreateSecretSet();
   const update = useUpdateSecretSet();
   const [showValues, setShowValues] = useState(false);
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasteText, setPasteText] = useState("");
   const [pasteNote, setPasteNote] = useState<string | null>(null);
+  const [loadingFile, setLoadingFile] = useState(false);
+  const consent = useProjectEnvConsent(projectId);
+  const canReadLocal = isDesktop() && hasLocalCopy && consent.data?.accepted === true;
+  const envFiles = useEnvFiles(projectId, canReadLocal);
 
   const form = useForm<SecretSetFormData>({
     resolver: zodResolver(secretSetFormSchema),
-    defaultValues: { name: set?.name ?? "", description: set?.description ?? "", variables: set?.variables ?? [{ key: "", value: "" }] },
+    defaultValues: { name: set?.name ?? "", description: set?.description ?? "", source_path: set?.source_path ?? "", variables: set?.variables ?? [{ key: "", value: "" }] },
   });
   const { fields, append, remove, replace } = useFieldArray({ control: form.control, name: "variables" });
   const rows = useWatch({ control: form.control, name: "variables" }) ?? [];
   const pending = create.isPending || update.isPending;
+  const sourcePath = useWatch({ control: form.control, name: "source_path" }) ?? "";
+
+  // Files the picker offers; a linked file that is not on this device (or was renamed) is kept visible so it can still be changed.
+  const fileOptions = envFiles.data ?? [];
+  const sourceListed = !sourcePath || fileOptions.some((f) => f.path === sourcePath);
+  const groups = fileOptions.reduce<Map<string, EnvFileSummary[]>>((acc, f) => acc.set(f.dir, [...(acc.get(f.dir) ?? []), f]), new Map());
+
+  /** Replaces the rows with the file's variables and links the set to it. */
+  const loadFromFile = async (path: string) => {
+    setLoadingFile(true);
+    try {
+      const file = await readEnvFile(projectId, path);
+      const variables = file.variables.map((v) => ({ key: v.key, value: v.value }));
+      replace(variables.length > 0 ? variables : [{ key: "", value: "" }]);
+      form.setValue("source_path", path, { shouldDirty: true });
+      setPasteNote(`Loaded ${variables.length} variable${variables.length === 1 ? "" : "s"} from ${path}.`);
+    } catch (error) {
+      toast({ title: "Could not read the file", description: error instanceof Error ? error.message : undefined, variant: "error" });
+    } finally {
+      setLoadingFile(false);
+    }
+  };
+
+  const onSourceChange = (value: string | null) => {
+    if (!value || value === sourcePath) return;
+    if (value === NO_SOURCE) form.setValue("source_path", "", { shouldDirty: true });
+    else void loadFromFile(value);
+  };
 
   const importPasted = () => {
     const { variables, skipped } = parseEnvText(pasteText);
@@ -91,7 +133,7 @@ function SecretSetForm({ projectId, set, onDone }: { projectId: string; set: Sec
 
   const onSubmit = (data: SecretSetFormData) => {
     const variables = data.variables.filter((v) => v.key || v.value).map((v) => ({ key: v.key.trim(), value: v.value }));
-    const payload = { name: data.name.trim(), description: data.description?.trim() ?? "", variables };
+    const payload = { name: data.name.trim(), description: data.description?.trim() ?? "", source_path: data.source_path?.trim() ?? "", variables };
     if (set) update.mutate({ projectId, setId: set.id, ...payload }, { onSuccess: onDone });
     else create.mutate({ projectId, ...payload }, { onSuccess: onDone });
   };
@@ -124,6 +166,54 @@ function SecretSetForm({ projectId, set, onDone }: { projectId: string; set: Sec
               </FormItem>
             )}
           />
+        </div>
+
+        <div className="space-y-1">
+          {canReadLocal ? (
+            <div className="flex items-center gap-2">
+              <Select value={sourcePath || NO_SOURCE} onValueChange={onSourceChange} disabled={loadingFile || envFiles.isPending}>
+                <SelectTrigger aria-label="Source env file" className="h-8 flex-1 font-mono text-xs">
+                  <SelectValue placeholder="Source env file (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_SOURCE} className="text-xs">
+                    No source file
+                  </SelectItem>
+                  {!sourceListed && (
+                    <SelectItem value={sourcePath} className="font-mono text-xs">
+                      {sourcePath}
+                    </SelectItem>
+                  )}
+                  {[...groups].map(([dir, items]) => (
+                    <SelectGroup key={dir}>
+                      <SelectLabel>{dir === "." ? "Project root" : dir}</SelectLabel>
+                      {items.map((f) => (
+                        <SelectItem key={f.path} value={f.path} className="font-mono text-xs">
+                          {f.path}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
+              </Select>
+              {sourcePath && (
+                <Button type="button" variant="outline" size="sm" className="gap-1.5" loading={loadingFile} onClick={() => void loadFromFile(sourcePath)}>
+                  <RefreshCw className="size-3.5" /> Reload
+                </Button>
+              )}
+            </div>
+          ) : sourcePath ? (
+            <div className="flex items-center gap-2 text-[0.75rem] text-muted-foreground">
+              <FileInput className="size-3.5" /> Mirrors <span className="font-mono">{sourcePath}</span>
+            </div>
+          ) : null}
+          <p className="text-[0.7188rem] text-muted-foreground">
+            {canReadLocal
+              ? "Optional. Pick a local env file to copy its variables into this set; teammates can then apply the set straight back to that file."
+              : isDesktop() && hasLocalCopy
+                ? "Allow Dev Station to read this project's .env files (Environment files card) to pick a source file."
+                : null}
+          </p>
         </div>
 
         <div className="flex items-center gap-2">

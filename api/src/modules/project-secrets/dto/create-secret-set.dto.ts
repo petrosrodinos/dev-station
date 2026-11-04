@@ -5,6 +5,7 @@ import {
   IsArray,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
   ValidateNested,
@@ -23,6 +24,20 @@ export class CreateSecretSetDto {
   @IsString()
   @MaxLength(300)
   description?: string;
+
+  @ApiProperty({
+    required: false,
+    example: 'apps/api/.env',
+    description: 'Project-relative env file this set mirrors. Empty clears it.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  // Relative, forward-slash paths only: no absolute paths and no ".." segments.
+  @Matches(/^(?!\/)(?![A-Za-z]:)(?!(.*\/)?\.\.(\/|$))[^\\\u0000]*$/, {
+    message: 'source_path must be a relative path inside the project',
+  })
+  source_path?: string;
 
   @ApiProperty({ type: SecretVariableDto, isArray: true })
   @IsArray()

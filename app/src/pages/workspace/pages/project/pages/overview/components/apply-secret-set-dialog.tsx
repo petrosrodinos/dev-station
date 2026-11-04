@@ -15,6 +15,8 @@ import type { EnvFileSummary } from "@shared/contract";
 interface ApplySecretSetDialogProps {
   project: Project;
   set: SecretSetSummary | null;
+  /** The set's linked env file; preselected when it exists on this device. */
+  presetPath?: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -22,7 +24,7 @@ interface ApplySecretSetDialogProps {
 const keyList = (keys: string[]) => (keys.length > 6 ? `${keys.slice(0, 6).join(", ")} +${keys.length - 6} more` : keys.join(", "));
 
 /** Merges a shared set into one of this project's local `.env*` files. Shared values win; local-only keys stay. */
-export function ApplySecretSetDialog({ project, set, open, onOpenChange }: ApplySecretSetDialogProps) {
+export function ApplySecretSetDialog({ project, set, presetPath = null, open, onOpenChange }: ApplySecretSetDialogProps) {
   const consent = useProjectEnvConsent(project.id);
   const allowed = consent.data?.accepted === true;
   const files = useEnvFiles(project.id, open && allowed);
@@ -32,7 +34,8 @@ export function ApplySecretSetDialog({ project, set, open, onOpenChange }: Apply
 
   const list = files.data ?? [];
   const groups = list.reduce<Map<string, EnvFileSummary[]>>((acc, f) => acc.set(f.dir, [...(acc.get(f.dir) ?? []), f]), new Map());
-  const selected = path ?? list.find((f) => !f.is_template)?.path ?? list[0]?.path ?? null;
+  const presetMissing = !!presetPath && !files.isPending && !list.some((f) => f.path === presetPath);
+  const selected = path ?? (presetPath && !presetMissing ? presetPath : null) ?? list.find((f) => !f.is_template)?.path ?? list[0]?.path ?? null;
   const local = useEnvFile(project.id, selected, open && allowed);
 
   useEffect(() => {
@@ -72,6 +75,7 @@ export function ApplySecretSetDialog({ project, set, open, onOpenChange }: Apply
           <p className="text-[0.8125rem] text-muted-foreground">No .env files found in this project. Create one first, then apply the set.</p>
         ) : (
           <div className="space-y-3">
+            {presetMissing && <p className="text-[0.75rem] text-muted-foreground"><span className="font-mono">{presetPath}</span> doesn't exist on this device. Pick another file.</p>}
             <Select value={selected ?? undefined} onValueChange={(v) => v && setPath(String(v))}>
               <SelectTrigger aria-label="Local .env file" className="h-8 w-full font-mono text-xs">
                 <SelectValue />

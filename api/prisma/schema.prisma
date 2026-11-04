@@ -544,6 +544,7 @@ model ProjectSecretSet {
   project_id      String
   name            String
   description     String?
+  source_path     String?
   payload         String
   key_version     Int      @default(1)
   variable_count  Int      @default(0)

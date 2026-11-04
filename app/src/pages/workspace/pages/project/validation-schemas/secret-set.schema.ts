@@ -5,6 +5,7 @@ export const secretSetFormSchema = z
     .object({
         name: z.string().trim().min(1, "Give the set a name").max(60, "At most 60 characters"),
         description: z.string().trim().max(300, "At most 300 characters").optional(),
+        source_path: z.string().trim().max(300).optional(),
         variables: z.array(z.object({ key: z.string().trim().max(200), value: z.string().max(10_000, "At most 10,000 characters") })).max(200, "At most 200 variables"),
     })
     .superRefine((form, ctx) => {

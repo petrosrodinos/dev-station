@@ -337,6 +337,7 @@ exports.Prisma.ProjectSecretSetScalarFieldEnum = {
   project_id: 'project_id',
   name: 'name',
   description: 'description',
+  source_path: 'source_path',
   payload: 'payload',
   key_version: 'key_version',
   variable_count: 'variable_count',

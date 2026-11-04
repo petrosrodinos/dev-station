@@ -15,6 +15,8 @@ export interface SecretSetSummary {
   project_id: string;
   name: string;
   description: string | null;
+  /** Project-relative env file this set mirrors (e.g. "apps/api/.env"), if any. */
+  source_path: string | null;
   variable_count: number;
   updated_at: Date;
   created_at: Date;

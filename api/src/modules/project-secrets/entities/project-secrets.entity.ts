@@ -16,6 +16,7 @@ export class SecretSetSummaryEntity {
   @ApiProperty() project_id: string;
   @ApiProperty() name: string;
   @ApiProperty({ nullable: true }) description: string | null;
+  @ApiProperty({ nullable: true }) source_path: string | null;
   @ApiProperty() variable_count: number;
   @ApiProperty() created_at: Date;
   @ApiProperty() updated_at: Date;

@@ -24251,6 +24251,7 @@ export namespace Prisma {
     project_id: string | null
     name: string | null
     description: string | null
+    source_path: string | null
     payload: string | null
     key_version: number | null
     variable_count: number | null
@@ -24266,6 +24267,7 @@ export namespace Prisma {
     project_id: string | null
     name: string | null
     description: string | null
+    source_path: string | null
     payload: string | null
     key_version: number | null
     variable_count: number | null
@@ -24281,6 +24283,7 @@ export namespace Prisma {
     project_id: number
     name: number
     description: number
+    source_path: number
     payload: number
     key_version: number
     variable_count: number
@@ -24308,6 +24311,7 @@ export namespace Prisma {
     project_id?: true
     name?: true
     description?: true
+    source_path?: true
     payload?: true
     key_version?: true
     variable_count?: true
@@ -24323,6 +24327,7 @@ export namespace Prisma {
     project_id?: true
     name?: true
     description?: true
+    source_path?: true
     payload?: true
     key_version?: true
     variable_count?: true
@@ -24338,6 +24343,7 @@ export namespace Prisma {
     project_id?: true
     name?: true
     description?: true
+    source_path?: true
     payload?: true
     key_version?: true
     variable_count?: true
@@ -24440,6 +24446,7 @@ export namespace Prisma {
     project_id: string
     name: string
     description: string | null
+    source_path: string | null
     payload: string
     key_version: number
     variable_count: number
@@ -24474,6 +24481,7 @@ export namespace Prisma {
     project_id?: boolean
     name?: boolean
     description?: boolean
+    source_path?: boolean
     payload?: boolean
     key_version?: boolean
     variable_count?: boolean
@@ -24493,6 +24501,7 @@ export namespace Prisma {
     project_id?: boolean
     name?: boolean
     description?: boolean
+    source_path?: boolean
     payload?: boolean
     key_version?: boolean
     variable_count?: boolean
@@ -24512,6 +24521,7 @@ export namespace Prisma {
     project_id?: boolean
     name?: boolean
     description?: boolean
+    source_path?: boolean
     payload?: boolean
     key_version?: boolean
     variable_count?: boolean
@@ -24531,6 +24541,7 @@ export namespace Prisma {
     project_id?: boolean
     name?: boolean
     description?: boolean
+    source_path?: boolean
     payload?: boolean
     key_version?: boolean
     variable_count?: boolean
@@ -24540,7 +24551,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type ProjectSecretSetOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organization_id" | "project_id" | "name" | "description" | "payload" | "key_version" | "variable_count" | "created_by" | "updated_by" | "created_at" | "updated_at", ExtArgs["result"]["projectSecretSet"]>
+  export type ProjectSecretSetOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organization_id" | "project_id" | "name" | "description" | "source_path" | "payload" | "key_version" | "variable_count" | "created_by" | "updated_by" | "created_at" | "updated_at", ExtArgs["result"]["projectSecretSet"]>
   export type ProjectSecretSetInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     project?: boolean | ProjectDefaultArgs<ExtArgs>
@@ -24574,6 +24585,7 @@ export namespace Prisma {
       project_id: string
       name: string
       description: string | null
+      source_path: string | null
       payload: string
       key_version: number
       variable_count: number
@@ -25013,6 +25025,7 @@ export namespace Prisma {
     readonly project_id: FieldRef<"ProjectSecretSet", 'String'>
     readonly name: FieldRef<"ProjectSecretSet", 'String'>
     readonly description: FieldRef<"ProjectSecretSet", 'String'>
+    readonly source_path: FieldRef<"ProjectSecretSet", 'String'>
     readonly payload: FieldRef<"ProjectSecretSet", 'String'>
     readonly key_version: FieldRef<"ProjectSecretSet", 'Int'>
     readonly variable_count: FieldRef<"ProjectSecretSet", 'Int'>
@@ -34984,6 +34997,7 @@ export namespace Prisma {
     project_id: 'project_id',
     name: 'name',
     description: 'description',
+    source_path: 'source_path',
     payload: 'payload',
     key_version: 'key_version',
     variable_count: 'variable_count',
@@ -36938,6 +36952,7 @@ export namespace Prisma {
     project_id?: StringFilter<"ProjectSecretSet"> | string
     name?: StringFilter<"ProjectSecretSet"> | string
     description?: StringNullableFilter<"ProjectSecretSet"> | string | null
+    source_path?: StringNullableFilter<"ProjectSecretSet"> | string | null
     payload?: StringFilter<"ProjectSecretSet"> | string
     key_version?: IntFilter<"ProjectSecretSet"> | number
     variable_count?: IntFilter<"ProjectSecretSet"> | number
@@ -36957,6 +36972,7 @@ export namespace Prisma {
     project_id?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
+    source_path?: SortOrderInput | SortOrder
     payload?: SortOrder
     key_version?: SortOrder
     variable_count?: SortOrder
@@ -36980,6 +36996,7 @@ export namespace Prisma {
     project_id?: StringFilter<"ProjectSecretSet"> | string
     name?: StringFilter<"ProjectSecretSet"> | string
     description?: StringNullableFilter<"ProjectSecretSet"> | string | null
+    source_path?: StringNullableFilter<"ProjectSecretSet"> | string | null
     payload?: StringFilter<"ProjectSecretSet"> | string
     key_version?: IntFilter<"ProjectSecretSet"> | number
     variable_count?: IntFilter<"ProjectSecretSet"> | number
@@ -36999,6 +37016,7 @@ export namespace Prisma {
     project_id?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
+    source_path?: SortOrderInput | SortOrder
     payload?: SortOrder
     key_version?: SortOrder
     variable_count?: SortOrder
@@ -37022,6 +37040,7 @@ export namespace Prisma {
     project_id?: StringWithAggregatesFilter<"ProjectSecretSet"> | string
     name?: StringWithAggregatesFilter<"ProjectSecretSet"> | string
     description?: StringNullableWithAggregatesFilter<"ProjectSecretSet"> | string | null
+    source_path?: StringNullableWithAggregatesFilter<"ProjectSecretSet"> | string | null
     payload?: StringWithAggregatesFilter<"ProjectSecretSet"> | string
     key_version?: IntWithAggregatesFilter<"ProjectSecretSet"> | number
     variable_count?: IntWithAggregatesFilter<"ProjectSecretSet"> | number
@@ -39323,6 +39342,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -39340,6 +39360,7 @@ export namespace Prisma {
     project_id: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -39353,6 +39374,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -39370,6 +39392,7 @@ export namespace Prisma {
     project_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -39385,6 +39408,7 @@ export namespace Prisma {
     project_id: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -39398,6 +39422,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -39411,6 +39436,7 @@ export namespace Prisma {
     project_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -41588,6 +41614,7 @@ export namespace Prisma {
     project_id?: SortOrder
     name?: SortOrder
     description?: SortOrder
+    source_path?: SortOrder
     payload?: SortOrder
     key_version?: SortOrder
     variable_count?: SortOrder
@@ -41608,6 +41635,7 @@ export namespace Prisma {
     project_id?: SortOrder
     name?: SortOrder
     description?: SortOrder
+    source_path?: SortOrder
     payload?: SortOrder
     key_version?: SortOrder
     variable_count?: SortOrder
@@ -41623,6 +41651,7 @@ export namespace Prisma {
     project_id?: SortOrder
     name?: SortOrder
     description?: SortOrder
+    source_path?: SortOrder
     payload?: SortOrder
     key_version?: SortOrder
     variable_count?: SortOrder
@@ -45482,6 +45511,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -45498,6 +45528,7 @@ export namespace Prisma {
     project_id: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -45520,6 +45551,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -45536,6 +45568,7 @@ export namespace Prisma {
     project_id: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -45972,6 +46005,7 @@ export namespace Prisma {
     project_id?: StringFilter<"ProjectSecretSet"> | string
     name?: StringFilter<"ProjectSecretSet"> | string
     description?: StringNullableFilter<"ProjectSecretSet"> | string | null
+    source_path?: StringNullableFilter<"ProjectSecretSet"> | string | null
     payload?: StringFilter<"ProjectSecretSet"> | string
     key_version?: IntFilter<"ProjectSecretSet"> | number
     variable_count?: IntFilter<"ProjectSecretSet"> | number
@@ -47219,6 +47253,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -47234,6 +47269,7 @@ export namespace Prisma {
     project_id: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -48926,6 +48962,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -48941,6 +48978,7 @@ export namespace Prisma {
     organization_id: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -52060,6 +52098,7 @@ export namespace Prisma {
     project_id: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -52074,6 +52113,7 @@ export namespace Prisma {
     project_id: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -52431,6 +52471,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -52447,6 +52488,7 @@ export namespace Prisma {
     project_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -52461,6 +52503,7 @@ export namespace Prisma {
     project_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -52473,6 +52516,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -52489,6 +52533,7 @@ export namespace Prisma {
     project_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -52503,6 +52548,7 @@ export namespace Prisma {
     project_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -52685,6 +52731,7 @@ export namespace Prisma {
     project_id: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -53139,6 +53186,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -53154,6 +53202,7 @@ export namespace Prisma {
     project_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -53168,6 +53217,7 @@ export namespace Prisma {
     project_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -53456,6 +53506,7 @@ export namespace Prisma {
     organization_id: string
     name: string
     description?: string | null
+    source_path?: string | null
     payload: string
     key_version?: number
     variable_count?: number
@@ -53669,6 +53720,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -53684,6 +53736,7 @@ export namespace Prisma {
     organization_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
@@ -53698,6 +53751,7 @@ export namespace Prisma {
     organization_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    source_path?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: StringFieldUpdateOperationsInput | string
     key_version?: IntFieldUpdateOperationsInput | number
     variable_count?: IntFieldUpdateOperationsInput | number
