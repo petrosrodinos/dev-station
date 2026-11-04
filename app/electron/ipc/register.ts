@@ -196,6 +196,7 @@ export function registerIpc(hooks: { onCloseChoice: (choice: CloseChoice) => voi
   handle(IpcChannels.GIT_FETCH, args(zId), async ([id]) => gitManager.fetch(await root(id)), { requires: ["GIT_COMMIT"] });
   handle(IpcChannels.GIT_PULL, args(zId), async ([id]) => gitManager.pull(await root(id)), { requires: ["GIT_COMMIT"] });
   handle(IpcChannels.GIT_PUSH, args(zId), async ([id]) => gitManager.push(await root(id)), { requires: ["GIT_PUSH"] });
+  handle(IpcChannels.GIT_SYNC, args(zId), async ([id]) => gitManager.sync(await root(id)), { requires: ["GIT_COMMIT", "GIT_PUSH"] });
   handle(
     IpcChannels.GIT_COMMIT,
     args(zId, z.object({ message: z.string().min(1).max(20_000), paths: zPaths.optional(), name: z.string().max(200).nullable().optional(), email: z.string().max(320).nullable().optional() })),

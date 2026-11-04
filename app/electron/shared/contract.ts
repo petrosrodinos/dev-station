@@ -745,6 +745,7 @@ export interface DevStationBridge {
     init(projectId: string): Promise<string>;
     fetch(projectId: string): Promise<string>;
     pull(projectId: string): Promise<string>;
+    sync(projectId: string): Promise<{ pulled: number; pushed: number; output: string }>;
     push(projectId: string): Promise<{ pushed: boolean; output: string }>;
     commit(projectId: string, input: { message: string; paths?: string[]; name?: string | null; email?: string | null }): Promise<{ sha: string; output: string }>;
     checkout(projectId: string, branch: string): Promise<string>;
@@ -886,6 +887,7 @@ export const IpcChannels = {
   GIT_FETCH: "git:fetch",
   GIT_PULL: "git:pull",
   GIT_PUSH: "git:push",
+  GIT_SYNC: "git:sync",
   GIT_COMMIT: "git:commit",
   GIT_CHECKOUT: "git:checkout",
   GIT_CREATE_BRANCH: "git:create-branch",

@@ -286,6 +286,46 @@ class GitManager {
     return (r.stdout || r.stderr).trim();
   }
 
+  /**
+   * VS Code-style sync: fetch, integrate remote commits (merge, or rebase when the user configured
+   * pull.rebase), then push local commits. Dirty trees are auto-stashed around the integration.
+   * On conflicts the merge/rebase is left in progress for the user to resolve, and nothing is pushed.
+   */
+  async sync(cwd: string): Promise<{ pulled: number; pushed: number; output: string }> {
+    const initial = await this.status(cwd);
+    if (!initial.branch) throw new IpcError("Cannot sync from a detached HEAD.");
+    if (!initial.upstream) {
+      // Never published: sync degenerates to publishing the branch.
+      await this.push(cwd);
+      return { pulled: 0, pushed: initial.ahead, output: "Published branch" };
+    }
+
+    await run(cwd, ["fetch", "--all", "--prune"]);
+    const s = await this.status(cwd);
+    let output = "";
+
+    if (s.behind > 0) {
+      const rebaseCfg = (await run(cwd, ["config", "--get", "pull.rebase"], { allowExitCodes: [1] })).stdout.trim();
+      const mode = rebaseCfg && rebaseCfg !== "false" ? "--rebase" : "--no-rebase";
+      const args = s.ahead > 0 || s.files.length > 0 ? ["pull", mode, "--autostash", "--no-edit"] : ["pull", "--ff-only"];
+      try {
+        output = (await run(cwd, args)).stdout.trim();
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (/conflict/i.test(msg)) throw new IpcError(`Sync stopped: merge conflicts. Resolve them in your editor, commit, then sync again.\n${msg}`, IpcErrorCodes.GIT_FAILED);
+        throw e;
+      }
+    }
+
+    const after = await this.status(cwd);
+    let pushed = 0;
+    if (after.ahead > 0) {
+      await run(cwd, ["push"], { timeoutMs: 300_000 });
+      pushed = after.ahead;
+    }
+    return { pulled: s.behind, pushed, output };
+  }
+
   async push(cwd: string) {
     const s = await this.status(cwd);
     if (!s.branch) throw new IpcError("Cannot push from a detached HEAD.");

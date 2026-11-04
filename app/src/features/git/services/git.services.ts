@@ -19,7 +19,8 @@ export const getStashes = (projectId: string): Promise<GitStashEntry[]> => wrap(
 export const gitInit = (projectId: string) => wrap(() => getBridge().git.init(projectId), "Could not initialize Git.");
 export const gitFetch = (projectId: string) => wrap(() => getBridge().git.fetch(projectId), "Fetch failed.");
 export const gitPull = (projectId: string) => wrap(() => getBridge().git.pull(projectId), "Pull failed.");
-export const gitPush = (projectId: string) => wrap(() => getBridge().git.push(projectId), "Push failed.");
+export const gitSync = (projectId: string) => wrap(() => getBridge().git.sync(projectId), "Sync failed.");
+export const gitPush =(projectId: string) => wrap(() => getBridge().git.push(projectId), "Push failed.");
 export const gitCommit = ({ projectId, ...input }: { projectId: string; message: string; paths?: string[]; name?: string | null; email?: string | null }) =>
     wrap(() => getBridge().git.commit(projectId, input), "Commit failed.");
 export const gitCheckout = ({ projectId, branch }: { projectId: string; branch: string }) => wrap(() => getBridge().git.checkout(projectId, branch), "Could not switch branch.");

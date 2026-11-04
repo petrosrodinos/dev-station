@@ -94,6 +94,7 @@ const bridge: DevStationBridge = {
     fetch: (id) => call(C.GIT_FETCH, id),
     pull: (id) => call(C.GIT_PULL, id),
     push: (id) => call(C.GIT_PUSH, id),
+    sync: (id) => call(C.GIT_SYNC, id),
     commit: (id, input) => call(C.GIT_COMMIT, id, input),
     checkout: (id, b) => call(C.GIT_CHECKOUT, id, b),
     createBranch: (id, name, checkout) => call(C.GIT_CREATE_BRANCH, id, name, checkout),

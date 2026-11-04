@@ -14,6 +14,7 @@ import {
     gitMergeInto,
     gitPull,
     gitPush,
+    gitSync,
     gitStash,
     gitStashPop,
 } from "../services/git.services";
@@ -91,6 +92,15 @@ export const useGitFetch = () =>
 
 export const useGitPull = () =>
     useGitMutation({ mutationFn: ({ projectId }: { projectId: string }) => gitPull(projectId), success: () => "Pull completed", failure: "Pull failed", activity: ActivityTypes.GIT_PULL, event: NotificationEventTypes.GIT_PULL });
+
+export const useGitSync = () =>
+    useGitMutation({
+        mutationFn: ({ projectId }: { projectId: string }) => gitSync(projectId),
+        success: (_vars, r) => (r.pulled || r.pushed ? `Synced — pulled ${r.pulled}, pushed ${r.pushed}` : "Already in sync"),
+        failure: "Sync failed",
+        activity: ActivityTypes.GIT_PUSH,
+        event: NotificationEventTypes.GIT_PUSH,
+    });
 
 export const useGitPush = () =>
     useGitMutation({

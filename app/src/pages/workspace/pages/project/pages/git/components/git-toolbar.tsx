@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
 import type { Project } from "@/features/projects/interfaces/projects.interfaces";
-import { useBranches, useGitCheckout, useGitFetch, useGitMerge, useGitMergeInto, useGitPull, useGitPush, useGitStash, useGitStashPop, useStashes } from "@/features/git/hooks/use-git";
+import { useBranches, useGitCheckout, useGitFetch, useGitMerge, useGitMergeInto, useGitPull, useGitPush, useGitSync, useGitStash, useGitStashPop, useStashes } from "@/features/git/hooks/use-git";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import type { GitStatus } from "@shared/contract";
@@ -31,6 +31,7 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
   const fetch = useGitFetch();
   const pull = useGitPull();
   const push = useGitPush();
+  const sync = useGitSync();
   const checkout = useGitCheckout();
   const merge = useGitMerge();
   const mergeInto = useGitMergeInto();
@@ -41,6 +42,7 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
   const projectId = project.id;
   const canCommit = can(PermissionKeys.GIT_COMMIT);
   const canBranch = can(PermissionKeys.GIT_MANAGE_BRANCHES);
+  const canPush = can(PermissionKeys.GIT_PUSH);
 
   const local = branches?.filter((b) => !b.remote) ?? [];
   const otherLocal = local.filter((b) => !b.current);
@@ -112,6 +114,14 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
       </DropdownMenu>
       )}
 
+      {canCommit && canPush && status.upstream && (status.ahead > 0 || status.behind > 0) && (
+        <Button size="sm" className="h-[30px] gap-1.5" loading={sync.isPending} onClick={() => sync.mutate({ projectId })}>
+          {!sync.isPending && <RefreshCw className="size-3.5" />} Sync
+          <span className="text-[0.6875rem] opacity-80">
+            {status.behind}↓ {status.ahead}↑
+          </span>
+        </Button>
+      )}
       {canCommit && (
         <>
           <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={fetch.isPending} onClick={() => fetch.mutate({ projectId })}>
