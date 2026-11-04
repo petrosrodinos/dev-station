@@ -31,7 +31,7 @@ export function SecretSetDialog({ projectId, setId, open, onOpenChange }: Secret
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-h-[calc(100vh-2rem)] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Lock className="size-4" /> {editing ? "Edit shared secrets" : "New shared secrets"}
@@ -151,7 +151,7 @@ function SecretSetForm({ projectId, set, onDone }: { projectId: string; set: Sec
               autoComplete="off"
               aria-label="Paste .env content"
               placeholder={"DATABASE_URL=postgres://...\nAPI_KEY=..."}
-              className="font-mono text-[0.7813rem]"
+              className="h-40 max-h-[40vh] field-sizing-fixed resize-none overflow-y-auto font-mono text-[0.7813rem]"
             />
             <div className="flex justify-end gap-2">
               <Button type="button" variant="ghost" size="sm" onClick={() => setPasteOpen(false)}>
