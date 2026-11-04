@@ -68,6 +68,12 @@ export interface OrganizationInvitation {
     created_at: string;
 }
 
+/** An invitation addressed to the signed-in user; can be accepted without an invite code. */
+export interface MyInvitation extends OrganizationInvitation {
+    organization: { id: string; name: string };
+    invited_by_name: string | null;
+}
+
 export interface CreateInvitationResponse {
     invitation: OrganizationInvitation;
     token: string;

@@ -6,6 +6,7 @@ import { OrganizationNameCard } from "./organization-name-card";
 import { MembersCard } from "./members-card";
 import { InvitationsCard } from "./invitations-card";
 import { RolesCard } from "./roles-card";
+import { MyInvitationsCard } from "./my-invitations-card";
 import { JoinOrganizationCard } from "./join-organization-card";
 import { CreateOrganizationCard } from "./create-organization-card";
 
@@ -23,6 +24,7 @@ export function OrganizationSettings() {
       <Can permission={{ any: [PermissionKeys.ORG_MANAGE_MEMBERS, PermissionKeys.ORG_MANAGE_ROLES] }}>
         <RolesCard />
       </Can>
+      <MyInvitationsCard />
       <JoinOrganizationCard />
       <CreateOrganizationCard />
     </div>

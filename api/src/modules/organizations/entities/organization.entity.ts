@@ -37,6 +37,17 @@ export class InvitationEntity {
   @ApiProperty() created_at: Date;
 }
 
+export class MyInvitationOrganizationEntity {
+  @ApiProperty() id: string;
+  @ApiProperty() name: string;
+}
+
+export class MyInvitationEntity extends InvitationEntity {
+  @ApiProperty({ type: MyInvitationOrganizationEntity })
+  organization: MyInvitationOrganizationEntity;
+  @ApiProperty({ nullable: true }) invited_by_name: string | null;
+}
+
 export class CreatedInvitationEntity {
   @ApiProperty({ type: InvitationEntity }) invitation: InvitationEntity;
   @ApiProperty({ description: 'Plain invitation token — shown once' })

@@ -38,6 +38,7 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import {
   CreatedInvitationEntity,
   InvitationEntity,
+  MyInvitationEntity,
   OrganizationMemberEntity,
   PermissionCatalogEntity,
   RoleEntity,
@@ -72,6 +73,26 @@ export class OrganizationsController {
   @ApiResponse({ status: 200, type: PermissionCatalogEntity, isArray: true })
   getPermissionCatalog() {
     return this.organizationsService.getPermissionCatalog();
+  }
+
+  @Get('invitations/mine')
+  @ApiOperation({ summary: 'Pending invitations addressed to the current user' })
+  @ApiResponse({ status: 200, type: MyInvitationEntity, isArray: true })
+  findMyInvitations(@CurrentUser('id') userId: string) {
+    return this.organizationsService.findMyInvitations(userId);
+  }
+
+  @Post('invitations/:id/accept')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Accept an invitation addressed to the current user, no code needed',
+  })
+  @ApiResponse({ status: 200, type: OrganizationSummaryEntity })
+  acceptInvitationById(
+    @CurrentUser('id') userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.organizationsService.acceptInvitationById(userId, id);
   }
 
   @Post('invitations/accept')

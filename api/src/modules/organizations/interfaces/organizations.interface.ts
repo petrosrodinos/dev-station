@@ -34,3 +34,9 @@ export interface InvitationView {
   expires_at: Date;
   created_at: Date;
 }
+
+/** An invitation as seen by the invited user: includes the organization, never the invite code. */
+export interface MyInvitationView extends InvitationView {
+  organization: { id: string; name: string };
+  invited_by_name: string | null;
+}

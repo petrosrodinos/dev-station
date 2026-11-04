@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     acceptInvitation,
+    acceptInvitationById,
     createInvitation,
     createOrganization,
     createRole,
     deleteRole,
     getInvitations,
+    getMyInvitations,
     getMembers,
     getOrganizations,
     getPermissionCatalog,
@@ -155,6 +157,29 @@ export const useRevokeInvitation = () => {
             toast({ title: "Invitation revoked", duration: 2000 });
         },
         onError: (error: Error) => toast({ title: "Could not revoke invitation", description: error.message, variant: "error" }),
+    });
+};
+
+/** Pending invitations addressed to the signed-in user's email. */
+export const useMyInvitations = () => useQuery({ queryKey: ["my-invitations"], queryFn: getMyInvitations });
+
+/** Accepts an invitation from the in-app list, no invite code. */
+export const useAcceptInvitationById = () => {
+    const queryClient = useQueryClient();
+    const setActiveOrganization = useWorkspaceStore((s) => s.setActiveOrganization);
+    return useMutation({
+        mutationFn: acceptInvitationById,
+        onSuccess: (org) => {
+            queryClient.invalidateQueries({ queryKey: ["organizations"] });
+            queryClient.invalidateQueries({ queryKey: ["me"] });
+            queryClient.invalidateQueries({ queryKey: ["my-invitations"] });
+            setActiveOrganization(org.id);
+            toast({ title: "Joined organization", description: org.name, duration: 2500 });
+        },
+        onError: (error: Error) => {
+            queryClient.invalidateQueries({ queryKey: ["my-invitations"] });
+            toast({ title: "Could not accept invitation", description: error.message, variant: "error" });
+        },
     });
 };
 

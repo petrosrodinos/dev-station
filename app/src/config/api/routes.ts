@@ -37,6 +37,8 @@ export const ApiRoutes = {
         invitation: (id: string) => `/organizations/current/invitations/${id}`,
         resend_invitation: (id: string) => `/organizations/current/invitations/${id}/resend`,
         accept_invitation: "/organizations/invitations/accept",
+        my_invitations: "/organizations/invitations/mine",
+        accept_invitation_by_id: (id: string) => `/organizations/invitations/${id}/accept`,
         roles: "/organizations/current/roles",
         role: (id: string) => `/organizations/current/roles/${id}`,
         permissions: "/organizations/permissions",

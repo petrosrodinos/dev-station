@@ -31,6 +31,7 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import {
   InvitationView,
+  MyInvitationView,
   OrganizationMemberView,
   RoleView,
 } from './interfaces/organizations.interface';
@@ -400,13 +401,69 @@ export class OrganizationsService {
     return { id: invitationId };
   }
 
+  /** Pending invitations addressed to the signed-in user's email, so they can accept without an invite code. */
+  async findMyInvitations(userId: string): Promise<MyInvitationView[]> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    if (!user) return [];
+    const invitations = await this.prisma.organizationInvitation.findMany({
+      where: {
+        email: user.email.toLowerCase(),
+        accepted_at: null,
+        revoked_at: null,
+        expires_at: { gt: new Date() },
+      },
+      include: {
+        role: { select: { id: true, name: true, key: true, rank: true } },
+        organization: { select: { id: true, name: true } },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+    const inviters = await this.prisma.user.findMany({
+      where: { id: { in: invitations.map((i) => i.invited_by) } },
+      select: { id: true, full_name: true, email: true },
+    });
+    const inviterById = new Map(inviters.map((u) => [u.id, u]));
+    return invitations.map((invitation) => {
+      const inviter = inviterById.get(invitation.invited_by);
+      return {
+        ...this.toInvitationView(invitation),
+        organization: invitation.organization,
+        invited_by_name: inviter ? inviter.full_name || inviter.email : null,
+      };
+    });
+  }
+
   async acceptInvitation(userId: string, token: string) {
-    const [invitation, user] = await Promise.all([
-      this.prisma.organizationInvitation.findUnique({
-        where: { token_hash: this.hashToken(token) },
-      }),
-      this.prisma.user.findUnique({ where: { id: userId } }),
-    ]);
+    const invitation = await this.prisma.organizationInvitation.findUnique({
+      where: { token_hash: this.hashToken(token) },
+    });
+    return this.joinWithInvitation(userId, invitation);
+  }
+
+  /** Accept from the in-app list: no code needed, the invitation must be addressed to the caller's email. */
+  async acceptInvitationById(userId: string, invitationId: string) {
+    const invitation = await this.prisma.organizationInvitation.findUnique({
+      where: { id: invitationId },
+    });
+    return this.joinWithInvitation(userId, invitation);
+  }
+
+  private async joinWithInvitation(
+    userId: string,
+    invitation: {
+      id: string;
+      organization_id: string;
+      role_id: string;
+      email: string;
+      accepted_at: Date | null;
+      revoked_at: Date | null;
+      expires_at: Date;
+    } | null,
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
 
     if (
       !invitation ||

@@ -5,6 +5,7 @@ import type {
     CreateInvitationResponse,
     CreateOrganizationDto,
     CreateRoleDto,
+    MyInvitation,
     OrganizationInvitation,
     OrganizationMember,
     OrganizationSummary,
@@ -98,6 +99,24 @@ export const revokeInvitation = async (id: string): Promise<void> => {
         await axiosInstance.delete(ApiRoutes.organizations.invitation(id));
     } catch (error) {
         throw new Error(getApiErrorMessage(error, "Failed to revoke the invitation."));
+    }
+};
+
+export const getMyInvitations = async (): Promise<MyInvitation[]> => {
+    try {
+        const response = await axiosInstance.get<MyInvitation[]>(ApiRoutes.organizations.my_invitations);
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to load your invitations."));
+    }
+};
+
+export const acceptInvitationById = async (id: string): Promise<OrganizationSummary> => {
+    try {
+        const response = await axiosInstance.post<OrganizationSummary>(ApiRoutes.organizations.accept_invitation_by_id(id));
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "This invitation is invalid or has expired."));
     }
 };
 
