@@ -204,14 +204,24 @@ export const WorkspaceDock: FC = () => {
 
   const overlayDrawer = aiFullWidth && drawerOpen && aiPanelOpen;
 
+  // Escape closes the drawer, like any other drawer.
+  useEffect(() => {
+    if (!overlayDrawer) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") useLayoutStore.getState().setWorkspaceDrawerOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [overlayDrawer]);
+
   return (
     <div className={cn("relative flex min-w-0 flex-1", overlayDrawer && "ai-drawer-overlay")}>
       <DockviewReact className="dockview-theme-abyss min-w-0 flex-1" components={components} onReady={onReady} />
       {overlayDrawer && (
         <div
           aria-hidden
-          className="absolute inset-0 z-20 bg-black/40"
-          onMouseDown={() => useLayoutStore.getState().setWorkspaceDrawerOpen(false)}
+          className="absolute inset-0 z-[25] cursor-pointer bg-black/50"
+          onPointerDown={() => useLayoutStore.getState().setWorkspaceDrawerOpen(false)}
         />
       )}
     </div>
