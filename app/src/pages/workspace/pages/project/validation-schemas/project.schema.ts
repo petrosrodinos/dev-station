@@ -53,7 +53,39 @@ export const branchSchema = z.object({
 });
 export type BranchFormData = z.infer<typeof branchSchema>;
 
-export const linearSettingsSchema = z.object({
+export const renameBranchSchema = branchSchema.pick({ name: true });
+export type RenameBranchFormData = z.infer<typeof renameBranchSchema>;
+
+export const RemoteModes = { CREATE: "create", EXISTING: "existing", URL: "url" } as const;
+export type RemoteMode = (typeof RemoteModes)[keyof typeof RemoteModes];
+
+export const remoteSchema = z
+    .object({
+        mode: z.enum([RemoteModes.CREATE, RemoteModes.EXISTING, RemoteModes.URL]),
+        connection_id: z.string().optional(),
+        name: z.string().trim().optional(),
+        description: z.string().trim().max(350).optional(),
+        owner: z.string().trim().optional(),
+        is_private: z.boolean(),
+        existing_full_name: z.string().optional(),
+        url: z.string().trim().optional(),
+        branch_name: z.string().trim().optional(),
+    })
+    .superRefine((data, ctx) => {
+        const fail = (path: string, message: string) => ctx.addIssue({ code: "custom", path: [path], message });
+        // eslint-disable-next-line no-control-regex -- rejects control characters (git check-ref-format)
+        if (data.branch_name && !/^(?!-)(?!.*\.\.)(?!.*[\s~^:?*[\\])(?!.*@\{)(?!.*\/\/)[^\x00-\x1f\x7f]+(?<![./])$/.test(data.branch_name)) fail("branch_name", "Not a valid branch name");
+        if (data.mode !== RemoteModes.URL && !data.connection_id) fail("connection_id", "Choose a GitHub account");
+        if (data.mode === RemoteModes.CREATE) {
+            if (!data.name || !/^(?!\.{1,2}$)[A-Za-z0-9._-]{1,100}$/.test(data.name)) fail("name", "Use letters, numbers, '.', '-' or '_' (max 100)");
+            if (data.owner && !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/.test(data.owner)) fail("owner", "Not a valid GitHub user or organization");
+        }
+        if (data.mode === RemoteModes.EXISTING && !data.existing_full_name) fail("existing_full_name", "Pick a repository");
+        if (data.mode === RemoteModes.URL && !/^(https:\/\/[^\s/]+\/\S+|ssh:\/\/\S+|git@[^\s:]+:\S+)$/i.test(data.url ?? "")) fail("url", "Enter an https://, ssh:// or git@host:path URL");
+    });
+export type RemoteFormData = z.infer<typeof remoteSchema>;
+
+export const linearSettingsSchema =z.object({
     linear_connection_id: z.string().optional(),
     linear_team_id: z.string().optional(),
     linear_project_id: z.string().optional(),

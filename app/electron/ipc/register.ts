@@ -193,7 +193,8 @@ export function registerIpc(hooks: { onCloseChoice: (choice: CloseChoice) => voi
   handle(IpcChannels.GIT_LOG, args(zId, z.number().int().min(1).max(200).optional()), async ([id, limit]) => gitManager.log(await root(id), limit));
   handle(IpcChannels.GIT_STASHES, args(zId), async ([id]) => gitManager.stashes(await root(id)));
   handle(IpcChannels.GIT_INIT, args(zId), async ([id]) => gitManager.init(workspaceConfig.projectRoot(id)), { requires: ["GIT_COMMIT"] });
-  handle(IpcChannels.GIT_FETCH, args(zId), async ([id]) => gitManager.fetch(await root(id)), { requires: ["GIT_COMMIT"] });
+  handle(IpcChannels.GIT_ADD_REMOTE, args(zId, z.string().min(1).max(500)), async ([id, url]) => gitManager.addRemote(await root(id), url), { requires: ["GIT_PUSH"] });
+  handle(IpcChannels.GIT_FETCH,args(zId), async ([id]) => gitManager.fetch(await root(id)), { requires: ["GIT_COMMIT"] });
   handle(IpcChannels.GIT_PULL, args(zId), async ([id]) => gitManager.pull(await root(id)), { requires: ["GIT_COMMIT"] });
   handle(IpcChannels.GIT_PUSH, args(zId), async ([id]) => gitManager.push(await root(id)), { requires: ["GIT_PUSH"] });
   handle(IpcChannels.GIT_SYNC, args(zId), async ([id]) => gitManager.sync(await root(id)), { requires: ["GIT_COMMIT", "GIT_PUSH"] });
@@ -219,7 +220,10 @@ export function registerIpc(hooks: { onCloseChoice: (choice: CloseChoice) => voi
   );
   handle(IpcChannels.GIT_CHECKOUT, args(zId, z.string().min(1).max(250)), async ([id, branch]) => gitManager.checkout(await root(id), branch), { requires: ["GIT_MANAGE_BRANCHES"] });
   handle(IpcChannels.GIT_CREATE_BRANCH, args(zId, z.string().min(1).max(200), z.boolean()), async ([id, name, checkout]) => gitManager.createBranch(await root(id), name, checkout), { requires: ["GIT_MANAGE_BRANCHES"] });
-  handle(IpcChannels.GIT_MERGE, args(zId, z.string().min(1).max(250)), async ([id, branch]) => gitManager.merge(await root(id), branch), { requires: ["GIT_COMMIT"] });
+  handle(IpcChannels.GIT_RENAME_BRANCH, args(zId, z.string().min(1).max(250), z.string().min(1).max(200)), async ([id, from, to]) => gitManager.renameBranch(await root(id), from, to), {
+    requires: ["GIT_MANAGE_BRANCHES"],
+  });
+  handle(IpcChannels.GIT_MERGE,args(zId, z.string().min(1).max(250)), async ([id, branch]) => gitManager.merge(await root(id), branch), { requires: ["GIT_COMMIT"] });
   handle(IpcChannels.GIT_STASH, args(zId, z.string().max(500).optional()), async ([id, msg]) => gitManager.stash(await root(id), msg), { requires: ["GIT_COMMIT"] });
   handle(IpcChannels.GIT_STASH_POP, args(zId, z.string().max(50).optional()), async ([id, ref]) => gitManager.stashPop(await root(id), ref), { requires: ["GIT_COMMIT"] });
   handle(IpcChannels.GIT_DISCARD, args(zId, z.object({ paths: zPaths.optional(), confirm: z.literal(true) })), async ([id, input]) =>

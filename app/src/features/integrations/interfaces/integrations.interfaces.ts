@@ -55,6 +55,14 @@ export interface GithubRepository {
     updated_at: string | null;
 }
 
+export interface CreateGithubRepositoryDto {
+    name: string;
+    description?: string;
+    private?: boolean;
+    /** Organization login; omit to create under the connected user account. */
+    owner?: string;
+}
+
 export interface LinearTeam {
     id: string;
     key: string;

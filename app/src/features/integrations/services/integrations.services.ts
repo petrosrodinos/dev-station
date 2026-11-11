@@ -1,6 +1,7 @@
 import axiosInstance, { getApiErrorMessage } from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
 import type {
+    CreateGithubRepositoryDto,
     GithubRepository,
     InitiateConnectionResponse,
     Integration,
@@ -72,7 +73,16 @@ export const getGithubRepositories = async (connectionId: string, search?: strin
     }
 };
 
-export const getLinearTeams = async (connectionId: string): Promise<LinearTeam[]> => {
+export const createGithubRepository = async ({ connectionId, ...dto }: CreateGithubRepositoryDto & { connectionId: string }): Promise<GithubRepository> => {
+    try {
+        const response = await axiosInstance.post<GithubRepository>(ApiRoutes.integrations.github_repositories(connectionId), dto);
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error, "Failed to create the GitHub repository."));
+    }
+};
+
+export const getLinearTeams =async (connectionId: string): Promise<LinearTeam[]> => {
     try {
         const response = await axiosInstance.get<LinearTeam[]>(ApiRoutes.integrations.linear_teams(connectionId));
         return response.data;

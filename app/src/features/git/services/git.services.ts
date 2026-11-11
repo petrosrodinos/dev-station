@@ -17,7 +17,8 @@ export const getBranches = (projectId: string): Promise<GitBranch[]> => wrap(() 
 export const getGitLog = (projectId: string, limit = 20): Promise<GitCommitEntry[]> => wrap(() => getBridge().git.log(projectId, limit), "Failed to load commit history.");
 export const getStashes = (projectId: string): Promise<GitStashEntry[]> => wrap(() => getBridge().git.stashes(projectId), "Failed to list stashes.");
 export const gitInit = (projectId: string) => wrap(() => getBridge().git.init(projectId), "Could not initialize Git.");
-export const gitFetch = (projectId: string) => wrap(() => getBridge().git.fetch(projectId), "Fetch failed.");
+export const gitAddRemote = (projectId: string, url: string) => wrap(() => getBridge().git.addRemote(projectId, url), "Could not add the remote.");
+export const gitFetch =(projectId: string) => wrap(() => getBridge().git.fetch(projectId), "Fetch failed.");
 export const gitPull = (projectId: string) => wrap(() => getBridge().git.pull(projectId), "Pull failed.");
 export const getConflictFile = (projectId: string, path: string): Promise<GitConflictFile> => wrap(() => getBridge().git.conflictRead(projectId, path), "Could not read the conflicted file.");
 export const gitResolveConflict = ({ projectId, path, content }: { projectId: string; path: string; content: string }) =>
@@ -34,7 +35,9 @@ export const gitCommit = ({ projectId, ...input }: { projectId: string; message:
 export const gitCheckout = ({ projectId, branch }: { projectId: string; branch: string }) => wrap(() => getBridge().git.checkout(projectId, branch), "Could not switch branch.");
 export const gitCreateBranch = ({ projectId, name, checkout }: { projectId: string; name: string; checkout: boolean }) =>
     wrap(() => getBridge().git.createBranch(projectId, name, checkout), "Could not create branch.");
-export const gitMerge = ({ projectId, branch }: { projectId: string; branch: string }) => wrap(() => getBridge().git.merge(projectId, branch), "Merge failed.");
+export const gitRenameBranch = ({ projectId, from, to }: { projectId: string; from: string; to: string }) =>
+    wrap(() => getBridge().git.renameBranch(projectId, from, to), "Could not rename the branch.");
+export const gitMerge =({ projectId, branch }: { projectId: string; branch: string }) => wrap(() => getBridge().git.merge(projectId, branch), "Merge failed.");
 /** Merges `source` into `target`: switches to `target` first, so the repo is left on `target` (also when the merge conflicts). */
 export const gitMergeInto = async ({ projectId, source, target }: { projectId: string; source: string; target: string }) => {
     await gitCheckout({ projectId, branch: target });

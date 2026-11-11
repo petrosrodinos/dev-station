@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Archive, ChevronDown, GitBranch, GitMerge, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Archive, ChevronDown, Cloud, GitBranch, GitMerge, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,12 +18,16 @@ import type { Project } from "@/features/projects/interfaces/projects.interfaces
 import { useBranches, useGitCheckout, useGitFetch, useGitMerge, useGitMergeInto, useGitPull, useGitPush, useGitSync, useGitStash, useGitStashPop, useStashes } from "@/features/git/hooks/use-git";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
-import type { GitStatus } from "@shared/contract";
+import type { GitBranch as GitBranchInfo, GitStatus } from "@shared/contract";
 import { CreateBranchDialog } from "./create-branch-dialog";
+import { AddRemoteDialog } from "./add-remote-dialog";
+import { RenameBranchDialog } from "./rename-branch-dialog";
 
 export function GitToolbar({ project, status, onDiscardAll }: { project: Project; status: GitStatus; onDiscardAll: () => void }) {
   const [branchMenuOpen, setBranchMenuOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [addingRemote, setAddingRemote] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<GitBranchInfo | null>(null);
   const [mergeTarget, setMergeTarget] = useState<string | null>(null);
   const [mergeIntoTarget, setMergeIntoTarget] = useState<string | null>(null);
   const { data: branches } = useBranches(project.id, branchMenuOpen);
@@ -44,6 +48,7 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
   const canBranch = can(PermissionKeys.GIT_MANAGE_BRANCHES);
   const canPush = can(PermissionKeys.GIT_PUSH);
   const inOperation = !!status.operation || status.counts.conflicted > 0;
+  const hasRemote = status.remotes.length > 0;
 
   const local = branches?.filter((b) => !b.remote) ?? [];
   const otherLocal = local.filter((b) => !b.current);
@@ -73,23 +78,34 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
           <DropdownMenuLabel className="text-xs text-muted-foreground">Local branches</DropdownMenuLabel>
           {local.map((b) => (
             <DropdownMenuSub key={b.name}>
-              <DropdownMenuSubTrigger className="gap-2 font-mono text-xs" disabled={b.current && !(canCommit && otherLocal.length > 0)}>
+              <DropdownMenuSubTrigger className="gap-2 font-mono text-xs">
                 <span className="flex-1 truncate">{b.name}</span>
                 {b.current && <Badge variant="secondary">current</Badge>}
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
                 {b.current ? (
                   <>
-                    <DropdownMenuLabel className="text-xs text-muted-foreground">Merge {b.name} into…</DropdownMenuLabel>
-                    {otherLocal.map((o) => (
-                      <DropdownMenuItem key={o.name} onSelect={() => setMergeIntoTarget(o.name)} className="gap-2 font-mono text-xs">
-                        <GitMerge className="size-3.5" /> {o.name}
-                      </DropdownMenuItem>
-                    ))}
+                    <DropdownMenuItem onSelect={() => setRenameTarget(b)} className="gap-2">
+                      <Pencil className="size-3.5" /> Rename…
+                    </DropdownMenuItem>
+                    {canCommit && otherLocal.length > 0 && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="text-xs text-muted-foreground">Merge {b.name} into…</DropdownMenuLabel>
+                        {otherLocal.map((o) => (
+                          <DropdownMenuItem key={o.name} onSelect={() => setMergeIntoTarget(o.name)} className="gap-2 font-mono text-xs">
+                            <GitMerge className="size-3.5" /> {o.name}
+                          </DropdownMenuItem>
+                        ))}
+                      </>
+                    )}
                   </>
                 ) : (
                   <>
                     <DropdownMenuItem onSelect={() => checkout.mutate({ projectId, branch: b.name })}>Switch to branch</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setRenameTarget(b)} className="gap-2">
+                      <Pencil className="size-3.5" /> Rename…
+                    </DropdownMenuItem>
                     {canCommit && (
                       <DropdownMenuItem onSelect={() => setMergeTarget(b.name)} className="gap-2">
                         <GitMerge className="size-3.5" /> Merge into {status.branch}
@@ -123,7 +139,7 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
           </span>
         </Button>
       )}
-      {canCommit && (
+      {canCommit && hasRemote && (
         <>
           <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={fetch.isPending} onClick={() => fetch.mutate({ projectId })}>
             {!fetch.isPending && <RefreshCw className="size-3.5" />} Fetch
@@ -134,7 +150,12 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
           </Button>
         </>
       )}
-      {can(PermissionKeys.GIT_PUSH) && (
+      {canPush && !hasRemote && (
+        <Button size="sm" className="h-[30px] gap-1.5" onClick={() => setAddingRemote(true)}>
+          <Cloud className="size-3.5" /> Add remote
+        </Button>
+      )}
+      {canPush && hasRemote && (
         <Button variant="outline" size="sm" className="h-[30px] gap-1.5" loading={push.isPending} disabled={inOperation} onClick={() => push.mutate({ projectId })}>
           {!push.isPending && <ArrowUp className="size-3.5" />} Push
           {status.ahead > 0 && <span className="rounded-xs bg-success-soft px-1.5 text-[0.6875rem] text-success">{status.ahead}</span>}
@@ -174,6 +195,8 @@ export function GitToolbar({ project, status, onDiscardAll }: { project: Project
       </div>
 
       <CreateBranchDialog projectId={projectId} open={creating && canBranch} onOpenChange={setCreating} />
+      <RenameBranchDialog projectId={projectId} branch={canBranch ? (renameTarget?.name ?? null) : null} published={!!renameTarget?.upstream} onClose={() => setRenameTarget(null)} />
+      {canPush && !hasRemote && <AddRemoteDialog project={project} branch={status.branch} hasCommits={status.commits > 0} open={addingRemote} onOpenChange={setAddingRemote} />}
       <ConfirmationDialog
         isOpen={!!mergeTarget}
         onClose={() => setMergeTarget(null)}

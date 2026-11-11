@@ -9,9 +9,11 @@ import {
     gitCommit,
     gitCreateBranch,
     gitDiscard,
+    gitAddRemote,
     gitFetch, gitInit,
     gitMerge,
     gitMergeInto,
+    gitRenameBranch,
     gitPull,
     gitPush,
     gitSync,
@@ -23,6 +25,10 @@ import {
     gitStash,
     gitStashPop,
 } from "../services/git.services";
+import { createGithubRepository } from "@/features/integrations/services/integrations.services";
+import type { CreateGithubRepositoryDto, GithubRepository } from "@/features/integrations/interfaces/integrations.interfaces";
+import { updateProject } from "@/features/projects/services/projects.services";
+import { RepositoryProviders, type Project } from "@/features/projects/interfaces/projects.interfaces";
 import { useRecordActivity } from "@/features/activities/hooks/use-activities";
 import { ActivityTypes, type ActivityType } from "@/features/activities/interfaces/activities.interfaces";
 import { useProjectLocalState } from "@/features/local-workspace/hooks/use-local-workspace";
@@ -92,6 +98,46 @@ function useGitMutation<TVars extends { projectId: string }, TResult>(options: {
 export const useGitInit = () =>
     useGitMutation({ mutationFn: ({ projectId }: { projectId: string }) => gitInit(projectId), success: () => "Git repository initialized", failure: "Could not initialize Git" });
 
+export type PublishTarget =
+    | { type: "create"; connectionId: string; repo: CreateGithubRepositoryDto }
+    | { type: "existing"; connectionId: string; repo: GithubRepository }
+    | { type: "url"; url: string };
+
+/**
+ * Gives a remote-less repository somewhere to push: creates the GitHub repo (or takes an existing one / a URL),
+ * adds it as `origin`, records it on the project, and publishes the current branch when there is something to push.
+ */
+export const useGitPublishToRemote = () => {
+    const queryClient = useQueryClient();
+    return useGitMutation({
+        mutationFn: async ({ projectId, project, target, hasCommits, rename }: { projectId: string; project: Project; target: PublishTarget; hasCommits: boolean; rename?: { from: string; to: string } }) => {
+            // First, so the remote starts out with the right branch name (nothing is published yet, so a local rename is safe).
+            if (rename && rename.from !== rename.to) await gitRenameBranch({ projectId, ...rename });
+            const repo = target.type === "create" ? await createGithubRepository({ connectionId: target.connectionId, ...target.repo }) : target.type === "existing" ? target.repo : null;
+            const url = repo ? repo.clone_url : target.type === "url" ? target.url.trim() : "";
+            await gitAddRemote(projectId, url);
+
+            // Best effort: the remote is already configured locally, so a failed server-side link must not fail the flow.
+            if (repo && !project.repository) {
+                const connectionId = target.type === "url" ? null : target.connectionId;
+                await updateProject({
+                    id: project.id,
+                    github_connection_id: connectionId,
+                    repository: { clone_url: repo.clone_url, provider: RepositoryProviders.GITHUB, full_name: repo.full_name, default_branch: repo.default_branch, connection_id: connectionId },
+                })
+                    .then(() => queryClient.invalidateQueries({ queryKey: ["projects"] }))
+                    .catch(() => undefined);
+            }
+
+            const pushed = hasCommits ? await gitPush(projectId) : null;
+            return { url, pushed: !!pushed?.pushed, hasCommits };
+        },
+        success: (_vars, r) => (r.pushed ? "Remote added and branch published" : r.hasCommits ? "Remote added" : "Remote added — commit your changes, then push"),
+        failure: "Could not add the remote",
+        activity: ActivityTypes.GIT_PUSH,
+    });
+};
+
 export const useGitFetch = () =>
     useGitMutation({ mutationFn: ({ projectId }: { projectId: string }) => gitFetch(projectId), success: () => "Fetched from remote", failure: "Fetch failed" });
 
@@ -154,6 +200,9 @@ export const useGitCheckout = () =>
 
 export const useGitCreateBranch = () =>
     useGitMutation({ mutationFn: gitCreateBranch, success: (vars) => `Created branch ${vars.name}`, failure: "Could not create branch", activity: ActivityTypes.GIT_BRANCH });
+
+export const useGitRenameBranch = () =>
+    useGitMutation({ mutationFn: gitRenameBranch, success: (vars) => `Renamed ${vars.from} to ${vars.to}`, failure: "Could not rename the branch", activity: ActivityTypes.GIT_BRANCH });
 
 export const useGitMerge = () =>
     useGitMutation({ mutationFn: gitMerge, success: (vars) => `Merged ${vars.branch}`, failure: "Merge failed", activity: ActivityTypes.GIT_BRANCH });

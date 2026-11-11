@@ -35,6 +35,7 @@ import { NotionIntegrationService } from './services/notion-integration.service'
 import { CreateConnectionDto } from './dto/create-connection.dto';
 import { UpdateConnectionDto } from './dto/update-connection.dto';
 import { UpdateLinearIssueDto } from './dto/update-linear-issue.dto';
+import { CreateGithubRepositoryDto } from './dto/create-github-repository.dto';
 import { CreateNotionPageDto } from './dto/create-notion-page.dto';
 import { UpdateNotionPageDto } from './dto/update-notion-page.dto';
 import {
@@ -154,6 +155,25 @@ export class IntegrationsController {
       IntegrationProvider.GITHUB,
     );
     return this.github.listRepositories(connection, query);
+  }
+
+  @Post('github/:connectionId/repositories')
+  @RequirePermissions(PermissionKey.PROJECTS_EDIT)
+  @ApiOperation({
+    summary: 'Create an empty repository on a connected GitHub account',
+  })
+  @ApiResponse({ status: 201, type: GithubRepositoryEntity })
+  async createGithubRepository(
+    @CurrentMembership('organization_id') organizationId: string,
+    @Param('connectionId', ParseUUIDPipe) connectionId: string,
+    @Body() dto: CreateGithubRepositoryDto,
+  ) {
+    const connection = await this.integrationsService.getActiveConnection(
+      organizationId,
+      connectionId,
+      IntegrationProvider.GITHUB,
+    );
+    return this.github.createRepository(connection, dto);
   }
 
   @Get('linear/:connectionId/teams')

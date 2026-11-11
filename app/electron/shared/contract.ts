@@ -396,6 +396,8 @@ export interface GitStatus {
   is_repo: boolean;
   branch: string | null;
   upstream: string | null;
+  /** Names of the configured remotes (empty = the repository has nowhere to push to yet). */
+  remotes: string[];
   ahead: number;
   behind: number;
   commits: number;
@@ -754,6 +756,8 @@ export interface DevStationBridge {
     stashes(projectId: string): Promise<GitStashEntry[]>;
     /** Runs `git init` in the project folder. */
     init(projectId: string): Promise<string>;
+    /** Adds the `origin` remote. Rejects when `origin` already exists or the URL isn't an https/ssh Git URL. */
+    addRemote(projectId: string, url: string): Promise<string>;
     fetch(projectId: string): Promise<string>;
     pull(projectId: string): Promise<string>;
     sync(projectId: string): Promise<{ pulled: number; pushed: number; output: string }>;
@@ -768,6 +772,8 @@ export interface DevStationBridge {
     commit(projectId: string, input: { message: string; paths?: string[]; name?: string | null; email?: string | null }): Promise<{ sha: string; output: string }>;
     checkout(projectId: string, branch: string): Promise<string>;
     createBranch(projectId: string, name: string, checkout: boolean): Promise<string>;
+    /** Local rename only — a published branch keeps its old name on the remote. */
+    renameBranch(projectId: string, from: string, to: string): Promise<string>;
     merge(projectId: string, branch: string): Promise<string>;
     stash(projectId: string, message?: string): Promise<string>;
     stashPop(projectId: string, ref?: string): Promise<string>;
@@ -902,6 +908,7 @@ export const IpcChannels = {
   GIT_LOG: "git:log",
   GIT_STASHES: "git:stashes",
   GIT_INIT: "git:init",
+  GIT_ADD_REMOTE: "git:add-remote",
   GIT_FETCH: "git:fetch",
   GIT_PULL: "git:pull",
   GIT_PUSH: "git:push",
@@ -914,6 +921,7 @@ export const IpcChannels = {
   GIT_COMMIT: "git:commit",
   GIT_CHECKOUT: "git:checkout",
   GIT_CREATE_BRANCH: "git:create-branch",
+  GIT_RENAME_BRANCH: "git:rename-branch",
   GIT_MERGE: "git:merge",
   GIT_STASH: "git:stash",
   GIT_STASH_POP: "git:stash-pop",

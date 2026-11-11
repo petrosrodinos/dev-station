@@ -5,6 +5,7 @@ import {
   findArray,
   findObjectWithKey,
 } from '@/integrations/composio/utils/composio.utils';
+import { CreateGithubRepositoryDto } from '../dto/create-github-repository.dto';
 import { GithubRepositoriesQueryType } from '../dto/integrations-query.schema';
 import {
   ActiveConnection,
@@ -42,23 +43,49 @@ export class GithubIntegrationService {
       'repositories',
       'items',
       'repos',
-    ]).map(
-      (repo): GithubRepository => ({
-        id: String(repo.id ?? repo.node_id ?? repo.full_name),
-        name: repo.name,
-        full_name: repo.full_name,
-        clone_url: repo.clone_url ?? `https://github.com/${repo.full_name}.git`,
-        ssh_url: repo.ssh_url ?? null,
-        default_branch: repo.default_branch ?? null,
-        private: Boolean(repo.private),
-        description: repo.description ?? null,
-        updated_at: repo.pushed_at ?? repo.updated_at ?? null,
-      }),
-    );
+    ]).map((repo) => this.toRepository(repo));
 
     const search = query.search?.toLowerCase();
     return search
       ? repositories.filter((r) => r.full_name?.toLowerCase().includes(search))
       : repositories;
+  }
+
+  /**
+   * Creates an empty repository (no README/license, so a local history can be pushed to it as-is)
+   * through the connected account. Uses the REST API directly: it covers user and organization repos alike.
+   */
+  async createRepository(
+    connection: ActiveConnection,
+    dto: CreateGithubRepositoryDto,
+  ): Promise<GithubRepository> {
+    const repo = await this.composio.proxy<Record<string, any>>({
+      connected_account_id: connection.composio_account_id,
+      endpoint: dto.owner
+        ? `/orgs/${encodeURIComponent(dto.owner)}/repos`
+        : '/user/repos',
+      method: 'POST',
+      body: {
+        name: dto.name,
+        description: dto.description || undefined,
+        private: dto.private ?? true,
+        auto_init: false,
+      },
+    });
+    return this.toRepository(repo);
+  }
+
+  private toRepository(repo: Record<string, any>): GithubRepository {
+    return {
+      id: String(repo.id ?? repo.node_id ?? repo.full_name),
+      name: repo.name,
+      full_name: repo.full_name,
+      clone_url: repo.clone_url ?? `https://github.com/${repo.full_name}.git`,
+      ssh_url: repo.ssh_url ?? null,
+      default_branch: repo.default_branch ?? null,
+      private: Boolean(repo.private),
+      description: repo.description ?? null,
+      updated_at: repo.pushed_at ?? repo.updated_at ?? null,
+    };
   }
 }

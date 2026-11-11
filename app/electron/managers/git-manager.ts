@@ -128,6 +128,7 @@ class GitManager {
       is_repo: false,
       branch: null,
       upstream: null,
+      remotes: [],
       ahead: 0,
       behind: 0,
       commits: 0,
@@ -139,8 +140,11 @@ class GitManager {
     };
     if (!(await this.isRepo(cwd))) return empty;
 
-    const { stdout } = await run(cwd, ["status", "--porcelain=v2", "--branch", "--untracked-files=all", "-z"]);
-    const result: GitStatus = { ...empty, is_repo: true, counts: { ...empty.counts }, totals: { ...empty.totals } };
+    const [{ stdout }, remotes] = await Promise.all([
+      run(cwd, ["status", "--porcelain=v2", "--branch", "--untracked-files=all", "-z"]),
+      run(cwd, ["remote"]).then((r) => r.stdout.split(/\r?\n/).filter(Boolean)),
+    ]);
+    const result: GitStatus = { ...empty, is_repo: true, remotes, counts: { ...empty.counts }, totals: { ...empty.totals } };
     const entries = stdout.split("\0");
     const files: GitFileChange[] = [];
 
@@ -360,6 +364,16 @@ class GitManager {
     return "Initialized Git repository";
   }
 
+  /** Adds `origin`. Only https/ssh/scp-style URLs are accepted — never local paths, `ext::` helpers or option-like values. */
+  async addRemote(cwd: string, url: string) {
+    const trimmed = url.trim();
+    if (!/^(https:\/\/[^\s/]+\/\S+|ssh:\/\/\S+|git@[^\s:]+:\S+)$/i.test(trimmed)) throw new IpcError("Enter an https://, ssh:// or git@host:path repository URL.");
+    const existing = await run(cwd, ["remote"]).then((r) => r.stdout.split(/\r?\n/).filter(Boolean));
+    if (existing.includes("origin")) throw new IpcError("This repository already has an 'origin' remote.");
+    await run(cwd, ["remote", "add", "origin", "--", trimmed]);
+    return `Added remote origin → ${trimmed}`;
+  }
+
   async fetch(cwd: string) {
     const r = await run(cwd, ["fetch", "--all", "--prune"]);
     return (r.stderr || r.stdout).trim() || "Fetched";
@@ -459,6 +473,20 @@ class GitManager {
     if (checkout) await run(cwd, ["switch", "-c", name]);
     else await run(cwd, ["branch", name]);
     return `Created ${name}`;
+  }
+
+  /** Plain rename (`git branch -m`, never forced). A branch with no commits yet can't be renamed by git, so its HEAD is re-pointed instead. */
+  async renameBranch(cwd: string, from: string, to: string) {
+    assertSafeRef(from);
+    assertBranchName(to);
+    if (from === to) return `Already named ${to}`;
+    const branches = await this.branches(cwd);
+    if (branches.some((b) => !b.remote && b.name === to)) throw new IpcError(`A branch named ${to} already exists.`);
+    const current = (await run(cwd, ["branch", "--show-current"])).stdout.trim();
+    const hasHead = (await run(cwd, ["rev-parse", "--verify", "-q", "HEAD"], { allowExitCodes: [1] })).code === 0;
+    if (!hasHead && current === from) await run(cwd, ["symbolic-ref", "HEAD", `refs/heads/${to}`]);
+    else await run(cwd, ["branch", "-m", from, to]);
+    return `Renamed ${from} to ${to}`;
   }
 
   async merge(cwd: string, branch: string) {
