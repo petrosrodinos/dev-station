@@ -53,10 +53,38 @@ const ToastClose = React.forwardRef<React.ElementRef<typeof ToastPrimitives.Clos
 ));
 ToastClose.displayName = ToastPrimitives.Close.displayName;
 
-const ToastTitle = React.forwardRef<React.ElementRef<typeof ToastPrimitives.Title>, React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>>(({ className, ...props }, ref) => <ToastPrimitives.Title ref={ref} className={cn("text-sm font-semibold leading-snug [&+div]:text-xs", className)} {...props} />);
+/**
+ * Radix makes the whole toast `user-select: none` and starts a swipe-to-dismiss on pointer-down. Text is made selectable
+ * (and copyable) again here; the pointer-down stops short of the toast root so dragging across text selects it
+ * instead of swiping the toast away. Swiping from the padding around the text still dismisses it.
+ */
+const selectableText = "cursor-text select-text break-words";
+const keepSelectionGesture = (e: React.PointerEvent) => e.stopPropagation();
+
+const ToastTitle = React.forwardRef<React.ElementRef<typeof ToastPrimitives.Title>, React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>>(({ className, onPointerDown, ...props }, ref) => (
+  <ToastPrimitives.Title
+    ref={ref}
+    className={cn(selectableText, "text-sm font-semibold leading-snug [&+div]:text-xs", className)}
+    onPointerDown={(e) => {
+      onPointerDown?.(e);
+      keepSelectionGesture(e);
+    }}
+    {...props}
+  />
+));
 ToastTitle.displayName = ToastPrimitives.Title.displayName;
 
-const ToastDescription = React.forwardRef<React.ElementRef<typeof ToastPrimitives.Description>, React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>>(({ className, ...props }, ref) => <ToastPrimitives.Description ref={ref} className={cn("text-sm leading-snug opacity-80", className)} {...props} />);
+const ToastDescription = React.forwardRef<React.ElementRef<typeof ToastPrimitives.Description>, React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>>(({ className, onPointerDown, ...props }, ref) => (
+  <ToastPrimitives.Description
+    ref={ref}
+    className={cn(selectableText, "text-sm leading-snug opacity-80", className)}
+    onPointerDown={(e) => {
+      onPointerDown?.(e);
+      keepSelectionGesture(e);
+    }}
+    {...props}
+  />
+));
 ToastDescription.displayName = ToastPrimitives.Description.displayName;
 
 type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>;
