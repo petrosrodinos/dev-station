@@ -30,27 +30,26 @@ export function CommitBox({ project, selectedPaths, totalFiles }: { project: Pro
   const form = useForm<CommitFormData>({ resolver: zodResolver(commitSchema), defaultValues: { message: "" } });
 
   const submit = (andPush: boolean) =>
-    form.handleSubmit((data) =>
-      commit.mutate(
-        {
+    form.handleSubmit(async (data) => {
+      // mutateAsync, not mutate(..., { onSuccess }): a successful commit empties the changed-files list, which unmounts
+      // this component, and per-call mutate callbacks are silently dropped once it is gone — the push would never run.
+      const result = await commit
+        .mutateAsync({
           projectId: project.id,
           message: data.message,
           paths: selectedPaths.length === totalFiles ? undefined : selectedPaths,
           name: identity?.name,
           email: identity?.email,
-        },
-        {
-          onSuccess: (result) => {
-            form.reset({ message: "" });
-            // Attach the commit to the session being reviewed in this project, else the most recent one with uncommitted changes.
-            const session =
-              sessions?.data.find((s) => s.id === activeSessionId) ?? sessions?.data.find((s) => s.files_changed > 0 && !s.commit_sha);
-            if (session) linkCommit.mutate({ id: session.id, commit_sha: result.sha });
-            if (andPush) push.mutate({ projectId: project.id });
-          },
-        },
-      ),
-    )();
+        })
+        .catch(() => null); // useGitMutation already toasted the failure
+      if (!result) return;
+
+      form.reset({ message: "" });
+      // Attach the commit to the session being reviewed in this project, else the most recent one with uncommitted changes.
+      const session = sessions?.data.find((s) => s.id === activeSessionId) ?? sessions?.data.find((s) => s.files_changed > 0 && !s.commit_sha);
+      if (session) linkCommit.mutate({ id: session.id, commit_sha: result.sha });
+      if (andPush) push.mutate({ projectId: project.id });
+    })();
 
   const count = selectedPaths.length;
 
