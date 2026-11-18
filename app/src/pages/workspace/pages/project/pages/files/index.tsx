@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FC } from "react";
-import { ChevronsDownUp, ChevronsUpDown, Code2, Copy, FilePlus, Folder, FolderPlus, MoreHorizontal, Search, TextSearch } from "lucide-react";
+import { ChevronsDownUp, ChevronsUpDown, Code2, Copy, FilePlus, Folder, FolderPlus, MoreHorizontal, RefreshCw, Search, TextSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Panel, PanelBody, PanelHeader } from "@/components/ui/panel";
 import { ListSkeleton } from "@/components/ui/list-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { useFileSearch, useImportFiles, useMoveEntry } from "@/features/files/hooks/use-files";
+import { useFileSearch, useImportFiles, useMoveEntry, useRefreshTree } from "@/features/files/hooks/use-files";
 import { useGitStatus } from "@/features/git/hooks/use-git";
 import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -114,6 +114,17 @@ const FilesTab: FC = () => {
       else clearFile();
     }
   };
+  const refreshTree = useRefreshTree();
+  const [refreshing, setRefreshing] = useState(false);
+  const refresh = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await refreshTree(project.id);
+    } finally {
+      setRefreshing(false);
+    }
+  };
   const moveEntry = useMoveEntry();
   const importFiles = useImportFiles();
   const activeRef = useRef(activeFile);
@@ -212,6 +223,16 @@ const FilesTab: FC = () => {
                 <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ash" />
                 <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search files…" aria-label="Search files" className="h-8 pl-8" />
               </div>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button variant="ghost" size="icon" className="size-8 shrink-0 text-muted-foreground" aria-label="Refresh files" disabled={refreshing} onClick={refresh}>
+                      <RefreshCw className={cn("size-4", refreshing && "animate-spin")} />
+                    </Button>
+                  }
+                />
+                <TooltipContent>Refresh files</TooltipContent>
+              </Tooltip>
               <DropdownMenu>
                 <Tooltip>
                   <TooltipTrigger

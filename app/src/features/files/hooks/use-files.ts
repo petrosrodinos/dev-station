@@ -125,6 +125,17 @@ const useInvalidateTree = () => {
     };
 };
 
+/** Re-read the folder tree, file-name search results, and git markers from disk (for changes made outside the app). */
+export const useRefreshTree = () => {
+    const queryClient = useQueryClient();
+    return (projectId: string) =>
+        Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["files", projectId] }),
+            queryClient.invalidateQueries({ queryKey: ["file-search", projectId] }),
+            queryClient.invalidateQueries({ queryKey: ["git-status", projectId] }),
+        ]);
+};
+
 export const useCreateFile = () => {
     const invalidate = useInvalidateTree();
     return useMutation({
