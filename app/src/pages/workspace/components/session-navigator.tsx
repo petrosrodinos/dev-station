@@ -15,7 +15,8 @@ import { SessionReviewStateOptions } from "@/config/constants/dropdowns/agents/s
 import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { isAgentActive, reviewStateDot } from "@/lib/status";
-import { DndContext, PointerSensor, closestCenter, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, PointerSensor, closestCenter, useDroppable, useSensor, useSensors, type DragEndEvent, type DragMoveEvent } from "@dnd-kit/core";
+import { clearSessionDropHint, dropSession, hintSessionDrop } from "../utils/session-dock";
 import { SortableContext, arrayMove, horizontalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Check, EyeOff, Plus, X } from "lucide-react";
@@ -272,7 +273,20 @@ function GroupSessions({ projectId, items, activeId, onOpen, onReorder, renderRo
   const overflow = items.slice(MAX_MAIN_SESSIONS);
   const ids = items.map((i) => i.id);
 
-  const onDragEnd = ({ active, over }: DragEndEvent) => {
+  // Dragging a tab down onto the terminal area splits it into a pane (or joins one) instead of reordering the strip.
+  const pointerOf = ({ activatorEvent, delta }: Pick<DragMoveEvent, "activatorEvent" | "delta">) =>
+    activatorEvent instanceof PointerEvent ? { x: activatorEvent.clientX + delta.x, y: activatorEvent.clientY + delta.y } : null;
+
+  const onDragMove = (event: DragMoveEvent) => {
+    const p = pointerOf(event);
+    if (p) hintSessionDrop(String(event.active.id), p.x, p.y);
+  };
+
+  const onDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    const p = pointerOf(event);
+    clearSessionDropHint();
+    if (p && dropSession(String(active.id), p.x, p.y)) return;
     if (!over || active.id === over.id) return;
     const from = ids.indexOf(String(active.id));
     if (over.id === `${OVERFLOW_DROP_PREFIX}${projectId}`) {
@@ -283,7 +297,7 @@ function GroupSessions({ projectId, items, activeId, onOpen, onReorder, renderRo
   };
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragMove={onDragMove} onDragEnd={onDragEnd} onDragCancel={clearSessionDropHint}>
       <SortableContext items={main.map((i) => i.id)} strategy={horizontalListSortingStrategy}>
         {main.map((item) => (
           <SortableSessionTab key={item.id} id={item.id}>

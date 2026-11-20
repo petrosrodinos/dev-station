@@ -26,9 +26,12 @@ interface LayoutState {
     workspace_drawer_open: boolean;
     /** Width the workspace drawer opens at; follows the user's resizing. */
     workspace_drawer_width: number;
+    /** DockviewApi.toJSON() of the AI panel's terminal dock — how open sessions are split into panes. Per device. */
+    session_dock_layout: Record<string, unknown> | null;
 }
 
 interface LayoutActions {
+    setSessionDockLayout(layout: Record<string, unknown> | null): void;
     setAiFullWidth(on: boolean): void;
     setWorkspaceDrawerOpen(open: boolean): void;
     setWorkspaceDrawerWidth(width: number): void;
@@ -53,6 +56,7 @@ const initialValues: LayoutState = {
     ai_full_width: false,
     workspace_drawer_open: false,
     workspace_drawer_width: 560,
+    session_dock_layout: null,
 };
 
 const STORE_KEY = "layout";
@@ -62,6 +66,7 @@ export const useLayoutStore = create<LayoutState & LayoutActions>()(
         (set) => ({
             ...initialValues,
             // Leaving full width has nothing left to pull the workspace into, so the drawer closes with it.
+            setSessionDockLayout: (layout) => set({ session_dock_layout: layout }),
             setAiFullWidth: (on) => set((s) => ({ ai_full_width: on, workspace_drawer_open: on && s.workspace_drawer_open })),
             setWorkspaceDrawerOpen: (open) => set((s) => ({ workspace_drawer_open: open && s.ai_full_width })),
             setWorkspaceDrawerWidth: (width) => set({ workspace_drawer_width: width }),

@@ -3,7 +3,9 @@ import * as React from 'react'
 import type { ToastActionElement, ToastProps } from '@/components/ui/toast'
 
 const TOAST_LIMIT = 3
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 300
+const TOAST_DURATION = 3000
+const TOAST_ERROR_DURATION = 5000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -147,10 +149,17 @@ function toast({ ...props }: Toast) {
     })
   const dismiss = () => dispatch({ type: 'DISMISS_TOAST', toastId: id })
 
+  const isError = props.variant === 'destructive' || props.variant === 'error'
+  const duration = props.duration ?? (isError ? TOAST_ERROR_DURATION : TOAST_DURATION)
+
+  // Radix's own timer pauses on window blur / hover and can stall, so dismiss independently as well.
+  if (Number.isFinite(duration)) setTimeout(dismiss, duration)
+
   dispatch({
     type: 'ADD_TOAST',
     toast: {
       ...props,
+      duration,
       id,
       open: true,
       onOpenChange: (open) => {

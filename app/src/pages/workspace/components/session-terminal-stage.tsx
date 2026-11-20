@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, type FC } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FC } from "react";
 import { Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -8,16 +8,18 @@ import {
   type DockviewReadyEvent,
   type IDockviewPanelProps,
   type IDockviewReactProps,
+  type SerializedDockview,
 } from "dockview-react";
+import { cn } from "@/lib/utils";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { useDialogsStore } from "@/stores/dialogs";
 import { useLayoutStore } from "@/stores/layout";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { SessionTerminalPanel } from "./session-terminal-panel";
+import { registerSessionDock, sessionPanelId, useSessionDropHint } from "../utils/session-dock";
 
 const SESSION_PANEL_COMPONENT = "session-terminal";
-const sessionPanelId = (sessionId: string) => `session:${sessionId}`;
 
 /**
  * Multi-visible-session-terminal rework (docking system spec §C): every session in
@@ -59,11 +61,46 @@ export function SessionTerminalStage({ onNext }: { onNext: () => void }) {
   // constantly jittering. Memoizing keeps the identity stable unless the panel component itself changes.
   const components: IDockviewReactProps["components"] = useMemo(() => ({ [SESSION_PANEL_COMPONENT]: SessionPanel }), [SessionPanel]);
 
+  // Once split into several panes each one needs its own tab strip (to drag sessions between panes or
+  // back together); a single group keeps relying on the SessionNavigator above instead.
+  const [split, setSplit] = useState(false);
+  const dropRect = useSessionDropHint((s) => s.rect);
+
   const onReady = useCallback((event: DockviewReadyEvent) => {
     apiRef.current = event.api;
+    registerSessionDock(event.api);
+    const syncSplit = () => setSplit(event.api.groups.filter((g) => g.panels.length > 0).length > 1);
+
+    // Restore how the sessions were split. Sessions that are no longer open are closed again by the reconcile effect below.
+    const saved = useLayoutStore.getState().session_dock_layout;
+    if (saved) {
+      try {
+        event.api.fromJSON(saved as unknown as SerializedDockview);
+      } catch (error) {
+        console.error("Failed to restore the session terminal layout", error);
+        useLayoutStore.getState().setSessionDockLayout(null);
+      }
+    }
+
+    // Attached after the restore so replaying the saved layout can't change which session is active.
     event.api.onDidActivePanelChange(({ panel }) => {
       if (panel?.id.startsWith("session:")) setActiveSession(panel.id.slice("session:".length));
     });
+
+    let saveTimer: ReturnType<typeof setTimeout> | undefined;
+    event.api.onDidLayoutChange(() => {
+      syncSplit();
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        try {
+          // An emptied dock (last tab closed) keeps the previous layout rather than saving nothing.
+          if (event.api.panels.length) useLayoutStore.getState().setSessionDockLayout(event.api.toJSON() as unknown as Record<string, unknown>);
+        } catch {
+          // the dock was disposed before the timer fired
+        }
+      }, 300);
+    });
+    syncSplit();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -75,6 +112,8 @@ export function SessionTerminalStage({ onNext }: { onNext: () => void }) {
     // handle so nothing below calls into a disposed dockview ("resource already disposed").
     if (!openTabs.length) {
       apiRef.current = null;
+      registerSessionDock(null);
+      setSplit(false);
       return;
     }
     const api = apiRef.current;
@@ -88,7 +127,8 @@ export function SessionTerminalStage({ onNext }: { onNext: () => void }) {
     for (const panel of api.panels) {
       if (!wantedIds.has(panel.id)) panel.api.close();
     }
-    const anchor = api.panels.find((p) => wantedIds.has(p.id));
+    // New sessions join the pane the user is working in, not always the first one.
+    const anchor = api.activePanel && wantedIds.has(api.activePanel.id) ? api.activePanel : api.panels.find((p) => wantedIds.has(p.id));
     for (const sessionId of openTabs) {
       const id = sessionPanelId(sessionId);
       if (existingIds.has(id) || !wantedIds.has(id)) continue;
@@ -126,5 +166,16 @@ export function SessionTerminalStage({ onNext }: { onNext: () => void }) {
     );
   }
 
-  return <DockviewReact className="dockview-theme-abyss session-terminal-dock min-h-0 flex-1" components={components} onReady={onReady} />;
+  return (
+    <>
+      <DockviewReact className={cn("dockview-theme-abyss session-terminal-dock min-h-0 flex-1", split && "is-split")} components={components} onReady={onReady} />
+      {dropRect && (
+        <div
+          aria-hidden
+          className="pointer-events-none fixed z-[60] rounded-sm border-2 border-info bg-info/15 transition-all duration-75"
+          style={{ left: dropRect.left, top: dropRect.top, width: dropRect.width, height: dropRect.height }}
+        />
+      )}
+    </>
+  );
 }

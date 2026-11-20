@@ -15,6 +15,7 @@ import { useLayoutStore } from "@/stores/layout";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
 import { useDockApi } from "../../context/dock-api-context";
+import { AiPanelLayouts, setAiPanelLayout } from "../../hooks/use-ai-panel-layout";
 import { cn } from "@/lib/utils";
 import { useLayoutPersistence } from "@/features/workspace-layouts/hooks/use-layout-persistence";
 
@@ -23,6 +24,8 @@ export const AI_PANEL_ID = "ai-panel";
 const AI_PANEL_MIN_WIDTH = 320;
 export const AI_PANEL_DEFAULT_WIDTH = 420;
 const DRAWER_MIN_WIDTH = 280;
+/** Share of the dock the AI panel must reach, while being dragged, to jump to full width. */
+const AI_AUTO_FULL_WIDTH_RATIO = 0.8;
 
 /** Routed project/workspace content — unchanged from the previous fixed shell. */
 const MainContentPanel: FC<IDockviewPanelProps> = () => (
@@ -201,6 +204,35 @@ export const WorkspaceDock: FC = () => {
     });
     return () => sub.dispose();
   }, [api, aiFullWidth, drawerOpen]);
+
+  // Dragging the AI panel's sash past AI_AUTO_FULL_WIDTH_RATIO of the dock snaps it to full width. Only a sash
+  // drag counts, so restoring a layout or preset that happens to be wide never flips the mode on its own.
+  useEffect(() => {
+    if (!api || !aiPanelOpen || aiFullWidth) return;
+    const group = api.getPanel(AI_PANEL_ID)?.group;
+    if (!group) return;
+    let sashDrag = false;
+    const onPointerDown = (e: PointerEvent) => {
+      sashDrag = e.target instanceof Element && !!e.target.closest(".dv-sash");
+    };
+    const onPointerUp = () => {
+      sashDrag = false;
+    };
+    window.addEventListener("pointerdown", onPointerDown, true);
+    window.addEventListener("pointerup", onPointerUp, true);
+    window.addEventListener("pointercancel", onPointerUp, true);
+    const sub = group.api.onDidDimensionsChange(({ width }) => {
+      if (!sashDrag || api.width <= 0 || width / api.width < AI_AUTO_FULL_WIDTH_RATIO) return;
+      sashDrag = false;
+      setAiPanelLayout(AiPanelLayouts.FULL_WIDTH);
+    });
+    return () => {
+      sub.dispose();
+      window.removeEventListener("pointerdown", onPointerDown, true);
+      window.removeEventListener("pointerup", onPointerUp, true);
+      window.removeEventListener("pointercancel", onPointerUp, true);
+    };
+  }, [api, aiPanelOpen, aiFullWidth]);
 
   const overlayDrawer = aiFullWidth && drawerOpen && aiPanelOpen;
 

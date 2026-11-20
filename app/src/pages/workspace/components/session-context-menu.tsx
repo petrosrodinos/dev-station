@@ -1,26 +1,33 @@
 import { useState, type FormEvent, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
-import { ExternalLink, EyeOff, FileDiff, Pencil, RotateCw, Square, Trash2 } from "lucide-react";
+import { Columns2, ExternalLink, EyeOff, Pencil, RotateCw, Rows2, Square, SquareTerminal, Trash2 } from "lucide-react";
+import { useWorkspaceStore } from "@/stores/workspace";
+import { splitSession } from "../utils/session-dock";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  useCloseSessionTab,
   useDeleteAgentSession,
   useDeleteAgentSessions,
   useOpenAgentExternally,
   useRelaunchAgentSession,
   useRenameAgentSession,
+  useStartAgentSession,
   useStopAgentSession,
 } from "@/features/agent-sessions/hooks/use-agent-sessions";
+import { useAgentCommands } from "@/features/agent-commands/hooks/use-agent-commands";
+import { findDefaultCommand } from "@/features/agent-commands/utils/agent-commands.utils";
+import { useWorkspaceConfig } from "@/features/local-workspace/hooks/use-local-workspace";
+import { useGetPreferences } from "@/features/users/hooks/use-users";
+import { getAgentTypeLabel } from "@/config/constants/dropdowns/agents/agent-type-form.options";
+import type { AgentType } from "@shared/contract";
 import type { AgentSession } from "@/features/agent-sessions/interfaces/agent-sessions.interfaces";
 import { usePermissions } from "@/features/organizations/hooks/use-organizations";
 import { PermissionKeys } from "@/features/organizations/interfaces/organizations.interfaces";
-import { ProjectTabs } from "@/config/constants/dropdowns/projects/project-tab.options";
 import { isDesktop } from "@/lib/desktop";
 import { FloatTargetMenuItems } from "@/features/workspace-layouts/components/float-target-menu-items";
 import { floatPanel } from "@/features/workspace-layouts/utils/float-panel.utils";
-import { Routes } from "@/routes/routes";
 import type { SessionItem } from "../hooks/use-open-sessions";
 import { isBlockingMutation, willQueueWrite } from "@/lib/mutation-state";
 import { useCloseWhenParked } from "@/hooks/use-close-when-parked";
@@ -36,16 +43,41 @@ interface SessionContextMenuProps {
 
 /** Right-click a session (tab or list row) to rename, hide or delete it, plus run actions when `item` is given. */
 export function SessionContextMenu({ session, onHide, item, children }: SessionContextMenuProps) {
-  const navigate = useNavigate();
   const { can } = usePermissions();
   const [renaming, setRenaming] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const relaunch = useRelaunchAgentSession();
   const stop = useStopAgentSession();
   const openExternal = useOpenAgentExternally();
+  const closeTab = useCloseSessionTab();
+  const start = useStartAgentSession();
+  const { data: preferences } = useGetPreferences();
+  const { data: workspaceConfig } = useWorkspaceConfig();
+  const { data: allCommands } = useAgentCommands();
   const runtime = item?.runtime ?? null;
   const canUseAgents = can(PermissionKeys.AI_USE_AGENTS);
-  const hasChanges = !!item?.changes && item.changes.files_changed > 0;
+  const replacing = closeTab.isPending || start.isPending;
+  const openCount = useWorkspaceStore((s) => s.open_session_tabs.length);
+
+  /** Stops this session's terminal and closes its tab, then starts a fresh session in the same project with the same agent. */
+  const closeAndOpenNew = async () => {
+    if (!item) return;
+    const agentType = (item.agent_type ?? session.agent_type) as AgentType;
+    try {
+      await closeTab.mutateAsync({ id: item.id, stopProcess: true });
+    } catch {
+      return; // useCloseSessionTab already toasted the failure; keep the old terminal.
+    }
+    start.mutate({
+      project_id: item.project_id,
+      agent_type: agentType,
+      name: `${getAgentTypeLabel(agentType)} session`,
+      prompt: null,
+      command_id: findDefaultCommand(allCommands ?? [], agentType)?.id,
+      device_id: workspaceConfig?.device_id ?? null,
+      idle_threshold_seconds: preferences?.idle_threshold_seconds,
+    });
+  };
 
   const floatSession = (windowId: string | undefined) => {
     if (!item) return;
@@ -68,10 +100,16 @@ export function SessionContextMenu({ session, onHide, item, children }: SessionC
           {item && (
             <>
               <ContextMenuSeparator />
-              <ContextMenuItem onSelect={() => navigate(Routes.workspace.project_tab(item.project_id, ProjectTabs.GIT))} disabled={!hasChanges}>
-                <FileDiff /> Review changes
+              <ContextMenuItem onSelect={() => splitSession(item.id, "right")} disabled={openCount < 2}>
+                <Columns2 /> Split right
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => splitSession(item.id, "bottom")} disabled={openCount < 2}>
+                <Rows2 /> Split down
               </ContextMenuItem>
               <ContextMenuSeparator />
+              <ContextMenuItem onSelect={() => void closeAndOpenNew()} disabled={!item.on_this_device || !canUseAgents || replacing}>
+                <SquareTerminal /> Close and open new terminal
+              </ContextMenuItem>
               <ContextMenuItem onSelect={() => relaunch.mutate({ session: item.session, runtime: item.runtime })} disabled={!item.on_this_device || !canUseAgents || relaunch.isPending}>
                 <RotateCw /> {runtime?.alive ? "Restart" : "Resume"}
               </ContextMenuItem>
